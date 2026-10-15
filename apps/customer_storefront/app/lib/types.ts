@@ -1,6 +1,7 @@
 export interface Product {
   id: string;
   name: string;
+  originalName?: string;
   /** Compatibility-only data field. Storefront presentation must not render emoji. */
   emoji: string;
   price: number;

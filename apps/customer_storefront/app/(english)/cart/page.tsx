@@ -26,14 +26,14 @@ function CartContent() {
   const pathname = usePathname() || '/';
   const locale = getLocaleFromPathname(pathname);
   const dict = getDictionary(locale);
-  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, isLoaded } = useCartContext();
+  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, effectivePrice, isLoaded } = useCartContext();
   const { showToast } = useToast();
   const trackedViewRef = useRef(false);
 
   useEffect(() => {
     if (!isLoaded || cart.length === 0 || trackedViewRef.current) return;
-    trackedViewRef.current = trackViewCart(cart, total);
-  }, [cart, isLoaded, total]);
+    trackedViewRef.current = trackViewCart(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total);
+  }, [cart, effectivePrice, isLoaded, total]);
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
@@ -100,7 +100,9 @@ function CartContent() {
             <>
               {/* Cart Items */}
               <div className="space-y-2.5 mb-5">
-                {cart.map((item) => (
+                {cart.map((item) => {
+                  const price = effectivePrice(item);
+                  return (
                   <div
                     key={item.id}
                     className="bg-warm-surface border border-warm-border rounded-[16px] p-3.5 flex items-center gap-3.5"
@@ -118,7 +120,8 @@ function CartContent() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-[13px] mb-0.5 truncate text-warm-fg">{item.name}</p>
                       <p className="text-[11px] text-warm-muted">
-                        <PriceDisplay value={item.price} unit={item.unit} />
+                        <PriceDisplay value={price} unit={item.unit} />
+                        {price < item.price && <span className="ml-1 line-through"><PriceDisplay value={item.price} /></span>}
                       </p>
                       <button
                         onClick={() => handleRemove(item.id, item.name)}
@@ -149,10 +152,11 @@ function CartContent() {
                       </button>
                     </div>
                     <div className="font-bold text-sm min-w-[60px] text-right text-warm-fg">
-                      <PriceDisplay value={item.price * item.qty} />
+                      <PriceDisplay value={price * item.qty} />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Summary */}
@@ -167,8 +171,8 @@ function CartContent() {
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
-                    <span>{locale === 'bn' ? 'ডিসকাউন্ট (FREE500)' : 'Discount (FREE500)'}</span>
-                    <span>−{formatBdt(discount)}</span>
+                    <span>{locale === 'bn' ? 'সাপ্তাহিক অফারে সাশ্রয় (সাবটোটালে অন্তর্ভুক্ত)' : 'Weekly offer savings (included in subtotal)'}</span>
+                    <span>{formatBdt(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">

@@ -56,4 +56,14 @@ describe('DealOfTheWeek', () => {
     fireEvent.keyDown(rail, { key: 'ArrowRight' });
     expect(scrollBy).toHaveBeenCalledWith({ left: 390, behavior: 'smooth' });
   });
+
+  it('renders the approved weekly products as unranked picks without the automatic lead layout', () => {
+    const picks = [product('a', 10), product('b', 20), product('c', 30)];
+    render(<DealOfTheWeek products={[]} weeklyPicks={picks} weeklyEditionActive />);
+
+    expect(screen.getByText(/verified unranked picks/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId('deal-product')).toHaveLength(3);
+    expect(screen.getByRole('link', { name: 'See weekly picks →' })).toHaveAttribute('href', '/best/dealoftheweek');
+    expect(screen.queryByRole('link', { name: /off — View/ })).not.toBeInTheDocument();
+  });
 });

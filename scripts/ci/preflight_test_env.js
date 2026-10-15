@@ -81,6 +81,17 @@ async function runPreflight() {
   }
   console.log(`✓ Items table accessible (${itemData.length} items sampled)`);
 
+  const { error: onlineReservationErr } = await adminClient
+    .from('stock_levels')
+    .select('qty_reserved_online')
+    .limit(1);
+  if (onlineReservationErr) {
+    throw new Error(
+      `stock_levels online reservation check failed: ${onlineReservationErr.message}. Apply migration 20261015080000_ensure_online_stock_reservation_column.sql to the approved test project.`,
+    );
+  }
+  console.log('✓ stock_levels online reservation column accessible');
+
   // Bengali storefront routes depend on the translation migration. Check it
   // before Playwright so schema drift is reported as an environment failure,
   // not as a noisy WebServer error during an unrelated browser test.
@@ -109,6 +120,53 @@ async function runPreflight() {
     throw new Error(`search_storefront_catalog returned no sellable stock for store ${STORE_ID}. Check stock_levels association.`);
   }
   console.log(`✓ search_storefront_catalog RPC verified (${items.length} items returned for store)`);
+
+  // The storefront repository now uses v2 for bounded translated-item matches
+  // and direct offsets. Fail here with migration guidance instead of allowing
+  // every browser route that searches the catalogue to fail during Playwright.
+  const { data: searchV2Data, error: searchV2Err } = await client.rpc('search_storefront_catalog_v2', {
+    p_store_id: STORE_ID,
+    p_query: '',
+    p_category_id: null,
+    p_item_ids: [],
+    p_limit: 10,
+    p_offset: 0,
+  });
+  if (searchV2Err) {
+    throw new Error(
+      `search_storefront_catalog_v2 RPC check failed: ${searchV2Err.message}. Apply migration 20261015165958_bound_storefront_catalog_search.sql to the approved test project.`,
+    );
+  }
+  if (!Array.isArray(searchV2Data) || searchV2Data.length === 0) {
+    throw new Error(`search_storefront_catalog_v2 returned no catalogue items for store ${STORE_ID}.`);
+  }
+  if (!searchV2Data.every((item) => Object.hasOwn(item, 'sellable_qty'))) {
+    throw new Error(
+      `search_storefront_catalog_v2 does not expose sellable_qty for store ${STORE_ID}. Apply migration 20261016100000_expose_sellable_storefront_stock.sql to the approved test project.`,
+    );
+  }
+  const sellableItems = searchV2Data.filter((item) => Number(item.sellable_qty) > 0);
+  if (sellableItems.length === 0) {
+    const { data: stockRows, error: stockErr } = await adminClient
+      .from('stock_levels')
+      .select('qty, reserved, qty_reserved_online')
+      .eq('store_id', STORE_ID);
+    if (stockErr) throw new Error(`Could not inspect test stock reservations: ${stockErr.message}`);
+    const stockSummary = (stockRows ?? []).reduce((summary, row) => {
+      const quantity = Number(row.qty) || 0;
+      const reserved = Number(row.reserved) || 0;
+      const onlineReserved = Number(row.qty_reserved_online) || 0;
+      summary.rows += 1;
+      summary.rowsWithSellableStock += Math.max(0, quantity - reserved - onlineReserved) > 0 ? 1 : 0;
+      summary.quantity += quantity;
+      summary.reserved += reserved;
+      summary.onlineReserved += onlineReserved;
+      return summary;
+    }, { rows: 0, rowsWithSellableStock: 0, quantity: 0, reserved: 0, onlineReserved: 0 });
+    console.error(`[Preflight] Stock summary for ${STORE_ID}: ${JSON.stringify(stockSummary)}`);
+    throw new Error(`search_storefront_catalog_v2 returned no sellable stock for store ${STORE_ID}. Check the RPC projection and stock reservations.`);
+  }
+  console.log(`✓ search_storefront_catalog_v2 RPC verified (${searchV2Data.length} items returned for store)`);
 
   // 4. Probe the order RPC with an invalid store so existence is tested without
   // inserting an order or touching stock/idempotency state. The wrapper checks

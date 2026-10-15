@@ -42,7 +42,7 @@ function mapRowToProduct(
   const id = createProductId(row.id ?? row.item_id ?? '');
   const price = Number(row.price);
   const originalPrice = row.mrp ? Number(row.mrp) : undefined;
-  const stock = Number(row.stock ?? row.qty_on_hand ?? 0);
+  const stock = Number(row.sellable_qty ?? row.stock ?? 0);
 
   // Resolve emoji from category
   const categorySlug = row.category;
@@ -105,7 +105,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const limit = criteria.limit ?? 60;
-    const offset = (criteria.page ?? 0) * limit;
+    const offset = criteria.offset ?? (criteria.page ?? 0) * limit;
 
     const { products: searchResults, hasMore } = await searchStorefrontProducts({
       query: criteria.query,
@@ -155,15 +155,17 @@ export class SupabaseProductAdapter implements ProductDataPort {
 
       const { data: stockData, error: stockError } = await this.supabase
         .from('stock_levels')
-        .select('qty')
+        .select('qty, reserved, qty_reserved_online')
         .eq('item_id', data.id)
         .eq('store_id', this.storeId)
         .maybeSingle();
 
       // The public storefront may not be granted direct stock_levels reads.
-      // Fall back to the authoritative POS search projection so product detail
+      // Fall back to the authoritative storefront catalogue projection so detail
       // pages retain the same stock state used by the homepage cards.
-      let resolvedStock = stockData?.qty ?? null;
+      let resolvedStock = stockData
+        ? Math.max(0, Number(stockData.qty ?? 0) - Number(stockData.reserved ?? 0) - Number(stockData.qty_reserved_online ?? 0))
+        : null;
       if (stockError || resolvedStock === null) {
         const { data: projectedRows } = await this.supabase.rpc('search_storefront_catalog', {
           p_store_id: this.storeId,
@@ -173,7 +175,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
           p_offset: 0,
         });
         const projected = (projectedRows ?? []).find((row: any) => (row.id ?? row.item_id) === data.id) as any;
-        resolvedStock = projected?.qty_on_hand ?? projected?.stock ?? 0;
+        resolvedStock = projected?.sellable_qty ?? projected?.stock ?? 0;
       }
 
       const row = {

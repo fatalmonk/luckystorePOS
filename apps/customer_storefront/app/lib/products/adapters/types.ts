@@ -18,6 +18,7 @@ export const ProductRowSchema = z.object({
   category_id: z.string().optional().nullable(),
   stock: z.number().or(z.string().transform(Number)).optional().nullable(),
   qty_on_hand: z.number().or(z.string().transform(Number)).optional().nullable(),
+  sellable_qty: z.number().or(z.string().transform(Number)).optional().nullable(),
   description: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),

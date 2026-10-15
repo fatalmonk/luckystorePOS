@@ -187,6 +187,8 @@ async function runViaServiceRoleClient(url, key) {
     store_id: STORE_ID,
     item_id: p.id,
     qty: p.id === 'a0740000-0000-0000-0000-000000000007' ? 0 : 50,
+    reserved: 0,
+    qty_reserved_online: 0,
   }));
   const { error: slErr } = await supabase.from('stock_levels').upsert(stockLevels, { onConflict: 'store_id,item_id' });
   if (slErr) throw slErr;

@@ -3,6 +3,8 @@ import type { CartItem, Product } from './types';
 export const ANALYTICS_CONSENT_KEY = 'lucky-analytics-consent';
 const PURCHASE_DEDUPE_PREFIX = 'lucky-ga4-purchase:';
 const CURRENCY = 'BDT';
+const GUIDE_ATTRIBUTION_KEY = 'lucky-buying-guide';
+const GUIDE_ATTRIBUTION_TTL_MS = 30 * 60 * 1000;
 
 type AnalyticsValue = string | number | boolean | undefined | AnalyticsItem[];
 
@@ -50,6 +52,39 @@ function hasAnalyticsConsent(): boolean {
   }
 }
 
+/** Last guide viewed in this tab, expiring after 30 minutes; never attached without consent. */
+function getGuideContext(): Record<string, string | number> {
+  if (typeof window === 'undefined') return {};
+  try {
+    if (!hasAnalyticsConsent()) {
+      window.sessionStorage.removeItem(GUIDE_ATTRIBUTION_KEY);
+      return {};
+    }
+    const raw = window.sessionStorage.getItem(GUIDE_ATTRIBUTION_KEY);
+    if (!raw) return {};
+    const value = JSON.parse(raw);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug) || !Number.isInteger(value.revision) || value.revision < 1 ||
+      !Number.isFinite(value.at) || value.at > Date.now() || Date.now() - value.at > GUIDE_ATTRIBUTION_TTL_MS) {
+      window.sessionStorage.removeItem(GUIDE_ATTRIBUTION_KEY);
+      return {};
+    }
+    return { buying_guide_slug: value.slug, buying_guide_revision: value.revision };
+  } catch { return {}; }
+}
+
+export function rememberBuyingGuide(slug: string, revision: number): boolean {
+  if (!hasAnalyticsConsent() || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isInteger(revision) || revision < 1) return false;
+  try {
+    window.sessionStorage.setItem(GUIDE_ATTRIBUTION_KEY, JSON.stringify({ slug, revision, at: Date.now() }));
+  } catch { /* Storage availability must not affect shopping. */ }
+  return true;
+}
+
+export function trackBuyingGuideView(slug: string, revision: number): boolean {
+  if (!rememberBuyingGuide(slug, revision)) return false;
+  return sendAnalyticsEvent('buying_guide_view', { buying_guide_slug: slug, buying_guide_revision: revision });
+}
+
 function toZarazEcommerceProduct(
   item: AnalyticsItem,
 ): ZarazEcommerceProduct {
@@ -70,7 +105,11 @@ function sendEcommerceEvent(
   fallbackEventName: string,
   fallbackParams: Record<string, AnalyticsValue>,
 ): boolean {
+  const guideContext = getGuideContext();
   if (!hasAnalyticsConsent()) return false;
+
+  zarazParams = { ...zarazParams, ...guideContext };
+  fallbackParams = { ...fallbackParams, ...guideContext };
 
   try {
     if (typeof window.zaraz?.ecommerce === 'function') {

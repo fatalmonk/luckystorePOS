@@ -1,0 +1,23 @@
+.article { max-width: 68rem; margin: 0 auto; padding: 2rem 1rem 5rem; color: var(--warm-fg); line-height: 1.75; overflow-wrap: anywhere; }
+.article h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.12; font-weight: 850; letter-spacing: -.035em; max-width: 20ch; }
+.article h2 { margin-bottom: 1rem; font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.25; font-weight: 800; }
+.article h3 { font-size: 1.15rem; line-height: 1.4; font-weight: 750; }
+.article p { margin: .8rem 0; }
+.article > section { margin-top: 3rem; }
+.article a { text-decoration: underline; text-underline-offset: .2em; }
+.article ul { list-style: disc; padding-left: 1.4rem; }
+.article li { margin: .6rem 0; }
+.hero { padding: 2.5rem 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; font-weight: 800; }
+.byline { font-size: .9rem; }
+.disclosure, .closing { padding: 1.5rem; border: 1px solid currentColor; border-radius: 1rem; }
+.cta { display: inline-block; margin-top: 1rem; padding: .8rem 1.2rem; border: 1px solid currentColor; border-radius: .6rem; font-weight: 750; }
+.products { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.product { padding: 1.4rem; border: 1px solid currentColor; border-radius: 1rem; min-width: 0; }
+.status { font-weight: 750; }
+.tableScroll { max-width: 100%; overflow-x: auto; border: 1px solid currentColor; border-radius: .6rem; }
+.tableScroll:focus-visible, .article a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+.article table { width: 100%; min-width: 35rem; border-collapse: collapse; font-size: .95rem; text-align: left; }
+.article th, .article td { padding: .85rem; border-bottom: 1px solid currentColor; vertical-align: top; }
+.article caption { padding: 1rem; text-align: left; }
+@media (max-width: 480px) { .article { padding-inline: 1rem; } .hero { padding-block: 1.5rem; } .disclosure, .closing, .product { padding: 1rem; } }

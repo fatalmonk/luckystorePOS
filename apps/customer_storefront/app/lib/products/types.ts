@@ -63,6 +63,8 @@ export interface ProductSearchCriteria {
   categoryIds?: string[];
   page?: number;
   limit?: number;
+  /** Exact row offset; when omitted, page-based pagination is used. */
+  offset?: number;
 }
 
 // Pagination result

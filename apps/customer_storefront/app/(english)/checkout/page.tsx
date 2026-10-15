@@ -67,7 +67,7 @@ function CheckoutContent() {
   const locale = getLocaleFromPathname(pathname);
   const dict = getDictionary(locale);
   const { showToast } = useToast();
-  const { cart, subtotal, deliveryFee, total, clearCart, syncPrices, updateQty, isLoaded } = useCartContext();
+  const { cart, subtotal, deliveryFee, discount, total, clearCart, syncPrices, updateQty, effectivePrice, isLoaded } = useCartContext();
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
@@ -90,8 +90,7 @@ function CheckoutContent() {
 
   const getCheckoutIdentity = () => {
     const payloadSignature = JSON.stringify({
-      total,
-      items: cart.map((i) => ({ id: i.id, qty: i.qty, price: i.price })),
+      items: cart.map((i) => ({ id: i.id, qty: i.qty })).sort((a, b) => a.id.localeCompare(b.id)),
     });
 
     if (
@@ -140,8 +139,8 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!isLoaded || cart.length === 0 || checkoutTrackedRef.current) return;
-    checkoutTrackedRef.current = trackBeginCheckout(cart, total);
-  }, [cart, isLoaded, total]);
+    checkoutTrackedRef.current = trackBeginCheckout(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total);
+  }, [cart, effectivePrice, isLoaded, total]);
 
   useEffect(() => {
     if (user) {
@@ -243,7 +242,7 @@ function CheckoutContent() {
     }
     if (step === 2 && !shippingTrackedRef.current) {
       shippingTrackedRef.current = trackAddShippingInfo(
-        cart,
+        cart.map((item) => ({ ...item, price: effectivePrice(item) })),
         total,
         deliveryFee === 0 ? 'Free delivery over 500 BDT' : 'Local delivery 40 BDT',
       );
@@ -261,7 +260,7 @@ function CheckoutContent() {
     setSubmitError(null);
 
     try {
-      trackAddPaymentInfo(cart, total, formData.paymentMethod);
+      trackAddPaymentInfo(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total, formData.paymentMethod);
       const cleanPhone = formData.phone.replace(/[\s-]/g, '');
       const checkoutIdentity = getCheckoutIdentity();
       const res = await fetch('/api/checkout', {
@@ -297,7 +296,7 @@ function CheckoutContent() {
 
       trackPurchase({
         transactionId: order.order_number,
-        items: cart,
+        items: cart.map((item) => ({ ...item, price: effectivePrice(item) })),
         value: total,
         shipping: deliveryFee,
       });
@@ -516,16 +515,17 @@ function CheckoutContent() {
                         <div className="min-w-0">
                           <p className="break-words font-semibold text-warm-fg">{item.name}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <p className="text-xs text-warm-muted">{formatBdt(item.price)} each</p>
+                            <p className="text-xs text-warm-muted">{formatBdt(effectivePrice(item))} each{effectivePrice(item) < item.price && <span className="ml-1 line-through">{formatBdt(item.price)}</span>}</p>
                             <QuantityControls item={item} onChange={updateQty} />
                           </div>
                         </div>
-                        <span className="shrink-0 font-bold text-warm-fg">{formatBdt(item.price * item.qty)}</span>
+                        <span className="shrink-0 font-bold text-warm-fg">{formatBdt(effectivePrice(item) * item.qty)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="space-y-2 pt-4 text-sm">
                     <div className="flex justify-between text-warm-muted"><span>Subtotal</span><span>{formatBdt(subtotal)}</span></div>
+                    {discount > 0 && <div className="flex justify-between text-warm-fg"><span>Weekly offer savings (included in subtotal)</span><span>{formatBdt(discount)}</span></div>}
                     <div className="flex justify-between text-warm-muted"><span>Delivery</span><span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span></div>
                     <div className="flex justify-between border-t border-warm-border-light pt-3 text-lg font-extrabold text-warm-fg"><span>Total</span><span>{formatBdt(total)}</span></div>
                   </div>
@@ -574,11 +574,11 @@ function CheckoutContent() {
                         <div className="flex-1">
                           <p className="font-semibold text-[13px] text-warm-fg">{item.name}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <p className="text-[11px] text-warm-muted">{formatBdt(item.price)} each</p>
+                            <p className="text-[11px] text-warm-muted">{formatBdt(effectivePrice(item))} each{effectivePrice(item) < item.price && <span className="ml-1 line-through">{formatBdt(item.price)}</span>}</p>
                             <QuantityControls item={item} onChange={updateQty} />
                           </div>
                         </div>
-                        <p className="font-bold text-sm text-warm-fg">{formatBdt(item.price * item.qty)}</p>
+                        <p className="font-bold text-sm text-warm-fg">{formatBdt(effectivePrice(item) * item.qty)}</p>
                       </div>
                     ))}
                   </div>
@@ -620,6 +620,12 @@ function CheckoutContent() {
                       <span>{dict.checkout.subtotal}</span>
                       <span>{formatBdt(subtotal)}</span>
                     </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
+                        <span>Weekly offer savings (included in subtotal)</span>
+                        <span>{formatBdt(discount)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between mb-2.5 text-sm text-warm-muted">
                       <span>{dict.checkout.deliveryFee}</span>
                       <span>{deliveryFee === 0 ? dict.checkout.free : formatBdt(deliveryFee)}</span>

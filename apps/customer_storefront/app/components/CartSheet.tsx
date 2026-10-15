@@ -19,7 +19,7 @@ interface CartSheetProps {
 export function CartSheet({ open, onClose }: CartSheetProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, total } = useCartContext();
+  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, total, effectivePrice } = useCartContext();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
 
@@ -124,7 +124,9 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
             </div>
           ) : (
             <div className="space-y-2">
-              {cart.map((item) => (
+              {cart.map((item) => {
+                const price = effectivePrice(item);
+                return (
                 <div
                   key={item.id}
                   className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-xl px-1 py-2.5 transition-colors hover:bg-warm-bg/50"
@@ -142,7 +144,10 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[13px] truncate text-warm-fg">{item.name}</p>
-                    <p className="text-xs text-warm-muted">{formatBdt(item.price)} / {item.unit}</p>
+                    <p className="text-xs text-warm-muted">
+                      {formatBdt(price)} / {item.unit}
+                      {price < item.price && <span className="ml-1 line-through">{formatBdt(item.price)}</span>}
+                    </p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
                       className="mt-0.5 inline-flex min-h-11 items-center gap-1 px-0.5 text-xs text-warm-danger transition-colors hover:text-warm-danger-dark"
@@ -173,11 +178,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                       </button>
                     </div>
                     <span className="min-w-[55px] text-right text-sm font-bold text-warm-fg">
-                      {formatBdt(item.price * item.qty)}
+                      {formatBdt(price * item.qty)}
                     </span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

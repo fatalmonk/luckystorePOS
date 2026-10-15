@@ -4,6 +4,7 @@ import { createOrder } from '../../../../lib/orders';
 import { supabase } from '../../../../lib/supabase';
 import { createClient as createServerClient } from '../../../../lib/supabase/server';
 import { calculateOrderTotals, generateOrderNumber } from '../../../../lib/mobile/checkout';
+import { getPromotionalPrice, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../../../../lib/storefront-promotions';
 
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -58,13 +59,17 @@ interface CheckoutItem {
   price: number;
   qty: number;
   unit?: string;
+  mrp?: number;
 }
 
 const ITEM_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: number; name: string }>> {
-  const priceMap = new Map<string, { price: number; name: string }>();
-  if (itemIds.length === 0) return priceMap;
+async function fetchDbPrices(itemIds: string[]): Promise<{
+  prices: Map<string, { price: number; name: string; mrp: number }>;
+  promotions: StorefrontItemPromotion[];
+}> {
+  const priceMap = new Map<string, { price: number; name: string; mrp: number }>();
+  if (itemIds.length === 0) return { prices: priceMap, promotions: [] };
 
   // Validate format and bound number of items to prevent abuse
   if (itemIds.length > 50) {
@@ -80,14 +85,15 @@ async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: nu
   try {
     const { data: dbItems, error: dbError } = await (supabase as any)
       .from('items')
-      .select('id, name, price')
+      .select('id, name, price, mrp')
       .in('id', itemIds);
 
     if (!dbError && Array.isArray(dbItems) && dbItems.length > 0) {
       for (const item of dbItems) {
-        priceMap.set(item.id, { price: Number(item.price), name: item.name });
+        priceMap.set(item.id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
       }
-      return priceMap;
+      const promotions = await loadActiveStorefrontPromotions(supabase, itemIds);
+      return { prices: priceMap, promotions };
     }
   } catch {
     // Fall back to bounded RPC pagination if items table is unavailable
@@ -117,7 +123,7 @@ async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: nu
     for (const item of rows) {
       const id = item.id ?? item.item_id;
       if (needed.has(id)) {
-        priceMap.set(id, { price: Number(item.price), name: item.name });
+        priceMap.set(id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
       }
     }
 
@@ -125,10 +131,11 @@ async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: nu
     offset += pageSize;
   }
 
-  return priceMap;
+  const promotions = await loadActiveStorefrontPromotions(supabase, itemIds);
+  return { prices: priceMap, promotions };
 }
 
-function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price: number; name: string }>): CheckoutItem[] {
+function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price: number; name: string; mrp: number }>): CheckoutItem[] {
   const verified: CheckoutItem[] = [];
 
   for (const item of clientItems) {
@@ -142,6 +149,7 @@ function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price:
       price: dbEntry.price,
       qty: item.qty,
       unit: item.unit,
+      mrp: dbEntry.mrp,
     });
   }
 
@@ -165,9 +173,13 @@ export async function POST(req: NextRequest) {
     }
 
     const itemIds = clientItems.map((item) => item.id);
-    const dbPrices = await fetchDbPrices(itemIds);
+    const { prices: dbPrices, promotions } = await fetchDbPrices(itemIds);
     const verifiedItems = verifyItems(clientItems, dbPrices);
-    const { subtotal, deliveryFee, total } = calculateOrderTotals(verifiedItems);
+    const effectiveItems = verifiedItems.map((item) => ({
+      ...item,
+      price: getPromotionalPrice({ id: item.id, name: item.name, price: item.price, mrp: item.mrp }, promotions),
+    }));
+    const { subtotal, deliveryFee, total } = calculateOrderTotals(effectiveItems);
 
     const clientTotal = Number(body.total ?? 0);
     if (Math.abs(clientTotal - total) > 0.01) {
@@ -178,6 +190,7 @@ export async function POST(req: NextRequest) {
           error: 'Some prices changed. Review the updated total before placing your order.',
           items: verifiedItems,
           subtotal,
+          discount: Math.round((verifiedItems.reduce((sum, item) => sum + item.price * item.qty, 0) - subtotal) * 100) / 100,
           deliveryFee,
           total,
         },

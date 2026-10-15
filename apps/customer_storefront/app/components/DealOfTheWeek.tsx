@@ -17,10 +17,13 @@ import { Badge } from './ui/Badge';
 
 interface DealOfTheWeekProps {
   products: Product[];
+  weeklyPicks?: Product[];
+  weeklyEditionActive?: boolean;
+  weeklyEditionUnavailable?: boolean;
   locale?: Locale;
 }
 
-export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
+export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive = false, weeklyEditionUnavailable = false, locale = 'en' }: DealOfTheWeekProps) {
   const dict = getDictionary(locale);
   const localizeNumerals = (value: number | string | null) => {
     if (value == null) return '';
@@ -98,6 +101,41 @@ export function DealOfTheWeek({ products, locale = 'en' }: DealOfTheWeekProps) {
     event.preventDefault();
     scrollDeals(event.key === 'ArrowLeft' ? -1 : 1);
   };
+
+  if (weeklyEditionUnavailable) {
+    return (
+      <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-4 p-4 sm:p-5">
+        <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black">{dict.deal.title}</h2>
+        <p className="deal-panel-copy text-sm">{locale === 'bn' ? 'সাপ্তাহিক বাছাই এখন যাচাই করা যাচ্ছে না।' : 'Weekly picks are temporarily unavailable while we verify current product details.'}</p>
+        <Link href={withLocale('/best/dealoftheweek', locale)} className="home-text-link inline-flex min-h-11 items-center text-xs font-bold">
+          {locale === 'bn' ? 'সাপ্তাহিক অফার দেখুন →' : 'View weekly deals →'}
+        </Link>
+      </MarketPanel>
+    );
+  }
+
+  if (weeklyEditionActive) {
+    return (
+      <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-5 p-4 sm:p-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">{dict.deal.title}</h2>
+            <p className="deal-panel-copy mt-1 text-sm">{locale === 'bn' ? 'এই সপ্তাহের যাচাইকৃত বাছাই—র‍্যাঙ্কবিহীন। অনলাইন চেকআউটে আরও ৫% ছাড় প্রযোজ্য।' : 'This week’s verified unranked picks. Get an extra 5% off the current selling price in online checkout.'}</p>
+          </div>
+          <Link href={withLocale('/best/dealoftheweek', locale)} className="home-text-link inline-flex min-h-11 items-center text-xs font-bold">
+            {locale === 'bn' ? 'সব সাপ্তাহিক বাছাই →' : 'See weekly picks →'}
+          </Link>
+        </div>
+        {weeklyPicks.length === 0 ? (
+          <p className="deal-panel-copy text-sm">{locale === 'bn' ? 'এই মুহূর্তে কোনো যাচাইকৃত বাছাই কেনার জন্য উপলভ্য নেই।' : 'No verified picks are available to shop right now.'}</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {weeklyPicks.map((product) => <GridProductCard key={product.id} product={product} locale={locale} />)}
+          </div>
+        )}
+      </MarketPanel>
+    );
+  }
 
   if (!selection) {
     return null;

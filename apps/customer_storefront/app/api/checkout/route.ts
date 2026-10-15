@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createOrder } from '../../lib/orders';
 import { supabase } from '../../lib/supabase';
 import { createClient as createServerClient } from '../../lib/supabase/server';
+import { getPromotionalPrice, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../../lib/storefront-promotions';
 
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -36,11 +37,15 @@ interface CheckoutItem {
   price: number;
   qty: number;
   unit?: string;
+  mrp?: number;
 }
 
 /** Fetch actual prices for the given item IDs from the database */
-async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: number; name: string }>> {
-  const priceMap = new Map<string, { price: number; name: string }>();
+async function fetchDbPrices(itemIds: string[]): Promise<{
+  prices: Map<string, { price: number; name: string; mrp: number }>;
+  promotions: StorefrontItemPromotion[];
+}> {
+  const priceMap = new Map<string, { price: number; name: string; mrp: number }>();
 
   // Use the search_storefront_catalog RPC (granted to anon) with empty query to get catalog items
   const { data, error } = await supabase.rpc('search_storefront_catalog', {
@@ -56,15 +61,16 @@ async function fetchDbPrices(itemIds: string[]): Promise<Map<string, { price: nu
   for (const item of (data ?? []) as any[]) {
     const id = item.id ?? item.item_id;
     if (itemIds.includes(id)) {
-      priceMap.set(id, { price: Number(item.price), name: item.name });
+      priceMap.set(id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
     }
   }
 
-  return priceMap;
+  const promotions = await loadActiveStorefrontPromotions(supabase, itemIds);
+  return { prices: priceMap, promotions };
 }
 
 /** Validate that client-sent prices match database prices; return verified items with DB prices */
-function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price: number; name: string }>): CheckoutItem[] {
+function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price: number; name: string; mrp: number }>): CheckoutItem[] {
   const verified: CheckoutItem[] = [];
 
   for (const item of clientItems) {
@@ -79,6 +85,7 @@ function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price:
       price: dbEntry.price,
       qty: item.qty,
       unit: item.unit,
+      mrp: dbEntry.mrp,
     });
   }
 
@@ -86,10 +93,18 @@ function verifyItems(clientItems: CheckoutItem[], dbPrices: Map<string, { price:
 }
 
 /** Calculate server-side totals from verified item prices */
-function calculateTotals(items: CheckoutItem[]) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+function calculateTotals(items: CheckoutItem[], promotions: StorefrontItemPromotion[]) {
+  const subtotal = Math.round(items.reduce((sum, item) => sum + getPromotionalPrice({
+    id: item.id,
+    price: item.price,
+    mrp: item.mrp,
+  }, promotions) * item.qty, 0) * 100) / 100;
+  const discount = Math.round(items.reduce((sum, item) => sum + (item.price - getPromotionalPrice({
+    id: item.id,
+    price: item.price,
+    mrp: item.mrp,
+  }, promotions)) * item.qty, 0) * 100) / 100;
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : FREE_DELIVERY_FEE;
-  const discount = 0;
   const total = subtotal + deliveryFee;
   return { subtotal, deliveryFee, discount, total };
 }
@@ -114,9 +129,9 @@ export async function POST(req: NextRequest) {
 
     // Server-side price verification
     const itemIds = clientItems.map((item) => item.id);
-    const dbPrices = await fetchDbPrices(itemIds);
+    const { prices: dbPrices, promotions } = await fetchDbPrices(itemIds);
     const verifiedItems = verifyItems(clientItems, dbPrices);
-    const { subtotal, deliveryFee, total } = calculateTotals(verifiedItems);
+    const { subtotal, deliveryFee, total } = calculateTotals(verifiedItems, promotions);
 
     // Reject if client-sent total doesn't match server-calculated total (tolerance 0.01 taka)
     const clientTotal = Number(body.total ?? 0);
@@ -128,6 +143,7 @@ export async function POST(req: NextRequest) {
           error: 'Some prices changed. Review the updated total before placing your order.',
           items: verifiedItems,
           subtotal,
+          discount: Math.round((verifiedItems.reduce((sum, item) => sum + item.price * item.qty, 0) - subtotal) * 100) / 100,
           deliveryFee,
           total,
         },

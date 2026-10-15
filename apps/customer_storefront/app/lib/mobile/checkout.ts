@@ -25,7 +25,7 @@ export const FREE_DELIVERY_THRESHOLD = 500;
 export const STANDARD_DELIVERY_FEE = 40;
 
 export function calculateOrderTotals(items: { price: number; qty: number }[]) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const subtotal = Math.round(items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD || items.length === 0 ? 0 : STANDARD_DELIVERY_FEE;
   const total = subtotal + deliveryFee;
   return { subtotal, deliveryFee, total };

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { searchStorefrontProducts } from './searchProducts';
 
 describe('searchStorefrontProducts', () => {
-  it('fetches subsequent RPC pages rather than truncating the public catalogue at 1000', async () => {
+  it('requests pages beyond the RPC row cap with a direct offset', async () => {
     const rows = Array.from({ length: 1001 }, (_, index) => ({
       item_id: `item-${index}`, name: `Product ${index}`, price: 10, qty_on_hand: 2,
     }));
@@ -19,9 +19,34 @@ describe('searchStorefrontProducts', () => {
         })),
       } as any,
     });
-    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', expect.objectContaining({
+      p_offset: 1000,
+      p_limit: 101,
+    }));
     expect(products.map(p => p.id)).toEqual(['item-1000']);
     expect(hasMore).toBe(false);
+  });
+
+  it('uses sellable stock instead of physical on-hand quantity', async () => {
+    const { products } = await searchStorefrontProducts({
+      limit: 10,
+      supabaseClient: {
+        rpc: vi.fn(() => Promise.resolve({
+          data: [{ id: 'reserved-item', name: 'Reserved item', price: 10, qty_on_hand: 8, sellable_qty: 0 }],
+          error: null,
+        })),
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+
+    expect(products).toHaveLength(1);
+    expect(products[0].stock).toBe(0);
   });
 
   it('matches published Bengali translations prior to pagination and merges items with correct mrp and stock mapping', async () => {
@@ -41,6 +66,7 @@ describe('searchStorefrontProducts', () => {
         price: 90,
         mrp: 100,
         qty_on_hand: 12,
+        sellable_qty: 12,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Lucky Dairy',
@@ -55,6 +81,7 @@ describe('searchStorefrontProducts', () => {
         price: 90,
         mrp: 100,
         qty_on_hand: 12,
+        sellable_qty: 12,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Lucky Dairy',
@@ -66,6 +93,7 @@ describe('searchStorefrontProducts', () => {
         price: 95,
         mrp: 95,
         qty_on_hand: 7,
+        sellable_qty: 7,
         unit: 'pc',
         category: 'dairy-and-eggs',
         brand: 'Farm Fresh',
@@ -79,6 +107,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
             in: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
@@ -90,13 +119,13 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
-          if (params.p_query === 'দুধ') {
-            // English search returns nothing for Bengali script
-            return Promise.resolve({ data: [], error: null });
-          }
-          // Full catalog query to resolve missing translated item IDs
-          return Promise.resolve({ data: mockAllCatalogItems, error: null });
+        if (rpcName === 'search_storefront_catalog_v2') {
+          expect(params.p_item_ids).toEqual(['item-bn-1']);
+          // Bengali translation matches are passed as item IDs to the bounded catalog RPC.
+          return Promise.resolve({
+            data: mockAllCatalogItems.filter((item) => params.p_item_ids.includes(item.item_id)),
+            error: null,
+          });
         }
         return Promise.resolve({ data: [], error: null });
       }),
@@ -130,6 +159,7 @@ describe('searchStorefrontProducts', () => {
         price: 250,
         mrp: 300,
         qty_on_hand: 5,
+        sellable_qty: 5,
         unit: 'pc',
         category: 'tea-and-coffee',
       },
@@ -139,6 +169,7 @@ describe('searchStorefrontProducts', () => {
       from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
         or: vi.fn().mockResolvedValue({ data: [], error: null }),
         in: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
@@ -168,6 +199,7 @@ describe('searchStorefrontProducts', () => {
       from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
         or: vi.fn().mockResolvedValue({ data: [], error: null }),
       })),
       rpc: vi.fn(() => Promise.resolve({ data: null, error: { message: 'Database connection failed' } })),
@@ -189,6 +221,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockImplementation((filterStr: string) => {
               capturedOrFilter = filterStr;
               return Promise.resolve({ data: [], error: null });
@@ -252,6 +285,7 @@ describe('searchStorefrontProducts', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
             or: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
             in: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
@@ -263,17 +297,15 @@ describe('searchStorefrontProducts', () => {
         return {};
       }),
       rpc: vi.fn((rpcName: string, params: any) => {
-        if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
-          if (params.p_query === 'দুধ') {
-            return Promise.resolve({ data: [], error: null });
-          }
-          if (params.p_category_id) {
-            return Promise.resolve({
-              data: mockCatalogItems.filter((i) => i.category_id === params.p_category_id || i.category === params.p_category_id),
-              error: null,
-            });
-          }
-          return Promise.resolve({ data: mockCatalogItems, error: null });
+        if (rpcName === 'search_storefront_catalog_v2') {
+          const translatedIds = params.p_item_ids ?? [];
+          return Promise.resolve({
+            data: mockCatalogItems.filter((item) =>
+              translatedIds.includes(item.item_id) &&
+              (!params.p_category_id || item.category_id === params.p_category_id || item.category === params.p_category_id)
+            ),
+            error: null,
+          });
         }
         return Promise.resolve({ data: [], error: null });
       }),
