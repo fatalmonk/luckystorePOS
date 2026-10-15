@@ -13,8 +13,8 @@
 ```
 phase:          baseline-established
 last_run:       2026-10-15
-last_pr:        review PR pending (seo/2026-10-15-bn-delivery-buyer-help)
-open_prs:       review PR pending
+last_pr:        #480 (draft review)
+open_prs:       #480 (draft review)
 next_run:       2026-10-16
 ```
 
@@ -158,4 +158,4 @@ competitor_signals:
 | 2026-10-14 | review | #460 | Reconciled implementation queue with runbook; removed FAQ markup-only priority and unsupported zero metrics |
 | 2026-10-14 | autopilot | pending | Added missing English homepage hreflang alternates; delivery FAQ confirmed single-sourced and unchanged |
 | 2026-10-15 | fix | #478 (merged) | Delivery FAQ JSON-LD server-rendering in both locales; production verification pending. |
-| 2026-10-15 | manual review | review PR pending | Repo-confirmed Bengali `/bn/delivery` English FAQPage mismatch; propose 4 visible Bengali buyer FAQs and remove unmatched Bengali JSON-LD. English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
+| 2026-10-15 | manual review | #480 (draft) | Repo-confirmed Bengali `/bn/delivery` English FAQPage mismatch; propose 4 visible Bengali buyer FAQs and remove unmatched Bengali JSON-LD. English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
