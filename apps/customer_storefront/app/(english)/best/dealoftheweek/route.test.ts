@@ -55,7 +55,7 @@ describe('Deal of the Week route', () => {
     expect(response.status).toBe(200);
     expect(html).toContain('Current unranked deals');
     expect(html).toContain('Verified Ramen');
-    expect(html).toContain('৳150.00');
+    expect(html).toContain('class="price">৳150</strong>');
     expect(html).not.toContain('This week’s unranked picks');
     expect(html).not.toContain('Add to Cart');
   });
