@@ -13,8 +13,8 @@
 ```
 phase:          baseline-established
 last_run:       2026-10-15
-last_pr:        #481 (open)
-open_prs:       #481 (open)
+last_pr:        #481 (merged)
+open_prs:       none
 next_run:       2026-10-16
 ```
 
@@ -159,4 +159,4 @@ competitor_signals:
 | 2026-10-14 | autopilot | pending | Added missing English homepage hreflang alternates; delivery FAQ confirmed single-sourced and unchanged |
 | 2026-10-15 | fix | #478 (merged) | Delivery FAQ JSON-LD server-rendering in both locales; production verification pending. |
 | 2026-10-15 | manual review | #480 (merged) | Added 4 visible Bengali buyer FAQs; English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
-| 2026-10-15 | autopilot | #481 (open) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
+| 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
