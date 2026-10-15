@@ -189,15 +189,17 @@ ON CONFLICT (id) DO UPDATE SET
   description = EXCLUDED.description;
 
 -- 5. Stock Levels for Store 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
-INSERT INTO public.stock_levels (store_id, item_id, qty)
+INSERT INTO public.stock_levels (store_id, item_id, qty, reserved, qty_reserved_online)
 VALUES
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000001', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000002', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000003', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000004', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000005', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000006', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000099', 50),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000007', 0) -- out of stock item
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000001', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000002', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000003', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000004', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000005', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000006', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000099', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000007', 0, 0, 0) -- out of stock item
 ON CONFLICT (store_id, item_id) DO UPDATE SET
-  qty = EXCLUDED.qty;
+  qty = EXCLUDED.qty,
+  reserved = EXCLUDED.reserved,
+  qty_reserved_online = EXCLUDED.qty_reserved_online;

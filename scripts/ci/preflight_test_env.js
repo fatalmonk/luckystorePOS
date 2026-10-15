@@ -140,6 +140,9 @@ async function runPreflight() {
   if (!Array.isArray(searchV2Data) || searchV2Data.length === 0) {
     throw new Error(`search_storefront_catalog_v2 returned no catalogue items for store ${STORE_ID}.`);
   }
+  if (!searchV2Data.some((item) => Number(item.sellable_qty) > 0)) {
+    throw new Error(`search_storefront_catalog_v2 returned no sellable stock for store ${STORE_ID}. Check stock reservations and fixtures.`);
+  }
   console.log(`✓ search_storefront_catalog_v2 RPC verified (${searchV2Data.length} items returned for store)`);
 
   // 4. Probe the order RPC with an invalid store so existence is tested without

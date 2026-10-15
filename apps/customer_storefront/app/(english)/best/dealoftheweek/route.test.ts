@@ -7,15 +7,19 @@ const state = vi.hoisted(() => ({
     { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, sellable_qty: 3, category: 'Noodles', image_url: null },
     { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, sellable_qty: 2, category: 'Personal Care', image_url: null },
   ] as Array<Record<string, unknown>>,
+  rpcCalls: [] as Array<{ name: string; args: Record<string, unknown> }>,
   campaignRows: [] as unknown[],
 }));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
-    rpc: vi.fn(async () => ({
-      data: state.catalogError ? null : state.catalogRows,
-      error: state.catalogError,
-    })),
+    rpc: vi.fn(async (name: string, args: Record<string, unknown>) => {
+      state.rpcCalls.push({ name, args });
+      return {
+        data: state.catalogError ? null : state.catalogRows,
+        error: state.catalogError,
+      };
+    }),
     from: vi.fn(() => {
       const query: Record<string, any> = {};
       query.select = vi.fn(() => query);
@@ -36,6 +40,7 @@ describe('Deal of the Week route', () => {
       { id: 'item-1', name: 'Verified Ramen', price: 150, mrp: 190, qty_on_hand: 3, sellable_qty: 3, category: 'Noodles', image_url: null },
       { id: 'item-2', name: 'Verified Soap', price: 80, mrp: 100, qty_on_hand: 2, sellable_qty: 2, category: 'Personal Care', image_url: null },
     ];
+    state.rpcCalls = [];
     state.campaignRows = [];
   });
 
@@ -44,6 +49,9 @@ describe('Deal of the Week route', () => {
     const html = await response.text();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toContain('s-maxage=15');
+    expect(state.rpcCalls.map((call) => call.name)).toContain('search_storefront_catalog');
+    expect(state.rpcCalls.map((call) => call.name)).not.toContain('search_storefront_catalog_v2');
     expect(html.match(/<h1\b/g)).toHaveLength(1);
     expect(html).toContain('rel="canonical" href="https://www.luckystore1947.com/best/dealoftheweek"');
     expect(html).toContain('Current unranked store deals');
@@ -104,6 +112,7 @@ describe('Deal of the Week route', () => {
     const html = await response.text();
 
     expect(response.status).toBe(503);
+    expect(response.headers.get('cache-control')).toBe('no-store');
     expect(response.headers.get('retry-after')).toBe('60');
     expect(html).toContain('Deals are temporarily unavailable');
     expect(html).not.toContain('Verified Ramen');
@@ -143,6 +152,10 @@ describe('Deal of the Week route', () => {
     const html = await response.text();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(state.rpcCalls).toHaveLength(1);
+    expect(state.rpcCalls[0].name).toBe('search_storefront_catalog_v2');
+    expect(state.rpcCalls[0].args.p_item_ids).toEqual(state.campaignRows.map((row) => (row as { item_id: string }).item_id));
     expect(html).toContain('19 October 2026–25 October 2026 (Asia/Dhaka)');
     expect(html).toContain('10% below verified MRP');
     expect(html).toContain('Extra 5% off this week');

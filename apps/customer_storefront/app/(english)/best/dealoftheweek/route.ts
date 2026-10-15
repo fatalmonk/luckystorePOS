@@ -92,7 +92,20 @@ function formatPrice(price: number): string {
   return price.toLocaleString('en-BD', { maximumFractionDigits: 2 });
 }
 
-async function loadCatalog(): Promise<GuideProduct[]> {
+async function loadCatalog(itemIds?: string[]): Promise<GuideProduct[]> {
+  if (itemIds) {
+    const { data, error } = await supabase.rpc('search_storefront_catalog_v2', {
+      p_store_id: STOREFRONT_STORE_ID,
+      p_query: '',
+      p_category_id: null,
+      p_item_ids: itemIds,
+      p_limit: itemIds.length,
+      p_offset: 0,
+    });
+    if (error || !Array.isArray(data)) throw new Error('Storefront catalogue could not be verified');
+    return (data as CatalogRow[]).map(toGuideProduct).filter((product): product is GuideProduct => product !== null);
+  }
+
   let offset = 0;
   const products: GuideProduct[] = [];
   while (true) {
@@ -284,7 +297,6 @@ function renderPage(products: GuideProduct[], activeEdition: boolean, editionPer
 export async function GET(): Promise<Response> {
   const now = new Date();
   try {
-    const catalog = await loadCatalog();
     let allCampaignRows: CampaignRow[] = [];
     try {
       allCampaignRows = await loadCurrentStorefrontDealCampaign(supabase, now) as CampaignRow[];
@@ -296,6 +308,9 @@ export async function GET(): Promise<Response> {
     const activeRows = getActiveWeeklyDealEdition(allCampaignRows, now) as CampaignRow[];
     const activeEdition = activeRows.length >= 12 && activeRows.every(hasWeeklyEvidence);
     const verifiedRows = activeEdition ? activeRows : [];
+    // An approved edition needs only its exact reviewed products. The fallback
+    // remains catalogue-wide and uses the bounded pagination RPC.
+    const catalog = await loadCatalog(activeEdition ? verifiedRows.map((row) => row.item_id) : undefined);
     const byId = new Map(catalog.map((product) => [product.id, product]));
     let eligible: GuideProduct[];
 
@@ -314,7 +329,14 @@ export async function GET(): Promise<Response> {
 
     return new Response(renderPage(eligible, activeEdition, activeEdition ? formatEditionPeriod(verifiedRows) : ''), {
       status: 200,
-      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        // Never cache an active offer edition; fallback data is public and can
+        // tolerate a brief shared-cache window between catalogue refreshes.
+        'cache-control': activeEdition
+          ? 'no-store'
+          : 'public, max-age=0, s-maxage=15, stale-while-revalidate=15',
+      },
     });
   } catch {
     return new Response('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"></head><body><main><h1>Deals are temporarily unavailable</h1><p>We cannot verify current product information right now. Please try again shortly.</p></main></body></html>', {

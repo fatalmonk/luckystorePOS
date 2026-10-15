@@ -109,6 +109,19 @@ begin
     raise exception 'Invalid storefront tenant';
   end if;
 
+  -- A completed checkout must be replayable even if its offer has expired,
+  -- catalogue prices changed, or the successful order consumed the last stock.
+  -- Keep this lookup tenant-scoped before validating the now-stale cart.
+  if nullif(trim(p_idempotency_key), '') is not null then
+    select response_body into v_response
+    from public.idempotency_keys
+    where idempotency_key = trim(p_idempotency_key)
+      and tenant_id = v_expected_tenant_id;
+    if v_response is not null then
+      return jsonb_build_object('order', v_response, 'replayed', true);
+    end if;
+  end if;
+
   if jsonb_typeof(p_items) is distinct from 'array' then
     raise exception 'Items must be a JSON array';
   end if;

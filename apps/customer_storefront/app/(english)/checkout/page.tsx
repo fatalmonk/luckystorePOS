@@ -90,8 +90,7 @@ function CheckoutContent() {
 
   const getCheckoutIdentity = () => {
     const payloadSignature = JSON.stringify({
-      total,
-      items: cart.map((i) => ({ id: i.id, qty: i.qty, price: i.price })),
+      items: cart.map((i) => ({ id: i.id, qty: i.qty })).sort((a, b) => a.id.localeCompare(b.id)),
     });
 
     if (
@@ -526,7 +525,7 @@ function CheckoutContent() {
                   </div>
                   <div className="space-y-2 pt-4 text-sm">
                     <div className="flex justify-between text-warm-muted"><span>Subtotal</span><span>{formatBdt(subtotal)}</span></div>
-                    {discount > 0 && <div className="flex justify-between text-warm-fg"><span>Weekly offer (extra 5%)</span><span>−{formatBdt(discount)}</span></div>}
+                    {discount > 0 && <div className="flex justify-between text-warm-fg"><span>Weekly offer savings (included in subtotal)</span><span>{formatBdt(discount)}</span></div>}
                     <div className="flex justify-between text-warm-muted"><span>Delivery</span><span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span></div>
                     <div className="flex justify-between border-t border-warm-border-light pt-3 text-lg font-extrabold text-warm-fg"><span>Total</span><span>{formatBdt(total)}</span></div>
                   </div>
@@ -623,8 +622,8 @@ function CheckoutContent() {
                     </div>
                     {discount > 0 && (
                       <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
-                        <span>Weekly offer (extra 5%)</span>
-                        <span>−{formatBdt(discount)}</span>
+                        <span>Weekly offer savings (included in subtotal)</span>
+                        <span>{formatBdt(discount)}</span>
                       </div>
                     )}
                     <div className="flex justify-between mb-2.5 text-sm text-warm-muted">

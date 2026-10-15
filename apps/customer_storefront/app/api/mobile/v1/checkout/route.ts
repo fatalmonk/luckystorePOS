@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
     const verifiedItems = verifyItems(clientItems, dbPrices);
     const effectiveItems = verifiedItems.map((item) => ({
       ...item,
-      price: getPromotionalPrice({ id: item.id, price: item.price, mrp: item.mrp }, promotions),
+      price: getPromotionalPrice({ id: item.id, name: item.name, price: item.price, mrp: item.mrp }, promotions),
     }));
     const { subtotal, deliveryFee, total } = calculateOrderTotals(effectiveItems);
 

@@ -171,8 +171,8 @@ function CartContent() {
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between mb-2.5 text-sm text-warm-fg">
-                    <span>{locale === 'bn' ? 'সাপ্তাহিক অফার (অতিরিক্ত ৫%)' : 'Weekly offer (extra 5%)'}</span>
-                    <span>−{formatBdt(discount)}</span>
+                    <span>{locale === 'bn' ? 'সাপ্তাহিক অফারে সাশ্রয় (সাবটোটালে অন্তর্ভুক্ত)' : 'Weekly offer savings (included in subtotal)'}</span>
+                    <span>{formatBdt(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-3 border-t border-warm-border-light text-lg font-extrabold text-warm-fg">

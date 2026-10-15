@@ -169,6 +169,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
           if (!trans) return p;
           return {
             ...p,
+            originalName: p.originalName || p.name,
             name: trans.name?.trim() || p.name,
             description: trans.description?.trim() || p.description,
           };
@@ -201,7 +202,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
       const resolved = await Promise.all(activeRows.map(async (row) => {
         const product = knownProducts.get(row.item_id) ?? await repo.getById(row.item_id as any);
         if (
-          !product || product.stock <= 0 || product.name !== row.expected_name ||
+          !product || product.stock <= 0 || (product.originalName ?? product.name) !== row.expected_name ||
           product.price !== Number(row.expected_price) ||
           Number(product.originalPrice ?? product.price) !== Number(row.expected_mrp) ||
           product.price > Math.round(Number(row.expected_mrp) * 0.9 * 100) / 100
