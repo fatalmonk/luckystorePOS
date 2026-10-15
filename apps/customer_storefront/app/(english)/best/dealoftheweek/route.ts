@@ -34,7 +34,33 @@ type GuideProduct = {
   imageUrl: string;
   reason?: string;
   onlinePrice?: number;
+  verifiedDiscountPercent?: number;
 };
+
+function formatEditionPeriod(rows: CampaignRow[]): string {
+  const startsAt = Math.min(...rows.map((row) => Date.parse(row.starts_at)));
+  const endsAt = Math.max(...rows.map((row) => Date.parse(row.ends_at)));
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt >= endsAt) return '';
+  const format = (date: Date) => date.toLocaleDateString('en-GB', {
+    timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric',
+  });
+  return `${format(new Date(startsAt))}–${format(new Date(endsAt - 1))} (Asia/Dhaka)`;
+}
+
+function hasWeeklyEvidence(row: CampaignRow): boolean {
+  return Boolean(
+    row.selection_reason?.trim()
+    && row.offer_terms?.trim()
+    && row.evidence_source?.trim()
+    && row.evidence_checked_at
+    && Number.isFinite(Date.parse(row.evidence_checked_at))
+    && Date.parse(row.evidence_checked_at) <= Date.parse(row.starts_at),
+  );
+}
+
+function categoryAnchor(category: string): string {
+  return `deal-category-${category.toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+}
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -89,7 +115,9 @@ async function loadCatalog(): Promise<GuideProduct[]> {
 
 function productCard(product: GuideProduct, activeEdition: boolean): string {
   const href = `${BASE_URL}/product/${toProductSlug(product.name, product.id)}`;
-  const discount = Math.floor(((product.mrp - product.price) / product.mrp) * 100);
+  const discountBadge = product.verifiedDiscountPercent !== undefined
+    ? `<span class="discount-badge">${product.verifiedDiscountPercent}% below verified MRP</span>`
+    : '';
   const image = product.imageUrl
     ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy" width="480" height="360">`
     : '<span class="image-placeholder" aria-hidden="true">LUCKY<br><strong>1947</strong></span>';
@@ -97,15 +125,15 @@ function productCard(product: GuideProduct, activeEdition: boolean): string {
     ? `<p class="online-price"><strong>Online checkout ৳${formatPrice(product.onlinePrice)}</strong><span>Extra 5% off this week</span></p>`
     : '';
   const reason = product.reason ? `<p class="pick-reason">${escapeHtml(product.reason)}</p>` : '';
-  return `<article class="card"><a class="product-image" href="${escapeHtml(href)}" tabindex="-1" aria-hidden="true">${image}<span class="discount-badge">${discount}% off MRP</span></a><div class="card-content"><p class="category">${escapeHtml(product.category)}</p><h3><a href="${escapeHtml(href)}">${escapeHtml(product.name)}</a></h3><div class="price-row"><strong class="price">৳${formatPrice(product.price)}</strong><del class="mrp">৳${formatPrice(product.mrp)}</del></div><p class="stock"><span class="stock-dot" aria-hidden="true"></span>${product.stock} in stock when checked</p>${onlinePrice}${reason}<a class="product-link" href="${escapeHtml(href)}">View product<span aria-hidden="true">→</span></a></div></article>`;
+  return `<article class="card"><a class="product-image" href="${escapeHtml(href)}" tabindex="-1" aria-hidden="true">${image}${discountBadge}</a><div class="card-content"><p class="category">${escapeHtml(product.category)}</p><h3><a href="${escapeHtml(href)}">${escapeHtml(product.name)}</a></h3><div class="price-row"><strong class="price">৳${formatPrice(product.price)}</strong>${discountBadge ? `<del class="mrp">৳${formatPrice(product.mrp)}</del>` : ''}</div><p class="stock"><span class="stock-dot" aria-hidden="true"></span>${product.stock} in stock when checked</p>${onlinePrice}${reason}<a class="product-link" href="${escapeHtml(href)}">View product<span aria-hidden="true">→</span></a></div></article>`;
 }
 
-function renderPage(products: GuideProduct[], activeEdition: boolean, now: Date): string {
+function renderPage(products: GuideProduct[], activeEdition: boolean, editionPeriod: string, now: Date): string {
   const canonical = `${BASE_URL}/best/dealoftheweek`;
-  const title = 'Deal of the Week: Current Grocery Offers | Lucky Store';
+  const title = 'Deal of the Week: Current Store Offers | Lucky Store';
   const description = activeEdition
-    ? 'Browse this week’s editor-selected, unranked offers from Lucky Store. Check current prices, availability and terms before ordering.'
-    : 'Browse current eligible Lucky Store deals, shown without ranking. Check the price and availability before ordering.';
+    ? 'Browse this week’s editor-selected, unranked offers across Lucky Store products. Check current prices, availability and terms before ordering.'
+    : 'Browse current eligible offers across Lucky Store products, shown without ranking. Check prices, pack sizes and availability before ordering.';
   const articleSchema = {
     '@context': 'https://schema.org', '@type': 'Article', headline: title,
     description, author: { '@type': 'Organization', name: 'Lucky Store Editorial Team' },
@@ -117,15 +145,25 @@ function renderPage(products: GuideProduct[], activeEdition: boolean, now: Date)
       { '@type': 'ListItem', position: 2, name: 'Deal of the Week', item: canonical },
     ],
   };
-  const period = activeEdition ? '<p class="period">Weekly edition: 19–25 October 2026 (Asia/Dhaka)</p>' : '';
+  const heroIntro = activeEdition
+    ? 'A considered shortlist of this week’s editor-selected offers, with clear prices and direct links to each product.'
+    : 'Browse current offers across Lucky Store products, with clear prices and direct links to check details and availability.';
   const disclosure = activeEdition
     ? '<p><strong>Selected by Lucky Store.</strong> Lucky Store sells these products. Picks are unranked and selected against the visible weekly criteria.</p>'
     : '<p>Deals below are current catalogue offers, shown without ranking. Prices and stock can change.</p>';
   const criteria = activeEdition
     ? '<h2>Weekly pick criteria</h2><p>Each pick had a verified offer or at least a 10% comparable discount when reviewed. Editors checked product identity, offer basis, validity dates and terms. Out-of-stock items and offers that no longer match their verified price are removed. <a href="/best/editorial">Read our editorial policy.</a></p>'
-    : '<h2>Price-check guidance</h2><p>Compare the current selling price with the displayed MRP, confirm pack size and availability, and review the product details before ordering. A discount badge does not guarantee the lowest market price.</p>';
+    : '<h2>Price-check guidance</h2><p>Check the product page for the current pack size, selling price, availability and any offer terms before ordering. Catalogue eligibility is not a promise of the lowest market price.</p>';
+  const productsByCategory = activeEdition ? [] : [...new Set(products.map((product) => product.category))]
+    .sort((a, b) => a.localeCompare(b))
+    .map((category) => ({ category, products: products.filter((product) => product.category === category) }));
+  const categoryNav = productsByCategory.length > 1
+    ? `<nav class="category-nav" aria-label="Browse deal categories"><strong>Browse by category</strong>${productsByCategory.map(({ category, products: categoryProducts }) => `<a href="#${categoryAnchor(category)}">${escapeHtml(category)} <span>${categoryProducts.length}</span></a>`).join('')}</nav>`
+    : '';
   const list = products.length
-    ? `<div class="grid">${products.map((product) => productCard(product, activeEdition)).join('')}</div>`
+    ? activeEdition
+      ? `<div class="grid">${products.map((product) => productCard(product, true)).join('')}</div>`
+      : `${categoryNav}${productsByCategory.map(({ category, products: categoryProducts }) => `<section class="deal-category" id="${categoryAnchor(category)}" aria-labelledby="${categoryAnchor(category)}-heading"><div class="category-heading"><h3 id="${categoryAnchor(category)}-heading">${escapeHtml(category)}</h3><span>${categoryProducts.length} ${categoryProducts.length === 1 ? 'deal' : 'deals'}</span></div><div class="grid">${categoryProducts.map((product) => productCard(product, false)).join('')}</div></section>`).join('')}`
     : '<div class="empty-state"><span class="empty-mark" aria-hidden="true">✦</span><h3>No eligible deals right now</h3><p>Check back soon or browse the full deals category for current listings.</p><a class="product-link" href="/category?theme=deals">Browse all deals <span aria-hidden="true">→</span></a></div>';
   const updatedLabel = now.toLocaleString('en-GB', { timeZone: 'Asia/Dhaka', dateStyle: 'medium', timeStyle: 'short' });
   return `<!doctype html>
@@ -160,39 +198,47 @@ function renderPage(products: GuideProduct[], activeEdition: boolean, now: Date)
     .header-cta{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;background:var(--accent);border:1px solid var(--accent);border-radius:999px;color:var(--ink);font-weight:800;transition:transform .18s ease,background .18s ease}
     .header-cta:hover,.hero-cta:hover{transform:translateY(-2px);background:#f6d56f}
     .content{padding-bottom:72px}
-    .breadcrumb{display:flex;align-items:center;gap:9px;margin:24px 0 18px;color:var(--muted);font-size:13px}
+    .breadcrumb{display:flex;align-items:center;gap:9px;margin:18px 0 14px;color:var(--muted);font-size:13px}
     .breadcrumb a{text-decoration:none}
     .breadcrumb-current{color:var(--ink);font-weight:650}
-    .hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(230px,.65fr);align-items:center;gap:34px;min-height:350px;padding:52px 58px;border-radius:28px;background:linear-gradient(120deg,#0B0B0D 0%,#151518 64%,#282218 100%);color:#fff;box-shadow:0 18px 44px rgba(11,11,13,.12)}
+    .hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(230px,.65fr);align-items:center;gap:34px;min-height:300px;padding:42px 52px;border-radius:28px;background:linear-gradient(120deg,#0B0B0D 0%,#151518 64%,#282218 100%);color:#fff;box-shadow:0 18px 44px rgba(11,11,13,.12)}
     .hero::before{position:absolute;z-index:-1;content:"";width:390px;height:390px;right:4%;top:-42%;border-radius:50%;background:radial-gradient(circle,rgba(240,196,68,.24),rgba(240,196,68,0) 70%)}
     .hero::after{position:absolute;z-index:-1;content:"";right:0;bottom:0;width:38%;height:5px;background:linear-gradient(90deg,transparent,var(--accent))}
     .hero-copy{max-width:680px}
-    .hero-kicker{display:inline-flex;align-items:center;gap:9px;margin:0 0 20px;color:var(--accent);font-size:12px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}
+    .hero-kicker{display:inline-flex;align-items:center;gap:9px;margin:0 0 14px;color:var(--accent);font-size:12px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}
     .hero-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px rgba(240,196,68,.7)}
     h1{max-width:650px;margin:0;font-size:clamp(42px,6vw,72px);line-height:.98;letter-spacing:-.055em;font-weight:850}
     h1 span{color:var(--accent)}
-    .hero-intro{max-width:590px;margin:22px 0 0;color:rgba(255,255,255,.76);font-size:18px;line-height:1.6}
-    .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:18px;margin-top:30px}
+    .hero-intro{max-width:590px;margin:16px 0 0;color:rgba(255,255,255,.76);font-size:18px;line-height:1.55}
+    .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:18px;margin-top:22px}
     .hero-cta{min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:0 22px;border-radius:999px;background:var(--accent);color:var(--ink);font-size:14px;font-weight:850;text-decoration:none;transition:transform .18s ease,background .18s ease}
     .hero-cta span,.product-link span{font-size:20px;line-height:1}
     .hero-footnote{color:rgba(255,255,255,.58);font-size:12px}
-    .hero-aside{justify-self:end;width:min(100%,280px);padding:24px;border:1px solid rgba(255,255,255,.15);border-radius:20px;background:rgba(255,255,255,.055);backdrop-filter:blur(8px)}
-    .hero-mark{display:grid;place-items:center;width:62px;height:62px;margin-bottom:20px;border-radius:18px;background:var(--accent);color:var(--ink);font-size:25px;font-weight:900;letter-spacing:-.08em}
+    .hero-aside{justify-self:end;width:min(100%,280px);padding:20px;border:1px solid rgba(255,255,255,.15);border-radius:20px;background:rgba(255,255,255,.055);backdrop-filter:blur(8px)}
+    .hero-mark{display:grid;place-items:center;width:54px;height:54px;margin-bottom:14px;border-radius:16px;background:var(--accent);color:var(--ink);font-size:23px;font-weight:900;letter-spacing:-.08em}
     .hero-aside strong{display:block;font-size:20px;line-height:1.2}
     .hero-aside p{margin:9px 0 0;color:rgba(255,255,255,.66);font-size:13px}
     .edition-period{margin:16px 0 0;color:var(--accent);font-size:12px;font-weight:750}
-    .trust-panel{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0 46px}
-    .trust-card{display:flex;align-items:flex-start;gap:14px;min-height:126px;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+    .trust-panel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 28px}
+    .trust-card{display:flex;align-items:flex-start;gap:14px;min-height:104px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
     .trust-icon{flex:0 0 38px;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#fff5cf;color:#735400;font-size:18px;font-weight:900}
     .trust-card h2{margin:1px 0 6px;font-size:14px;letter-spacing:-.01em}
     .trust-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
     .trust-card a{color:var(--accent-dark);font-weight:750;text-decoration-thickness:1px;text-underline-offset:3px}
     .checked-note{display:flex;align-items:center;gap:9px;margin:0 0 10px;color:var(--muted);font-size:12px}
     .checked-note::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--success)}
-    .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:0 0 20px}
+    .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:0 0 16px}
     .section-eyebrow{margin:0 0 7px;color:var(--accent-dark);font-size:11px;font-weight:850;letter-spacing:.15em;text-transform:uppercase}
     .section-heading h2{margin:0;font-size:clamp(25px,3vw,34px);line-height:1.15;letter-spacing:-.04em}
     .section-heading p{margin:7px 0 0;color:var(--muted);font-size:14px}
+    .category-nav{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 28px;padding:15px 17px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .category-nav>strong{margin-right:5px;font-size:12px}
+    .category-nav a{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 11px;border-radius:999px;background:#f5f2eb;color:#39362f;font-size:11px;font-weight:700;text-decoration:none}
+    .category-nav a:hover{background:#fff2c8;color:#594100}
+    .category-nav a span,.category-heading span{color:var(--muted);font-size:10px;font-weight:650}
+    .deal-category{margin-top:34px;scroll-margin-top:18px}
+    .category-heading{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+    .category-heading h3{margin:0;font-size:20px;letter-spacing:-.025em}
     .deal-count{flex:0 0 auto;padding:8px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;font-weight:750}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
     .card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:0 3px 12px rgba(11,11,13,.035);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
@@ -249,20 +295,20 @@ function renderPage(products: GuideProduct[], activeEdition: boolean, now: Date)
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span class="breadcrumb-current">Deal of the Week</span></nav>
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
-        <p class="hero-kicker">Lucky Store · Weekly value</p>
+        <p class="hero-kicker">Lucky Store · ${activeEdition ? 'Weekly value' : 'Current offers'}</p>
         <h1 id="page-title">Deal of the <span>Week</span></h1>
-        <p class="hero-intro">A considered shortlist of current offers, with clear prices and direct links to the products you can shop.</p>
-        <div class="hero-actions"><a class="hero-cta" href="#weekly-deals">Explore this week’s deals <span aria-hidden="true">↓</span></a><span class="hero-footnote">Live catalogue · Unranked picks</span></div>
+        <p class="hero-intro">${heroIntro}</p>
+        <div class="hero-actions"><a class="hero-cta" href="#weekly-deals">${activeEdition ? 'Explore this week’s picks' : 'Browse current offers'} <span aria-hidden="true">↓</span></a>${activeEdition ? '<span class="hero-footnote">12–16 editor-selected · Unranked</span>' : '<span class="hero-footnote">Live catalogue · Unranked deals</span>'}</div>
       </div>
-      <aside class="hero-aside" aria-label="Lucky Store service note"><span class="hero-mark" aria-hidden="true">LS</span><strong>Everyday value, made easy.</strong><p>Compare the offer, check availability, then continue to the product page.</p>${activeEdition ? '<p class="edition-period">19–25 October · Asia/Dhaka</p>' : ''}</aside>
+      <aside class="hero-aside" aria-label="Lucky Store service note"><span class="hero-mark" aria-hidden="true">LS</span><strong>Everyday value, made easy.</strong><p>Compare the offer, check availability, then continue to the product page.</p>${activeEdition ? `<p class="edition-period">${escapeHtml(editionPeriod)}</p>` : ''}</aside>
     </section>
     <section class="trust-panel" aria-label="How to use this page">
-      <article class="trust-card"><span class="trust-icon" aria-hidden="true">✓</span><div><h2>${activeEdition ? 'Selected by Lucky Store' : 'Current catalogue offers'}</h2>${disclosure}</div></article>
+      <article class="trust-card"><span class="trust-icon" aria-hidden="true">✓</span><div><h2>${activeEdition ? 'Selected by Lucky Store' : 'Current store offers'}</h2>${disclosure}</div></article>
       <article class="trust-card"><span class="trust-icon" aria-hidden="true">৳</span><div>${criteria}</div></article>
     </section>
     <p class="checked-note">Catalogue checked ${escapeHtml(updatedLabel)} · Asia/Dhaka. Price and stock can change; confirm details on the product page.</p>
     <section id="weekly-deals" aria-labelledby="deals-heading">
-      <div class="section-heading"><div><p class="section-eyebrow">Shop the shortlist</p><h2 id="deals-heading">${activeEdition ? 'This week’s unranked picks' : 'Current unranked deals'}</h2><p>Clear pricing, verified availability, and a direct path to each product.</p></div><span class="deal-count">${products.length} ${products.length === 1 ? 'deal' : 'deals'}</span></div>
+      <div class="section-heading"><div><p class="section-eyebrow">${activeEdition ? 'Shop the shortlist' : 'Browse all store categories'}</p><h2 id="deals-heading">${activeEdition ? 'This week’s unranked picks' : 'Current unranked store deals'}</h2><p>Clear pricing, current availability, and a direct path to each product.</p></div><span class="deal-count">${products.length} ${products.length === 1 ? 'deal' : 'deals'}</span></div>
       ${list}
     </section>
     <section class="bottom-cta" aria-label="Browse all deals"><div><h2>Looking for something else?</h2><p>Browse all current offers in the Lucky Store deals category.</p></div><a class="hero-cta" href="/category?theme=deals">Browse all deals <span aria-hidden="true">→</span></a></section>
@@ -285,22 +331,25 @@ export async function GET(): Promise<Response> {
       console.warn('Weekly deal edition could not be verified; showing current unranked deals.');
     }
     const activeRows = getActiveWeeklyDealEdition(allCampaignRows, now) as CampaignRow[];
-    const activeEdition = activeRows.length > 0;
+    const activeEdition = activeRows.length >= 12 && activeRows.every(hasWeeklyEvidence);
+    const verifiedRows = activeEdition ? activeRows : [];
     const byId = new Map(catalog.map((product) => [product.id, product]));
     let eligible: GuideProduct[];
 
     if (activeEdition) {
-      eligible = activeRows.flatMap((row) => {
+      eligible = verifiedRows.flatMap((row) => {
         const product = byId.get(row.item_id);
         if (!product || product.name !== row.expected_name || product.price !== Number(row.expected_price) || product.mrp !== Number(row.expected_mrp) || product.price > Math.round(product.mrp * 0.9 * 100) / 100) return [];
         const promotion = row as StorefrontItemPromotion;
-        return [{ ...product, reason: [row.selection_reason, row.offer_terms].filter(Boolean).join(' '), onlinePrice: getPromotionalPrice({ id: product.id, name: product.name, price: product.price, mrp: product.mrp, stock: product.stock }, [promotion], now) }];
+        return [{ ...product, verifiedDiscountPercent: Math.floor(((product.mrp - product.price) / product.mrp) * 100), reason: [row.selection_reason, row.offer_terms].filter(Boolean).join(' '), onlinePrice: getPromotionalPrice({ id: product.id, name: product.name, price: product.price, mrp: product.mrp, stock: product.stock }, [promotion], now) }];
       });
     } else {
-      eligible = catalog.filter((product) => Math.floor(((product.mrp - product.price) / product.mrp) * 100) >= 10);
+      eligible = catalog
+        .filter((product) => product.price <= Math.round(product.mrp * 0.9 * 100) / 100)
+        .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
     }
 
-    return new Response(renderPage(eligible, activeEdition, now), {
+    return new Response(renderPage(eligible, activeEdition, activeEdition ? formatEditionPeriod(verifiedRows) : '', now), {
       status: 200,
       headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
     });
