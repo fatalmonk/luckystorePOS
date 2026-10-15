@@ -79,4 +79,18 @@ describe('getHomePageData catalogue diagnostics', () => {
       sellableProductCount: 0,
     });
   });
+
+  it('does not warn when the optional Nestle search returns no matches', async () => {
+    search
+      .mockResolvedValueOnce({ products: [product], hasMore: false })
+      .mockResolvedValueOnce({ products: [], hasMore: false });
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await getHomePageData('en');
+
+    expect(warning).not.toHaveBeenCalledWith(
+      '[homepage-catalog] request returned an empty or unusable result',
+      expect.objectContaining({ source: 'Nestle product search' }),
+    );
+  });
 });

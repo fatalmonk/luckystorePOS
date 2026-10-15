@@ -138,10 +138,11 @@ async function loadCatalogueSource<T>(
   fallback: T,
   hasNoResults: (result: T) => boolean,
   emptyDetails: (result: T) => Record<string, number> = () => ({}),
+  warnWhenEmpty = true,
 ): Promise<T> {
   try {
     const result = await load();
-    if (hasNoResults(result)) {
+    if (warnWhenEmpty && hasNoResults(result)) {
       console.warn('[homepage-catalog] request returned an empty or unusable result', {
         source,
         ...emptyDetails(result),
@@ -193,6 +194,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
       { products: [], hasMore: false },
       (result) => (result?.products ?? []).length === 0,
       (result) => ({ productCount: (result?.products ?? []).length }),
+      false,
     ),
     loadCatalogueSource(
       'categories query',
