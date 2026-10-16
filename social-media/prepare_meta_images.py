@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Convert existing CDN WebP product images to Meta Commerce Manager compliant JPEGs (>= 600x600px)
-and generate an updated Meta catalog CSV. Falls back to web search for missing/SVG placeholders.
+and generate an updated Meta catalog CSV.
+Uses Playwright fallback to source high-resolution (1000px+) images for missing/SVG assets.
 """
 
 import argparse
@@ -14,24 +15,36 @@ from typing import Optional
 from urllib.parse import quote, urlparse
 
 import requests
-from bs4 import BeautifulSoup
 from PIL import Image, ImageOps
 
 INPUT_CSV = "meta-catalog-review.csv"
 OUTPUT_CSV = "meta-catalog-ready.csv"
 OUTPUT_DIR = "catalog-images/meta-jpg"
-CDN_BASE_URL = "https://images.luckystore1947.com/meta-products"
+CDN_BASE_URL = "https://images.luckystore1947.com/products"
 MIN_META_DIM = 600  # Meta minimum is 500x500; 600x600 is recommended for Advantage+ catalog ads
 MAX_META_BYTES = 8_000_000
 
 USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/120.0.0.0 Safari/537.36"
 )
 
 session = requests.Session()
 session.headers.update({"User-Agent": USER_AGENT})
+
+EXPECTED_PACK_PRICES: dict[str, float] = {
+    "b1a686a7-9f23-47bf-8d78-925af6888271": 8000.0,
+    "b54e03c0-3a1b-4818-a642-8520f907fca0": 2050.0,
+    "ada03d73-0741-457c-a62c-6f46e21e4e1a": 2300.0,
+    "439d9e4b-d7df-4705-87ab-ebb067f31065": 1750.0,
+    "b209f469-8869-4a36-8e73-cf2fdeb833d3": 2800.0,
+}
+
+UNVERIFIED_BRAND_IDS: set[str] = {
+    "84276fa4-e76e-4a56-9b2b-92c2b4ff81fd",
+    "ada03d73-0741-457c-a62c-6f46e21e4e1a",
+}
 
 
 def extract_filename_stem(row_id: str, image_link: str, naming: str) -> str:
@@ -66,10 +79,9 @@ def normalize_to_meta_jpeg(raw_bytes: bytes, dest_path: str) -> tuple[bool, str]
             w, h = rgb_img.size
             if w < MIN_META_DIM or h < MIN_META_DIM:
                 target_size = max(w, h, MIN_META_DIM)
-                # Scale up proportionally so product fills at least 85% of the frame
                 scale = (target_size * 0.85) / max(w, h)
                 if scale > 1.0:
-                    new_w, new_h = int(w * scale), int(h * scale)
+                    new_w, new_h = max(1, int(w * scale)), max(1, int(h * scale))
                     rgb_img = rgb_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
                     w, h = rgb_img.size
 
@@ -77,6 +89,7 @@ def normalize_to_meta_jpeg(raw_bytes: bytes, dest_path: str) -> tuple[bool, str]
                 square.paste(rgb_img, ((target_size - w) // 2, (target_size - h) // 2))
                 rgb_img = square
 
+            os.makedirs(os.path.dirname(os.path.abspath(dest_path)), exist_ok=True)
             rgb_img.save(dest_path, "JPEG", quality=92, optimize=True)
 
         size = os.path.getsize(dest_path)
@@ -89,49 +102,38 @@ def normalize_to_meta_jpeg(raw_bytes: bytes, dest_path: str) -> tuple[bool, str]
         return False, str(e)
 
 
-def search_fallback_image(title: str) -> Optional[str]:
-    """Search Chaldal and DuckDuckGo when CDN link is default.svg."""
+def search_playwright_fallback(title: str, browser_page) -> Optional[str]:
+    """Search Shwapno via Playwright for high-resolution 1920px asset."""
+    if not browser_page:
+        return None
     clean_title = re.sub(r"\(\d+\s*Pack\)", "", title, flags=re.I).strip()
+    clean_title = clean_title.replace(" - ", " ").replace("(", "").replace(")", "")
     query = quote(clean_title)
+    url = f"https://www.shwapno.com/search?q={query}"
 
-    # 1. Try Chaldal
     try:
-        resp = session.get(f"https://chaldal.com/search?q={query}", timeout=10)
-        if resp.status_code == 200:
-            soup = BeautifulSoup(resp.text, "html.parser")
-            for img in soup.select("img[src*='chaldal.com'], img[data-src*='chaldal.com']"):
-                src = img.get("data-src") or img.get("src")
-                if isinstance(src, str) and src.startswith("http") and not src.endswith(".svg"):
-                    return src
+        browser_page.goto(url, wait_until="domcontentloaded", timeout=12000)
+        browser_page.wait_for_timeout(2000)
+        imgs = browser_page.eval_on_selector_all("img", "elements => elements.map(e => e.src)")
+        candidates = [
+            s for s in imgs
+            if "cloudfront.net" in s
+            and not any(x in s for x in ["logo", "icon", "download", "banner", "svg", "payment"])
+        ]
+        if candidates:
+            return re.sub(r"width=\d+", "width=1920", candidates[0])
     except Exception:
         pass
-
-    # 2. Try DuckDuckGo
-    try:
-        ddg_query = quote(f"{clean_title} Bangladesh grocery")
-        resp = session.get(f"https://duckduckgo.com/?q={ddg_query}&iax=images&ia=images", timeout=10)
-        vqd_match = re.search(r"vqd=['\"]?([^'\"&]+)['\"]?", resp.text)
-        if vqd_match:
-            vqd = vqd_match.group(1)
-            api_resp = session.get(
-                f"https://duckduckgo.com/i.js?q={ddg_query}&vqd={vqd}&o=json",
-                headers={"Referer": "https://duckduckgo.com/"},
-                timeout=10,
-            )
-            if api_resp.status_code == 200:
-                raw = api_resp.text.strip()
-                if raw.startswith("DDG.Instant.response("):
-                    raw = raw[21:-2]
-                results = json.loads(raw).get("results", [])
-                if results:
-                    return results[0].get("image") or results[0].get("thumbnail")
-    except Exception:
-        pass
-
     return None
 
 
-def process_row(row: dict[str, str], output_dir: str, cdn_base: str, naming: str) -> tuple[str, str]:
+def process_row(
+    row: dict[str, str],
+    output_dir: str,
+    cdn_base: str,
+    naming: str,
+    browser_page=None,
+) -> tuple[str, str]:
     row_id = row["id"].strip()
     title = row["title"].strip()
     image_link = row["image_link"].strip()
@@ -149,14 +151,16 @@ def process_row(row: dict[str, str], output_dir: str, cdn_base: str, naming: str
     if os.path.exists(dest_path):
         return "exists", new_cdn_url
 
-    # Candidate URLs to try: first the existing CDN WebP (if not SVG), then web fallback
     candidates: list[str] = []
     if image_link and not image_link.lower().endswith(".svg"):
-        candidates.append(image_link)
+        # Strip query parameters if present
+        clean_url = image_link.split("?")[0]
+        candidates.append(clean_url)
 
-    fallback_url = search_fallback_image(title)
-    if fallback_url:
-        candidates.append(fallback_url)
+    if browser_page:
+        pw_url = search_playwright_fallback(title, browser_page)
+        if pw_url:
+            candidates.append(pw_url)
 
     for url in candidates:
         try:
@@ -173,7 +177,7 @@ def process_row(row: dict[str, str], output_dir: str, cdn_base: str, naming: str
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Prepare Meta Catalog JPEGs from meta-catalog-review.csv")
+    parser = argparse.ArgumentParser(description="Prepare Meta Catalog JPEGs with Playwright fallback")
     parser.add_argument("--input", default=INPUT_CSV, help="Input CSV path")
     parser.add_argument("--output-csv", default=OUTPUT_CSV, help="Updated CSV with .jpg image_link")
     parser.add_argument("--output-dir", default=OUTPUT_DIR, help="Directory to save .jpg files")
@@ -190,18 +194,58 @@ def main() -> None:
 
     with open(args.input, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
-        fieldnames = reader.fieldnames or []
+        fieldnames = list(reader.fieldnames or [])
         rows = list(reader)
 
-    stats = {"converted": 0, "exists": 0, "failed": 0}
+    # Standardize column header: inventory -> quantity_to_sell_on_facebook
+    if "inventory" in fieldnames:
+        fieldnames = [col if col != "inventory" else "quantity_to_sell_on_facebook" for col in fieldnames]
+
+    browser_page = None
+    playwright = None
+    browser = None
+    try:
+        from playwright.sync_api import sync_playwright
+        playwright = sync_playwright().start()
+        browser = playwright.chromium.launch(
+            channel="chrome",
+            headless=True,
+            args=["--disable-blink-features=AutomationControlled"],
+        )
+        context = browser.new_context(user_agent=USER_AGENT)
+        browser_page = context.new_page()
+    except Exception as e:
+        print(f"Notice: Playwright browser not initialized, falling back to direct URLs: {e}")
+
+    stats = {"converted": 0, "exists": 0, "failed": 0, "filtered": 0}
     updated_rows: list[dict[str, str]] = []
 
-    for idx, row in enumerate(rows, 1):
-        print(f"[{idx}/{len(rows)}] {row['title']}")
-        status, final_url = process_row(row, args.output_dir, args.cdn_base, args.naming)
-        stats[status] = stats.get(status, 0) + 1
-        row["image_link"] = final_url
-        updated_rows.append(row)
+    try:
+        for idx, row in enumerate(rows, 1):
+            row_id = row.get("id", "").strip()
+
+            # Exclude unverified brand packaging
+            if row_id in UNVERIFIED_BRAND_IDS:
+                stats["filtered"] += 1
+                continue
+
+            # Ensure pack price safeguards
+            if row_id in EXPECTED_PACK_PRICES:
+                row["price"] = f"{EXPECTED_PACK_PRICES[row_id]:.2f} BDT"
+
+            # Rename inventory -> quantity_to_sell_on_facebook in row dict
+            if "inventory" in row:
+                row["quantity_to_sell_on_facebook"] = row.pop("inventory")
+
+            status, final_url = process_row(row, args.output_dir, args.cdn_base, args.naming, browser_page)
+            stats[status] = stats.get(status, 0) + 1
+            row["image_link"] = final_url
+            updated_rows.append(row)
+    finally:
+        if browser:
+            browser.close()
+        if playwright:
+            playwright.stop()
 
     with open(args.output_csv, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -209,7 +253,7 @@ def main() -> None:
         writer.writerows(updated_rows)
 
     print(
-        f"\nDone! Converted: {stats['converted']} | Cached: {stats['exists']} | Failed: {stats['failed']}\n"
+        f"\nDone! Converted: {stats['converted']} | Cached: {stats['exists']} | Filtered: {stats['filtered']} | Failed: {stats['failed']}\n"
         f"Images saved to: {args.output_dir}/\n"
         f"Updated Meta feed saved to: {args.output_csv}"
     )
