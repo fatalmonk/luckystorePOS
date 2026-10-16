@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-15
+last_run:       2026-10-16
 last_pr:        #481 (merged)
-open_prs:       none
-next_run:       2026-10-16
+open_prs:       review PR pending
+next_run:       2026-10-17
 ```
 
 ---
