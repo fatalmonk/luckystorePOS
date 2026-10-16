@@ -24,8 +24,16 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 // Globally cache JWKS resolver instances to ensure in-memory caching is not defeated per request
 const jwkSets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
+function trimTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') {
+    end--;
+  }
+  return url.slice(0, end);
+}
+
 function getJWKSet(baseUrl: string) {
-  const normalized = baseUrl.replace(/\/+$/, '');
+  const normalized = trimTrailingSlashes(baseUrl);
   const jwksUrl = `${normalized}/auth/v1/.well-known/jwks.json`;
   if (!jwkSets.has(jwksUrl)) {
     jwkSets.set(
@@ -41,7 +49,7 @@ function getJWKSet(baseUrl: string) {
 // Verify a JWT using Supabase JWKS
 // createRemoteJWKSet handles its own key-caching internally
 export async function validateJwt(token: string, env: Env): Promise<JwtPayload> {
-  const normalizedUrl = env.SUPABASE_URL.replace(/\/+$/, '');
+  const normalizedUrl = trimTrailingSlashes(env.SUPABASE_URL);
   const JWKS = getJWKSet(normalizedUrl);
 
   let payload: JwtPayload;

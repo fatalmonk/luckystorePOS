@@ -38,7 +38,7 @@ function request(targetUrl, options = {}) {
         ...(options.headers || {})
       },
       timeout: 15000,
-      rejectUnauthorized: false
+      rejectUnauthorized: true
     }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
