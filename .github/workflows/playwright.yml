@@ -4,6 +4,10 @@ on:
   # Keep this legacy root workflow manual so it cannot load Vitest files as
   # Playwright tests during pull requests.
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   test:
     timeout-minutes: 60

@@ -180,7 +180,7 @@ async function resolveAccountUsername(targetDomain) {
 async function run() {
   try {
     const username = await resolveAccountUsername(domain);
-    console.log(`Resolved Hostinger account username: ${username}`);
+    console.log('Hostinger account configuration resolved.');
 
     // 1. Generate TUS upload credentials
     console.log('1. Requesting upload URL from Hostinger API...');
