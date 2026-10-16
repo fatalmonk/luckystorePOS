@@ -22,6 +22,9 @@ concurrency:
   group: storefront-deploy-${{ github.ref }}
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   # ── Step 1: Resolve Canonical Deployment Context ───────────
   resolve-context:

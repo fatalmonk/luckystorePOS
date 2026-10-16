@@ -17,6 +17,9 @@ concurrency:
   group: flutter-ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   analyze-and-test:
     name: Analyze & Test
