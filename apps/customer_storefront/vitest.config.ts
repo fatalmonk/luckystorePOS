@@ -13,6 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
+      'next/image.js': path.resolve(__dirname, 'node_modules/next/image.js'),
     },
   },
 });

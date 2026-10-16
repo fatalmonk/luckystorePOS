@@ -16,6 +16,6 @@
     "dotenv": "^17.2.3",
     "puppeteer": "^25.2.1",
     "string-similarity": "^4.0.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }
