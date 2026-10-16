@@ -356,12 +356,20 @@ const CATEGORY_KEYWORDS: Array<[readonly string[], string]> = [
 ];
 
 function normalizeCategory(category: string): string {
-  return category
+  const converted = category
     .toLowerCase()
     .trim()
     .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9]+/g, '-');
+  let start = 0;
+  let end = converted.length;
+  while (start < end && converted.charCodeAt(start) === 45) {
+    start++;
+  }
+  while (end > start && converted.charCodeAt(end - 1) === 45) {
+    end--;
+  }
+  return converted.slice(start, end);
 }
 
 export function resolveCategoryIcon(category: string): {
