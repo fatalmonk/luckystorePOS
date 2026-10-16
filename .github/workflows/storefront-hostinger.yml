@@ -70,12 +70,18 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           NEXT_PUBLIC_IMAGE_BASE_URL: 'https://images.luckystore1947.com'
           NEXT_PUBLIC_AGENT_WORKER_URL: 'https://agent.luckystore1947.com'
           NEXT_PUBLIC_ENABLE_REALTIME: 'true'
           NEXT_PUBLIC_STORE_ID: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'
           NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
-        run: npm run build --workspace=customer_storefront
+        run: |
+          if [ -z "$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" ]; then
+            echo '::error::NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is required for the storefront map build.'
+            exit 1
+          fi
+          npm run build --workspace=customer_storefront
 
       - name: Security Check — Assert Service Role Key not in Client or Server Output
         env:
