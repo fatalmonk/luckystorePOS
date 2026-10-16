@@ -52,7 +52,7 @@ test.describe('Storefront H1 contract', () => {
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText('Looking for Fortune Cookies near you?');
+    await expect(h1).toHaveText('Fortune Cookies are not available at Lucky Store');
   });
 
   test('Bengali Fortune Cookies page has exactly one semantic H1', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('Storefront H1 contract', () => {
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText('কাছাকাছি ফরচুন কুকিজ খুঁজছেন?');
+    await expect(h1).toHaveText('লাকি স্টোরে ফরচুন কুকিজ পাওয়া যায় না');
   });
 
   test('English brand page has exactly one semantic H1', async ({ page }) => {
