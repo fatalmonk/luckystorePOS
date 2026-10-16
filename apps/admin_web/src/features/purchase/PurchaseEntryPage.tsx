@@ -1599,7 +1599,12 @@ export const PurchaseEntryPage: React.FC = () => {
                   <input ref={itemImageInputRef} type="file" accept="image/*" className="hidden" onChange={event => {
                     const file = event.target.files?.[0];
                     if (!file) return;
-                    if (!file.type.startsWith('image/')) { setAddItemError('Choose a valid image file'); return; }
+                    const allowedImageMimeTypes = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+                    if (!allowedImageMimeTypes.has(file.type)) {
+                      setAddItemError('Choose a valid image file');
+                      setNewItemImage(null);
+                      return;
+                    }
                     setNewItemImage(file);
                     if (newItemImagePreview?.startsWith('blob:')) {
                       URL.revokeObjectURL(newItemImagePreview);
