@@ -181,7 +181,7 @@ export default function RootLayoutDocument({
                 'Ispahani and packaged tea blends',
                 'Aarong dairy and milk',
               ],
-              hasMap: 'https://maps.google.com/?cid=1342606622879549324',
+              hasMap: 'https://www.google.com/maps?cid=10553278394662472576',
               areaServed: {
                 '@type': 'GeoCircle',
                 geoMidpoint: {
@@ -231,7 +231,7 @@ export default function RootLayoutDocument({
                 'https://facebook.com/luckystore1947',
                 'https://instagram.com/luckystore1947',
                 'https://wa.me/8801731944544',
-                'https://maps.google.com/?cid=1342606622879549324',
+                'https://www.google.com/maps?cid=10553278394662472576',
               ],
             }),
           }}
