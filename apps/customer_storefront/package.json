@@ -30,8 +30,8 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "15.5.25",
-    "@next/eslint-plugin-next": "15.5.25",
+    "@next/bundle-analyzer": "^15.5.25",
+    "@next/eslint-plugin-next": "^15.5.25",
     "@playwright/test": "^1.45.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.0.0",
@@ -42,14 +42,14 @@
     "@types/sanitize-html": "^2.16.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.21.0",
-    "eslint-config-next": "15.5.25",
+    "eslint-config-next": "^15.5.25",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "jsdom": "^26.0.0",
     "next": "15.5.28",
     "typescript": "^5.9.2",
     "vite": "^6.0.0",
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -65,6 +65,7 @@
     "@next/swc-darwin-arm64": "^15.5.19"
   },
   "overrides": {
+    "next": "15.5.28",
     "postcss": "^8.5.29",
     "postcss-selector-parser": "^7.1.6"
   }
