@@ -114,7 +114,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
                 className={`site-footer-link gap-3 text-sm ${footerFocus}`}
               >
                 <Phone size={18} aria-hidden="true" className="shrink-0" />
-                +880 1731 944544
+                +8801731944544
               </a>
               <a
                 href="mailto:hello@luckystore1947.com"
@@ -123,6 +123,9 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
                 <EnvelopeSimple size={18} aria-hidden="true" className="shrink-0" />
                 hello@luckystore1947.com
               </a>
+              <p className="site-footer-muted mt-2 text-sm leading-6">
+                665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203
+              </p>
             </address>
 
             <div className="mt-4 flex items-center gap-2.5" aria-label="Lucky Store on social media">
@@ -183,7 +186,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
             <div className="flex items-center justify-between font-medium">
               <p>{locale === 'bn' ? '© লাকি স্টোর। স্থাপিত ১৯৪৭।' : '© Lucky Store. Est. 1947.'}</p>
-              <p>{locale === 'bn' ? 'চকবাজার, চট্টগ্রাম, বাংলাদেশ' : 'Chittagong, Bangladesh'}</p>
+              <p>{locale === 'bn' ? 'চকবাজার, চট্টগ্রাম, বাংলাদেশ' : 'Chattogram, Bangladesh'}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-medium">
