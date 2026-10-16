@@ -8,4 +8,6 @@ This branch only generates a local CSV. It does not upload, host, schedule, or i
 4. Set `META_FEED_MIN_ITEMS` to a verified floor based on the approved assortment. A 10% drop relative to the previous feed also stops replacement; investigate legitimate large changes and review the old feed before starting a new output path.
 5. Run `node --test scripts/marketing/export-meta-catalog.test.mjs`, then generate into a private output path using `META_FEED_OUTPUT`. Check CSV, images, landing links, price, inventory, and a Meta test import before hosting. Protect any scheduled feed URL and make generation finish before Meta fetches it. Do not place service-role credentials in the feed job.
 
+The exporter now rejects WebP/SVG feed URLs and checks JPEG/PNG bytes for at least 500 × 500 pixels and no more than 8 MB. Existing storefront WebP images need suitable JPEG/PNG variants before a feed can be generated. The Lipton Pure Tea and Nazirshail Premium rows stay excluded until the brand printed on their packaging is verified.
+
 Meta product data specifications: https://www.facebook.com/business/help/120325381656392

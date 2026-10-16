@@ -26,9 +26,31 @@ function CartContent() {
   const pathname = usePathname() || '/';
   const locale = getLocaleFromPathname(pathname);
   const dict = getDictionary(locale);
-  const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, discount, total, effectivePrice, isLoaded } = useCartContext();
+  const { cart, updateQty, removeFromCart, undoRemove, syncPrices, totalItems, subtotal, deliveryFee, discount, total, effectivePrice, isLoaded } = useCartContext();
   const { showToast } = useToast();
   const trackedViewRef = useRef(false);
+  const refreshedIdsRef = useRef('');
+
+  useEffect(() => {
+    if (!isLoaded || cart.length === 0) return;
+    const ids = cart.map((item) => item.id).sort().join(',');
+    if (ids === refreshedIdsRef.current) return;
+    refreshedIdsRef.current = ids;
+    let cancelled = false;
+    Promise.all(cart.map(async (item) => {
+      try {
+        const response = await fetch(`/api/mobile/v1/products/${encodeURIComponent(item.id)}`, { cache: 'no-store' });
+        if (!response.ok) return null;
+        const result = await response.json();
+        const product = result.product;
+        if (product?.id !== item.id || !Number.isFinite(product.price)) return null;
+        return { id: item.id, price: product.price, mrp: product.originalPrice ?? 0 };
+      } catch { return null; }
+    })).then((updates) => {
+      if (!cancelled) syncPrices(updates.filter((update): update is NonNullable<typeof update> => update !== null));
+    });
+    return () => { cancelled = true; };
+  }, [cart, isLoaded, syncPrices]);
 
   useEffect(() => {
     if (!isLoaded || cart.length === 0 || trackedViewRef.current) return;
