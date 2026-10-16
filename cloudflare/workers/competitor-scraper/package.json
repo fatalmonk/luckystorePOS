@@ -24,6 +24,9 @@
     "vitest": "^3.2.6",
     "wrangler": "4.114.0"
   },
+  "overrides": {
+    "tinypool": ">=2.1.2"
+  },
   "engines": {
     "node": ">=22"
   }
