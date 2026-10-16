@@ -1,6 +1,17 @@
 import { supabase } from './supabase';
 import { uploadToR2, isR2Configured } from './r2';
 
+const ALLOWED_IMAGE_HOSTS = new Set(['images.luckystore1947.com', 'luckystore1947.com']);
+
+function isAllowedImageHost(url: string): boolean {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    return ALLOWED_IMAGE_HOSTS.has(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Generates an optimized image URL for Cloudflare Worker / CDN.
  * For images served from images.luckystore1947.com, appends width & quality query params
@@ -16,7 +27,7 @@ export function getOptimizedImageUrl(
   try {
     const parsed = new URL(url, window.location.origin);
     // If hosted on Lucky Store Cloudflare Worker R2 bucket
-    if (parsed.hostname.includes('images.luckystore1947.com') || parsed.hostname.includes('luckystore1947.com')) {
+    if (ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) {
       if (width) parsed.searchParams.set('w', width.toString());
       if (quality) parsed.searchParams.set('q', quality.toString());
       return parsed.toString();
@@ -32,7 +43,7 @@ export function getOptimizedImageUrl(
  */
 export function getImageSrcSet(url: string | null | undefined, baseWidth = 112): string {
   if (!url) return '';
-  const isCdn = url.includes('images.luckystore1947.com') || url.includes('luckystore1947.com');
+  const isCdn = isAllowedImageHost(url);
   if (!isCdn) return '';
 
   const w1x = baseWidth;
