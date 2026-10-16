@@ -61,11 +61,19 @@ function normalizeOcrInventoryMatchName(name: string): string {
     .trim();
 }
 
-function isSafeImageUrl(url: string | null): boolean {
+function isSafeImageUrl(url: string | null): url is string {
   if (!url) return false;
+  if (
+    url.startsWith('data:image/png;base64,') ||
+    url.startsWith('data:image/jpeg;base64,') ||
+    url.startsWith('data:image/webp;base64,') ||
+    url.startsWith('data:image/gif;base64,')
+  ) {
+    return true;
+  }
   try {
     const parsed = new URL(url, window.location.origin);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'blob:';
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
   } catch {
     return false;
   }
@@ -1596,7 +1604,7 @@ export const PurchaseEntryPage: React.FC = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <input ref={itemImageInputRef} type="file" accept="image/*" className="hidden" onChange={event => {
+                  <input ref={itemImageInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={event => {
                     const file = event.target.files?.[0];
                     if (!file) return;
                     const allowedImageMimeTypes = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
@@ -1606,13 +1614,14 @@ export const PurchaseEntryPage: React.FC = () => {
                       return;
                     }
                     setNewItemImage(file);
-                    if (newItemImagePreview?.startsWith('blob:')) {
-                      URL.revokeObjectURL(newItemImagePreview);
-                    }
-                    const objectUrl = URL.createObjectURL(file);
-                    if (objectUrl.startsWith('blob:')) {
-                      setNewItemImagePreview(objectUrl);
-                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const result = reader.result;
+                      if (typeof result === 'string' && isSafeImageUrl(result)) {
+                        setNewItemImagePreview(result);
+                      }
+                    };
+                    reader.readAsDataURL(file);
                   }} />
                   <button type="button" onClick={() => itemImageInputRef.current?.click()} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"><Upload size={14} /> {newItemImagePreview ? 'Change image' : 'Upload image'}</button>
                   <p className="mt-1 text-xs text-text-muted">Optional. Converted to WebP before upload.</p>
