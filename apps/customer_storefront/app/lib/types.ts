@@ -225,14 +225,27 @@ export const BENGALI_CATEGORY_NAMES: Record<string, string> = {
   'fragrance': 'সুগন্ধি',
 };
 
+function trimHyphens(value: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charCodeAt(start) === 45) {
+    start++;
+  }
+  while (end > start && value.charCodeAt(end - 1) === 45) {
+    end--;
+  }
+  return value.slice(start, end);
+}
+
 /** Helper to normalize raw category strings (e.g. "Rice & Grain" -> "rice-and-grain") */
 export function normalizeCategorySlug(str: string): string {
   if (!str) return '';
-  return str
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return trimHyphens(
+    str
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+  );
 }
 
 const CATEGORY_SLUG_ALIASES: Record<string, string> = {
