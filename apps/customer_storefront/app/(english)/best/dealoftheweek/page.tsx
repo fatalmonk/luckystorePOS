@@ -57,8 +57,24 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+function toAbsoluteImageUrl(rawUrl?: string | null): string {
+  const trimmed = rawUrl?.trim();
+  if (!trimmed) return `${BASE_URL}/logo-main.png`;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) return `${BASE_URL}${trimmed}`;
+  return `${BASE_URL}/${trimmed}`;
+}
+
 export default async function DealOfTheWeekPage() {
   const dealsData = await loadWeeklyDeals(supabase, new Date(), 48);
+
+  const formattedPriceValidUntil = dealsData.endsAt
+    ? new Date(dealsData.endsAt).toISOString()
+    : undefined;
 
   // Generate commercial CollectionPage, ItemList, and BreadcrumbList structured data
   const breadcrumbSchema = {
@@ -102,7 +118,7 @@ export default async function DealOfTheWeekPage() {
             '@type': 'Product',
             name: product.name,
             url: productUrl,
-            image: product.image_url || `${BASE_URL}/logo-main.png`,
+            image: toAbsoluteImageUrl(product.image_url),
             offers: {
               '@type': 'Offer',
               price: product.promotionalPrice ?? product.price,
@@ -111,7 +127,7 @@ export default async function DealOfTheWeekPage() {
                 product.stock > 0
                   ? 'https://schema.org/InStock'
                   : 'https://schema.org/OutOfStock',
-              ...(dealsData.endsAt ? { priceValidUntil: dealsData.endsAt } : {}),
+              ...(formattedPriceValidUntil ? { priceValidUntil: formattedPriceValidUntil } : {}),
               seller: {
                 '@type': 'Organization',
                 name: 'Lucky Store',
@@ -127,11 +143,11 @@ export default async function DealOfTheWeekPage() {
     <main id="main-content" className="min-h-screen bg-warm-bg">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(collectionSchema) }}
       />
       <DealOfTheWeekClient
         products={dealsData.products}

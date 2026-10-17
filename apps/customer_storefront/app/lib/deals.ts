@@ -296,75 +296,33 @@ export async function loadWeeklyDeals(
       degradedReason = 'insufficient_eligible_products';
     }
 
-    // Fallback: Fetch deals filtered & ordered in PostgreSQL before limiting
-    try {
-      const { data: dealsData, error: dealsErr } = await client.rpc('get_storefront_deals', {
-        p_store_id: STOREFRONT_STORE_ID,
-        p_min_discount_percent: 10,
-        p_limit: Math.min(limit, 100),
-        p_offset: 0,
-      });
-
-      if (!dealsErr && Array.isArray(dealsData)) {
-        const rows = dealsData as CatalogRow[];
-        const products: WeeklyDealProduct[] = rows
-          .map((r) => toWeeklyDealProduct(r))
-          .filter((p): p is WeeklyDealProduct => p !== null)
-          .map((p) => ({
-            ...p,
-            verifiedDiscountPercent: Math.floor(
-              (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100,
-            ),
-          }));
-
-        return {
-          products,
-          activeEdition: false,
-          editionPeriod: '',
-          degradedReason,
-        };
-      }
-    } catch {
-      // get_storefront_deals RPC may not exist in mock/legacy environments
-    }
-
-    // Secondary fallback for legacy/mock test environments using search_storefront_catalog
-    const { data, error } = await client.rpc('search_storefront_catalog', {
+    // Primary fallback: Fetch deals filtered & ordered in PostgreSQL before limiting
+    const { data: dealsData, error: dealsErr } = await client.rpc('get_storefront_deals', {
       p_store_id: STOREFRONT_STORE_ID,
-      p_query: '',
-      p_category_id: null,
+      p_min_discount_percent: 10,
       p_limit: Math.min(limit, 100),
       p_offset: 0,
     });
 
-    if (error || !Array.isArray(data)) {
-      throw new Error('Storefront catalogue could not be verified');
+    if (dealsErr) {
+      console.error('[DealOfTheWeek] get_storefront_deals RPC failed:', dealsErr);
+      throw new Error(dealsErr.message || 'Storefront deals query failed');
     }
 
-    const rows = data as CatalogRow[];
+    if (!Array.isArray(dealsData)) {
+      throw new Error('Storefront deals returned invalid payload');
+    }
+
+    const rows = dealsData as CatalogRow[];
     const products: WeeklyDealProduct[] = rows
       .map((r) => toWeeklyDealProduct(r))
       .filter((p): p is WeeklyDealProduct => p !== null)
-      .filter(
-        (p) =>
-          p.originalPrice !== undefined &&
-          p.originalPrice > p.price &&
-          p.price <= Math.round(p.originalPrice * 0.9 * 100) / 100 &&
-          p.stock > 0,
-      )
       .map((p) => ({
         ...p,
         verifiedDiscountPercent: Math.floor(
           (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100,
         ),
-      }))
-      .sort(
-        (a, b) =>
-          (b.verifiedDiscountPercent ?? 0) - (a.verifiedDiscountPercent ?? 0) ||
-          a.price - b.price ||
-          a.name.localeCompare(b.name) ||
-          a.id.localeCompare(b.id),
-      );
+      }));
 
     return {
       products,

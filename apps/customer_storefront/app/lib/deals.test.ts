@@ -263,7 +263,7 @@ describe('deals logic', () => {
       expect(result.degradedReason).toBe('none');
     });
 
-    it('falls back to secondary search_storefront_catalog when get_storefront_deals fails', async () => {
+    it('degrades to catalogue_outage and empty products when get_storefront_deals fails', async () => {
       const mockClient = {
         from: () => ({
           select: () => ({
@@ -274,33 +274,19 @@ describe('deals logic', () => {
             }),
           }),
         }),
-        rpc: async (name: string, args: any) => {
+        rpc: async (name: string, _args: any) => {
           if (name === 'get_storefront_deals') {
-            throw new Error('RPC not found in legacy environment');
+            throw new Error('RPC network timeout');
           }
-          expect(name).toBe('search_storefront_catalog');
-          expect(args.p_limit).toBeLessThanOrEqual(100);
-          return {
-            data: [
-              {
-                id: 'deal-1',
-                name: 'Fallback Item 1',
-                price: 90,
-                mrp: 100,
-                sellable_qty: 10,
-                category: 'Grocery',
-              },
-            ],
-            error: null,
-          };
+          throw new Error(`Unexpected RPC call: ${name}`);
         },
       };
 
       const result = await loadWeeklyDeals(mockClient, new Date('2026-10-17T10:00:00Z'));
       expect(result.activeEdition).toBe(false);
-      expect(result.products).toHaveLength(1);
-      expect(result.products[0].name).toBe('Fallback Item 1');
-      expect(result.products[0].verifiedDiscountPercent).toBe(10);
+      expect(result.degradedReason).toBe('catalogue_outage');
+      expect(result.products).toHaveLength(0);
+      expect(result.error).toContain('RPC network timeout');
     });
 
     it('enforces MIN_CAMPAIGN_ELIGIBLE_PRODUCTS threshold and degrades if fewer items qualify', async () => {

@@ -19,7 +19,7 @@ DECLARE
 BEGIN
   SELECT
     tenant_id,
-    COALESCE((metadata->>'is_public_storefront')::boolean, true)
+    COALESCE((metadata->>'is_public_storefront')::boolean, false)
   INTO v_store_tenant_id, v_is_public
   FROM public.stores
   WHERE id = p_store_id;
@@ -57,7 +57,7 @@ BEGIN
       LEFT JOIN public.stock_levels sl
              ON sl.item_id = i.id AND sl.store_id = p_store_id
       LEFT JOIN public.categories c
-             ON c.id = i.category_id
+             ON c.id = i.category_id AND c.tenant_id = v_store_tenant_id
       WHERE i.tenant_id = v_store_tenant_id
         AND i.is_active = true
         AND i.mrp IS NOT NULL
