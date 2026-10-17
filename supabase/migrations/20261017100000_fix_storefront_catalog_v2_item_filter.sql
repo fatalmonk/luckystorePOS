@@ -65,17 +65,22 @@ BEGIN
              ON c.id = i.category_id
       WHERE i.tenant_id = v_store_tenant_id
         AND i.is_active = true
-        AND (
-          (p_item_ids IS NOT NULL AND i.id = ANY(p_item_ids)) OR
-          (p_item_ids IS NULL AND (
+        AND CASE
+          -- A non-empty ID list with an empty query is the bounded exact-selector
+          -- contract used by buying guides and other selected-item reads.
+          WHEN COALESCE(cardinality(p_item_ids), 0) > 0 AND p_query = ''
+            THEN i.id = ANY(p_item_ids)
+          -- Existing browse/search callers pass an empty ID array by default, and
+          -- text searches must retain the union of English and Bengali matches.
+          ELSE
             p_query = '' OR
             i.name        ILIKE '%' || p_query || '%' OR
             i.brand       ILIKE '%' || p_query || '%' OR
             i.sku         ILIKE '%' || p_query || '%' OR
             i.short_code  ILIKE '%' || p_query || '%' OR
-            i.barcode     ILIKE '%' || p_query || '%'
-          ))
-        )
+            i.barcode     ILIKE '%' || p_query || '%' OR
+            (COALESCE(cardinality(p_item_ids), 0) > 0 AND i.id = ANY(p_item_ids))
+        END
         AND (p_category_id IS NULL OR i.category_id = p_category_id)
       ORDER BY i.name ASC, i.id ASC
       LIMIT LEAST(GREATEST(COALESCE(p_limit, 50), 1), 1000)
