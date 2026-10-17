@@ -13,6 +13,7 @@ vi.mock('../../lib/buying-guides/catalogue', async importOriginal => ({ ...await
 vi.mock('next/navigation', () => ({ notFound: () => { throw new Error('NOT_FOUND'); } }));
 vi.mock('../../components/buying-guides/GuideTracking', () => ({
   GuideView: () => null,
+  GuideAddToCartButton: ({ product }: { product: { name: string } }) => <button type="button">Add to cart<span className="sr-only"> {product.name}</span></button>,
   GuideProductLink: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
 }));
 import BuyingGuidePage, { generateMetadata } from './[slug]/page';
@@ -58,9 +59,16 @@ describe('buying-guide server routes', () => {
     expect(html).toContain('৳30');
     expect(html).toContain('Currently out of stock');
     expect(html.match(/Shop this product/g)).toHaveLength(1);
+    expect(html.match(/Add to cart/g)).toHaveLength(1);
+    expect(document.querySelectorAll('img[alt*="Olympic"]')).toHaveLength(3);
     const schema = JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!);
     expect(schema['@graph'][0]).toMatchObject({ '@type': 'Article', headline: guide.title, dateModified: guide.updatedAt });
     expect(schema['@graph'].filter((n: Record<string, unknown>) => n['@type'] === 'Product')).toHaveLength(3);
+    expect(schema['@graph'][2]).toMatchObject({
+      image: rows[0].image_url,
+      sku: rows[0].sku,
+      brand: { '@type': 'Brand', name: 'Olympic' },
+    });
     expect(schema['@graph'][3].offers.availability).toBe('https://schema.org/OutOfStock');
     expect(html).not.toContain('AggregateRating');
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: guide.slug }) });

@@ -1,11 +1,12 @@
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { BuyingGuide } from '../../lib/buying-guides/model';
 import { GUIDE_BASE_URL, guideUrl } from '../../lib/buying-guides/model';
 import type { GuideProduct } from '../../lib/buying-guides/catalogue';
 import { formatBdt } from '../../lib/formatPrice';
 import { JsonLd } from '../seo/JsonLd';
-import { GuideProductLink, GuideView } from './GuideTracking';
+import { GuideAddToCartButton, GuideProductLink, GuideView } from './GuideTracking';
 import styles from './buying-guides.module.css';
 
 export function BuyingGuideArticle({ guide, products, related = [] }: {
@@ -29,6 +30,9 @@ export function BuyingGuideArticle({ guide, products, related = [] }: {
       ] },
       ...products.filter(p => p.current).map(p => ({
         '@type': 'Product', name: p.current!.name, url: `${GUIDE_BASE_URL}${p.href}`,
+        image: p.current!.image_url ?? undefined,
+        sku: p.current!.sku ?? undefined,
+        brand: p.current!.brand ? { '@type': 'Brand', name: p.current!.brand } : undefined,
         offers: { '@type': 'Offer', price: p.current!.price, priceCurrency: 'BDT',
           availability: `https://schema.org/${p.available ? 'InStock' : 'OutOfStock'}`, url: `${GUIDE_BASE_URL}${p.href}` },
       })),
@@ -53,13 +57,25 @@ export function BuyingGuideArticle({ guide, products, related = [] }: {
     <section><h2>{guide.mode === 'ranked' ? 'The shortlist' : 'Products to compare'}</h2>
       {availableCount < 3 && <p role="status">Fewer than three selected products are currently available. Use this as a buying guide; check current options before choosing.</p>}
       <div className={styles.products}>{products.map(p => <section key={p.id} className={styles.product}>
+        {p.current?.image_url && <Image className={styles.productImage} src={p.current.image_url}
+          alt={`${p.current.name} product pack`} width={640} height={640}
+          sizes="(max-width: 720px) 100vw, 33vw" />}
         <h3>{showRanking && p.available ? `${p.rank}. ` : ''}{p.current?.name ?? p.verifiedName}</h3>
         {!p.available && <p className={styles.status}>{p.current ? 'Currently out of stock' : 'Product details need re-verification'}</p>}
         <p>{p.description.text}</p><p>Declared pack size: {p.quantity.value}{p.quantity.unit}</p>
         {p.current && <p><strong>{formatBdt(p.current.price)}</strong> · {formatBdt(p.unitPrice)} / 100{units}</p>}
         <p>Consider for: {p.useCase.text}</p>
         {p.rationale && <p>Research rationale: {p.rationale.text}</p>}
-        {p.href && <GuideProductLink href={p.href} slug={guide.slug} revision={guide.revision} productId={p.id}>{p.available ? 'Shop this product' : 'View product details'}</GuideProductLink>}
+        {p.available && p.href && p.current ? <div className={styles.actions}>
+          <GuideAddToCartButton className={styles.cartButton} slug={guide.slug} revision={guide.revision} product={{
+            id: p.current.id, name: p.current.name, emoji: '', price: p.current.price,
+            unit: `${p.quantity.value}${p.quantity.unit}`, category: guide.category.name,
+            category_id: p.current.category_id, stock: p.current.sellable_qty,
+            description: p.description.text, image_url: p.current.image_url ?? undefined,
+            brand: p.current.brand ?? undefined,
+          }} />
+          <GuideProductLink href={p.href} slug={guide.slug} revision={guide.revision} productId={p.id}>Shop this product</GuideProductLink>
+        </div> : p.href && <GuideProductLink href={p.href} slug={guide.slug} revision={guide.revision} productId={p.id}>View product details</GuideProductLink>}
       </section>)}</div>
     </section>
     <section><h2>Side-by-side comparison</h2>
