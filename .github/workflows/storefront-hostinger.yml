@@ -168,8 +168,11 @@ jobs:
           HOSTINGER_DOMAIN: ${{ needs.resolve-context.outputs.production_domain }}
           EXPECTED_SHA: ${{ github.sha }}
 
-      - name: Production Smoke Validation (www Canonical)
+      - name: Production Smoke Validation
         run: |
+          node scripts/ci/smoke-test.mjs \
+            --url "https://${{ needs.resolve-context.outputs.production_domain }}" \
+            --expected-sha ${{ github.sha }}
           node scripts/ci/smoke-test.mjs \
             --url "https://www.luckystore1947.com" \
             --expected-sha ${{ github.sha }}
