@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkle, Clock, ShieldCheck, Tag, ArrowRight, ShoppingBag } from '@phosphor-icons/react';
-import type { WeeklyDealProduct } from '../../../lib/deals';
+import type { WeeklyDealProduct, WeeklyDealsDegradedReason } from '../../../lib/deals';
 import { GridProductCard } from '../../../components/GridProductCard';
 import { DealCountdown } from '../../../components/DealCountdown';
 import { trackViewItemList } from '../../../lib/analytics';
@@ -14,6 +14,7 @@ export interface DealOfTheWeekClientProps {
   editionPeriod?: string;
   campaignKey?: string;
   endsAt?: string;
+  degradedReason?: WeeklyDealsDegradedReason;
   error?: string;
 }
 
@@ -23,6 +24,7 @@ export function DealOfTheWeekClient({
   editionPeriod,
   campaignKey,
   endsAt,
+  degradedReason,
   error,
 }: DealOfTheWeekClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -130,11 +132,10 @@ export function DealOfTheWeekClient({
 
       {/* Category Filter Pills (if multiple categories present) */}
       {categories.length > 1 && (
-        <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" role="tablist" aria-label="Filter deals by category">
+        <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" role="group" aria-label="Filter deals by category">
           <button
             type="button"
-            role="tab"
-            aria-selected={selectedCategory === 'all'}
+            aria-pressed={selectedCategory === 'all'}
             onClick={() => setSelectedCategory('all')}
             className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
               selectedCategory === 'all'
@@ -151,8 +152,7 @@ export function DealOfTheWeekClient({
               <button
                 key={cat}
                 type="button"
-                role="tab"
-                aria-selected={isSelected}
+                aria-pressed={isSelected}
                 onClick={() => setSelectedCategory(cat)}
                 className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold capitalize transition-all sm:text-sm ${
                   isSelected
@@ -234,7 +234,7 @@ export function DealOfTheWeekClient({
           </div>
           <div>
             <strong className="block text-warm-fg">Checkout Synchronization</strong>
-            All promotional pricing is validated idempotently during checkout. The price displayed here is the exact price you pay.
+            All promotional pricing is validated idempotently during checkout. Final promotional pricing and availability are confirmed at checkout before order placement.
           </div>
         </div>
 

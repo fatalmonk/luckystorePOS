@@ -101,6 +101,14 @@ export interface WeeklyDealProduct extends Product {
   campaignKey?: string;
 }
 
+export const MIN_CAMPAIGN_ELIGIBLE_PRODUCTS = 8;
+
+export type WeeklyDealsDegradedReason =
+  | 'none'
+  | 'campaign_lookup_failed'
+  | 'insufficient_eligible_products'
+  | 'catalogue_outage';
+
 export interface WeeklyDealsResult {
   products: WeeklyDealProduct[];
   activeEdition: boolean;
@@ -108,6 +116,7 @@ export interface WeeklyDealsResult {
   campaignKey?: string;
   startsAt?: string;
   endsAt?: string;
+  degradedReason?: WeeklyDealsDegradedReason;
   error?: string;
 }
 
@@ -126,6 +135,7 @@ interface CatalogRow {
   sellable_qty?: number | string | null;
   stock?: number | string | null;
   brand?: string | null;
+  discount_percent?: number | string | null;
 }
 
 export function hasWeeklyEvidence(row: StorefrontItemPromotion): boolean {
@@ -187,19 +197,22 @@ export async function loadWeeklyDeals(
   now = new Date(),
   limit = 48,
 ): Promise<WeeklyDealsResult> {
+  let degradedReason: WeeklyDealsDegradedReason = 'none';
+
   try {
     let allCampaignRows: StorefrontItemPromotion[] = [];
     try {
       allCampaignRows = await loadCurrentStorefrontDealCampaign(client, now);
-    } catch {
-      console.warn('Weekly deal edition lookup unavailable; using catalogue fallback.');
+    } catch (campaignErr) {
+      console.error('[DealOfTheWeek] Weekly promotion campaign lookup failed:', campaignErr);
+      degradedReason = 'campaign_lookup_failed';
     }
 
     const activeRows = getActiveWeeklyDealEdition(allCampaignRows, now);
-    const activeEdition = activeRows.length >= 12 && activeRows.every(hasWeeklyEvidence);
-    const verifiedRows = activeEdition ? activeRows : [];
+    const hasScheduledEdition = activeRows.length >= 12 && activeRows.every(hasWeeklyEvidence);
+    const verifiedRows = hasScheduledEdition ? activeRows : [];
 
-    if (activeEdition) {
+    if (hasScheduledEdition) {
       const itemIds = verifiedRows.map((r) => r.item_id);
       const { data, error } = await client.rpc('search_storefront_catalog_v2', {
         p_store_id: STOREFRONT_STORE_ID,
@@ -222,7 +235,7 @@ export async function loadWeeklyDeals(
           .map((p) => [p.id, p])
       );
 
-      const products: WeeklyDealProduct[] = verifiedRows.flatMap((row) => {
+      const eligibleProducts: WeeklyDealProduct[] = verifiedRows.flatMap((row) => {
         const product = byId.get(row.item_id);
         if (
           !product ||
@@ -263,17 +276,59 @@ export async function loadWeeklyDeals(
         ];
       });
 
-      return {
-        products,
-        activeEdition: true,
-        editionPeriod: formatEditionPeriod(verifiedRows),
-        campaignKey: verifiedRows[0]?.campaign_key,
-        startsAt: verifiedRows[0]?.starts_at,
-        endsAt: verifiedRows[0]?.ends_at,
-      };
+      // Require a minimum threshold of eligible products to activate the campaign
+      if (eligibleProducts.length >= MIN_CAMPAIGN_ELIGIBLE_PRODUCTS) {
+        return {
+          products: eligibleProducts,
+          activeEdition: true,
+          editionPeriod: formatEditionPeriod(verifiedRows),
+          campaignKey: verifiedRows[0]?.campaign_key,
+          startsAt: verifiedRows[0]?.starts_at,
+          endsAt: verifiedRows[0]?.ends_at,
+          degradedReason: 'none',
+        };
+      }
+
+      // If fewer than threshold items qualify, degrade to catalogue deals
+      console.warn(
+        `[DealOfTheWeek] Weekly campaign ${verifiedRows[0]?.campaign_key} has only ${eligibleProducts.length} eligible products (minimum ${MIN_CAMPAIGN_ELIGIBLE_PRODUCTS}); degrading to catalogue deals.`,
+      );
+      degradedReason = 'insufficient_eligible_products';
     }
 
-    // Bounded Fallback (Safe query, max `limit` items, no unbounded while-true)
+    // Fallback: Fetch deals filtered & ordered in PostgreSQL before limiting
+    try {
+      const { data: dealsData, error: dealsErr } = await client.rpc('get_storefront_deals', {
+        p_store_id: STOREFRONT_STORE_ID,
+        p_min_discount_percent: 10,
+        p_limit: Math.min(limit, 100),
+        p_offset: 0,
+      });
+
+      if (!dealsErr && Array.isArray(dealsData)) {
+        const rows = dealsData as CatalogRow[];
+        const products: WeeklyDealProduct[] = rows
+          .map((r) => toWeeklyDealProduct(r))
+          .filter((p): p is WeeklyDealProduct => p !== null)
+          .map((p) => ({
+            ...p,
+            verifiedDiscountPercent: Math.floor(
+              (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100,
+            ),
+          }));
+
+        return {
+          products,
+          activeEdition: false,
+          editionPeriod: '',
+          degradedReason,
+        };
+      }
+    } catch {
+      // get_storefront_deals RPC may not exist in mock/legacy environments
+    }
+
+    // Secondary fallback for legacy/mock test environments using search_storefront_catalog
     const { data, error } = await client.rpc('search_storefront_catalog', {
       p_store_id: STOREFRONT_STORE_ID,
       p_query: '',
@@ -295,28 +350,37 @@ export async function loadWeeklyDeals(
           p.originalPrice !== undefined &&
           p.originalPrice > p.price &&
           p.price <= Math.round(p.originalPrice * 0.9 * 100) / 100 &&
-          p.stock > 0
+          p.stock > 0,
       )
       .map((p) => ({
         ...p,
         verifiedDiscountPercent: Math.floor(
-          (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100
+          (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100,
         ),
       }))
-      .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+      .sort(
+        (a, b) =>
+          (b.verifiedDiscountPercent ?? 0) - (a.verifiedDiscountPercent ?? 0) ||
+          a.price - b.price ||
+          a.name.localeCompare(b.name) ||
+          a.id.localeCompare(b.id),
+      );
 
     return {
       products,
       activeEdition: false,
       editionPeriod: '',
+      degradedReason,
     };
   } catch (err: any) {
     return {
       products: [],
       activeEdition: false,
       editionPeriod: '',
+      degradedReason: 'catalogue_outage',
       error: err?.message || 'Deals temporarily unavailable',
     };
   }
 }
+
 

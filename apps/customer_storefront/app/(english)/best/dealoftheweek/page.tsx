@@ -107,7 +107,11 @@ export default async function DealOfTheWeekPage() {
               '@type': 'Offer',
               price: product.promotionalPrice ?? product.price,
               priceCurrency: 'BDT',
-              availability: 'https://schema.org/InStock',
+              availability:
+                product.stock > 0
+                  ? 'https://schema.org/InStock'
+                  : 'https://schema.org/OutOfStock',
+              ...(dealsData.endsAt ? { priceValidUntil: dealsData.endsAt } : {}),
               seller: {
                 '@type': 'Organization',
                 name: 'Lucky Store',
@@ -135,6 +139,7 @@ export default async function DealOfTheWeekPage() {
         editionPeriod={dealsData.editionPeriod}
         campaignKey={dealsData.campaignKey}
         endsAt={dealsData.endsAt}
+        degradedReason={dealsData.degradedReason}
         error={dealsData.error}
       />
     </main>

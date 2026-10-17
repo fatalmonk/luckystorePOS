@@ -221,7 +221,7 @@ describe('deals logic', () => {
   });
 
   describe('loadWeeklyDeals', () => {
-    it('loads bounded fallback deals when no campaign is active', async () => {
+    it('loads deals via get_storefront_deals RPC when no campaign is active', async () => {
       const mockClient = {
         from: () => ({
           select: () => ({
@@ -233,6 +233,51 @@ describe('deals logic', () => {
           }),
         }),
         rpc: async (name: string, args: any) => {
+          if (name === 'get_storefront_deals') {
+            expect(args.p_min_discount_percent).toBe(10);
+            expect(args.p_limit).toBeLessThanOrEqual(100);
+            return {
+              data: [
+                {
+                  id: 'deal-rpc-1',
+                  name: 'Postgres Filtered Deal',
+                  price: 80,
+                  mrp: 100,
+                  sellable_qty: 15,
+                  category: 'Beverages',
+                  discount_percent: 20,
+                },
+              ],
+              error: null,
+            };
+          }
+          throw new Error(`Unexpected RPC: ${name}`);
+        },
+      };
+
+      const result = await loadWeeklyDeals(mockClient, new Date('2026-10-17T10:00:00Z'));
+      expect(result.activeEdition).toBe(false);
+      expect(result.products).toHaveLength(1);
+      expect(result.products[0].name).toBe('Postgres Filtered Deal');
+      expect(result.products[0].verifiedDiscountPercent).toBe(20);
+      expect(result.degradedReason).toBe('none');
+    });
+
+    it('falls back to secondary search_storefront_catalog when get_storefront_deals fails', async () => {
+      const mockClient = {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                gt: async () => ({ data: [], error: null }),
+              }),
+            }),
+          }),
+        }),
+        rpc: async (name: string, args: any) => {
+          if (name === 'get_storefront_deals') {
+            throw new Error('RPC not found in legacy environment');
+          }
           expect(name).toBe('search_storefront_catalog');
           expect(args.p_limit).toBeLessThanOrEqual(100);
           return {
@@ -256,6 +301,122 @@ describe('deals logic', () => {
       expect(result.products).toHaveLength(1);
       expect(result.products[0].name).toBe('Fallback Item 1');
       expect(result.products[0].verifiedDiscountPercent).toBe(10);
+    });
+
+    it('enforces MIN_CAMPAIGN_ELIGIBLE_PRODUCTS threshold and degrades if fewer items qualify', async () => {
+      // 12 campaign rows exist
+      const campaignRows = Array.from({ length: 12 }, (_, index) => ({
+        item_id: `camp-item-${index}`,
+        expected_name: `Camp Item ${index}`,
+        expected_price: 90,
+        expected_mrp: 100,
+        discount_percent: 5,
+        starts_at: '2026-10-18T18:00:00.000Z',
+        ends_at: '2026-10-25T18:00:00.000Z',
+        campaign_key: 'dealoftheweek-2026-10-19',
+        is_current: true,
+        selection_reason: 'Deal',
+        offer_terms: 'Online only',
+        evidence_source: 'Snapshot',
+        evidence_checked_at: '2026-10-15T10:00:00.000Z',
+      }));
+
+      // Only 6 products qualify in the catalogue (less than MIN_CAMPAIGN_ELIGIBLE_PRODUCTS = 8)
+      const catalogItems = Array.from({ length: 6 }, (_, index) => ({
+        id: `camp-item-${index}`,
+        name: `Camp Item ${index}`,
+        price: 90,
+        mrp: 100,
+        sellable_qty: 5,
+        category: 'Grocery',
+      }));
+
+      const mockClient = {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                gt: async () => ({ data: campaignRows, error: null }),
+              }),
+            }),
+          }),
+        }),
+        rpc: async (name: string, _args: any) => {
+          if (name === 'search_storefront_catalog_v2') {
+            return { data: catalogItems, error: null };
+          }
+          if (name === 'get_storefront_deals') {
+            return {
+              data: [
+                {
+                  id: 'fallback-deal-1',
+                  name: 'Fallback Item 1',
+                  price: 90,
+                  mrp: 100,
+                  sellable_qty: 10,
+                  category: 'Grocery',
+                },
+              ],
+              error: null,
+            };
+          }
+          return { data: [], error: null };
+        },
+      };
+
+      const result = await loadWeeklyDeals(mockClient, new Date('2026-10-20T12:00:00.000Z'));
+      expect(result.activeEdition).toBe(false);
+      expect(result.degradedReason).toBe('insufficient_eligible_products');
+      expect(result.products).toHaveLength(1);
+      expect(result.products[0].name).toBe('Fallback Item 1');
+    });
+
+    it('sets degradedReason to campaign_lookup_failed when campaign table query fails', async () => {
+      const mockClient = {
+        from: () => {
+          throw new Error('Database connection timeout');
+        },
+        rpc: async (name: string) => {
+          if (name === 'get_storefront_deals') {
+            return {
+              data: [
+                {
+                  id: 'fallback-1',
+                  name: 'Fallback Deal',
+                  price: 90,
+                  mrp: 100,
+                  sellable_qty: 10,
+                  category: 'Grocery',
+                },
+              ],
+              error: null,
+            };
+          }
+          return { data: [], error: null };
+        },
+      };
+
+      const result = await loadWeeklyDeals(mockClient, new Date('2026-10-20T12:00:00.000Z'));
+      expect(result.activeEdition).toBe(false);
+      expect(result.degradedReason).toBe('campaign_lookup_failed');
+      expect(result.products).toHaveLength(1);
+    });
+
+    it('sets degradedReason to catalogue_outage when both campaign and catalogue fail', async () => {
+      const mockClient = {
+        from: () => {
+          throw new Error('Database down');
+        },
+        rpc: async () => {
+          throw new Error('RPC unavailable');
+        },
+      };
+
+      const result = await loadWeeklyDeals(mockClient, new Date('2026-10-20T12:00:00.000Z'));
+      expect(result.activeEdition).toBe(false);
+      expect(result.degradedReason).toBe('catalogue_outage');
+      expect(result.products).toHaveLength(0);
+      expect(result.error).toBe('RPC unavailable');
     });
   });
 });

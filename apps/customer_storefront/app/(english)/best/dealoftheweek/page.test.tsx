@@ -123,7 +123,98 @@ describe('Deal of the Week page', () => {
     expect(addToCartButtons.length).toBeGreaterThanOrEqual(2);
 
     // Check bounded RPC call
-    expect(state.rpcCalls.map((c) => c.name)).toContain('search_storefront_catalog');
+    expect(state.rpcCalls.map((c) => c.name)).toContain('get_storefront_deals');
+  });
+
+  it('generates JSON-LD schema with stock-derived availability and valid promotion pricing', async () => {
+    const { container } = render(await DealOfTheWeekPage());
+    const scripts = container.querySelectorAll('script[type="application/ld+json"]');
+    expect(scripts.length).toBe(2);
+
+    const collectionLd = JSON.parse(scripts[1].textContent || '{}');
+    expect(collectionLd['@type']).toBe('CollectionPage');
+    expect(collectionLd.mainEntity['@type']).toBe('ItemList');
+
+    const firstItem = collectionLd.mainEntity.itemListElement[0];
+    expect(firstItem.item.name).toBe('Verified Ramen');
+    expect(firstItem.item.offers.availability).toBe('https://schema.org/InStock');
+    expect(firstItem.item.offers.price).toBe(150);
+  });
+
+  it('renders accessible category filter buttons with role="group" and aria-pressed', async () => {
+    const Page = await DealOfTheWeekPage();
+    render(Page);
+
+    const filterGroup = screen.getByRole('group', { name: /Filter deals by category/i });
+    expect(filterGroup).toBeInTheDocument();
+
+    const allButton = screen.getByRole('button', { name: /All Deals/i });
+    expect(allButton).toHaveAttribute('aria-pressed', 'true');
+
+    const noodlesButton = screen.getByRole('button', { name: /Noodles/i });
+    expect(noodlesButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('degrades to catalogue deals when campaign has fewer than MIN_CAMPAIGN_ELIGIBLE_PRODUCTS', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-19T12:00:00.000Z'));
+
+    // 12 campaign rows exist, but only 3 resolve to valid products in catalogue
+    state.campaignRows = Array.from({ length: 12 }, (_, index) => ({
+      item_id: `campaign-item-${index}`,
+      expected_name: `Campaign item ${index}`,
+      expected_price: 90,
+      expected_mrp: 100,
+      discount_percent: 5,
+      starts_at: '2026-10-18T18:00:00.000Z',
+      ends_at: '2026-10-25T18:00:00.000Z',
+      campaign_key: 'dealoftheweek-2026-10-19',
+      is_current: true,
+      selection_reason: `Reason ${index}`,
+      offer_terms: 'Online checkout only; valid this week.',
+      evidence_source: 'Catalogue snapshot',
+      evidence_checked_at: '2026-10-15T15:52:22.000Z',
+    }));
+
+    // Catalogue only has 3 items matching (fewer than threshold of 8)
+    state.catalogRows = [
+      {
+        id: 'campaign-item-0',
+        name: 'Campaign item 0',
+        price: 90,
+        mrp: 100,
+        qty_on_hand: 5,
+        sellable_qty: 5,
+        category: 'Grocery',
+      },
+      {
+        id: 'campaign-item-1',
+        name: 'Campaign item 1',
+        price: 90,
+        mrp: 100,
+        qty_on_hand: 5,
+        sellable_qty: 5,
+        category: 'Grocery',
+      },
+      {
+        id: 'campaign-item-2',
+        name: 'Campaign item 2',
+        price: 90,
+        mrp: 100,
+        qty_on_hand: 5,
+        sellable_qty: 5,
+        category: 'Grocery',
+      },
+    ];
+
+    const Page = await DealOfTheWeekPage();
+    render(Page);
+
+    // Should NOT show Weekly Value Edition badge because it degraded
+    expect(screen.queryByText(/Weekly Value Edition/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Verified Store Deals/i)).toBeInTheDocument();
+
+    vi.useRealTimers();
   });
 
   it('hides products with no sellable stock even when physical on-hand quantity is positive', async () => {
