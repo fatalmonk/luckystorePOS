@@ -28,6 +28,9 @@ concurrency:
   group: ${{ github.workflow }}-test-supabase
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Lint & Typecheck

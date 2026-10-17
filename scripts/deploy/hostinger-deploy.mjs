@@ -58,6 +58,7 @@ function apiRequest(method, endpoint, body = null, headers = {}) {
     const req = https.request(url, {
       method,
       headers: {
+        'User-Agent': 'LuckyStore-Deploy/1.0',
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         ...headers
@@ -83,12 +84,13 @@ function apiRequest(method, endpoint, body = null, headers = {}) {
   });
 }
 
-function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize) {
+function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
   return new Promise((resolve, reject) => {
     const targetUrl = new URL(uploadUrl.startsWith('http') ? uploadUrl : `https://srv1621-files.hstgr.io${uploadUrl}`);
     const postReq = https.request(`${targetUrl.origin}${targetUrl.pathname}/app.zip?override=true`, {
       method: 'POST',
       headers: {
+        'User-Agent': 'LuckyStore-Deploy/1.0',
         'X-Auth': authKey,
         'X-Auth-Rest': restAuth,
         'Tus-Resumable': '1.0.0',
@@ -97,13 +99,22 @@ function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize) {
       }
     }, (postRes) => {
       if (postRes.statusCode !== 201 && postRes.statusCode !== 200) {
-        return reject(new Error(`TUS creation failed with status ${postRes.statusCode}`));
+        let errBody = '';
+        postRes.on('data', chunk => errBody += chunk);
+        postRes.on('end', () => {
+          const detail = (errBody && errBody.length < 300) ? errBody.trim() : postRes.statusMessage;
+          const err = new Error(`TUS creation failed with status ${postRes.statusCode}: ${detail}`);
+          err.statusCode = postRes.statusCode;
+          reject(err);
+        });
+        return;
       }
 
       console.log('Streaming archive via TUS PATCH...');
       const patchReq = https.request(`${targetUrl.origin}${targetUrl.pathname}/app.zip?override=true`, {
         method: 'PATCH',
         headers: {
+          'User-Agent': 'LuckyStore-Deploy/1.0',
           'X-Auth': authKey,
           'X-Auth-Rest': restAuth,
           'Tus-Resumable': '1.0.0',
@@ -115,7 +126,14 @@ function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize) {
         if (patchRes.statusCode === 204 || patchRes.statusCode === 200) {
           resolve();
         } else {
-          reject(new Error(`TUS upload failed with status ${patchRes.statusCode}`));
+          let errBody = '';
+          patchRes.on('data', chunk => errBody += chunk);
+          patchRes.on('end', () => {
+            const detail = (errBody && errBody.length < 300) ? errBody.trim() : patchRes.statusMessage;
+            const err = new Error(`TUS upload failed with status ${patchRes.statusCode}: ${detail}`);
+            err.statusCode = patchRes.statusCode;
+            reject(err);
+          });
         }
       });
 
@@ -126,6 +144,23 @@ function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize) {
     postReq.on('error', reject);
     postReq.end();
   });
+}
+
+async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize);
+      return;
+    } catch (err) {
+      const isTransient = [403, 408, 409, 429, 500, 502, 503, 504].includes(err.statusCode);
+      if (attempt === maxRetries || !isTransient) {
+        throw err;
+      }
+      const backoffSec = attempt * 2;
+      console.warn(`⚠️  TUS upload attempt ${attempt}/${maxRetries} failed (${err.message}). Retrying in ${backoffSec}s...`);
+      await new Promise(r => setTimeout(r, backoffSec * 1000));
+    }
+  }
 }
 
 async function resolveAccountUsername(targetDomain) {
@@ -145,7 +180,7 @@ async function resolveAccountUsername(targetDomain) {
 async function run() {
   try {
     const username = await resolveAccountUsername(domain);
-    console.log(`Resolved Hostinger account username: ${username}`);
+    console.log('Hostinger account configuration resolved.');
 
     // 1. Generate TUS upload credentials
     console.log('1. Requesting upload URL from Hostinger API...');

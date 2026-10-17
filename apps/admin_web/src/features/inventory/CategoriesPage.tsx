@@ -58,12 +58,20 @@ interface CategoryFormData {
 // Helpers
 
 function slugify(name: string) {
-  return name
+  const converted = name
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[\s_-]+/g, '-');
+  let start = 0;
+  let end = converted.length;
+  while (start < end && converted.charCodeAt(start) === 45) {
+    start++;
+  }
+  while (end > start && converted.charCodeAt(end - 1) === 45) {
+    end--;
+  }
+  return converted.slice(start, end);
 }
 
 function getCategoryDisplay(cat: Category) {

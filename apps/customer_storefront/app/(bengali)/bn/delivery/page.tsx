@@ -109,7 +109,7 @@ export default function BengaliDeliveryPage() {
             </div>
           </dl>
         </section>
-        <Link href="/bn/category/rice-and-grain" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">কেনাকাটা শুরু করুন</Link>
+        <Link href="/bn/category" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">সব পণ্য দেখুন</Link>
       </main>
       <Footer />
       <BottomNav />

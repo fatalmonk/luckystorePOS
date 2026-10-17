@@ -160,7 +160,7 @@ export default function RootLayoutDocument({
               '@id': 'https://www.luckystore1947.com/#organization',
               name: 'Lucky Store',
               alternateName: ['Lucky Store 1947', 'Lucky Store Chattogram'],
-              description: 'Lucky Store delivers groceries within 1 km of the store in Chattogram. Delivery is free for orders over ৳500 and costs ৳40 for orders below ৳500.',
+              description: 'Lucky Store has served the Chattogram community since 1947. Visit our supermarket at 665 Percival Hill Road, Emdad Park, Chawkbazar for everyday groceries, pantry staples, snacks, drinks, and household essentials. Shop in store or order through our website for local delivery within our service area.',
               url: 'https://www.luckystore1947.com',
               logo: {
                 '@type': 'ImageObject',
@@ -169,7 +169,7 @@ export default function RootLayoutDocument({
                 height: '512',
               },
               image: 'https://www.luckystore1947.com/lucky-store-social-share-v2.png',
-              telephone: '+880 1731-944544',
+              telephone: '+8801731944544',
               email: 'hello@luckystore1947.com',
               foundingDate: '1947',
               currenciesAccepted: 'BDT',
@@ -181,7 +181,7 @@ export default function RootLayoutDocument({
                 'Ispahani and packaged tea blends',
                 'Aarong dairy and milk',
               ],
-              hasMap: 'https://maps.google.com/?cid=1342606622879549324',
+              hasMap: 'https://www.google.com/maps?cid=10553278394662472576',
               areaServed: {
                 '@type': 'GeoCircle',
                 geoMidpoint: {
@@ -231,7 +231,7 @@ export default function RootLayoutDocument({
                 'https://facebook.com/luckystore1947',
                 'https://instagram.com/luckystore1947',
                 'https://wa.me/8801731944544',
-                'https://maps.google.com/?cid=1342606622879549324',
+                'https://www.google.com/maps?cid=10553278394662472576',
               ],
             }),
           }}

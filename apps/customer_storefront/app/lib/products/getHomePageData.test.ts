@@ -11,7 +11,9 @@ vi.mock('../supabase', () => ({ supabase: {} }));
 
 vi.mock('./index', () => ({
   createProductRepository: vi.fn(() => ({ repo: { search, getCategories, getById: vi.fn() } })),
-  RuleBasedBrandParser: vi.fn().mockImplementation(() => ({ parse: (value: string) => value })),
+  RuleBasedBrandParser: vi.fn().mockImplementation(function (this: { parse: (value: string) => string }) {
+    this.parse = (value: string) => value;
+  }),
 }));
 
 vi.mock('../storefront-promotions', () => ({
@@ -39,9 +41,9 @@ describe('getHomePageData catalogue diagnostics', () => {
     getCategories.mockResolvedValue([
       { id: 'category-rice', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾' },
     ]);
-    vi.mocked(RuleBasedBrandParser).mockImplementation(
-      () => ({ parse: (value: string) => value }) as never,
-    );
+    vi.mocked(RuleBasedBrandParser).mockImplementation(function (this: { parse: (value: string) => string }) {
+      this.parse = (value: string) => value;
+    } as never);
   });
 
   afterEach(() => {

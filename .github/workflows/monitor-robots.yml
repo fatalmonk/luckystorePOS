@@ -2,6 +2,10 @@ name: Monitor robots.txt
 on:
   schedule:
     - cron: '0 * * * *' # every hour
+
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

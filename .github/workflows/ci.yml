@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ main, develop, codex/receipt-vision-pipeline ]
 
+permissions:
+  contents: read
+
 jobs:
   admin_web_check:
     runs-on: ubuntu-latest

@@ -61,9 +61,9 @@ vi.mock('../products/index', () => ({
       ]),
     },
   })),
-  RuleBasedBrandParser: vi.fn().mockImplementation(() => ({
-    parse: vi.fn((str: string) => str),
-  })),
+  RuleBasedBrandParser: vi.fn().mockImplementation(function (this: { parse: (str: string) => string }) {
+    this.parse = vi.fn((str: string) => str);
+  }),
 }));
 
 import { BENGALI_CATEGORY_NAMES, getHomePageData } from '../products/getHomePageData';
