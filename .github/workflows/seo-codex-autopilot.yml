@@ -43,23 +43,35 @@ jobs:
       - name: Validate Search Console collector
         run: python3 -m unittest discover -s scripts/seo -p 'test_gsc_snapshot.py' -v
       - name: Capture read-only Search Console evidence
+        id: gsc_capture
+        continue-on-error: true
         env:
           GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
           GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
           GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
           GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
-        run: python3 scripts/seo/gsc_snapshot.py --output /tmp/gsc-input.json
+        run: |
+          if [ -z "$GSC_CLIENT_ID" ] || [ -z "$GSC_CLIENT_SECRET" ] || [ -z "$GSC_REFRESH_TOKEN" ]; then
+            echo "Search Console credentials missing; recording status as unavailable."
+            echo '{"status": "unavailable", "reason": "Missing GSC credentials"}' > /tmp/gsc-input.json
+          elif ! python3 scripts/seo/gsc_snapshot.py --output /tmp/gsc-input.json; then
+            echo "Search Console capture failed; recording status as unavailable."
+            echo '{"status": "unavailable", "reason": "Search Console API capture failed"}' > /tmp/gsc-input.json
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: seo-gsc-evidence
           path: /tmp/gsc-input.json
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 1
 
   propose:
     needs: gsc
     if: >-
+      always() &&
       github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main' &&
+      !contains(needs.gsc.result, 'cancelled') &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'main' &&
@@ -78,7 +90,7 @@ jobs:
       codex: ${{ steps.codex.outcome }}
       guard: ${{ steps.guard.outcome }}
     steps:
-      - name: Checkout main without credentials
+      - name: Checkout audited commit without credentials
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
@@ -99,9 +111,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          count=$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName == "seo/codex-autopilot")] | length')
+          count=$(gh pr list --base main --state open --json headRefName,labels --jq '[.[] | select((.headRefName | startswith("seo/")) or ([.labels[].name] | index("seo")))] | length')
           if [ "$count" -gt 0 ]; then
-            echo "An existing SEO Codex PR awaits review; do not overwrite it."
+            echo "An existing SEO PR awaits review; do not overwrite it."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -118,6 +130,7 @@ jobs:
 
       - name: Download credential-free Search Console evidence
         if: steps.existing_pr.outputs.skip != 'true'
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: seo-gsc-evidence
@@ -297,7 +310,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           test "$(git rev-parse HEAD)" = "$BASE_SHA"
-          count=$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName == "seo/codex-autopilot")] | length')
+          count=$(gh pr list --base main --state open --json headRefName,labels --jq '[.[] | select((.headRefName | startswith("seo/")) or ([.labels[].name] | index("seo")))] | length')
           test "$count" -eq 0
       - uses: actions/download-artifact@v4
         with:

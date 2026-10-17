@@ -17,27 +17,35 @@ Use this template for every PR opened by the SEO Autopilot.
 ```markdown
 ## SEO Autopilot Run — [YYYY-MM-DD]
 
-**Run phase:** [Technical / Content / AI Visibility / State Update]
-**Priority implemented:** [e.g., FAQPage schema on /delivery]
+**Run phase:** [Technical / Content / Maintenance / State Update]
+**Priority implemented:** [e.g., Bengali delivery footer localization]
+**Primary business objective:** Completed grocery orders within 1 km Chawkbazar delivery area
 
 ### What changed
 - [Bullet list of files changed]
 - [What was added / removed / modified]
 
-### Why
-[1-2 sentences on the SEO opportunity this addresses, from the priority list in `seo/state.md`]
+### Evidence & Rationale
+- **Observed source defect / gap:** [Specific issue identified from code, audit artifact, or runbook]
+- **Customer / business impact:** [How this impacts grocery discovery, eligibility clarity, or conversion]
 
-### Verification
-- [ ] Schema validates at https://validator.schema.org
-- [ ] robots.txt still passes AI bot check
-- [ ] Sitemap URL count matches intended additions and removals (run: `curl -s https://www.luckystore1947.com/sitemap.xml | grep -o '<loc>' | wc -l`)
-- [ ] No TypeScript errors (`cd apps/customer_storefront && npm run typecheck`)
-- [ ] `seo/state.md` updated with run metrics
+### Verification Checklist
+- [ ] Deterministic diff policy satisfied (max 12 files, within allowlisted paths)
+- [ ] ESLint & TypeScript clean (`npm run typecheck`)
+- [ ] Tests pass (`npm run test -- --run`)
+- [ ] Production build succeeds (`npm run build`)
+- [ ] Rendered verification completed on local fixture runner
+- [ ] `seo/state.md` updated with run metrics and changelog
 
-### AI visibility impact expected
-[Expected citation gains and timeline]
+### Verification Limitations
+- Local verification uses published snapshots and mock catalog fixtures.
+- Live Hostinger routing, production Supabase data, and Google indexing remain unverified until deployment.
+- No authenticated order conversion lift or ranking gain is claimed without production measurement.
+
+### Rollback Guidance
+- Revert commit on `main`. No database migrations or persistent storage changes are introduced.
 
 ### Do not merge until
-- [ ] PR author (SEO agent) has reviewed automated test results
-- [ ] Reviewer has checked schema output in browser DevTools
+- [ ] Automated CI workflows pass
+- [ ] Human reviewer has inspected rendered pages and verified source diff
 ```

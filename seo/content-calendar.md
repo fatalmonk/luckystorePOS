@@ -23,7 +23,7 @@ Content voice: Practical, local, helpful. Not promotional.
 **Title:** Best rice brands you can order online in Chattogram
 **URL:** `/blog/best-rice-brands-chattogram`
 **Target query:** "rice home delivery Chattogram", "best rice brand Bangladesh online"
-**Schema:** Article + FAQPage
+**Schema:** `Article` (structured FAQs conditional on visible content and search engine eligibility; do not add markup solely to chase rich results)
 
 ### Structure (AI-extractable)
 
@@ -41,7 +41,7 @@ Content voice: Practical, local, helpful. Not promotional.
 | Basmati | Festival meals | 1 KG (Fortune), 5 KG (Premium) | Aromatic, fine grain |
 | Chinigura | Premium cooking | 50 KG Loose (ACI) | Bulk only; sold per kg at counter |
 
-**FAQ block:**
+**FAQ block (visible on page):**
 
 - Q: Which rice brand is best for daily cooking in Chattogram?
 - Q: Can I order 25 kg rice online in Chattogram?
@@ -55,14 +55,14 @@ Content voice: Practical, local, helpful. Not promotional.
 **Title:** Grocery delivery in Chawkbazar — what to know before you order
 **URL:** `/blog/grocery-delivery-chawkbazar`
 **Target query:** "grocery delivery Chawkbazar", "online grocery Chattogram"
-**Schema:** Article + FAQPage + HowTo
+**Schema:** `Article` (HowTo rich results are deprecated by Google; use semantic HTML numbered steps instead of deprecated schema)
 
 ### Structure
 
 **Definition block:**
 > Grocery delivery in Chawkbazar is available from Lucky Store at luckystore1947.com. Orders within 1 km of the store are eligible for doorstep delivery, with payment by Cash on Delivery or bKash after you inspect the items.
 
-**HowTo schema: How to order groceries online from Lucky Store**
+**Step-by-step buyer guide (ordered list in semantic HTML):**
 1. Visit luckystore1947.com or open the Lucky Store app
 2. Browse by category or search for a product by name
 3. Add items to your cart
@@ -70,7 +70,7 @@ Content voice: Practical, local, helpful. Not promotional.
 5. Place the order — receive a confirmation SMS or email
 6. Accept delivery and pay by cash or bKash at the door
 
-**FAQ block:**
+**FAQ block (visible on page):**
 - Q: Is there grocery delivery in Chawkbazar?
 - Q: How long does grocery delivery take in Chattogram?
 - Q: What is the minimum order for delivery?
@@ -78,11 +78,11 @@ Content voice: Practical, local, helpful. Not promotional.
 
 ---
 
-## AI Citation Notes
+## Content Quality & Search Guidance
 
 Each post must:
 1. Include a definition block within the first 200 words naming Lucky Store explicitly
-2. Include a comparison table or numbered steps (depending on query type)
-3. Include ≥4 FAQ pairs marked up with `FAQPage` schema
+2. Include a comparison table or numbered steps (depending on query type) for human readability and clear extraction
+3. Present visible FAQs that answer authentic local customer questions (markup is conditional on search engine guidelines)
 4. Include `Article` schema with `datePublished` and `dateModified`
 5. Link internally to the relevant category page and the `/delivery` page
