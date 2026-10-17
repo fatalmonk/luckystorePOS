@@ -1,10 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Meta catalog export compliance, Playwright high-res image pipeline, and image host security
-Done: strict CDN host check in admin_web, cart price reconciliation in storefront, Playwright high-res scraper added, meta-catalog-ready.csv fully reconciled (172 rows, pack prices & headers fixed, Nescafe 1000px JPEG resolved)
+Current: Competitor scraper Chattogram expansion & Meta catalog image standardization
+Done: strict CDN host check in admin_web, cart price reconciliation in storefront, Playwright high-res scraper with Jev search integration, meta-catalog-ready.csv fully reconciled (172 rows, pack prices & headers fixed, 100% SKU-based URLs), standardized 2 UUID images to official SKUs (SN-DOD-GEN-62G-3/4), 181 catalog images normalized to authentic high-res 1000x1000 JPEGs on pure #FFFFFF with smart_product_fit (88% fill, zero duplicate clusters), generated 183 matching 1000x1000 WebPs mirrored to catalog-images/sku-named, uploaded 366 assets (183 JPG + 183 WebP) to Cloudflare R2 bucket lucky-store-images/products/ (verified HTTP 200 CDN delivery), implemented and deployed 3 Chattogram competitor adapters (The Basket BD, Khulshi Mart, Pai Mart) + Shwapno selector fix + cooldown backoff to lucky-store-competitor-scraper; addressed all Hermes audit findings: converted workflow trigger to standard Workers triggers.crons (0 21 * * SUN) with scheduled() handler, fixed price regex to strictly require currency marker on fallback text (tested Milk 1L Tk 120 -> 120), implemented auto-paginated inventory loading in supabase-client (>1000 items support), fixed all lint and typecheck errors (54/54 tests passing)
 Branch: codex/ui-improvements
-Health: all tests pass (admin_web 118/118, storefront 533/533, export-meta-catalog 7/7)
+Health: all tests pass (admin_web 118/118, storefront 533/533, export-meta-catalog 7/7, images worker 5/5, competitor-scraper 54/54, playwright scraper tests 10/10), 183/183 images 1000x1000 JPG & WebP synced to R2
 Last Synced: 2026-10-17
-ctx: ui-improvements | done: playwright scraper, meta-catalog-ready reconciled | next: upload meta-jpg images to R2 and submit feed to Meta
-
-
+ctx: audit remediations deployed | done: 54/54 competitor tests pass, deployed v52807e41 with active cron trigger | next: ready to commit
