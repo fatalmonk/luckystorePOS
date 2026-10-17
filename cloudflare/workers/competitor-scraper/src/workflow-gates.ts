@@ -1,22 +1,49 @@
-import type { RunSummary } from "./types.ts";
-import { isAutomationEnabled, isSourceApproved, parseStoreAllowlist } from "./keys.ts";
+import type { CompetitorName, RunSummary } from "./types.ts";
+import { isAutomationEnabled, isSourceApproved, parseStoreAllowlist, type SourceApprovalEnv } from "./keys.ts";
 
-interface GateEnv {
+export type GateEnv = SourceApprovalEnv & {
   AUTOMATION_ENABLED: string;
   STORE_ALLOWLIST: string;
-  CHALDAL_SOURCE_APPROVED: string;
-  SHWAPNO_SOURCE_APPROVED: string;
-}
+};
+
+export const ALL_COMPETITORS: CompetitorName[] = [
+  "chaldal",
+  "shwapno",
+  "khulshi-mart",
+  "the-basket",
+  "pai-mart",
+];
 
 export function evaluateRunGate(
   env: GateEnv,
 ): "automation-disabled" | "empty-allowlist" | "no-approved-sources" | null {
   if (!isAutomationEnabled(env)) return "automation-disabled";
   if (parseStoreAllowlist(env.STORE_ALLOWLIST).length === 0) return "empty-allowlist";
-  if (!isSourceApproved(env, "chaldal") && !isSourceApproved(env, "shwapno")) {
+  const hasApprovedSource = ALL_COMPETITORS.some((comp) => isSourceApproved(env, comp));
+  if (!hasApprovedSource) {
     return "no-approved-sources";
   }
   return null;
+}
+
+export function emptyCompetitorSummary() {
+  return {
+    found: 0,
+    matched: 0,
+    unmatched: 0,
+    inserted: 0,
+    duplicates: 0,
+    rejected: 0,
+    failed: 0,
+    error: null,
+  };
+}
+
+export function buildEmptyCompetitorsMap(): Record<CompetitorName, ReturnType<typeof emptyCompetitorSummary>> {
+  return ALL_COMPETITORS.reduce((acc, name) => {
+    acc[name] = emptyCompetitorSummary();
+    return acc;
+  }, {} as Record<CompetitorName, ReturnType<typeof emptyCompetitorSummary>>);
 }
 
 export function buildNoOpSummary(
@@ -35,19 +62,6 @@ export function buildNoOpSummary(
     duplicates: 0,
     rejected: 0,
     failed: 0,
-    competitors: { chaldal: emptyCompetitor(), shwapno: emptyCompetitor() },
-  };
-}
-
-function emptyCompetitor() {
-  return {
-    found: 0,
-    matched: 0,
-    unmatched: 0,
-    inserted: 0,
-    duplicates: 0,
-    rejected: 0,
-    failed: 0,
-    error: null,
+    competitors: buildEmptyCompetitorsMap(),
   };
 }

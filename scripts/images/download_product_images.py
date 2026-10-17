@@ -10,6 +10,8 @@ import re
 import sys
 import time
 import hashlib
+import csv
+import io
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
@@ -20,6 +22,8 @@ from PIL import Image
 # Configuration
 MISSING_IMAGES_FILE = "missing_images.md"
 OUTPUT_DIR = "catalog-images/sku-named"
+META_MIN_DIMENSION = 500
+META_MAX_BYTES = 8_000_000
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 # Bangladesh e-commerce sites to search (in priority order)
@@ -87,6 +91,22 @@ def parse_missing_images(filepath: str) -> list[dict]:
     return products
 
 
+def parse_meta_catalog(filepath: str) -> list[dict]:
+    """Read the reviewed Meta CSV and use its id/title as the download input."""
+    products = []
+    with open(filepath, "r", encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            product_id = (row.get("id") or "").strip()
+            title = (row.get("title") or "").strip()
+            if product_id and title:
+                products.append({
+                    "category": "reviewed-meta-catalog",
+                    "name": title,
+                    "sku": product_id,
+                })
+    return products
+
+
 def sanitize_filename(sku: str) -> str:
     """Sanitize SKU for use as filename."""
     return re.sub(r"[^a-zA-Z0-9_-]", "_", sku)
@@ -119,6 +139,26 @@ def download_image(url: str, save_path: str) -> bool:
     except Exception as e:
         print(f"  ❌ Download failed: {e}")
         return False
+
+
+def download_meta_image(url: str, output_dir: str, sku: str) -> dict:
+    """Download a candidate and save a validated JPEG suitable for Meta."""
+    try:
+        response = session.get(url, timeout=20)
+        response.raise_for_status()
+        with Image.open(io.BytesIO(response.content)) as source:
+            if source.width < META_MIN_DIMENSION or source.height < META_MIN_DIMENSION:
+                return {"status": "rejected", "reason": f"dimensions {source.width}x{source.height}"}
+            image = source.convert("RGB")
+            path = os.path.join(output_dir, f"{sanitize_filename(sku)}.jpg")
+            image.save(path, "JPEG", quality=92, optimize=True)
+        size = os.path.getsize(path)
+        if size > META_MAX_BYTES:
+            os.remove(path)
+            return {"status": "rejected", "reason": f"size {size} bytes"}
+        return {"status": "success", "path": path}
+    except Exception as e:
+        return {"status": "failed", "reason": str(e)}
 
 
 def convert_to_webp(jpg_path: str, webp_path: str, quality: int = 85) -> bool:
@@ -267,7 +307,7 @@ def detect_brand(product_name: str) -> str | None:
     return None
 
 
-def download_with_sku(product: dict, output_dir: str, dry_run: bool = False, webp_only: bool = False) -> dict:
+def download_with_sku(product: dict, output_dir: str, dry_run: bool = False, webp_only: bool = False, meta_mode: bool = False) -> dict:
     """Download image for a single product and optionally convert to WebP."""
     name = product["name"]
     sku = product["sku"]
@@ -277,8 +317,10 @@ def download_with_sku(product: dict, output_dir: str, dry_run: bool = False, web
     jpg_path = os.path.join(output_dir, f"{safe_sku}.jpg")
     webp_path = os.path.join(output_dir, f"{safe_sku}.webp")
 
-    # Skip if WebP already exists (primary format)
-    if os.path.exists(webp_path):
+    if meta_mode and os.path.exists(jpg_path):
+        return {"sku": sku, "status": "exists", "path": jpg_path}
+    # Skip if WebP already exists (legacy mode)
+    if not meta_mode and os.path.exists(webp_path):
         return {"sku": sku, "status": "exists", "path": webp_path}
 
     if dry_run:
@@ -286,6 +328,17 @@ def download_with_sku(product: dict, output_dir: str, dry_run: bool = False, web
         return {"sku": sku, "status": "dry_run", "name": name}
 
     print(f"\n[{sku}] {name}")
+
+    if meta_mode:
+        for source_name, finder in (("Chaldal", search_chaldal), ("Shwapno", search_shwapno), ("DuckDuckGo", search_duckduckgo)):
+            img_url = finder(name)
+            if not img_url:
+                continue
+            result = download_meta_image(img_url, output_dir, sku)
+            if result["status"] == "success":
+                return {"sku": sku, "status": "success", "path": result["path"], "source": source_name}
+            print(f"  ⚠️  Rejected {source_name} candidate: {result.get('reason')}")
+        return {"sku": sku, "status": "failed", "name": name}
 
     # Strategy 1: Try brand site if brand is detectable
     brand = detect_brand(name)
@@ -411,6 +464,11 @@ def main():
         action="store_true",
         help="Download only WebP format (skip JPG)",
     )
+    parser.add_argument(
+        "--meta-csv",
+        action="store_true",
+        help="Read a reviewed Meta catalog CSV and save validated JPEG originals (no WebP conversion)",
+    )
 
     args = parser.parse_args()
 
@@ -419,7 +477,7 @@ def main():
         print(f"Error: Input file not found: {args.input}")
         sys.exit(1)
 
-    products = parse_missing_images(args.input)
+    products = parse_meta_catalog(args.input) if args.meta_csv else parse_missing_images(args.input)
     print(f"Found {len(products)} products in {args.input}")
 
     # Filter if requested
@@ -447,7 +505,7 @@ def main():
         print(f"\n{'='*60}")
         print(f"Progress: {i}/{len(products)}")
 
-        result = download_with_sku(product, args.output, dry_run=args.dry_run, webp_only=args.webp_only)
+        result = download_with_sku(product, args.output, dry_run=args.dry_run, webp_only=args.webp_only, meta_mode=args.meta_csv)
         status = result["status"]
         results[status] = results.get(status, 0) + 1
 

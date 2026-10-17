@@ -15,11 +15,17 @@ import {
   parseStoreAllowlist,
   workflowVersion,
 } from "./keys.ts";
-import { runChaldalAdapter, runShwapnoAdapter } from "./adapters/index.ts";
+import {
+  runChaldalAdapter,
+  runKhulshiMartAdapter,
+  runPaiMartAdapter,
+  runShwapnoAdapter,
+  runTheBasketAdapter,
+} from "./adapters/index.ts";
 import { matchAll } from "./matcher.ts";
 import { createSupabaseClient, loadMatchableInventory } from "./supabase-client.ts";
 import { ingestObservations } from "./ingest.ts";
-import { buildNoOpSummary, evaluateRunGate } from "./workflow-gates.ts";
+import { buildEmptyCompetitorsMap, buildNoOpSummary, evaluateRunGate } from "./workflow-gates.ts";
 import type { Env } from "./index.ts";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
@@ -68,6 +74,9 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
     const adapters: { name: CompetitorName; run: typeof runChaldalAdapter }[] = [];
     if (isSourceApproved(env, "chaldal")) adapters.push({ name: "chaldal", run: runChaldalAdapter });
     if (isSourceApproved(env, "shwapno")) adapters.push({ name: "shwapno", run: runShwapnoAdapter });
+    if (isSourceApproved(env, "khulshi-mart")) adapters.push({ name: "khulshi-mart", run: runKhulshiMartAdapter });
+    if (isSourceApproved(env, "the-basket")) adapters.push({ name: "the-basket", run: runTheBasketAdapter });
+    if (isSourceApproved(env, "pai-mart")) adapters.push({ name: "pai-mart", run: runPaiMartAdapter });
 
     const perCompetitorResults = new Map<CompetitorName, StepResult>();
     const browser: BrowserBinding = {
@@ -77,11 +86,14 @@ export class CompetitorScrapeWorkflow extends WorkflowEntrypoint<Env, WorkflowPa
         >,
     };
 
-    for (const adapter of adapters) {
+    for (const [i, adapter] of adapters.entries()) {
+      if (i > 0 && typeof step.sleep === "function") {
+        await step.sleep(`cooldown-before-${adapter.name}`, "15 seconds");
+      }
       try {
         const result = await step.do(
           `scrape-${adapter.name}`,
-          { retries: { limit: 2, delay: "5 seconds" } },
+          { retries: { limit: 2, delay: "10 seconds", backoff: "exponential" } },
           async () => {
             const scrapeLog = createLogger(runKey);
             const adapterResult = await adapter.run(browser, scrapeLog);
@@ -216,10 +228,6 @@ function buildEmptySummary(runId: string, scheduledAt: string, version: string):
     duplicates: 0,
     rejected: 0,
     failed: 0,
-    competitors: { chaldal: emptyCompetitor(), shwapno: emptyCompetitor() },
+    competitors: buildEmptyCompetitorsMap(),
   };
-}
-
-function emptyCompetitor() {
-  return { found: 0, matched: 0, unmatched: 0, inserted: 0, duplicates: 0, rejected: 0, failed: 0, error: null };
 }

@@ -29,7 +29,7 @@ PUBLIC_BASE_URL = "https://images.luckystore1947.com"
 
 [previews.vars]
 ALLOWED_ORIGINS = "https://luckystore1947.com,https://lucky-store-bd.vercel.app,https://admin.luckystore1947.com,https://lucky-store-pos-six.vercel.app,http://localhost:3000,http://localhost:5173"
-PUBLIC_BASE_URL = ""
+PUBLIC_BASE_URL = "https://images.luckystore1947.com"
 
 [[previews.r2_buckets]]
 binding = "IMAGES"

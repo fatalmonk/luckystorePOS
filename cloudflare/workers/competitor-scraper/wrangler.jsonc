@@ -17,16 +17,21 @@
     {
       "name": "lucky-store-competitor-scrape",
       "binding": "COMPETITOR_SCRAPE_WORKFLOW",
-      "class_name": "CompetitorScrapeWorkflow",
-      "schedules": ["0 21 * * SUN"]
+      "class_name": "CompetitorScrapeWorkflow"
     }
   ],
+  "triggers": {
+    "crons": ["0 21 * * SUN"]
+  },
   "vars": {
-    "AUTOMATION_ENABLED": "false",
+    "AUTOMATION_ENABLED": "true",
     "WORKFLOW_VERSION": "competitor-scrape-v1",
-    "STORE_ALLOWLIST": "[]",
-    "SUPABASE_URL": "https://example.invalid",
-    "CHALDAL_SOURCE_APPROVED": "false",
-    "SHWAPNO_SOURCE_APPROVED": "false"
+    "STORE_ALLOWLIST": "[\"4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd\"]",
+    "SUPABASE_URL": "https://hvmyxyccfnkrbxqbhlnm.supabase.co",
+    "CHALDAL_SOURCE_APPROVED": "true",
+    "SHWAPNO_SOURCE_APPROVED": "true",
+    "KHULSHI_MART_SOURCE_APPROVED": "true",
+    "THE_BASKET_SOURCE_APPROVED": "true",
+    "PAI_MART_SOURCE_APPROVED": "true"
   }
 }

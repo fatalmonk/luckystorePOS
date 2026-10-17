@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ingestObservations, retryableIngest } from "../../src/ingest.ts";
+import { loadMatchableInventory } from "../../src/supabase-client.ts";
 import { createFakeSupabaseClient } from "../fakes/supabase.ts";
 import { createLogger } from "../../src/logger.ts";
 import type { IngestBatchResult, ScrapedObservation } from "../../src/types.ts";
@@ -124,5 +125,18 @@ describe("ingest", () => {
     );
     expect(result.inserted).toBe(1);
     expect(supabase.calls).toHaveLength(3);
+  });
+
+  it("loadMatchableInventory paginates catalogs exceeding 1000 items", async () => {
+    const mockInventory = Array.from({ length: 1500 }, (_, i) => ({
+      id: `item-${i + 1}`,
+      name: `Product ${i + 1}`,
+      sku: `SKU-${i + 1}`,
+    }));
+    const supabase = createFakeSupabaseClient({ inventory: mockInventory });
+    const items = await loadMatchableInventory(supabase, "store-1");
+    expect(items).toHaveLength(1500);
+    expect(items[0]?.id).toBe("item-1");
+    expect(items[1499]?.id).toBe("item-1500");
   });
 });

@@ -1,8 +1,8 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Dependabot vulnerabilities remediation (branch fix/dependabot-security-fixes)
-Done: PR #488, #490, #491, #492, #493 merged; 33/38 Dependabot vulnerabilities resolved across root, storefront, workers, tests, and scrapers
-Branch: fix/dependabot-security-fixes
-Health: all CI/CD, CodeQL (0 alerts), Admin Web (118 tests pass), Storefront (533 tests pass), Agent Worker (8 tests pass), Competitor Scraper (52 tests pass)
+Current: Competitor scraper Chattogram expansion & Meta catalog image standardization
+Done: strict CDN host check in admin_web, cart price reconciliation in storefront, Playwright high-res scraper with Jev search integration, meta-catalog-ready.csv fully reconciled (172 rows, pack prices & headers fixed, 100% SKU-based URLs), standardized 2 UUID images to official SKUs (SN-DOD-GEN-62G-3/4), 181 catalog images normalized to authentic high-res 1000x1000 JPEGs on pure #FFFFFF with smart_product_fit (88% fill, zero duplicate clusters), generated 183 matching 1000x1000 WebPs mirrored to catalog-images/sku-named, uploaded 366 assets (183 JPG + 183 WebP) to Cloudflare R2 bucket lucky-store-images/products/ (verified HTTP 200 CDN delivery), implemented and deployed 3 Chattogram competitor adapters (The Basket BD, Khulshi Mart, Pai Mart) + Shwapno selector fix + cooldown backoff to lucky-store-competitor-scraper; addressed all Hermes audit findings: converted workflow trigger to standard Workers triggers.crons (0 21 * * SUN) with scheduled() handler, fixed price regex to strictly require currency marker on fallback text (tested Milk 1L Tk 120 -> 120), implemented auto-paginated inventory loading in supabase-client (>1000 items support), fixed all lint and typecheck errors (54/54 tests passing)
+Branch: codex/ui-improvements
+Health: all tests pass (admin_web 118/118, storefront 533/533, export-meta-catalog 7/7, images worker 5/5, competitor-scraper 54/54, playwright scraper tests 10/10), 183/183 images 1000x1000 JPG & WebP synced to R2
 Last Synced: 2026-10-17
-ctx: dependabot-fixes-committed | done: 33/38 dependabot alerts resolved, verified with tests | next: push branch and open PR
+ctx: previews config & CodeQL fix applied | done: images worker [previews] block + prepare_meta_images urlparse sanitization | next: ready to commit

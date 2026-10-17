@@ -15,7 +15,18 @@ export interface Env {
   STORE_ALLOWLIST: string;
   CHALDAL_SOURCE_APPROVED: string;
   SHWAPNO_SOURCE_APPROVED: string;
+  KHULSHI_MART_SOURCE_APPROVED?: string;
+  THE_BASKET_SOURCE_APPROVED?: string;
+  PAI_MART_SOURCE_APPROVED?: string;
 }
 
-// No public fetch handler. The Workflow is triggered only by its direct schedule.
-export default {};
+export default {
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const scheduledAt = new Date(controller.scheduledTime).toISOString();
+    const runKey = `competitor-scrape-v1::${scheduledAt.slice(0, 16)}`;
+    await env.COMPETITOR_SCRAPE_WORKFLOW.create({
+      id: runKey,
+      params: { scheduledAt },
+    });
+  },
+};

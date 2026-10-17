@@ -279,12 +279,17 @@ function matchesSimple(node: ParsedNode, selector: string): boolean {
 }
 
 function selectAll(root: ParsedNode, selector: string): ElementShim[] {
+  const subSelectors = selector.split(",").map((s) => s.trim()).filter(Boolean);
   const results: ElementShim[] = [];
-  walk(root, (node) => {
-    if (matches(node, selector)) {
-      results.push(new ElementShim(node));
-    }
-  });
+  const seen = new Set<ParsedNode>();
+  for (const sub of subSelectors) {
+    walk(root, (node) => {
+      if (matches(node, sub) && !seen.has(node)) {
+        seen.add(node);
+        results.push(new ElementShim(node));
+      }
+    });
+  }
   return results;
 }
 
