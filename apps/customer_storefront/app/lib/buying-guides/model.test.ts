@@ -20,6 +20,13 @@ describe('buying-guide publication contract', () => {
   it('keeps actual research records private and out of the sitemap', () => {
     expect(REVIEW_GUIDES).toHaveLength(3);
     REVIEW_GUIDES.forEach(guide => expect(() => buyingGuideSchema.parse(guide)).not.toThrow());
+    REVIEW_GUIDES.forEach(guide => expect(guide.criteria).toHaveLength(4));
+    expect(REVIEW_GUIDES[0].criteria.map(criterion => criterion.label)).toEqual([
+      'Product type', 'Declared net weight', 'Current price', 'Availability',
+    ]);
+    expect(REVIEW_GUIDES[0].introduction).toContain('three Olympic biscuit packs');
+    expect(REVIEW_GUIDES[0].products[0].description.text).toContain('150g Energy Plus');
+    expect(REVIEW_GUIDES[0].products[2].description.text).toContain('Milk Marie');
     expect(publishedGuides(REVIEW_GUIDES)).toEqual([]);
     expect(guideSitemapEntries(REVIEW_GUIDES)).toEqual([]);
   });

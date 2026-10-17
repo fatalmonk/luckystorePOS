@@ -51,6 +51,7 @@ export function BuyingGuideArticle({ guide, products, related = [] }: {
     <section><h2>Key takeaways</h2><ul>{guide.takeaways.map(t => <li key={t.text}>{t.text}</li>)}</ul></section>
     <section><h2>Understanding {guide.category.name.toLowerCase()}</h2><p>{guide.definition.text}</p></section>
     <section><h2>How we {guide.mode === 'ranked' ? 'ranked' : 'compared'} these products</h2><p>{guide.methodology.text}</p>
+      <ul data-comparison-criteria>{guide.criteria.map(criterion => <li key={criterion.label}><strong>{criterion.label}:</strong> {criterion.explanation.text}</li>)}</ul>
       <p>Prices and stock are checked when this page is requested. Price per 100{units} is calculated as pack price × 100 ÷ declared pack quantity. Check the product page and label before ordering.</p>
       {guide.mode === 'ranked' && <p>Editorial order reflects the approved research revision. Current prices and stock do not automatically change the ranking.</p>}
     </section>

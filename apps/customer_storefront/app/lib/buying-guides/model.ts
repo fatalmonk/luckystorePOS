@@ -19,6 +19,7 @@ export const buyingGuideSchema = z.object({
   definition: fact,
   takeaways: z.array(fact).length(5),
   methodology: fact,
+  criteria: z.array(z.object({ label: text, explanation: fact })).min(4).max(6),
   mode: z.enum(['unranked', 'ranked']),
   category: z.object({ id: z.string().uuid(), slug: z.string().regex(GUIDE_SLUG), name: text }),
   author: z.object({ name: text, kind: z.enum(['Person', 'Organization']), profileUrl: z.string().url().startsWith('https://') }).optional(),
@@ -47,7 +48,7 @@ export const buyingGuideSchema = z.object({
   }).optional(),
 }).superRefine((guide, ctx) => {
   const problem = (message: string) => ctx.addIssue({ code: z.ZodIssueCode.custom, message });
-  const refs = [guide.definition, ...guide.takeaways, guide.methodology,
+  const refs = [guide.definition, ...guide.takeaways, guide.methodology, ...guide.criteria.map(c => c.explanation),
     ...guide.products.flatMap(p => [p.description, p.useCase, ...(p.rationale ? [p.rationale] : [])]),
     ...guide.faqs.map(f => f.answer)].flatMap(f => f.evidence);
   refs.push(...guide.products.map(p => p.quantity.evidence));

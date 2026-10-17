@@ -56,6 +56,7 @@ describe('buying-guide server routes', () => {
     expect(document.querySelectorAll('h1')).toHaveLength(1);
     expect(document.querySelectorAll('table')).toHaveLength(2);
     expect(document.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(5);
+    expect(document.querySelectorAll('[data-comparison-criteria] li')).toHaveLength(4);
     expect(html).toContain('৳30');
     expect(html).toContain('Currently out of stock');
     expect(html.match(/Shop this product/g)).toHaveLength(1);
