@@ -20,10 +20,26 @@ class RunReportTests(unittest.TestCase):
         self.assertEqual(report["evidence"]["gsc_performance"], "available")
         self.assertEqual(report["evidence"]["indexing"], "not_verified")
 
-    def test_gsc_failure_is_blocked(self):
+    def test_gsc_failure_is_blocked_when_propose_skipped(self):
         report, _ = self.report({"gsc": {"result": "failure"}, "propose": {"result": "skipped"}})
         self.assertEqual(report["status"], "blocked")
         self.assertIn("gsc", report["reason"])
+
+    def test_gsc_failure_with_successful_proposal_is_not_blocked(self):
+        url = "https://github.com/fatalmonk/luckystorePOS/pull/123"
+        report, _ = self.report({"gsc": {"result": "failure"},
+                                 "propose": {"result": "success", "outputs": {"changed": "true"}},
+                                 "evidence": {"result": "success"},
+                                 "verify": {"result": "success"},
+                                 "publish": {"result": "success", "outputs": {"pr_url": url}}})
+        self.assertEqual(report["status"], "proposal_created")
+        self.assertEqual(report["evidence"]["gsc_performance"], "failed")
+
+    def test_gsc_skipped_with_no_change_marks_unavailable(self):
+        report, _ = self.report({"gsc": {"result": "skipped"},
+                                 "propose": {"result": "success", "outputs": {"changed": "false", "guard": "success"}}})
+        self.assertEqual(report["status"], "no_change")
+        self.assertEqual(report["evidence"]["gsc_performance"], "unavailable")
 
     def test_existing_pr_reports_review_needed(self):
         report, _ = self.report({"propose": {"result": "success", "outputs": {"overlap": "true"}}})

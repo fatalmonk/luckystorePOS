@@ -22,7 +22,8 @@ def build_report(needs, run_id, attempt, sha):
     pr = needs.get("publish", {}).get("outputs", {}).get("pr_url", "")
     if pr and not re.fullmatch(r"https://github.com/fatalmonk/luckystorePOS/pull/\d+", pr):
         raise ValueError("Invalid PR URL")
-    if "failure" in jobs.values() or "cancelled" in jobs.values():
+    core_jobs = {name: result for name, result in jobs.items() if name != "gsc"}
+    if "failure" in core_jobs.values() or "cancelled" in core_jobs.values() or (jobs["gsc"] in ("failure", "cancelled") and jobs["propose"] != "success"):
         status = "blocked"
         failed = ", ".join(name for name, result in jobs.items() if result in ("failure", "cancelled"))
         reason = f"Run requires attention: {failed}. No successful publication is inferred."
@@ -76,6 +77,8 @@ def _evidence_status(result):
         return "available"
     if result in ("failure", "cancelled"):
         return "failed"
+    if result == "skipped":
+        return "unavailable"
     return "unverified"
 
 
