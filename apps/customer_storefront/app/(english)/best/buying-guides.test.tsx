@@ -44,7 +44,11 @@ describe('buying-guide server routes', () => {
   });
   it('renders crawlable semantic content, exact schema and current offers without client JavaScript', async () => {
     const guide = fixture(); records.push(guide);
-    const rows = guide.products.map((p, i) => ({ id: p.id, name: p.verifiedName, price: 30 + i, qty_on_hand: i ? 0 : 5, category_id: guide.category.id }));
+    const rows = guide.products.map((p, i) => ({
+      id: p.id, name: p.verifiedName, brand: 'Olympic', sku: `SKU-${i + 1}`,
+      price: 30 + i, qty_on_hand: i ? 0 : 5, sellable_qty: i ? 0 : 5,
+      category_id: guide.category.id, image_url: `https://images.luckystore1947.com/products/${p.id}.webp`,
+    }));
     getProducts.mockResolvedValue(resolveGuideProducts(guide, rows));
     const html = renderToStaticMarkup(await BuyingGuidePage({ params: Promise.resolve({ slug: guide.slug }) }));
     const document = new DOMParser().parseFromString(html, 'text/html');
