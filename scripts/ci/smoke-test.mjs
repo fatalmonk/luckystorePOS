@@ -27,8 +27,11 @@ function parseArgs() {
   return { url, expectedSha };
 }
 
-function request(targetUrl, options = {}) {
+function request(targetUrl, options = {}, redirectCount = 0) {
   return new Promise((resolve, reject) => {
+    if (redirectCount > 5) {
+      return reject(new Error(`Too many redirects (limit 5): ${targetUrl}`));
+    }
     const parsed = new URL(targetUrl);
     const client = parsed.protocol === 'https:' ? https : http;
     const req = client.request(parsed, {
@@ -40,6 +43,12 @@ function request(targetUrl, options = {}) {
       timeout: 15000,
       rejectUnauthorized: true
     }, (res) => {
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && !options.noFollow) {
+        const nextUrl = new URL(res.headers.location, targetUrl).toString();
+        res.resume();
+        return resolve(request(nextUrl, options, redirectCount + 1));
+      }
+
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
