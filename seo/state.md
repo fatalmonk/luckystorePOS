@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-16
-last_pr:        #481 (merged)
-open_prs:       review PR pending
-next_run:       2026-10-17
+last_run:       2026-10-17
+last_pr:        #497 (pending merge)
+open_prs:       #497
+next_run:       2026-10-18
 ```
 
 ---
@@ -150,6 +150,16 @@ competitor_signals:
 
 ---
 
+## 2026-10-17 evidence and verification status
+
+- **Verified live (limited):** Public web fetch of English homepage returned title, hero grocery CTA, delivery boundary (1 km Chawkbazar), ৳500+ free delivery, and pay-after-inspection messaging. Observed redirect to `www.luckystore1947.com`.
+- **Not verified:** Live `/robots.txt`, `/sitemap.xml`, canonical headers, hreflang tags, and rendered FAQPage JSON-LD were inaccessible via public fetch tool; marked unverified.
+- **Source defect fixed:** `/bn/delivery` rendered `Footer` without locale prop, causing fallback to English text/links. Explicitly set `locale="bn"` on Header, Footer, and BottomNav (PR #497).
+- **Access:** Search Console / Ryze returned 403. No ranking, impression, or conversion claims made.
+- **Competitor intelligence:** Shwapno bKash checkout promotion verified as existing campaign (2026-09-10 to 2026-10-31), not a new Chattogram launch. Maintained Lucky Store ৳500 free delivery positioning.
+
+---
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -160,3 +170,5 @@ competitor_signals:
 | 2026-10-15 | fix | #478 (merged) | Delivery FAQ JSON-LD server-rendering in both locales; production verification pending. |
 | 2026-10-15 | manual review | #480 (merged) | Added 4 visible Bengali buyer FAQs; English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
 | 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
+| 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
+
