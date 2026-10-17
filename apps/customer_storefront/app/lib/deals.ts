@@ -1,4 +1,12 @@
 import type { Product } from './types';
+import { supabase } from './supabase';
+import {
+  STOREFRONT_STORE_ID,
+  getPromotionalPrice,
+  getActiveWeeklyDealEdition,
+  loadCurrentStorefrontDealCampaign,
+  type StorefrontItemPromotion,
+} from './storefront-promotions';
 
 export interface DealOfTheWeekSelection {
   leadProduct: Product;
@@ -84,3 +92,231 @@ export function getNextSundayDeadline(now: Date = new Date()): Date {
   const targetDhakaDate = new Date(Date.UTC(dhakaYear, dhakaMonth, dhakaDate + daysUntilSunday, 17, 59, 59, 999));
   return targetDhakaDate;
 }
+
+export interface WeeklyDealProduct extends Product {
+  verifiedDiscountPercent?: number;
+  promotionalPrice?: number;
+  selectionReason?: string;
+  offerTerms?: string;
+  campaignKey?: string;
+}
+
+export interface WeeklyDealsResult {
+  products: WeeklyDealProduct[];
+  activeEdition: boolean;
+  editionPeriod: string;
+  campaignKey?: string;
+  startsAt?: string;
+  endsAt?: string;
+  error?: string;
+}
+
+interface CatalogRow {
+  id?: string;
+  item_id?: string;
+  name?: string;
+  price?: number | string;
+  mrp?: number | string | null;
+  category?: string | null;
+  category_id?: string | null;
+  image_url?: string | null;
+  description?: string | null;
+  unit?: string | null;
+  qty_on_hand?: number | string | null;
+  sellable_qty?: number | string | null;
+  stock?: number | string | null;
+  brand?: string | null;
+}
+
+export function hasWeeklyEvidence(row: StorefrontItemPromotion): boolean {
+  return Boolean(
+    row.selection_reason?.trim()
+    && row.offer_terms?.trim()
+    && row.evidence_source?.trim()
+    && row.evidence_checked_at
+    && Number.isFinite(Date.parse(row.evidence_checked_at))
+    && Date.parse(row.evidence_checked_at) <= Date.parse(row.starts_at),
+  );
+}
+
+export function formatEditionPeriod(rows: StorefrontItemPromotion[]): string {
+  const startsAt = Math.min(...rows.map((row) => Date.parse(row.starts_at)));
+  const endsAt = Math.max(...rows.map((row) => Date.parse(row.ends_at)));
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt >= endsAt) return '';
+  const format = (date: Date) => date.toLocaleDateString('en-GB', {
+    timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric',
+  });
+  return `${format(new Date(startsAt))}–${format(new Date(endsAt - 1))} (Asia/Dhaka)`;
+}
+
+export function toWeeklyDealProduct(row: CatalogRow): WeeklyDealProduct | null {
+  const id = row.id ?? row.item_id;
+  const price = Number(row.price);
+  const mrp = Number(row.mrp);
+  const stock = Number(row.sellable_qty ?? 0);
+  if (
+    !id ||
+    !row.name?.trim() ||
+    !Number.isFinite(price) ||
+    price <= 0 ||
+    !Number.isFinite(mrp) ||
+    mrp <= price ||
+    !Number.isFinite(stock) ||
+    stock <= 0
+  ) {
+    return null;
+  }
+  return {
+    id,
+    name: row.name.trim(),
+    emoji: '🛒',
+    price,
+    originalPrice: mrp,
+    unit: row.unit?.trim() || 'item',
+    category: row.category?.trim() || 'Grocery',
+    category_id: row.category_id || undefined,
+    stock,
+    description: row.description?.trim() || '',
+    image_url: row.image_url?.trim() || undefined,
+    brand: row.brand?.trim() || undefined,
+  };
+}
+
+export async function loadWeeklyDeals(
+  client: any = supabase,
+  now = new Date(),
+  limit = 48,
+): Promise<WeeklyDealsResult> {
+  try {
+    let allCampaignRows: StorefrontItemPromotion[] = [];
+    try {
+      allCampaignRows = await loadCurrentStorefrontDealCampaign(client, now);
+    } catch {
+      console.warn('Weekly deal edition lookup unavailable; using catalogue fallback.');
+    }
+
+    const activeRows = getActiveWeeklyDealEdition(allCampaignRows, now);
+    const activeEdition = activeRows.length >= 12 && activeRows.every(hasWeeklyEvidence);
+    const verifiedRows = activeEdition ? activeRows : [];
+
+    if (activeEdition) {
+      const itemIds = verifiedRows.map((r) => r.item_id);
+      const { data, error } = await client.rpc('search_storefront_catalog_v2', {
+        p_store_id: STOREFRONT_STORE_ID,
+        p_query: '',
+        p_category_id: null,
+        p_item_ids: itemIds,
+        p_limit: itemIds.length,
+        p_offset: 0,
+      });
+
+      if (error || !Array.isArray(data)) {
+        throw new Error('Storefront catalogue could not be verified');
+      }
+
+      const rows = data as CatalogRow[];
+      const byId = new Map(
+        rows
+          .map((r) => toWeeklyDealProduct(r))
+          .filter((p): p is WeeklyDealProduct => p !== null)
+          .map((p) => [p.id, p])
+      );
+
+      const products: WeeklyDealProduct[] = verifiedRows.flatMap((row) => {
+        const product = byId.get(row.item_id);
+        if (
+          !product ||
+          product.name !== row.expected_name ||
+          product.price !== Number(row.expected_price) ||
+          product.originalPrice !== Number(row.expected_mrp) ||
+          product.price > Math.round((product.originalPrice ?? product.price) * 0.9 * 100) / 100 ||
+          product.stock <= 0
+        ) {
+          return [];
+        }
+
+        const promoPrice = getPromotionalPrice(
+          {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            mrp: product.originalPrice,
+            stock: product.stock,
+          },
+          [row],
+          now
+        );
+
+        return [
+          {
+            ...product,
+            verifiedDiscountPercent: Math.floor(
+              (((product.originalPrice ?? product.price) - product.price) /
+                (product.originalPrice ?? product.price)) *
+                100
+            ),
+            promotionalPrice: promoPrice,
+            selectionReason: row.selection_reason,
+            offerTerms: row.offer_terms,
+            campaignKey: row.campaign_key,
+          },
+        ];
+      });
+
+      return {
+        products,
+        activeEdition: true,
+        editionPeriod: formatEditionPeriod(verifiedRows),
+        campaignKey: verifiedRows[0]?.campaign_key,
+        startsAt: verifiedRows[0]?.starts_at,
+        endsAt: verifiedRows[0]?.ends_at,
+      };
+    }
+
+    // Bounded Fallback (Safe query, max `limit` items, no unbounded while-true)
+    const { data, error } = await client.rpc('search_storefront_catalog', {
+      p_store_id: STOREFRONT_STORE_ID,
+      p_query: '',
+      p_category_id: null,
+      p_limit: Math.min(limit, 100),
+      p_offset: 0,
+    });
+
+    if (error || !Array.isArray(data)) {
+      throw new Error('Storefront catalogue could not be verified');
+    }
+
+    const rows = data as CatalogRow[];
+    const products: WeeklyDealProduct[] = rows
+      .map((r) => toWeeklyDealProduct(r))
+      .filter((p): p is WeeklyDealProduct => p !== null)
+      .filter(
+        (p) =>
+          p.originalPrice !== undefined &&
+          p.originalPrice > p.price &&
+          p.price <= Math.round(p.originalPrice * 0.9 * 100) / 100 &&
+          p.stock > 0
+      )
+      .map((p) => ({
+        ...p,
+        verifiedDiscountPercent: Math.floor(
+          (((p.originalPrice ?? p.price) - p.price) / (p.originalPrice ?? p.price)) * 100
+        ),
+      }))
+      .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+
+    return {
+      products,
+      activeEdition: false,
+      editionPeriod: '',
+    };
+  } catch (err: any) {
+    return {
+      products: [],
+      activeEdition: false,
+      editionPeriod: '',
+      error: err?.message || 'Deals temporarily unavailable',
+    };
+  }
+}
+

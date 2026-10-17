@@ -4,7 +4,12 @@ import {
   getDiscountPercentage,
   getDealOfTheWeekProducts,
   getNextSundayDeadline,
+  toWeeklyDealProduct,
+  hasWeeklyEvidence,
+  formatEditionPeriod,
+  loadWeeklyDeals,
 } from './deals';
+
 import type { Product } from './types';
 
 const mockProducts: Product[] = [
@@ -123,4 +128,135 @@ describe('deals logic', () => {
     // 23:59:59 Dhaka (UTC+6) is 17:59:59 UTC
     expect(deadline.toISOString()).toBe('2026-07-26T17:59:59.999Z');
   });
+
+  describe('toWeeklyDealProduct', () => {
+    it('creates product when valid price, mrp and sellable_qty exist', () => {
+      const prod = toWeeklyDealProduct({
+        id: 'item-1',
+        name: 'Choco Biscuit',
+        price: 80,
+        mrp: 100,
+        sellable_qty: 5,
+        category: 'Biscuits',
+        image_url: 'https://example.com/biscuit.jpg',
+      });
+      expect(prod).not.toBeNull();
+      expect(prod?.id).toBe('item-1');
+      expect(prod?.price).toBe(80);
+      expect(prod?.originalPrice).toBe(100);
+      expect(prod?.stock).toBe(5);
+    });
+
+    it('returns null if sellable_qty is 0 even if qty_on_hand is positive', () => {
+      const prod = toWeeklyDealProduct({
+        id: 'item-2',
+        name: 'Reserved Item',
+        price: 80,
+        mrp: 100,
+        qty_on_hand: 10,
+        sellable_qty: 0,
+      });
+      expect(prod).toBeNull();
+    });
+
+    it('returns null if mrp is equal or lower than price', () => {
+      const prod = toWeeklyDealProduct({
+        id: 'item-3',
+        name: 'Full Price Item',
+        price: 100,
+        mrp: 100,
+        sellable_qty: 5,
+      });
+      expect(prod).toBeNull();
+    });
+  });
+
+  describe('hasWeeklyEvidence & formatEditionPeriod', () => {
+    it('validates weekly promotion evidence criteria', () => {
+      const valid = hasWeeklyEvidence({
+        item_id: 'i1',
+        expected_name: 'Name',
+        discount_percent: 5,
+        expected_price: 90,
+        expected_mrp: 100,
+        starts_at: '2026-10-18T18:00:00Z',
+        ends_at: '2026-10-25T18:00:00Z',
+        selection_reason: 'Top deal',
+        offer_terms: 'Online only',
+        evidence_source: 'Catalogue snapshot',
+        evidence_checked_at: '2026-10-15T12:00:00Z',
+      });
+      expect(valid).toBe(true);
+
+      const staleEvidence = hasWeeklyEvidence({
+        item_id: 'i1',
+        expected_name: 'Name',
+        discount_percent: 5,
+        expected_price: 90,
+        expected_mrp: 100,
+        starts_at: '2026-10-18T18:00:00Z',
+        ends_at: '2026-10-25T18:00:00Z',
+        selection_reason: 'Top deal',
+        offer_terms: 'Online only',
+        evidence_source: 'Catalogue snapshot',
+        evidence_checked_at: '2026-10-19T12:00:00Z', // checked after starts_at
+      });
+      expect(staleEvidence).toBe(false);
+    });
+
+    it('formats campaign edition period in Asia/Dhaka', () => {
+      const rows = [
+        {
+          item_id: 'i1',
+          expected_name: 'Item 1',
+          discount_percent: 5,
+          expected_price: 90,
+          expected_mrp: 100,
+          starts_at: '2026-10-18T18:00:00Z',
+          ends_at: '2026-10-25T18:00:00Z',
+        },
+      ];
+      expect(formatEditionPeriod(rows)).toContain('19 October 2026–25 October 2026 (Asia/Dhaka)');
+    });
+  });
+
+  describe('loadWeeklyDeals', () => {
+    it('loads bounded fallback deals when no campaign is active', async () => {
+      const mockClient = {
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                gt: async () => ({ data: [], error: null }),
+              }),
+            }),
+          }),
+        }),
+        rpc: async (name: string, args: any) => {
+          expect(name).toBe('search_storefront_catalog');
+          expect(args.p_limit).toBeLessThanOrEqual(100);
+          return {
+            data: [
+              {
+                id: 'deal-1',
+                name: 'Fallback Item 1',
+                price: 90,
+                mrp: 100,
+                sellable_qty: 10,
+                category: 'Grocery',
+              },
+            ],
+            error: null,
+          };
+        },
+      };
+
+      const result = await loadWeeklyDeals(mockClient, new Date('2026-10-17T10:00:00Z'));
+      expect(result.activeEdition).toBe(false);
+      expect(result.products).toHaveLength(1);
+      expect(result.products[0].name).toBe('Fallback Item 1');
+      expect(result.products[0].verifiedDiscountPercent).toBe(10);
+    });
+  });
 });
+
