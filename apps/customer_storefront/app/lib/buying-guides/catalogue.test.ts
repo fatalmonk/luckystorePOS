@@ -12,6 +12,7 @@ const rows = guide.products.map(p => ({
   brand: 'Olympic',
   sku: `SKU-${p.id.slice(0, 8)}`,
   price: 30,
+  mrp: 35,
   qty_on_hand: 2,
   sellable_qty: 2,
   category_id: guide.category.id,
@@ -35,7 +36,7 @@ describe('buying-guide live catalogue', () => {
     expect(result[0]).toMatchObject({
       available: true,
       unitPrice: 20,
-      current: { brand: 'Olympic', sellable_qty: 2, image_url: expect.stringContaining('images.luckystore1947.com') },
+      current: { brand: 'Olympic', mrp: 35, sellable_qty: 2, image_url: expect.stringContaining('images.luckystore1947.com') },
     });
     expect(result[0].href).toContain('/product/olympic-energy-plus');
   });

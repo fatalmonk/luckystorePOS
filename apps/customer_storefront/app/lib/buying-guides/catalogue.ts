@@ -10,6 +10,7 @@ const rowSchema = z.object({
   brand: z.string().trim().min(1).nullable(),
   sku: z.string().trim().min(1).nullable(),
   price: z.number().finite().positive(),
+  mrp: z.number().finite().positive().nullable().optional(),
   qty_on_hand: z.number().finite(), sellable_qty: z.number().finite().nonnegative(),
   category_id: z.string().uuid(),
   image_url: z.string().url().nullable(),

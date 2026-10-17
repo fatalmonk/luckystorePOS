@@ -87,3 +87,5 @@ Rollback is additive and scoped: revert the feature commits to restore the previ
 ## Final review follow-up
 
 The GPT-6.1 Sol review identified and the executor corrected a migration/caller contract regression: the search caller always supplies an ID array (including `[]`), and non-empty Bengali translation matches must remain a union with English text matches. The migration now uses exact selection only when the ID list is non-empty and the text query is empty; browse and text-search callers retain their prior semantics. A migration contract test covers both branches. This fix was implemented RED → GREEN in commit `147c39d`.
+
+The review also identified a promotion-integrity gap in the direct cart payload. The catalogue projection now retains validated `mrp`, the guide cart payload sets `originalPrice` from that authoritative value, and a regression test verifies the existing promotion calculator returns the approved discounted price for the guide-shaped product payload.

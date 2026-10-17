@@ -70,6 +70,7 @@ export function BuyingGuideArticle({ guide, products, related = [] }: {
         {p.available && p.href && p.current ? <div className={styles.actions}>
           <GuideAddToCartButton className={styles.cartButton} slug={guide.slug} revision={guide.revision} product={{
             id: p.current.id, name: p.current.name, emoji: '', price: p.current.price,
+            originalPrice: p.current.mrp ?? undefined,
             unit: `${p.quantity.value}${p.quantity.unit}`, category: guide.category.name,
             category_id: p.current.category_id, stock: p.current.sellable_qty,
             description: p.description.text, image_url: p.current.image_url ?? undefined,
