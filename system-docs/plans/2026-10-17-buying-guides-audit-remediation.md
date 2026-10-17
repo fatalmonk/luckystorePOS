@@ -83,3 +83,7 @@ Scope: the editorial `/best/[slug]` buying-guide system only. `/best/dealofthewe
 4. Only after those gates, publish and verify the exact production deployment. No deployment or publication occurred in this branch.
 
 Rollback is additive and scoped: revert the feature commits to restore the previous guide renderer/loader, and revert the forward migration with a separately reviewed replacement migration if it has been applied. Do not weaken publication validation or tenant isolation during rollback.
+
+## Final review follow-up
+
+The GPT-6.1 Sol review identified and the executor corrected a migration/caller contract regression: the search caller always supplies an ID array (including `[]`), and non-empty Bengali translation matches must remain a union with English text matches. The migration now uses exact selection only when the ID list is non-empty and the text query is empty; browse and text-search callers retain their prior semantics. A migration contract test covers both branches. This fix was implemented RED → GREEN in commit `147c39d`.
