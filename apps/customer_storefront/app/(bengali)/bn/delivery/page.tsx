@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 export default function BengaliDeliveryPage() {
   return (
     <>
-      <Header />
+      <Header locale="bn" />
       <main className="mx-auto max-w-5xl px-6 py-24 text-warm-fg">
         <Breadcrumbs
           homeHref="/bn"
@@ -111,8 +111,8 @@ export default function BengaliDeliveryPage() {
         </section>
         <Link href="/bn/category" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-warm-accent px-6 font-bold text-black">সব পণ্য দেখুন</Link>
       </main>
-      <Footer />
-      <BottomNav />
+      <Footer locale="bn" />
+      <BottomNav locale="bn" />
     </>
   );
 }
