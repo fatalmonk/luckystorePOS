@@ -39,13 +39,13 @@ describe('buying-guide direct cart action', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add Olympic Energy Plus Biscuits 150g to cart' }));
     expect(rememberBuyingGuide).toHaveBeenCalledWith('biscuits-bangladesh', 1);
     expect(addToCart).toHaveBeenCalledWith(product);
-    expect(screen.getByRole('status')).toHaveTextContent('Added to cart');
+    expect(screen.getByRole('status').textContent).toContain('Added to cart');
   });
 
   it('reports the existing cart rejection without claiming success', () => {
     addToCart.mockReturnValue(false);
     render(<GuideAddToCartButton product={product} slug="biscuits-bangladesh" revision={1} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add Olympic Energy Plus Biscuits 150g to cart' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Already at the available stock limit');
+    expect(screen.getByRole('status').textContent).toContain('Already at the available stock limit');
   });
 });

@@ -55,3 +55,31 @@ Scope: the editorial `/best/[slug]` buying-guide system only. `/best/dealofthewe
 - Production analytics reports, Search Console, gross-profit reporting, and consented browser delivery were not accessible from repository evidence.
 - Catalogue rows verify system-of-record fields only; manufacturer packaging, ingredients, nutritional statements, and broad market superiority were not independently verified.
 - The `context-mode` HTML indexer was unavailable because its local `turndown` dependency is missing, so live checks used a bounded fetch-based parser and recorded only derived status/metadata facts.
+
+## Implemented remediation
+
+- Replaced category-wide paginated guide catalogue scans with one bounded `search_storefront_catalog_v2` call for the selected IDs.
+- Added a forward migration that makes a non-null `p_item_ids` argument an exact selector while preserving store validation, public projection, grants, and a fixed search path. The migration has not been applied to any environment.
+- Switched availability decisions to reservation-aware `sellable_qty`; physical stock remains descriptive only.
+- Added authoritative product images, brand, SKU, and matching Product/Offer JSON-LD fields.
+- Added an accessible direct add-to-cart action that refreshes guide attribution before reusing the existing cart path and analytics behavior.
+- Added category-specific comparison criteria and evidence-bounded biscuit-pilot copy for the three verified Olympic catalogue items. The pilot remains in `review`.
+
+## Verification results
+
+- Focused buying-guide suite: 29/29 passing.
+- Full customer storefront suite: 83 files and 535 tests passing on the final rerun. An earlier full run had one five-second SEO-test timeout; the isolated rerun and final full rerun both passed.
+- Lint: passing with no issues.
+- Production build: passing with zero errors and zero warnings.
+- Typecheck: still red on pre-existing Vitest matcher declaration errors across existing tests; the changed buying-guide test was adjusted so it adds no new matcher declaration dependency.
+- Synthetic rendered fixture: desktop and 390px mobile layouts display the article, three product cards, two comparison tables, and responsive horizontal table overflow. Alt text is present for all three images. Remote fixture images could not load in the local browser, so image delivery remains a staging check.
+- Current live state remains unchanged: review-only guide routes return 404/noindex and the guide is absent from the sitemap.
+
+## Release gates and rollback
+
+1. Apply and validate `20261017100000_fix_storefront_catalog_v2_item_filter.sql` in a disposable or staging Supabase environment, including exact-ID and tenant/store isolation checks.
+2. Obtain accountable human approval for the pilot's package-label evidence, author, verified/approved timestamps, publication dates, and revision-specific content hash. Do not synthesize these values.
+3. Deploy to staging and verify real image delivery, cart behavior, consented analytics receipt, canonical metadata, JSON-LD, responsive layout, accessibility, sitemap/robots behavior, and performance.
+4. Only after those gates, publish and verify the exact production deployment. No deployment or publication occurred in this branch.
+
+Rollback is additive and scoped: revert the feature commits to restore the previous guide renderer/loader, and revert the forward migration with a separately reviewed replacement migration if it has been applied. Do not weaken publication validation or tenant isolation during rollback.
