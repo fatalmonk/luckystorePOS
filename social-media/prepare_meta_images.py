@@ -117,7 +117,10 @@ def search_playwright_fallback(title: str, browser_page) -> Optional[str]:
         imgs = browser_page.eval_on_selector_all("img", "elements => elements.map(e => e.src)")
         candidates = [
             s for s in imgs
-            if "cloudfront.net" in s
+            if (
+                (urlparse(s).hostname == "cloudfront.net")
+                or ((urlparse(s).hostname or "").endswith(".cloudfront.net"))
+            )
             and not any(x in s for x in ["logo", "icon", "download", "banner", "svg", "payment"])
         ]
         if candidates:

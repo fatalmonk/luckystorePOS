@@ -5,4 +5,4 @@ Done: strict CDN host check in admin_web, cart price reconciliation in storefron
 Branch: codex/ui-improvements
 Health: all tests pass (admin_web 118/118, storefront 533/533, export-meta-catalog 7/7, images worker 5/5, competitor-scraper 54/54, playwright scraper tests 10/10), 183/183 images 1000x1000 JPG & WebP synced to R2
 Last Synced: 2026-10-17
-ctx: audit remediations deployed | done: 54/54 competitor tests pass, deployed v52807e41 with active cron trigger | next: ready to commit
+ctx: previews config & CodeQL fix applied | done: images worker [previews] block + prepare_meta_images urlparse sanitization | next: ready to commit
