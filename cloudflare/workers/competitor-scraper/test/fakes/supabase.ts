@@ -55,10 +55,14 @@ export function createFakeSupabaseClient(options: FakeOptions = {}): FakeSupabas
         };
       },
       eq: (column: string, value: unknown) => ({
-        select: async (columns: string) => {
+        select: async (
+          columns: string,
+          opts?: { head?: boolean; count?: "exact"; limit?: number; offset?: number },
+        ) => {
           void column;
           void value;
           void columns;
+          void opts;
           if (table === "stores") {
             const tenantId =
               options.storeTenantId === undefined ? "tenant-1" : options.storeTenantId;
@@ -69,10 +73,14 @@ export function createFakeSupabaseClient(options: FakeOptions = {}): FakeSupabas
             };
           }
           if (table === "items") {
+            const all = options.inventory ?? [];
+            const offset = opts?.offset ?? 0;
+            const limit = opts?.limit ?? all.length;
+            const slice = all.slice(offset, offset + limit);
             return {
-              data: options.inventory ?? [],
+              data: slice,
               error: null,
-              count: options.inventory?.length ?? 0,
+              count: all.length,
             };
           }
           return {

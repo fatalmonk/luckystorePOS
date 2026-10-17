@@ -93,13 +93,23 @@ export function isAutomationEnabled(env: { AUTOMATION_ENABLED: string }): boolea
   return env.AUTOMATION_ENABLED === "true";
 }
 
-type SourceApprovalEnv = { CHALDAL_SOURCE_APPROVED: string; SHWAPNO_SOURCE_APPROVED: string };
+export type SourceApprovalEnv = {
+  CHALDAL_SOURCE_APPROVED: string;
+  SHWAPNO_SOURCE_APPROVED: string;
+  KHULSHI_MART_SOURCE_APPROVED?: string;
+  THE_BASKET_SOURCE_APPROVED?: string;
+  PAI_MART_SOURCE_APPROVED?: string;
+};
 
 const SOURCE_APPROVED_KEYS: Record<CompetitorName, keyof SourceApprovalEnv> = {
   chaldal: "CHALDAL_SOURCE_APPROVED",
   shwapno: "SHWAPNO_SOURCE_APPROVED",
+  "khulshi-mart": "KHULSHI_MART_SOURCE_APPROVED",
+  "the-basket": "THE_BASKET_SOURCE_APPROVED",
+  "pai-mart": "PAI_MART_SOURCE_APPROVED",
 };
 
 export function isSourceApproved(env: SourceApprovalEnv, competitor: CompetitorName): boolean {
-  return env[SOURCE_APPROVED_KEYS[competitor]] === "true";
+  const key = SOURCE_APPROVED_KEYS[competitor];
+  return env[key] === "true";
 }

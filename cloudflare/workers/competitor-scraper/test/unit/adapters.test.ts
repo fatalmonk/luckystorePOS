@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHALDAL_FIXTURE, SHWAPNO_FIXTURE } from "../fixtures/pages.ts";
 import { createFakeBrowser } from "../fakes/browser.ts";
-import { runChaldalAdapter, runShwapnoAdapter } from "../../src/adapters/index.ts";
+import { runChaldalAdapter, runShwapnoAdapter, runTheBasketAdapter } from "../../src/adapters/index.ts";
 import { createLogger } from "../../src/logger.ts";
 
 describe("adapters", () => {
@@ -75,5 +75,23 @@ describe("adapters", () => {
     expect(browser.state.browserClosed).toBe(true);
     expect(browser.state.pagesClosed).toBe(browser.state.pagesOpened);
     expect(browser.state.browsersClosed).toBe(browser.state.browsersLaunched);
+  });
+
+  it("correctly parses fallback price when card text contains package quantity (Milk 1L Tk 120)", async () => {
+    const cardHtml = `
+      <div class="item product-item">
+        <a class="product-item-link" href="https://thebasketbd.com/fresh-milk-1l.html">Fresh Milk 1L</a>
+        <div class="product-item-details">
+          <span>Milk 1L Tk 120</span>
+        </div>
+      </div>
+    `;
+    const html = new Map([["https://www.thebasketbd.com/food-basket.html", cardHtml]]);
+    const browser = createFakeBrowser(html);
+    const result = await runTheBasketAdapter(browser, createLogger());
+    expect(result.error).toBeNull();
+    expect(result.products).toHaveLength(1);
+    expect(result.products[0]?.name).toBe("Fresh Milk 1L");
+    expect(result.products[0]?.price).toBe(120);
   });
 });

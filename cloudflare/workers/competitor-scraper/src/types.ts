@@ -3,7 +3,12 @@
  * Do not modify shapes here without also updating Agent 1's database contract.
  */
 
-export type CompetitorName = "chaldal" | "shwapno";
+export type CompetitorName =
+  | "chaldal"
+  | "shwapno"
+  | "khulshi-mart"
+  | "the-basket"
+  | "pai-mart";
 
 export type Currency = "BDT";
 
@@ -140,12 +145,12 @@ export interface SupabaseClient {
   from: (table: string) => {
     select: (
       columns: string,
-      options?: { head?: boolean; count?: "exact" },
+      options?: { head?: boolean; count?: "exact"; limit?: number; offset?: number },
     ) => Promise<{ data: unknown[] | null; error: Error | null; count: number | null }>;
     eq: (column: string, value: unknown) => {
       select: (
         columns: string,
-        options?: { head?: boolean; count?: "exact" },
+        options?: { head?: boolean; count?: "exact"; limit?: number; offset?: number },
       ) => Promise<{ data: unknown[] | null; error: Error | null; count: number | null }>;
     };
   };

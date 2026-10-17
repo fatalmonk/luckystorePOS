@@ -8,7 +8,7 @@ export async function scrapeShwapnoPage(
   categoryUrl: string,
 ): Promise<NormalizedProduct[]> {
   await page.goto(categoryUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
-  await page.waitForSelector("img", { timeout: 20_000 });
+  await page.waitForSelector('a[href^="/"]', { timeout: 20_000 });
 
   const products = await page.evaluate(
     (catName: string, baseUrl: string) => {
@@ -49,7 +49,7 @@ export async function scrapeShwapnoPage(
             const hasOnlyThisProduct =
               cardProductLinks.length === 1 &&
               cardProductLinks[0]?.getAttribute("href") === productPath;
-            if (hasOnlyThisProduct && candidate.querySelector("img") && candidate.textContent?.includes("৳")) {
+            if (hasOnlyThisProduct && candidate.textContent?.includes("৳")) {
               card = candidate;
               break;
             }
