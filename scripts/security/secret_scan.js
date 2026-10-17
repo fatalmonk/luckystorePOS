@@ -32,6 +32,8 @@ const IGNORE_DIRS = new Set([
   'inspections',
   '.gradle',
   'DerivedData',
+  '.pnpm-store',
+  '.turbo',
 ]);
 
 const PLACEHOLDER_RE =
