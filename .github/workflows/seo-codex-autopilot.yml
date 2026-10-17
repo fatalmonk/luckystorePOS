@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
@@ -93,7 +93,7 @@ jobs:
       - name: Checkout audited commit without credentials
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
 
@@ -123,7 +123,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           AUDIT_RUN_ID: ${{ github.event.workflow_run.id || inputs.audit_run_id }}
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           mkdir -p /tmp/seo-autopilot-evidence
           python3 scripts/seo/audit_input.py --run-id "$AUDIT_RUN_ID" --base "$BASE_SHA" --output seo/autopilot-input.json
@@ -155,7 +155,7 @@ jobs:
         if: steps.existing_pr.outputs.skip != 'true'
         id: guard
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           rm -f seo/autopilot-input.json seo/gsc-input.json
           git show "$BASE_SHA:scripts/seo/validate_autopilot_changes.py" > /tmp/seo-guard.py
@@ -185,7 +185,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - name: Capture published content on trusted runner
         env:
@@ -203,7 +203,7 @@ jobs:
           path: /tmp/seo-proposal
       - name: Independently validate proposal without executing it
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
           cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
@@ -212,7 +212,7 @@ jobs:
           python3 "$RUNNER_TEMP/seo-trusted/validate_autopilot_changes.py" --base "$BASE_SHA"
       - name: Jev advisory review through OpenRouter
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           python3 "$RUNNER_TEMP/seo-trusted/jev_review.py" --base "$BASE_SHA" --output /tmp/jev-review.json --markdown /tmp/jev-review.md
@@ -233,7 +233,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
@@ -245,7 +245,7 @@ jobs:
           path: /tmp/seo-inputs
       - name: Independently validate proposal
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
           cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
@@ -257,7 +257,7 @@ jobs:
           node-version: '24'
       - name: Verify storefront using credential-free build inputs
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
           NEXT_TELEMETRY_DISABLED: '1'
           NEXT_PUBLIC_SUPABASE_URL: https://127.0.0.1:9443
           NEXT_PUBLIC_SUPABASE_ANON_KEY: seo-verification-fixture
@@ -306,7 +306,7 @@ jobs:
           persist-credentials: false
       - name: Reject stale base or overlapping proposal
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
           GH_TOKEN: ${{ github.token }}
         run: |
           test "$(git rev-parse HEAD)" = "$BASE_SHA"
@@ -322,7 +322,7 @@ jobs:
           path: /tmp/seo-review
       - name: Revalidate exact proposal and prepare review body
         env:
-          BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           test "$(wc -c < /tmp/seo-proposal/proposal.patch)" -le 131072
           cp -R scripts/seo "$RUNNER_TEMP/seo-trusted"
@@ -365,7 +365,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
@@ -375,7 +375,7 @@ jobs:
           SEO_JOB_RESULTS: ${{ toJSON(needs) }}
           SEO_RUN_ID: ${{ github.run_id }}
           SEO_RUN_ATTEMPT: ${{ github.run_attempt }}
-          SEO_BASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SEO_BASE_SHA: ${{ github.sha }}
         run: python3 scripts/seo/run_report.py --output /tmp/seo-run-report
       - uses: actions/upload-artifact@v4
         if: always()
