@@ -37,7 +37,7 @@ export function GuideAddToCartButton({ product, slug, revision, className }: {
     <button type="button" className={className} aria-label={`Add ${product.name} to cart`} onClick={() => {
       // The existing cart analytics path reads this context when consent is present.
       rememberBuyingGuide(slug, revision);
-      setMessage(addToCart(product) ? 'Added to cart' : 'Already at the available stock limit');
+      setMessage(addToCart(product) ? 'Added to cart' : 'Unable to add this item right now');
     }}>Add to cart</button>
     <span role="status" aria-live="polite" className="sr-only">{message}</span>
   </div>;

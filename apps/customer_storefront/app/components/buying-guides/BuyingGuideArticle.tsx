@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { BuyingGuide } from '../../lib/buying-guides/model';
 import { GUIDE_BASE_URL, guideUrl } from '../../lib/buying-guides/model';
@@ -7,6 +6,7 @@ import type { GuideProduct } from '../../lib/buying-guides/catalogue';
 import { formatBdt } from '../../lib/formatPrice';
 import { JsonLd } from '../seo/JsonLd';
 import { GuideAddToCartButton, GuideProductLink, GuideView } from './GuideTracking';
+import { GuideProductImage } from './GuideProductImage';
 import styles from './buying-guides.module.css';
 
 export function BuyingGuideArticle({ guide, products, related = [] }: {
@@ -58,9 +58,7 @@ export function BuyingGuideArticle({ guide, products, related = [] }: {
     <section><h2>{guide.mode === 'ranked' ? 'The shortlist' : 'Products to compare'}</h2>
       {availableCount < 3 && <p role="status">Fewer than three selected products are currently available. Use this as a buying guide; check current options before choosing.</p>}
       <div className={styles.products}>{products.map(p => <section key={p.id} className={styles.product}>
-        {p.current?.image_url && <Image className={styles.productImage} src={p.current.image_url}
-          alt={`${p.current.name} product pack`} width={640} height={640}
-          sizes="(max-width: 720px) 100vw, 33vw" />}
+        {p.current?.image_url && <GuideProductImage src={p.current.image_url} alt={`${p.current.name} product pack`} />}
         <h3>{showRanking && p.available ? `${p.rank}. ` : ''}{p.current?.name ?? p.verifiedName}</h3>
         {!p.available && <p className={styles.status}>{p.current ? 'Currently out of stock' : 'Product details need re-verification'}</p>}
         <p>{p.description.text}</p><p>Declared pack size: {p.quantity.value}{p.quantity.unit}</p>
