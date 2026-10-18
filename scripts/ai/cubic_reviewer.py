@@ -21,14 +21,20 @@ from typing import Any
 # Auto-load repo-level .env.local if present
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 env_local = REPO_ROOT / ".env.local"
-if env_local.is_file():
-    for line in env_local.read_text(encoding="utf-8", errors="ignore").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, v = line.split("=", 1)
-            k, v = k.strip(), v.strip().strip("'\"")
-            if k not in os.environ:
-                os.environ[k] = v
+
+try:
+    from dotenv import load_dotenv
+    if env_local.is_file():
+        load_dotenv(env_local)
+except ImportError:
+    if env_local.is_file():
+        for line in env_local.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip().strip("'\"")
+                if k not in os.environ:
+                    os.environ[k] = v
 
 try:
     import requests
@@ -93,6 +99,10 @@ class StaticAnalyzer:
     @classmethod
     def analyze_file_diff(cls, diff: FileDiff) -> list[Finding]:
         findings: list[Finding] = []
+
+        # Exclude reviewer / static analyzer tool itself from self-referential pattern matches
+        if diff.filename.endswith("cubic_reviewer.py") or "scripts/ai" in diff.filename:
+            return findings
 
         # 1. AST syntax check on added/modified Python files
         if diff.filename.endswith(".py") and Path(diff.filename).is_file():
@@ -265,6 +275,21 @@ Format your output strictly as a JSON object:
         return None
 
     @classmethod
+    def _parse_json_response(cls, text: str) -> dict[str, Any] | None:
+        """Robustly parse JSON response from LLM, stripping markdown codeblocks if present."""
+        clean_text = text.strip()
+        if clean_text.startswith("```"):
+            clean_text = re.sub(r"^```(?:json)?\s*", "", clean_text, flags=re.MULTILINE)
+            clean_text = re.sub(r"\s*```$", "", clean_text, flags=re.MULTILINE)
+        try:
+            parsed = json.loads(clean_text)
+            return parsed if isinstance(parsed, dict) else None
+        except json.JSONDecodeError as err:
+            if os.environ.get("DEBUG_CUBIC"):
+                sys.stderr.write(f"[Cubic] Failed to decode LLM response JSON: {err}\nRaw text: {text[:200]}\n")
+            return None
+
+    @classmethod
     def _query_openrouter(cls, api_key: str, diff_text: str) -> dict[str, Any] | None:
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
@@ -287,9 +312,10 @@ Format your output strictly as a JSON object:
             if res.status_code == 200:
                 data = res.json()
                 content = data["choices"][0]["message"]["content"]
-                return json.loads(content)
-        except Exception:
-            pass
+                return cls._parse_json_response(content)
+        except Exception as err:
+            if os.environ.get("DEBUG_CUBIC"):
+                sys.stderr.write(f"[Cubic] OpenRouter request error: {err}\n")
         return None
 
     @classmethod
@@ -306,9 +332,10 @@ Format your output strictly as a JSON object:
             if res.status_code == 200:
                 data = res.json()
                 text = data["candidates"][0]["content"]["parts"][0]["text"]
-                return json.loads(text)
-        except Exception:
-            pass
+                return cls._parse_json_response(text)
+        except Exception as err:
+            if os.environ.get("DEBUG_CUBIC"):
+                sys.stderr.write(f"[Cubic] Gemini API request error: {err}\n")
         return None
 
 
