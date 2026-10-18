@@ -52,6 +52,49 @@ describe('Lucky Store Agent Worker', () => {
       const text = await response.text();
       expect(text).toContain('Disallow: /api/');
     });
+
+    it('GET /monitor/robots returns check results and 200 when probes pass', async () => {
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('.git') || url.includes('.env')) {
+          return Promise.resolve(new Response(null, { status: 404 }));
+        }
+        return Promise.resolve(new Response('OK', { status: 200 }));
+      }) as any;
+
+      try {
+        const request = new IncomingRequest('http://localhost/monitor/robots');
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, MOCK_ENV as any, ctx);
+        await waitOnExecutionContext(ctx);
+
+        expect(response.status).toBe(200);
+        const data = await response.json() as any;
+        expect(data.ok).toBe(true);
+        expect(data.results.length).toBeGreaterThan(5);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('scheduled trigger executes monitor check without error', async () => {
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('.git') || url.includes('.env')) {
+          return Promise.resolve(new Response(null, { status: 404 }));
+        }
+        return Promise.resolve(new Response('OK', { status: 200 }));
+      }) as any;
+
+      try {
+        const ctx = createExecutionContext();
+        await worker.scheduled({ scheduledTime: Date.now(), cron: '0 * * * *', noRetry: () => {} } as any, MOCK_ENV as any, ctx);
+        await waitOnExecutionContext(ctx);
+        expect(globalThis.fetch).toHaveBeenCalled();
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
   });
 
   describe('Auth', () => {

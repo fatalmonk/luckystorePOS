@@ -1,7 +1,8 @@
 name: Monitor robots.txt
 on:
-  schedule:
-    - cron: '0 * * * *' # every hour
+  workflow_dispatch:
+  # NOTE: Hourly cron monitoring has been offloaded to Cloudflare Worker
+  # (agent-luckystore1947 cron: '0 * * * *') to conserve GitHub Actions minutes.
 
 permissions:
   contents: read

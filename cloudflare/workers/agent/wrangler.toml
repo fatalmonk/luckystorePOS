@@ -23,3 +23,6 @@ enabled = true
 [[routes]]
 pattern = "agent.luckystore1947.com/*"
 zone_id = "cadbf71f2c3aee47e0c299319cba570d"
+
+[triggers]
+crons = ["0 * * * *"]
