@@ -41,7 +41,10 @@
     "facebook:post": "tsx src/facebook.ts",
     "doctor": "python3 scripts/doctor/project_doctor.py",
     "doctor:quick": "python3 scripts/doctor/project_doctor.py --quick",
-    "doctor:ci": "python3 scripts/doctor/project_doctor.py --ci"
+    "doctor:ci": "python3 scripts/doctor/project_doctor.py --ci",
+    "cubic": "python3 scripts/ai/cubic_reviewer.py",
+    "cubic:staged": "python3 scripts/ai/cubic_reviewer.py --staged",
+    "cubic:ci": "python3 scripts/ai/cubic_reviewer.py --ci"
   },
   "license": "ISC",
   "dependencies": {

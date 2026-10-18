@@ -16,7 +16,7 @@ for name, query in queries:
     cmd = [
         'curl', '-s', '-X', 'POST',
         'https://api.supabase.com/v1/projects/hvmyxyccfnkrbxqbhlnm/database/query',
-        '-H', 'Authorization: Bearer *** + token,
+        '-H', f'Authorization: Bearer {token}',
         '-H', 'Content-Type: application/json',
         '-d', json.dumps({"query": query})
     ]

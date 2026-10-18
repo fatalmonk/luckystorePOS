@@ -26,7 +26,7 @@ from databricks.sdk.service.sql import StatementState
 
 # Guardrail: Disallow any mutating SQL commands
 MUTATION_PATTERN = re.compile(
-    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|MERGE|GRANT|REVOKE)\b",
+    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|MERGE|GRANT|REVOKE|REPLACE|VACUUM|OPTIMIZE)\b",
     re.IGNORECASE,
 )
 

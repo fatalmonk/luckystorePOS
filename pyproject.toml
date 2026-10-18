@@ -1,0 +1,26 @@
+[project]
+name = "luckystore-tooling"
+version = "0.1.0"
+description = "Internal operations, Project Doctor, Databricks client, and AI reviewer tooling for Lucky Store"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "databricks-sdk>=0.30.0",
+    "python-dotenv>=1.0.0",
+    "supabase>=2.0.0",
+    "requests>=2.31.0",
+    "pillow>=10.0.0",
+    "rapidfuzz>=3.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    "qrcode>=7.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "playwright>=1.40.0",
+]
+
+[tool.uv]
+managed = true
