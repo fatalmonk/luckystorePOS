@@ -14,7 +14,7 @@ reporting.
 
 ## Terms and invariants
 
-No context-specific terms or invariants are recorded yet.
+- OCR and AI-derived receipt fields and reconciliation results are advisory evidence only; they must not authorize purchase posting or inventory mutations. The owning application must apply deterministic validation before any financial or inventory change.
 
 ## Decisions
 

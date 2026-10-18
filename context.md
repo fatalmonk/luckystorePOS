@@ -1,12 +1,12 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Python tooling locked via uv, PR #504 updated with Cubic Dev AI reviewer & uv.lock
-Done: PR #501, #502, #503 merged; PR #504 active; Project Doctor v1; Databricks client; clean competitor RPC; Cubic Dev AI reviewer; pyproject.toml & uv.lock generated; secret scan clean
-Branch: feat/infra-doctor-and-competitor-migrations
-PR: #504 (https://github.com/fatalmonk/luckystorePOS/pull/504)
-Health: 100% test pass rate, secret scan clean, Doctor CI clean
+Current: Receipt intelligence pipeline hardening (isolated from PR #505); no Databricks deployment performed
+Done: PR #501-#504 merged; Project Doctor v1; Databricks client; competitor migrations; pyproject.toml & uv.lock; receipt pipeline with distinct dev/prod output schemas, declarative UC schema/volume resources, parameterized landing volume path, retained parse errors, advisory-only reconciliation, and synthetic fixture tests (9/9 passed)
+Branch: feat/databricks-receipt-intelligence
+PR: None (opening PR)
+Health: 100% test pass rate (121/121 admin_web tests + 9/9 receipt reconciliation tests passing); Databricks strict bundle validation passed for dev and prod (0 errors)
 Last Synced: 2026-10-19
-ctx: Python tooling locked | done: uv.lock & cubic_reviewer.py pushed | next: merge PR #504 to main
+ctx: Databricks DAB Receipt Intelligence | done: declarative schema/volume resources, parameterized landing volume, strict dev/prod validation, 9 synthetic fixture tests | next: push branch and open PR
 
 
 
