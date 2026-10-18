@@ -175,6 +175,13 @@ temp/
 .trae/
 skills-lock.json
 
+# Databricks AI Dev Kit (project-local generated state)
+.ai-dev-kit/
+.databricks/
+.gemini/
+.github/skills/
+GEMINI.md
+
 # -----------------------------------------------------------------------------
 # Data Exports (scoped, not global)
 # -----------------------------------------------------------------------------
