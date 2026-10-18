@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
+import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, FileText, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
+import { clsx } from 'clsx';
 import { useAuth } from '../../lib/AuthContext';
 import { deleteReceiptImage, uploadReceiptImage } from '../../lib/images';
-import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, scanReceiptImage } from './receiptOcr';
+import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, parseReceiptRawText, scanReceiptImage } from './receiptOcr';
 
 type ReceiptScanPanelProps = {
   suppliers: ReceiptOcrSupplier[];
@@ -18,6 +19,8 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scanIdRef = useRef(0);
+  const [scanMode, setScanMode] = useState<'image' | 'text'>('image');
+  const [rawOcrInput, setRawOcrInput] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -109,26 +112,63 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     }
   }, [accessToken, onImageUploaded, onScanStart, previewUrl, suppliers, tenantId]);
 
-  // Clipboard paste support (e.g. Cmd+V copied screenshot/image from Google Drive)
+  const handleParseText = useCallback((text: string) => {
+    if (!text.trim()) return;
+    const scanId = ++scanIdRef.current;
+    onScanStart?.();
+    setIsScanning(false);
+    setStatusText('');
+    setError(null);
+    try {
+      const ocrResult = parseReceiptRawText(text, suppliers);
+      if (scanId === scanIdRef.current) {
+        setResult(ocrResult);
+        if (ocrResult.items.length === 0 && !ocrResult.invoiceTotal && !ocrResult.supplier) {
+          setError('No line items or totals could be identified from the text. Verify format.');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to parse raw OCR text:', err);
+      if (scanId === scanIdRef.current) {
+        setError('Failed to parse text. Please check the content and try again.');
+      }
+    }
+  }, [onScanStart, suppliers]);
+
+  // Clipboard paste support (e.g. Cmd+V copied screenshot/image from Google Drive or pasted OCR text)
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
-      if (!items) return;
-      for (const item of Array.from(items)) {
-        if (item.type.startsWith('image/')) {
-          const file = item.getAsFile();
-          if (file) {
-            e.preventDefault();
-            void scan(file);
-            break;
+      if (items) {
+        for (const item of Array.from(items)) {
+          if (item.type.startsWith('image/')) {
+            const file = item.getAsFile();
+            if (file) {
+              e.preventDefault();
+              setScanMode('image');
+              void scan(file);
+              return;
+            }
           }
+        }
+      }
+
+      // If user pasted multiline text or table-formatted text outside an active input/textarea
+      const pastedText = e.clipboardData?.getData('text');
+      if (pastedText && (pastedText.includes('\n') || pastedText.includes('|')) && pastedText.trim().length > 15) {
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (activeTag !== 'textarea' && activeTag !== 'input') {
+          e.preventDefault();
+          setScanMode('text');
+          setRawOcrInput(pastedText);
+          handleParseText(pastedText);
         }
       }
     };
 
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [scan]);
+  }, [handleParseText, scan]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -147,6 +187,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
     setError(null);
     setIsScanning(false);
     setStatusText('');
+    setRawOcrInput('');
     onImageRemoved?.();
   };
 
@@ -245,42 +286,114 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        className="mt-3 min-h-11 w-full cursor-pointer rounded-lg border border-dashed border-border-color px-4 py-3 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
-        aria-label="Click to upload a receipt image"
-        disabled={isScanning}
-      >
-        <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
-          <ImageIcon size={14} aria-hidden="true" />
-          <span>
-            Click to upload, drag &amp; drop, or <strong>paste image (⌘+V / Ctrl+V)</strong>
-          </span>
-        </p>
-      </button>
-
-      <div className="mt-3 flex gap-2">
-        <label htmlFor="receipt-title-input" className="sr-only">Receipt title or filename</label>
-        <input
-          id="receipt-title-input"
-          type="text"
-          placeholder="Or paste receipt title: e.g. LS69-16/04/26-Savoy-9534BDT"
-          className="input flex-1 text-xs py-1.5"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-              e.preventDefault();
-              applyFilenameMetadata(e.currentTarget.value);
-            }
-          }}
-          onChange={(e) => {
-            const val = e.target.value.trim();
-            if (val.length >= 8 && (val.includes('-') || val.includes('_'))) {
-              applyFilenameMetadata(val);
-            }
-          }}
-        />
+      {/* Mode switcher: Scan Image vs Paste OCR Text */}
+      <div className="mt-3 flex items-center gap-1 border-b border-border-color pb-2">
+        <button
+          type="button"
+          onClick={() => setScanMode('image')}
+          className={clsx(
+            'flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            scanMode === 'image'
+              ? 'bg-primary/10 text-primary font-semibold'
+              : 'text-text-muted hover:text-text-main hover:bg-[var(--color-surface-hover)]'
+          )}
+        >
+          <ImageIcon size={14} />
+          Scan Image
+        </button>
+        <button
+          type="button"
+          onClick={() => setScanMode('text')}
+          className={clsx(
+            'flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            scanMode === 'text'
+              ? 'bg-primary/10 text-primary font-semibold'
+              : 'text-text-muted hover:text-text-main hover:bg-[var(--color-surface-hover)]'
+          )}
+        >
+          <FileText size={14} />
+          Paste OCR Text
+        </button>
       </div>
+
+      {scanMode === 'image' ? (
+        <>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-3 min-h-11 w-full cursor-pointer rounded-lg border border-dashed border-border-color px-4 py-3 text-center transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.96]"
+            aria-label="Click to upload a receipt image"
+            disabled={isScanning}
+          >
+            <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
+              <ImageIcon size={14} aria-hidden="true" />
+              <span>
+                Click to upload, drag &amp; drop, or <strong>paste image (⌘+V / Ctrl+V)</strong>
+              </span>
+            </p>
+          </button>
+
+          <div className="mt-3 flex gap-2">
+            <label htmlFor="receipt-title-input" className="sr-only">Receipt title or filename</label>
+            <input
+              id="receipt-title-input"
+              type="text"
+              placeholder="Or paste receipt title: e.g. LS69-16/04/26-Savoy-9534BDT"
+              className="input flex-1 text-xs py-1.5"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  e.preventDefault();
+                  applyFilenameMetadata(e.currentTarget.value);
+                }
+              }}
+              onChange={(e) => {
+                const val = e.target.value.trim();
+                if (val.length >= 8 && (val.includes('-') || val.includes('_'))) {
+                  applyFilenameMetadata(val);
+                }
+              }}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="mt-3 space-y-2">
+          <label htmlFor="raw-ocr-textarea" className="sr-only">Raw receipt OCR or memo text</label>
+          <textarea
+            id="raw-ocr-textarea"
+            rows={5}
+            value={rawOcrInput}
+            onChange={(e) => setRawOcrInput(e.target.value)}
+            placeholder="Paste raw OCR text, memo table, or delivery receipt here (e.g. চকবার A ৮ ৩০, প্যাক সাইজ | পরিমাণ | দর | টাকা)..."
+            className="input w-full font-mono text-xs p-2.5 resize-y min-h-[110px]"
+            disabled={isScanning}
+          />
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] text-text-muted">
+              Auto-parses Bengali &amp; English items, quantities, rates, and suppliers.
+            </p>
+            <div className="flex items-center gap-2">
+              {rawOcrInput && (
+                <button
+                  type="button"
+                  onClick={() => setRawOcrInput('')}
+                  className="text-xs text-text-muted hover:text-text-main px-2 py-1"
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleParseText(rawOcrInput)}
+                disabled={!rawOcrInput.trim() || isScanning}
+                className="button-primary flex items-center gap-1.5 text-xs py-1.5 px-3"
+              >
+                <FileScan size={14} />
+                Parse OCR Text
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewUrl && (
         <div className="mt-4 rounded-xl border border-border-color overflow-hidden bg-[var(--color-border-light)] shadow-sm">
@@ -328,7 +441,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
             </div>
           )}
           {result.extractionMethod && (
-            <p className="mt-1 text-xs text-text-muted">Extraction: {result.extractionMethod === 'vision' ? 'Vision' : result.extractionMethod === 'tesseract' ? 'Tesseract fallback' : 'Filename metadata'}</p>
+            <p className="mt-1 text-xs text-text-muted">Extraction: {result.extractionMethod === 'vision' ? 'Vision' : result.extractionMethod === 'tesseract' ? 'Tesseract fallback' : result.extractionMethod === 'text' ? 'Raw OCR text' : 'Filename metadata'}</p>
           )}
           <dl className="mt-2 grid grid-cols-2 gap-2 text-text-muted sm:grid-cols-4">
             <div>

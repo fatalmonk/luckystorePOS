@@ -16,8 +16,8 @@ export type ReceiptOcrItem = {
   warnings?: string[];
 };
 
-export type OcrExtractionMethod = 'vision' | 'tesseract' | 'filename';
-export type ReceiptFieldSource = 'vision' | 'tesseract' | 'filename';
+export type OcrExtractionMethod = 'vision' | 'tesseract' | 'filename' | 'text';
+export type ReceiptFieldSource = 'vision' | 'tesseract' | 'filename' | 'text';
 export type ReceiptOcrField = 'supplier' | 'invoiceNumber' | 'invoiceDate' | 'invoiceTotal' | 'items';
 export type ReceiptFieldConflict = {
   filenameValue: string;
@@ -505,47 +505,139 @@ function findTotal(text: string): string | null {
   return null;
 }
 
-function findItems(text: string): ReceiptOcrItem[] {
+function cleanCandidateName(name: string): string {
+  return name
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/^[\s0-9.\-_/\\|~=():;*•+[\]—A-Za-z]+(?=[\u0980-\u09FF])/, '')
+    .replace(/(?<=[\u0980-\u09FF])[\s0-9.\-_/\\|~=():;*•+[\]—A-Za-z]+$/, '')
+    .replace(/^[0-9\s.\-_/\\|~=():;*•+[\]—]+/, '')
+    .replace(/[0-9\s.\-_/\\|~=():;*•+[\]—]+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const NOISE_WORDS = new Set([
+  'sp', 'tw', 'el', 'ren', 'aw', 'cri', 'wr', 'ee', 'nts', 'dway', 'dewar', 'smet', 'sos', 'oe', 'dvay', 'tlie', 'grom', 'aos', 'eton', 'bdt', 'tk'
+]);
+
+function isNoiseWord(text: string): boolean {
+  const clean = text.toLowerCase().replace(/[^a-z]/g, '');
+  return NOISE_WORDS.has(clean) || (clean.length <= 2 && !/[\u0980-\u09FF]/.test(text));
+}
+
+export function findItems(text: string): ReceiptOcrItem[] {
   const normalized = normalizeDigits(text);
   const lines = normalized.split(/\r?\n/);
   const items: ReceiptOcrItem[] = [];
 
+  const skipKeywords = /(?:sl\.?|নাম|পণ্য|বিবরণ|ক্রয়\s*মূল্য|পরিমাণ|দর|কার্টুন|মোট\s*টাকা|টোটাল|ডিসকাউন্ট|সাব\s*টোটাল|ক্রেতার|বিক্রেতার|হিল\s*ভিউ|প্যাক\s*সইজ|প্যাক\s*সাইজ|কারনরতি|দস্তখত|স্বাক্ষর|তারিখ|চালান|মেমো|ক্যাশমেমো)/i;
+
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed.length < 4) continue;
+    if (trimmed.length < 3) continue;
+    if (skipKeywords.test(trimmed)) continue;
 
-    // Skip header/footer lines
-    if (/(?:sl\.?|নাম|পণ্য|বিবরণ|ক্রয়\s*মূল্য|পরিমাণ|দর|কার্টুন|মোট\s*টাকা|টোটাল|ডিসকাউন্ট|সাব\s*টোটাল|ক্রেতার|বিক্রেতার|হিল\s*ভিউ)/i.test(trimmed)) {
-      continue;
-    }
+    // Must contain letters (Bengali or Latin)
+    if (!/[a-zA-Z\u0980-\u09FF]/.test(trimmed)) continue;
 
-    // Pattern: [Item Name / Description] [Qty] [Unit Price/Rate] [Total Amount]
-    // or line with product name followed by numbers
-    const match = trimmed.match(/^([0-9]{1,2}[.\s-])?\s*([a-zA-Z\u0980-\u09FF\s.'()/ -]+?)\s+([0-9]{1,4})\s+([0-9]{1,5}(?:\.[0-9]{1,2})?)(?:\s+([0-9]{1,6}(?:\.[0-9]{1,2})?))?/);
-    if (match) {
-      const name = match[2].trim().replace(/^[.\s-]+|[.\s-]+$/g, '');
-      const qty = parseInt(match[3], 10);
-      const unitPrice = match[4] ? parseFloat(match[4]) : undefined;
-      const total = match[5] ? parseFloat(match[5]) : (unitPrice && qty ? qty * unitPrice : undefined);
+    const stripped = trimmed.replace(/^[\s|=~_—\-]+|[\s|=~_—\-]+$/g, '');
 
-      if (
-        name.length >= 4 &&
-        /[a-zA-Z\u0980-\u09FF]/.test(name) && // must contain at least one letter
-        !isNaN(qty) &&
-        qty > 0 &&
-        qty < 10000 // sanity cap
-      ) {
+    // Strategy 1: Tabular / pipe-separated line (e.g. চকবার | ৮ | ৩০ or [০৮] | ...)
+    if (stripped.includes('|')) {
+      const segments = stripped.split('|').map((s) => s.trim()).filter(Boolean);
+      const nameParts: string[] = [];
+      const numbers: number[] = [];
+
+      for (const segment of segments) {
+        const segNums = Array.from(segment.matchAll(/\b([0-9]+(?:\.[0-9]{1,2})?)\b/g)).map((m) => Number(m[1]));
+        if (segNums.length > 0) {
+          numbers.push(...segNums);
+        }
+
+        const cleanSeg = cleanCandidateName(segment);
+        const bengaliChars = cleanSeg.replace(/[^\u0980-\u09FF]/g, '');
+        const latinChars = cleanSeg.replace(/[^a-zA-Z]/g, '');
+
+        if (bengaliChars.length >= 2 || (latinChars.length >= 4 && !isNoiseWord(latinChars))) {
+          nameParts.push(cleanSeg);
+        }
+      }
+
+      const combinedName = nameParts.join(' ').replace(/\s+/g, ' ').trim();
+      const cleanName = cleanCandidateName(combinedName);
+
+      if (cleanName.length >= 3) {
+        const qty = numbers[0] !== undefined && numbers[0] > 0 && numbers[0] < 10000 ? numbers[0] : 1;
+        const unitPrice = numbers[1] !== undefined && numbers[1] > 0 ? numbers[1] : undefined;
+        const total = numbers[2] !== undefined && numbers[2] > 0 ? numbers[2] : (unitPrice && qty ? qty * unitPrice : undefined);
         items.push({
-          name,
+          name: cleanName,
           quantity: qty,
           unitPrice,
           total,
+          confidence: unitPrice ? 'high' : 'medium',
         });
+        continue;
+      }
+    }
+
+    // Strategy 2: Whitespace-separated name followed or preceded by numbers
+    const lineCleaned = stripped.replace(/[[\]—_=~]/g, ' ').replace(/\s+/g, ' ').trim();
+    const match = lineCleaned.match(/^([0-9]{1,3}[.\s-])?\s*([a-zA-Z\u0980-\u09FF\s.'()/ -]+?)\s+([0-9]{1,4})(?:\s+([0-9]{1,5}(?:\.[0-9]{1,2})?))?(?:\s+([0-9]{1,6}(?:\.[0-9]{1,2})?))?$/);
+    if (match) {
+      const cleanName = cleanCandidateName(match[2]);
+      const bengaliChars = cleanName.replace(/[^\u0980-\u09FF]/g, '');
+      const latinChars = cleanName.replace(/[^a-zA-Z]/g, '');
+
+      if (bengaliChars.length >= 2 || (latinChars.length >= 4 && !isNoiseWord(latinChars))) {
+        const qty = parseInt(match[3], 10);
+        const unitPrice = match[4] ? parseFloat(match[4]) : undefined;
+        const total = match[5] ? parseFloat(match[5]) : (unitPrice && qty ? qty * unitPrice : undefined);
+        if (qty > 0 && qty < 10000) {
+          items.push({
+            name: cleanName,
+            quantity: qty,
+            unitPrice,
+            total,
+            confidence: unitPrice ? 'high' : 'medium',
+          });
+        }
       }
     }
   }
 
   return items;
+}
+
+export function parseReceiptRawText(
+  rawText: string,
+  suppliers: ReceiptOcrSupplier[] = []
+): ReceiptOcrResult {
+  const supplier = findSupplier(rawText, suppliers);
+  const invoiceNumber = findInvoiceNumber(rawText);
+  const spans = extractCandidateSpans(rawText);
+  const bestDate = selectBestFieldSpan(spans.dates);
+  const invoiceDate = bestDate.selected?.value ?? null;
+  const invoiceTotal = findTotal(rawText);
+  const items = findItems(rawText);
+
+  return validateOcrResult({
+    invoiceNumber,
+    invoiceDate,
+    invoiceTotal,
+    supplier,
+    items,
+    rawText,
+    extractionMethod: 'text',
+    fieldSources: {
+      ...(supplier ? { supplier: 'text' as const } : {}),
+      ...(invoiceNumber ? { invoiceNumber: 'text' as const } : {}),
+      ...(invoiceDate ? { invoiceDate: 'text' as const } : {}),
+      ...(invoiceTotal ? { invoiceTotal: 'text' as const } : {}),
+      ...(items.length ? { items: 'text' as const } : {}),
+    },
+  });
 }
 
 // Preprocess image in browser to increase contrast, grayscale and binarize for OCR

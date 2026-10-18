@@ -5,6 +5,7 @@ import {
   extractCandidateSpans,
   getReceiptVisionEndpoint,
   parseReceiptFilename,
+  parseReceiptRawText,
   reconcileOcrItemCandidates,
   scanReceiptImage,
   scoreProductMatch,
@@ -641,3 +642,81 @@ describe('TypeSafe AI Receipt & Product Candidate Primitives', () => {
     expect(unmatched.noneFits).toBe(true);
   });
 });
+
+describe('parseReceiptRawText', () => {
+  const suppliers = [
+    { id: 'sup-1', name: 'কবাজার' },
+    { id: 'sup-2', name: 'Savoy Distributors' },
+  ];
+
+  it('parses noisy Bengali distributor memo with pipe-separated tabular columns and items', () => {
+    const rawMemo = `
+কবাজার,
+= পদ ০ al
+সা তোকে প্যাক সইজ | পরিমাণ দর কারনরতি। টাকা
+চকবার A ৮ ৩০
+হিডেন হার্ট চকো/ সিঙ্গেল | ৫১৬ |
+লেমন/অনেজ ললি ৬৮ [০৮]
+স্টিক |সোয়ালী সানডে _ [sx [| sow |
+১ | হ্যাজেল বিটস্ মেগা ১৬
+কাপ প্রিমিয়াম | শাহী সন্দেশ |e
+are ফরেস্ট [sa | aon |
+| কান Grom _] আযানিলা/ট্রবেরীচকোলেটঢফি ১২ | | aos |
+Reet ভ্যানিলাট্রিবেরীচকোলেটম্যাগো ১ | | sooo | | Sorat
+`;
+
+    const result = parseReceiptRawText(rawMemo, suppliers);
+
+    expect(result.extractionMethod).toBe('text');
+    expect(result.supplier?.name).toBe('কবাজার');
+    expect(result.fieldSources?.supplier).toBe('text');
+    expect(result.fieldSources?.items).toBe('text');
+
+    // Chocbar item
+    const chocbar = result.items.find((i) => i.name.includes('চকবার'));
+    expect(chocbar).toBeDefined();
+    expect(chocbar?.quantity).toBe(8);
+    expect(chocbar?.unitPrice).toBe(30);
+    expect(chocbar?.total).toBe(240);
+
+    // Lemon/Orange Lolly
+    const lolly = result.items.find((i) => i.name.includes('লেমন'));
+    expect(lolly).toBeDefined();
+    expect(lolly?.quantity).toBe(68);
+
+    // Hazel Bits Mega
+    const hazel = result.items.find((i) => i.name.includes('হ্যাজেল বিটস্ মেগা'));
+    expect(hazel).toBeDefined();
+    expect(hazel?.quantity).toBe(1);
+
+    // Shahi Sandesh
+    const sandesh = result.items.find((i) => i.name.includes('শাহী সন্দেশ'));
+    expect(sandesh).toBeDefined();
+
+    // Vanilla/Strawberry
+    const vanilla = result.items.find((i) => i.name.includes('ভ্যানিলা'));
+    expect(vanilla).toBeDefined();
+  });
+
+  it('extracts date, invoice number, and total when formatted as standard receipt text', () => {
+    const text = `
+Savoy Distributors
+Invoice No: INV-8821
+Date: 2026-04-16
+Vanilla Ice Cream 10 120 1200
+Chocolate Cone 5 80 400
+Total: 1600
+`;
+    const result = parseReceiptRawText(text, suppliers);
+
+    expect(result.extractionMethod).toBe('text');
+    expect(result.supplier?.id).toBe('sup-2');
+    expect(result.invoiceNumber).toBe('INV-8821');
+    expect(result.invoiceDate).toBe('2026-04-16');
+    expect(result.invoiceTotal).toBe('1600');
+    expect(result.items.length).toBe(2);
+    expect(result.items[0]).toMatchObject({ name: 'Vanilla Ice Cream', quantity: 10, unitPrice: 120, total: 1200 });
+    expect(result.items[1]).toMatchObject({ name: 'Chocolate Cone', quantity: 5, unitPrice: 80, total: 400 });
+  });
+});
+
