@@ -541,7 +541,7 @@ export function findItems(text: string): ReceiptOcrItem[] {
     // Must contain letters (Bengali or Latin)
     if (!/[a-zA-Z\u0980-\u09FF]/.test(trimmed)) continue;
 
-    const stripped = trimmed.replace(/^[\s|=~_—\-]+|[\s|=~_—\-]+$/g, '');
+    const stripped = trimmed.replace(/^[\s|=~_—-]+|[\s|=~_—-]+$/g, '');
 
     // Strategy 1: Tabular / pipe-separated line (e.g. চকবার | ৮ | ৩০ or [০৮] | ...)
     if (stripped.includes('|')) {
