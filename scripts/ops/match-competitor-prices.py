@@ -3,15 +3,19 @@
 Match competitor prices to inventory items using strict fuzzy matching.
 Requires brand + product words to overlap, not just any word.
 """
-import json, subprocess, re, sys
+import json, subprocess, re, sys, os
+from pathlib import Path
 
-SUPABASE_URL = "https://hvmyxyccfnkrbxqbhlnm.supabase.co"
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://hvmyxyccfnkrbxqbhlnm.supabase.co")
 
-with open("/Users/mac.alvi/Desktop/Projects/Lucky Store/.env") as f:
-    for line in f:
-        if line.startswith("SUPABASE_SERVICE" + "_ROLE_KEY="):
-            KEY = line.split("=", 1)[1].strip().strip('"')
-            break
+KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+if not KEY:
+    env_file = Path(__file__).resolve().parent.parent.parent / ".env.local"
+    if env_file.is_file():
+        for line in env_file.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if line.startswith("SUPABASE_SERVICE" + "_ROLE_KEY="):
+                KEY = line.split("=", 1)[1].strip().strip('"')
+                break
 
 def curl_get(url):
     r = subprocess.run(["curl", "-s", url, "-H", f"apikey: {KEY}", "-H", f"Authorization: Bearer {KEY}"], capture_output=True, text=True)
