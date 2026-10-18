@@ -13,6 +13,7 @@ vi.mock('../../lib/buying-guides/catalogue', async importOriginal => ({ ...await
 vi.mock('next/navigation', () => ({ notFound: () => { throw new Error('NOT_FOUND'); } }));
 vi.mock('../../components/buying-guides/GuideTracking', () => ({
   GuideView: () => null,
+  GuideAddToCartButton: ({ product }: { product: { name: string } }) => <button type="button">Add to cart<span className="sr-only"> {product.name}</span></button>,
   GuideProductLink: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
 }));
 import BuyingGuidePage, { generateMetadata } from './[slug]/page';
@@ -44,19 +45,31 @@ describe('buying-guide server routes', () => {
   });
   it('renders crawlable semantic content, exact schema and current offers without client JavaScript', async () => {
     const guide = fixture(); records.push(guide);
-    const rows = guide.products.map((p, i) => ({ id: p.id, name: p.verifiedName, price: 30 + i, qty_on_hand: i ? 0 : 5, category_id: guide.category.id }));
+    const rows = guide.products.map((p, i) => ({
+      id: p.id, name: p.verifiedName, brand: 'Olympic', sku: `SKU-${i + 1}`,
+      price: 30 + i, qty_on_hand: i ? 0 : 5, sellable_qty: i ? 0 : 5,
+      category_id: guide.category.id, image_url: `https://images.luckystore1947.com/products/${p.id}.webp`,
+    }));
     getProducts.mockResolvedValue(resolveGuideProducts(guide, rows));
     const html = renderToStaticMarkup(await BuyingGuidePage({ params: Promise.resolve({ slug: guide.slug }) }));
     const document = new DOMParser().parseFromString(html, 'text/html');
     expect(document.querySelectorAll('h1')).toHaveLength(1);
     expect(document.querySelectorAll('table')).toHaveLength(2);
     expect(document.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(5);
+    expect(document.querySelectorAll('[data-comparison-criteria] li')).toHaveLength(4);
     expect(html).toContain('৳30');
     expect(html).toContain('Currently out of stock');
     expect(html.match(/Shop this product/g)).toHaveLength(1);
+    expect(html.match(/Add to cart/g)).toHaveLength(1);
+    expect(document.querySelectorAll('img[alt*="Olympic"]')).toHaveLength(3);
     const schema = JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!);
     expect(schema['@graph'][0]).toMatchObject({ '@type': 'Article', headline: guide.title, dateModified: guide.updatedAt });
     expect(schema['@graph'].filter((n: Record<string, unknown>) => n['@type'] === 'Product')).toHaveLength(3);
+    expect(schema['@graph'][2]).toMatchObject({
+      image: rows[0].image_url,
+      sku: rows[0].sku,
+      brand: { '@type': 'Brand', name: 'Olympic' },
+    });
     expect(schema['@graph'][3].offers.availability).toBe('https://schema.org/OutOfStock');
     expect(html).not.toContain('AggregateRating');
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: guide.slug }) });

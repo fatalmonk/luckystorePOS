@@ -14,6 +14,11 @@
 .cta { display: inline-block; margin-top: 1rem; padding: .8rem 1.2rem; border: 1px solid currentColor; border-radius: .6rem; font-weight: 750; }
 .products { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
 .product { padding: 1.4rem; border: 1px solid currentColor; border-radius: 1rem; min-width: 0; }
+.productImage { aspect-ratio: 1; width: 100%; border-radius: 1rem; background: var(--warm-image-well, #f6f1e7); object-fit: contain; padding: 1rem; }
+.productImageFallback { aspect-ratio: 1; width: 100%; border-radius: 1rem; background: var(--warm-image-well, #f6f1e7); color: var(--warm-muted, #6b6258); display: grid; place-items: center; padding: 1rem; text-align: center; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.cartButton { min-height: 2.75rem; border: 0; border-radius: 999px; background: var(--warm-accent, #a43a2d); color: white; cursor: pointer; font: inherit; font-weight: 800; padding: .65rem 1rem; }
+.cartButton:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
 .status { font-weight: 750; }
 .tableScroll { max-width: 100%; overflow-x: auto; border: 1px solid currentColor; border-radius: .6rem; }
 .tableScroll:focus-visible, .article a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }

@@ -6,25 +6,48 @@ import { getGuideProducts, resolveGuideProducts } from './catalogue';
 import { REVIEW_GUIDES } from './research';
 
 const guide = REVIEW_GUIDES[0];
-const rows = guide.products.map(p => ({ id: p.id, name: p.verifiedName, price: 30, qty_on_hand: 2, category_id: guide.category.id }));
+const rows = guide.products.map(p => ({
+  id: p.id,
+  name: p.verifiedName,
+  brand: 'Olympic',
+  sku: `SKU-${p.id.slice(0, 8)}`,
+  price: 30,
+  mrp: 35,
+  qty_on_hand: 2,
+  sellable_qty: 2,
+  category_id: guide.category.id,
+  image_url: `https://images.luckystore1947.com/products/${p.id}.webp`,
+}));
 
 describe('buying-guide live catalogue', () => {
   beforeEach(() => { vi.clearAllMocks(); rpc.mockReturnValue({ abortSignal: signal }); });
-  it('uses only the fixed public storefront projection and declared category', async () => {
+  it('requests only the selected IDs from the fixed public storefront projection', async () => {
     signal.mockResolvedValue({ data: rows, error: null });
     const result = await getGuideProducts(guide);
-    expect(rpc).toHaveBeenCalledWith('search_storefront_catalog', {
-      p_store_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', p_query: '', p_category_id: guide.category.id, p_limit: 1000, p_offset: 0,
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', {
+      p_store_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
+      p_query: '',
+      p_category_id: guide.category.id,
+      p_item_ids: guide.products.map(product => product.id),
+      p_limit: guide.products.length,
+      p_offset: 0,
     });
-    expect(result[0]).toMatchObject({ available: true, unitPrice: 20 });
+    expect(result[0]).toMatchObject({
+      available: true,
+      unitPrice: 20,
+      current: { brand: 'Olympic', mrp: 35, sellable_qty: 2, image_url: expect.stringContaining('images.luckystore1947.com') },
+    });
     expect(result[0].href).toContain('/product/olympic-energy-plus');
   });
-  it('keeps editorial order when prices change and gates unavailable/changed products', () => {
+  it('keeps editorial order and gates availability on sellable rather than physical stock', () => {
     const result = resolveGuideProducts(guide, [
-      { ...rows[2], price: 1 }, { ...rows[0], qty_on_hand: 0 }, { ...rows[1], name: 'Different pack' },
+      { ...rows[2], price: 1 },
+      { ...rows[0], qty_on_hand: 9, sellable_qty: 0 },
+      { ...rows[1], name: 'Different pack' },
     ]);
     expect(result.map(p => p.id)).toEqual(guide.products.map(p => p.id));
-    expect(result[0]).toMatchObject({ available: false, current: { qty_on_hand: 0 } });
+    expect(result[0]).toMatchObject({ available: false, current: { qty_on_hand: 9, sellable_qty: 0 } });
     expect(result[1]).toMatchObject({ available: false, current: null, href: null, unitPrice: null });
   });
   it('does not show foreign-category rows, deleted items or fallback fixtures', () => {

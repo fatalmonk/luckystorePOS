@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { rememberBuyingGuide, sendAnalyticsEvent, trackBuyingGuideView } from '../../lib/analytics';
+import type { Product } from '../../lib/types';
+import { useCartContext } from '../CartProvider';
 
 export function GuideView({ slug, revision }: { slug: string; revision: number }) {
   const sent = useRef('');
@@ -23,4 +25,20 @@ export function GuideProductLink({ href, slug, revision, productId, children }: 
       buying_guide_slug: slug, buying_guide_revision: revision, item_id: productId,
     });
   }}>{children}</Link>;
+}
+
+export function GuideAddToCartButton({ product, slug, revision, className }: {
+  product: Product; slug: string; revision: number; className?: string;
+}) {
+  const { addToCart } = useCartContext();
+  const [message, setMessage] = useState('');
+
+  return <div>
+    <button type="button" className={className} aria-label={`Add ${product.name} to cart`} onClick={() => {
+      // The existing cart analytics path reads this context when consent is present.
+      rememberBuyingGuide(slug, revision);
+      setMessage(addToCart(product) ? 'Added to cart' : 'Unable to add this item right now');
+    }}>Add to cart</button>
+    <span role="status" aria-live="polite" className="sr-only">{message}</span>
+  </div>;
 }
