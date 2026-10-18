@@ -5,6 +5,7 @@ import { auditLog } from './audit.js';
 import { proxyRequest } from './proxy.js';
 import { getDataCorsHeaders, publicCorsHeaders } from './cors.js';
 import { handleAuthMd, handleRobotsTxt, handleOpenApiJson, handleHealth, handleHealthz, handleOAuthProtectedResource, handleOAuthAuthorizationServer } from './well-known.js';
+import { runRobotsMonitor } from './monitorRobots.js';
 
 export interface Env {
   SUPABASE_URL: string;
@@ -63,6 +64,15 @@ export default {
     }
     if (pathname === '/.well-known/oauth-authorization-server') {
       const response = handleOAuthAuthorizationServer(env.SUPABASE_URL);
+      return applyHeaders(response);
+    }
+    if (pathname === '/monitor/robots') {
+      const results = await runRobotsMonitor();
+      const allOk = results.every((r) => r.ok);
+      const response = new Response(JSON.stringify({ ok: allOk, results }, null, 2), {
+        status: allOk ? 200 : 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
       return applyHeaders(response);
     }
 
@@ -148,5 +158,8 @@ export default {
       status: 404,
       headers: { ...corsHeaders, 'x-request-id': requestId },
     }));
+  },
+  async scheduled(_event: ScheduledController, _env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(runRobotsMonitor());
   },
 };

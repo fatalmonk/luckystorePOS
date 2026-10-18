@@ -15,15 +15,20 @@ const ROOT = resolve(__dirname, '..', '..');
 const SELF = resolve(__dirname, 'secret_scan.js');
 
 const IGNORE_DIRS = new Set([
-  '.git',
   '.agents',
   '.agents_archive',
+  '.ai-dev-kit',
+  '.cursor',
+  '.databricks',
+  '.gemini',
+  '.git',
+  '.github/skills',
+  '.hermes',
   '.worktrees',
   'node_modules',
   'build',
   'coverage',
   '.venv',
-  '.hermes',
   'playwright-report',
   '.next',
   'dist',
@@ -85,6 +90,15 @@ function shouldSkipPath(filePath) {
   if (/^\.env(\.[^/]+)?\.example$/.test(fileName) || fileName === '.dev.vars.example') return false;
 
   if (rel === '.worktrees' || rel.startsWith('.worktrees/')) return true;
+  if (
+    rel.startsWith('.cursor/') ||
+    rel.startsWith('.gemini/') ||
+    rel.startsWith('.ai-dev-kit/') ||
+    rel.startsWith('.databricks/') ||
+    rel.startsWith('.github/skills/')
+  ) {
+    return true;
+  }
   if (rel.endsWith('.dev.vars') || rel.includes('/.dev.vars')) return true;
   if (rel === '.env' || rel.startsWith('.env.') || rel.endsWith('/.env') || rel.includes('/.env.')) {
     return true;
