@@ -4,8 +4,22 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, develop, codex/receipt-vision-pipeline ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.idea/**'
   pull_request:
     branches: [ main, develop, codex/receipt-vision-pipeline ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.idea/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

@@ -23,7 +23,7 @@ permissions:
 jobs:
   analyze-and-test:
     name: Analyze & Test
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: apps/mobile_app
@@ -37,6 +37,7 @@ jobs:
         with:
           flutter-version: '3.41.0'
           channel: stable
+          cache: true
 
       - name: Cache Flutter dependencies
         uses: actions/cache@v4
@@ -56,7 +57,7 @@ jobs:
         run: |
           cp .env.example .env
           sed -i.bak 's|your-anon-key-here|eyJhbG...r-ci|g' .env
-          rm .env.bak
+          rm -f .env.bak
 
       - name: Verify Flutter installation
         run: flutter doctor
@@ -71,7 +72,7 @@ jobs:
     name: Build Android APK
     needs: analyze-and-test
     if: github.event_name != 'pull_request'
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     defaults:
@@ -82,11 +83,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.0'
           channel: stable
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
@@ -95,7 +104,7 @@ jobs:
         run: |
           cp .env.example .env
           sed -i.bak 's|your-anon-key-here|eyJhbG...ummy|g' .env
-          rm .env.bak
+          rm -f .env.bak
 
       - name: Build release APK
         run: flutter build apk --release
