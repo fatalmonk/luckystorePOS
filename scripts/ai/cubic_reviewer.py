@@ -78,8 +78,8 @@ class StaticAnalyzer:
     # User environment leaks
     USER_PATH_PATTERN = re.compile(r"/Users/[a-zA-Z0-9._-]+")
 
-    # Secret patterns
-    SECRET_PATTERNS = [
+    # Credential leak detection signatures
+    credential_signatures = [
         (re.compile(r"(?:api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[:=]\s*['\"][a-zA-Z0-9_\-]{20,}['\"]", re.I), "Potential hardcoded API token/secret"),
         (re.compile(r"sbp_[a-zA-Z0-9]{30,}", re.I), "Exposed Supabase service/access token"),
         (re.compile(r"AKIA[0-9A-Z]{16}", re.I), "Exposed AWS Access Key ID"),
@@ -112,7 +112,7 @@ class StaticAnalyzer:
         # Check line by line in added content
         for line_no, line_content in diff.added_lines:
             # 2. Secret exposure check
-            for pattern, desc in cls.SECRET_PATTERNS:
+            for pattern, desc in cls.credential_signatures:
                 if pattern.search(line_content):
                     findings.append(Finding(
                         severity=Severity.P0_BLOCKER,
