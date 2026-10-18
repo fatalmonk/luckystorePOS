@@ -1,6 +1,6 @@
 # Context map
 
-Read root `CONTEXT.md` first, then the context relevant to the work.
+Read root `context.md` for active session state, then the domain `CONTEXT.md` relevant to the work.
 
 | Context | Documentation | Responsibility |
 |---|---|---|
