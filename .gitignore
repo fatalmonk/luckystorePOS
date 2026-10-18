@@ -232,9 +232,12 @@ data/*.json
 # Vercel custom public output directory
 dist_public/
 
-# Documentation
-docs/
-!docs/decisions/
+# Documentation migration starts with the root index and reviewed collections.
+# Keep the inherited corpus ignored until each collection is reviewed and admitted.
+/docs/*
+!/docs/README.md
+!/docs/adr/
+!/docs/adr/**
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql
