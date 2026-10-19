@@ -100,3 +100,4 @@ export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { ScrollArea, ScrollBar } from './scroll-area';
 export { Toggle, toggleVariants } from './toggle';
 export { ToggleGroup, ToggleGroupItem } from './toggle-group';
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable';

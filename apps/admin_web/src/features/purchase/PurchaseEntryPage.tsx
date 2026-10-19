@@ -1,14 +1,16 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from "@/lib/supabase";
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Save, Send, Search, Package, Plus, X, Pencil, Upload } from 'lucide-react';
+import { Trash2, Save, Send, Search, Package, Plus, X, Pencil, Upload, Columns2, LayoutGrid, Eye } from 'lucide-react';
 import { SkeletonBlock } from '@/components';
 import { PageHeader } from '@/components';
 import { useDebounce } from '@/hooks';
 import { clsx } from 'clsx';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui';
 import { ReceiptScanPanel } from './ReceiptScanPanel';
+import { ReceiptInspectorPanel } from './ReceiptInspectorPanel';
 import { type ReceiptOcrResult } from './receiptOcr';
 import { uploadProcessedImage, deleteReceiptImage } from '../../lib/images';
 import { candidatesForReceiptScan, clearPendingOcrCandidates, receiptPostingBlockReason, replaceReceiptScanCandidates } from './ocrReviewState';
@@ -249,6 +251,30 @@ export const PurchaseEntryPage: React.FC = () => {
   const [scannedReceiptUrl, setScannedReceiptUrl] = useState<string | null>(null);
   const [scannedReceiptKey, setScannedReceiptKey] = useState<string | null>(null);
   const scannedReceiptKeyRef = useRef<string | null>(null);
+
+  // Inspector & Split View State (shadcn resizable + iOS design)
+  const [viewMode, setViewMode] = useState<'standard' | 'split'>('standard');
+  const [activeReceiptPreviewUrl, setActiveReceiptPreviewUrl] = useState<string | null>(null);
+  const [activeOcrResult, setActiveOcrResult] = useState<ReceiptOcrResult | null>(null);
+  const [isScanningReceipt, setIsScanningReceipt] = useState(false);
+  const [scanStatusText, setScanStatusText] = useState('');
+  const [mobileTab, setMobileTab] = useState<'form' | 'receipt'>('form');
+
+  const handlePreviewChange = useCallback((url: string | null) => {
+    setActiveReceiptPreviewUrl(url);
+    if (url && typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      setViewMode('split');
+    }
+  }, []);
+
+  const handleOcrResultChange = useCallback((res: ReceiptOcrResult | null) => {
+    setActiveOcrResult(res);
+  }, []);
+
+  const handleScanningChange = useCallback((isScanning: boolean, text: string) => {
+    setIsScanningReceipt(isScanning);
+    setScanStatusText(text);
+  }, []);
 
   // Auth context
   const { tenantId, storeId } = useAuth();
@@ -913,11 +939,46 @@ export const PurchaseEntryPage: React.FC = () => {
     }
   };
 
+  const currentReceiptUrl = activeReceiptPreviewUrl || scannedReceiptUrl;
+
   return (
-    <div className={clsx('app-warm mx-auto max-w-6xl p-4 pb-28 sm:p-6 lg:pb-6')}>
+    <div className={clsx('app-warm mx-auto p-4 pb-28 sm:p-6 lg:pb-6 transition-all duration-300', viewMode === 'split' ? 'max-w-[1600px]' : 'max-w-6xl')}>
       <PageHeader
         title="Purchase Receiving"
         subtitle="Record incoming stock from suppliers."
+        actions={
+          <div className="hidden sm:inline-flex items-center p-1 bg-muted/60 dark:bg-muted/40 rounded-xl border border-border/60 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setViewMode('standard')}
+              className={clsx(
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95',
+                viewMode === 'standard'
+                  ? 'bg-background text-foreground shadow-xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <LayoutGrid size={13} />
+              <span>Standard</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('split')}
+              className={clsx(
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95',
+                viewMode === 'split'
+                  ? 'bg-background text-foreground shadow-xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Columns2 size={13} />
+              <span>Split Inspector</span>
+              {currentReceiptUrl && (
+                <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+              )}
+            </button>
+          </div>
+        }
       />
 
       {draftRestored && (
@@ -960,9 +1021,114 @@ export const PurchaseEntryPage: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Form */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* ── Mobile iOS Segmented Tab Switcher (when receipt image exists) ── */}
+      {currentReceiptUrl && (
+        <div className="mb-4 flex items-center justify-center lg:hidden">
+          <div className="inline-flex items-center p-1 bg-muted/60 dark:bg-muted/40 rounded-xl border border-border/60 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setMobileTab('form')}
+              className={clsx(
+                'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95',
+                mobileTab === 'form'
+                  ? 'bg-background text-foreground shadow-xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <span>Form Entry</span>
+              {lines.length > 0 && (
+                <span className="rounded-full bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.2">
+                  {lines.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('receipt')}
+              className={clsx(
+                'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95',
+                mobileTab === 'receipt'
+                  ? 'bg-background text-foreground shadow-xs font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Eye size={13} />
+              <span>Receipt Inspector</span>
+              <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile Receipt Inspector View ── */}
+      {currentReceiptUrl && mobileTab === 'receipt' ? (
+        <div className="lg:hidden mb-6 min-h-[500px]">
+          <ReceiptInspectorPanel
+            receiptUrl={currentReceiptUrl}
+            isScanning={isScanningReceipt}
+            statusText={scanStatusText}
+            ocrResult={activeOcrResult}
+            onRemoveReceipt={() => {
+              const key = scannedReceiptKeyRef.current;
+              scannedReceiptKeyRef.current = null;
+              if (key) void deleteReceiptImage(key);
+              setScannedReceiptUrl(null);
+              setScannedReceiptKey(null);
+              setActiveReceiptPreviewUrl(null);
+              setActiveOcrResult(null);
+              setMobileTab('form');
+            }}
+          />
+        </div>
+      ) : null}
+
+      {/* ── Desktop & Mobile Main Layout ── */}
+      <div className={clsx(currentReceiptUrl && mobileTab === 'receipt' && 'hidden')}>
+        <ResizablePanelGroup
+          key={viewMode}
+          orientation="horizontal"
+          className={clsx(
+            "w-full transition-all duration-200",
+            viewMode === 'split' && "min-h-[820px] rounded-2xl border border-border/80 bg-card/30 backdrop-blur-xs overflow-hidden shadow-xs"
+          )}
+        >
+          {viewMode === 'split' && (
+            <>
+              <ResizablePanel
+                defaultSize="40%"
+                minSize="25%"
+                maxSize="60%"
+                className="hidden lg:flex p-3 bg-muted/15 flex-col"
+              >
+                <ReceiptInspectorPanel
+                  receiptUrl={currentReceiptUrl}
+                  isScanning={isScanningReceipt}
+                  statusText={scanStatusText}
+                  ocrResult={activeOcrResult}
+                  onRemoveReceipt={() => {
+                    const key = scannedReceiptKeyRef.current;
+                    scannedReceiptKeyRef.current = null;
+                    if (key) void deleteReceiptImage(key);
+                    setScannedReceiptUrl(null);
+                    setScannedReceiptKey(null);
+                    setActiveReceiptPreviewUrl(null);
+                    setActiveOcrResult(null);
+                  }}
+                  onClose={() => setViewMode('standard')}
+                />
+              </ResizablePanel>
+
+              <ResizableHandle withHandle className="hidden lg:flex hover:bg-primary/50 transition-colors" />
+            </>
+          )}
+
+          <ResizablePanel
+            defaultSize={viewMode === 'split' ? "60%" : "100%"}
+            className={clsx(viewMode === 'split' && "lg:overflow-y-auto lg:p-4 lg:max-h-[calc(100vh-140px)]")}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left: Form */}
+              <div className="lg:col-span-2 space-y-6">
 
           <ReceiptScanPanel
             suppliers={suppliers}
@@ -982,6 +1148,7 @@ export const PurchaseEntryPage: React.FC = () => {
               const previousKey = scannedReceiptKeyRef.current;
               scannedReceiptKeyRef.current = result.key;
               setScannedReceiptUrl(result.url);
+              setActiveReceiptPreviewUrl(result.url);
               setScannedReceiptKey(result.key);
               if (previousKey && previousKey !== result.key) void deleteReceiptImage(previousKey);
             }}
@@ -991,7 +1158,13 @@ export const PurchaseEntryPage: React.FC = () => {
               if (key) void deleteReceiptImage(key);
               setScannedReceiptUrl(null);
               setScannedReceiptKey(null);
+              setActiveReceiptPreviewUrl(null);
+              setActiveOcrResult(null);
             }}
+            onPreviewChange={handlePreviewChange}
+            onOcrResultChange={handleOcrResultChange}
+            onScanningChange={handleScanningChange}
+            isSplitView={viewMode === 'split'}
           />
           {receiptProvenanceSummary && (
             <p className="text-xs text-text-muted" role="status">
@@ -1449,6 +1622,9 @@ export const PurchaseEntryPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
 
       {/* ── Mobile sticky action bar (shown only below lg) ──────── */}

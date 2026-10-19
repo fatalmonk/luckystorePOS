@@ -366,6 +366,56 @@ deno_version = 2
 [functions.canva-social]
 verify_jwt = false
 
+# Payment IPN & return gateways are called by external payment aggregators (SSLCommerz, bKash)
+[functions.payment-ipn]
+verify_jwt = false
+
+[functions.payment-return-cancel]
+verify_jwt = false
+
+[functions.payment-return-fail]
+verify_jwt = false
+
+[functions.payment-return-success]
+verify_jwt = false
+
+# Internal authenticated Edge Functions requiring Supabase Auth JWT
+[functions.adjust-stock]
+verify_jwt = true
+
+[functions.canva-connect]
+verify_jwt = true
+
+[functions.create-card-checkout]
+verify_jwt = true
+
+[functions.create-sale]
+verify_jwt = true
+
+[functions.create-staff-user]
+verify_jwt = true
+
+[functions.extract-receipt-vision]
+verify_jwt = true
+
+[functions.import-inventory]
+verify_jwt = true
+
+[functions.issue-image-upload-ticket]
+verify_jwt = true
+
+[functions.post-facebook]
+verify_jwt = true
+
+[functions.publish-product-image]
+verify_jwt = true
+
+[functions.send-whatsapp-message]
+verify_jwt = true
+
+[functions.verify-receipt-jev]
+verify_jwt = true
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
