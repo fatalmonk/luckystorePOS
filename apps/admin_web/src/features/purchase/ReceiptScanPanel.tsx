@@ -12,9 +12,23 @@ type ReceiptScanPanelProps = {
   onScanStart?: () => void;
   onImageUploaded?: (result: { url: string; key: string }) => void;
   onImageRemoved?: () => void;
+  onPreviewChange?: (url: string | null) => void;
+  onOcrResultChange?: (result: ReceiptOcrResult | null) => void;
+  onScanningChange?: (isScanning: boolean, statusText: string) => void;
+  isSplitView?: boolean;
 };
 
-export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploaded, onImageRemoved }: ReceiptScanPanelProps) {
+export function ReceiptScanPanel({
+  suppliers,
+  onApply,
+  onScanStart,
+  onImageUploaded,
+  onImageRemoved,
+  onPreviewChange,
+  onOcrResultChange,
+  onScanningChange,
+  isSplitView = false,
+}: ReceiptScanPanelProps) {
   const { session, tenantId } = useAuth();
   const accessToken = session?.access_token;
 
@@ -30,6 +44,18 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
   const [statusText, setStatusText] = useState<string>('');
   const [showRawText, setShowRawText] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    onPreviewChange?.(previewUrl);
+  }, [previewUrl, onPreviewChange]);
+
+  useEffect(() => {
+    onOcrResultChange?.(result);
+  }, [result, onOcrResultChange]);
+
+  useEffect(() => {
+    onScanningChange?.(isScanning, statusText);
+  }, [isScanning, statusText, onScanningChange]);
 
   const jevSummary = useMemo(() => {
     return result ? performClientDeterministicReconciliation(result) : null;
@@ -401,32 +427,46 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
       )}
 
       {previewUrl && (
-        <div className="mt-4 rounded-2xl border border-border-color overflow-hidden bg-[var(--color-border-light)] shadow-sm">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border-color bg-[var(--color-surface-hover)]">
-            <span className="text-xs font-medium text-text-main">Receipt Preview</span>
+        isSplitView ? (
+          <div className="mt-3 flex items-center justify-between px-3 py-2 rounded-xl border border-border-color bg-[var(--color-surface-hover)] text-xs">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-text-muted">
-                {isScanning ? statusText : (result ? 'Scanned' : 'Ready')}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  removeReceipt();
-                }}
-                className="relative text-xs font-medium text-color-danger hover:underline px-2 py-1 after:absolute after:-inset-2 after:content-['']"
-              >
-                Remove
-              </button>
+              <span className="size-2 rounded-full bg-primary animate-pulse" />
+              <span className="font-medium text-text-main">Receipt image inspecting in side panel</span>
+            </div>
+            <button
+              type="button"
+              onClick={removeReceipt}
+              className="relative text-xs font-medium text-color-danger hover:underline px-2 py-1 after:absolute after:-inset-2 after:content-['']"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-border-color overflow-hidden bg-[var(--color-border-light)] shadow-sm">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border-color bg-[var(--color-surface-hover)]">
+              <span className="text-xs font-medium text-text-main">Receipt Preview</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-text-muted">
+                  {isScanning ? statusText : (result ? 'Scanned' : 'Ready')}
+                </span>
+                <button
+                  type="button"
+                  onClick={removeReceipt}
+                  className="relative text-xs font-medium text-color-danger hover:underline px-2 py-1 after:absolute after:-inset-2 after:content-['']"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+            <div className="p-2 flex justify-center rounded-xl bg-[var(--color-border-light)]">
+              <img
+                src={previewUrl}
+                alt="Receipt full preview"
+                className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md outline outline-1 outline-black/10 dark:outline-white/10"
+              />
             </div>
           </div>
-          <div className="p-2 flex justify-center rounded-xl bg-[var(--color-border-light)]">
-            <img
-              src={previewUrl}
-              alt="Receipt full preview"
-              className="max-h-[500px] w-auto max-w-full rounded-lg object-contain shadow-md outline outline-1 outline-black/10 dark:outline-white/10"
-            />
-          </div>
-        </div>
+        )
       )}
 
       <p className="sr-only" role="status" aria-live="polite">{statusText || (result ? 'Receipt scan complete.' : '')}</p>
