@@ -15,6 +15,7 @@ const LazyCanvaDesignPage = React.lazy(() => import('../features/canva/CanvaDesi
 const LazyCanvaConnectionPage = React.lazy(() => import('../features/canva/CanvaConnectionPage').then(m => ({ default: m.CanvaConnectionPage })));
 
 const LazyDashboardPage = React.lazy(() => import('../features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const LazyDashboardV2Page = React.lazy(() => import('../features/dashboard/DashboardV2Page').then(m => ({ default: m.DashboardV2Page })));
 const LazyInventoryListPage = React.lazy(() => import('../features/inventory/InventoryListPage').then(m => ({ default: m.InventoryListPage })));
 const LazyStockHistoryPage = React.lazy(() => import('../features/inventory/StockHistoryPage').then(m => ({ default: m.StockHistoryPage })));
 const LazyMissingImagesPage = React.lazy(() => import('../features/inventory/MissingImagesPage').then(m => ({ default: m.MissingImagesPage })));
@@ -89,6 +90,7 @@ export function App() {
                 <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
                   <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<LazyRoute><LazyDashboardPage /></LazyRoute>} />
+                  <Route path="dashboard-v2" element={<LazyRoute><LazyDashboardV2Page /></LazyRoute>} />
                   <Route path="delivery-orders" element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
                   <Route path="products" element={<Navigate to="/inventory" replace />} />
                   <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
