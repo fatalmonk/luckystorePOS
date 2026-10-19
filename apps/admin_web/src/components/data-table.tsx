@@ -107,7 +107,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-export const schema = z.object({
+const schema = z.object({
   id: z.number(),
   header: z.string(),
   type: z.string(),
@@ -116,6 +116,8 @@ export const schema = z.object({
   limit: z.string(),
   reviewer: z.string(),
 })
+
+export type DataTableItem = z.infer<typeof schema>
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
