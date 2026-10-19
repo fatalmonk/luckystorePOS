@@ -27,10 +27,18 @@ export function receiptPostingBlockReason(input: {
   duplicateCheckPending: boolean;
   warnings: string[];
   reviewAcknowledged: boolean;
+  jevRecommendation?: 'PASS' | 'REVIEW' | 'FAIL' | null;
+  jevAcknowledged?: boolean;
 }): string | null {
   if (input.isDraft) return null;
   if (input.duplicateCheckPending) {
     return 'Checking whether this supplier invoice was already recorded. Try posting again shortly.';
+  }
+  if (input.jevRecommendation === 'FAIL') {
+    return 'Cannot post receipt while JEV verification status is FAIL. Correct line items or totals until arithmetic reconciles.';
+  }
+  if (input.jevRecommendation === 'REVIEW' && !input.jevAcknowledged) {
+    return 'Inspect the source receipt image and confirm accuracy before posting.';
   }
   if (input.warnings.length > 0 && !input.reviewAcknowledged) {
     return 'Review the scanned receipt warnings and confirm them before posting.';

@@ -110,4 +110,44 @@ describe('receipt OCR posting review gate', () => {
       reviewAcknowledged: false,
     })).toBeNull();
   });
+
+  it('blocks posting if JEV status is FAIL', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings: [],
+      reviewAcknowledged: true,
+      jevRecommendation: 'FAIL',
+    })).toMatch(/Cannot post receipt while JEV verification status is FAIL/);
+  });
+
+  it('blocks posting if JEV status is REVIEW until acknowledged', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings: [],
+      reviewAcknowledged: true,
+      jevRecommendation: 'REVIEW',
+      jevAcknowledged: false,
+    })).toBe('Inspect the source receipt image and confirm accuracy before posting.');
+
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings: [],
+      reviewAcknowledged: true,
+      jevRecommendation: 'REVIEW',
+      jevAcknowledged: true,
+    })).toBeNull();
+  });
+
+  it('allows posting when JEV recommendation is PASS', () => {
+    expect(receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: false,
+      warnings: [],
+      reviewAcknowledged: true,
+      jevRecommendation: 'PASS',
+    })).toBeNull();
+  });
 });
