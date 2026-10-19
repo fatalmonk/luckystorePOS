@@ -1231,12 +1231,12 @@ export const PurchaseEntryPage: React.FC = () => {
                           <label className="flex items-center gap-1">Qty
                             <input aria-label={`Quantity for ${candidate.name}`} type="number" min="1" step="1" value={candidate.quantity ?? ''}
                               onChange={(event) => setPendingOcrItems(previous => previous.map((item, index) => index === candidateIndex ? { ...item, quantity: event.target.value === '' ? undefined : Number(event.target.value) } : item))}
-                              className="input w-20 py-1" />
+                              className="input w-20 py-1 tabular-nums" />
                           </label>
                           <label className="flex items-center gap-1">Unit cost ৳
                             <input aria-label={`Unit cost for ${candidate.name}`} type="number" min="0" step="0.01" value={candidate.unitPrice ?? ''}
                               onChange={(event) => setPendingOcrItems(previous => previous.map((item, index) => index === candidateIndex ? { ...item, unitPrice: event.target.value === '' ? undefined : Number(event.target.value) } : item))}
-                              className="input w-24 py-1" />
+                              className="input w-24 py-1 tabular-nums" />
                           </label>
                         </div>
                         {candidate.warnings && candidate.warnings.length > 0 && (
@@ -1347,7 +1347,7 @@ export const PurchaseEntryPage: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2 font-medium">
                         {l.item.name}
                         {(!l.item.category_id || !l.item.price || l.item.price <= 0) && (
-                          <button type="button" onClick={() => openAddItemModal(undefined, l.item)} className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200">Needs details</button>
+                          <button type="button" onClick={() => openAddItemModal(undefined, l.item)} className="relative inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-200 transition-colors after:absolute after:-inset-2 after:content-['']">Needs details</button>
                         )}
                       </div>
                       <div className="text-text-muted text-sm tabular-nums">
@@ -1452,7 +1452,7 @@ export const PurchaseEntryPage: React.FC = () => {
       </div>
 
       {/* ── Mobile sticky action bar (shown only below lg) ──────── */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border-color bg-card/95 px-4 py-3 shadow-lg backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border-color bg-card/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-lg backdrop-blur-md lg:hidden">
         <div className="flex-1 min-w-0">
           <div className="text-xs text-text-muted">Total</div>
           <div className="font-bold text-text-main tabular-nums">৳ {totalCost.toFixed(2)}</div>
