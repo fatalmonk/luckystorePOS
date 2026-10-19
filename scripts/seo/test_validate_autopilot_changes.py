@@ -25,7 +25,15 @@ class GuardTests(unittest.TestCase):
         self.assertTrue(check(["seo/state.md"]))
 
     def test_blocks_large_changes(self):
-        self.assertTrue(check(["apps/customer_storefront/a"+str(i)+".tsx" for i in range(13)]))
+        self.assertTrue(check(["apps/customer_storefront/a"+str(i)+".tsx" for i in range(5)]))
+
+    def test_blocks_more_than_two_source_pages(self):
+        self.assertTrue(check([
+            "apps/customer_storefront/app/(english)/page.tsx",
+            "apps/customer_storefront/app/(bengali)/bn/page.tsx",
+            "apps/customer_storefront/app/(english)/delivery/page.tsx",
+            "seo/reports/2026-10-19.md"
+        ]))
 
 
 import importlib.util

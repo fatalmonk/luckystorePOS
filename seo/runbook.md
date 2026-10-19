@@ -114,8 +114,15 @@ Implement one verified, conversion-relevant improvement per run from `seo/state.
 
 ## Phase 5: PR Creation
 
-For verified source changes or state updates, use a review PR; do not commit unrelated files or auto-merge:
+### Automated Codex Autopilot Execution
+In scheduled GitHub Actions runs:
+- Codex operates strictly within the worktree and **must never execute Git commands** (`git checkout`, `git commit`, `git push`).
+- The GitHub Actions workflow manages dedicated branch `seo/codex-autopilot` and opens a **draft PR** for human review via `peter-evans/create-pull-request`.
+- Direct pushes to `main` are strictly blocked by repository permissions and diff policies.
+- Automatic merging is prohibited; human review and passing CI checks are mandatory.
 
+### Manual Operator Mode (Human Only)
+When an operator manually implements a verified SEO improvement:
 ```bash
 git checkout -b seo/YYYY-MM-DD
 git add <explicit-reviewed-paths>
@@ -131,32 +138,18 @@ PR description template: see `seo/pr-template.md`. Run applicable lint, typechec
 
 ## Phase 6: State Update
 
-After every run (even if no code changes):
-1. Update `seo/state.md` — `last_run`, metrics block, changelog row
-2. Commit **and push** the state file:
-
-```bash
-# If a run PR branch is already open, commit onto it:
-git add seo/state.md
-git commit -m "seo(state): update metrics for YYYY-MM-DD run"
-git push origin HEAD
-
-# If no run PR is open (state-only run), create and push a dedicated branch:
-git checkout -b seo/state-YYYY-MM-DD
-git add seo/state.md
-git commit -m "seo(state): update metrics for YYYY-MM-DD run"
-git push origin seo/state-YYYY-MM-DD
-# Open a PR targeting main — small, merge-ready
-```
-
-> State-only PRs should be tiny and merge-ready. Do not batch state updates across multiple runs.
+- Update `seo/state.md` (`last_run`, metrics block, changelog row) **only when bundled with an accompanying storefront source change**.
+- **No state-only PRs**: Diff guard policy strictly blocks metadata-only or state-only PRs (`seo/state.md` without corresponding route page edits).
+- Never commit or push directly to `main`.
 
 ---
 
-## Abort Conditions
+## Abort Conditions & Production Safeguards
 
 Stop deployment and notify immediately if:
-- Production robots directives unexpectedly block an important crawler, after verifying effective directives and intended policy (not every AI bot must be allowed)
-- Sitemap URL count drops below 400 (possible build failure)
-- Homepage schema blocks are missing (possible layout regression)
-- Any canonical URL points to a broken/404 page
+- Production robots directives unexpectedly block an important crawler, after verifying effective directives and intended policy (not every AI bot must be allowed).
+- Verified complete sitemap URL count drops below 400 on a successful 200-OK complete traversal.
+- Homepage schema blocks are confirmed missing from live production HTML across multiple verified requests.
+- Any verified canonical URL points to a confirmed broken/404 page.
+
+> **Production Safeguard Rule**: Abort conditions must be confirmed by verified live production evidence. Transient network timeouts, transport failures, runner DNS errors, or HTTP 5xx responses from the Actions runner must be classified as unverified audit limitations, **never** as confirmed production defects.
