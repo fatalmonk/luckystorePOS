@@ -6,8 +6,11 @@ Primary conversion: completed online grocery order within the verified delivery 
 Competitors: Chaldal, Shwapno, Meena Bazar.
 Ship mode: PR for review only. Never auto-merge.
 
+## TypeSafe/Jev decision contract
+Follow `system-docs/development/typesafe-seo-optimizer-best-practices.md`. Use `/jev memory` (`jev_memory_filter`) to screen and rank retrieved evidence sets larger than five passages. Use `/jev decide` (`jev_decide`) only for bounded yes/no judgments over normalized facts. Preserve `unsure`, probabilities when exposed, `fallback_used`, and screening mode in the dated report. Deterministic code remains authoritative for HTTP, canonical, hreflang, schema, scope, tests, and side effects. A Jev verdict never authorizes merge, deployment, publication, or an unsupported claim.
+
 ## Canonical state and evidence
-Read `seo/state.md`, `seo/runbook.md`, `seo/content-calendar.md`, and `seo/pr-template.md` from main before each agent run. `seo/state.md` remains the **only canonical operational state**. Do not create `seo/context.md` or duplicate state. Read the most recent machine-readable technical report from the Actions artifact and the latest GitHub incident. Cite source URLs, commit hashes and measurement dates; report inaccessible sources as unverified.
+Read `seo/state.md`, `seo/runbook.md`, `seo/content-calendar.md`, `seo/pr-template.md`, and `system-docs/development/typesafe-seo-optimizer-best-practices.md` from main before each agent run. `seo/state.md` remains the **only canonical operational state**. Do not create `seo/context.md` or duplicate state. Read the most recent machine-readable technical report from the Actions artifact and the latest GitHub incident. Cite source URLs, commit hashes and measurement dates; report inaccessible sources as unverified.
 
 ## Daily agent execution
 1. Reconcile the latest technical report against the previous verified baseline. Distinguish report status, coverage and sampling from a full crawl. Never assume all sitemap URLs were crawled. Transient network transport failures, runner DNS errors, or timeouts are audit runner limitations, never confirmed production defects.
