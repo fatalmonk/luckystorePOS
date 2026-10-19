@@ -20,7 +20,8 @@ BLOCKED_EXACT = {
     "apps/customer_storefront/pnpm-lock.yaml",
     "apps/customer_storefront/yarn.lock",
 }
-MAX_FILES = 12
+MAX_FILES = 4
+MAX_SOURCE_FILES = 2
 
 
 def check_patch(path):
@@ -45,7 +46,7 @@ def check(paths):
     failures = []
     if len(paths) > MAX_FILES:
         failures.append(f"Too many changed paths: {len(paths)} > {MAX_FILES}")
-    source = False
+    source_count = 0
     for path in paths:
         if PurePosixPath(path).is_absolute() or any(p in ("..", ".") for p in path.split("/")) or "\\" in path:
             failures.append(f"Invalid path: {path}")
@@ -57,12 +58,14 @@ def check(paths):
         if path.startswith("seo/") and not path.endswith(".md"):
             failures.append(f"Only Markdown SEO state/reports may change: {path}")
         if path.startswith("apps/customer_storefront/"):
-            source = True
+            source_count += 1
             if not (path.startswith(("apps/customer_storefront/app/(english)/", "apps/customer_storefront/app/(bengali)/bn/")) and path.endswith("/page.tsx")):
                 failures.append(f"Only customer-facing route pages may change: {path}")
             if any(p.startswith(".") for p in PurePosixPath(path).parts) or any(p in ("components", "lib") for p in PurePosixPath(path).parts):
                 failures.append(f"Protected implementation path: {path}")
-    if paths and not source:
+    if source_count > MAX_SOURCE_FILES:
+        failures.append(f"Too many customer-facing source route files changed: {source_count} > {MAX_SOURCE_FILES}")
+    if paths and source_count == 0:
         failures.append("SEO metadata-only changes are not permitted")
     return failures
 

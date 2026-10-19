@@ -10,10 +10,10 @@ Ship mode: PR for review only. Never auto-merge.
 Read `seo/state.md`, `seo/runbook.md`, `seo/content-calendar.md`, and `seo/pr-template.md` from main before each agent run. `seo/state.md` remains the **only canonical operational state**. Do not create `seo/context.md` or duplicate state. Read the most recent machine-readable technical report from the Actions artifact and the latest GitHub incident. Cite source URLs, commit hashes and measurement dates; report inaccessible sources as unverified.
 
 ## Daily agent execution
-1. Reconcile the latest technical report against the previous verified baseline. Distinguish report status, coverage and sampling from a full crawl. Never assume all sitemap URLs were crawled.
+1. Reconcile the latest technical report against the previous verified baseline. Distinguish report status, coverage and sampling from a full crawl. Never assume all sitemap URLs were crawled. Transient network transport failures, runner DNS errors, or timeouts are audit runner limitations, never confirmed production defects.
 2. Read changes since the previous recorded commit. Check changed prices, delivery promises, stock, fees, payment and availability against production sources before proposing copy changes.
 3. Check GitHub issues and open PRs; avoid duplicate work. Select **one** evidence-backed, conversion-relevant opportunity. Record the query, affected URL, observed defect, source, proposed change and verification criteria.
-4. If the code and environment are accessible, implement the smallest safe change on a new branch, run applicable tests, lint, typecheck and build, inspect rendered output, and open a review PR. If any verification is unavailable, disclose it in the PR. Never claim a code change shipped merely because a PR exists.
+4. If the code and environment are accessible, implement the smallest safe change (at most 4 files, at most 2 route pages). In unattended GitHub Actions runs, the workflow manages dedicated branch `seo/codex-autopilot`, runs tests/validation, and creates a draft PR for human review; the agent operates in the worktree and must never execute Git commands. If any verification is unavailable, disclose it in the PR. Never claim a code change shipped merely because a PR exists.
 5. Update `seo/state.md` and a dated report in the **same review PR** when source changes exist. Do not modify main directly. If nothing actionable is verified, report that and do not fabricate a change.
 
 ## Weekly (at least 7 days since verified weekly report)
