@@ -158,5 +158,7 @@ SELECT
   line_items,
   line_items_valid,
   reconciliation_status,
-  reconciliation_status = 'matched' AS totals_match
+  reconciliation_status = 'matched' AS totals_match,
+  true AS human_review_required,
+  false AS authorized_for_posting
 FROM reconciled;

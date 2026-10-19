@@ -115,8 +115,12 @@ class TestReceiptReconciliationSQL(unittest.TestCase):
         self.assertIn("CREATE OR REFRESH STREAMING TABLE extracted_purchase_items", content)
         self.assertIn("CREATE OR REFRESH LIVE TABLE purchase_reconciliation", content)
 
-        # Verify advisory evidence comment
+        # Verify advisory evidence is explicit and machine-readable.
         self.assertIn("This result is evidence, not posting authorization", content)
+        self.assertIn("true AS human_review_required", content)
+        self.assertIn("false AS authorized_for_posting", content)
+        self.assertNotIn("INSERT INTO", content.upper())
+        self.assertNotIn("MERGE INTO", content.upper())
 
     def test_synthetic_fixture_matched_invoice(self):
         """Valid synthetic Pran Foods receipt with matching line totals."""
