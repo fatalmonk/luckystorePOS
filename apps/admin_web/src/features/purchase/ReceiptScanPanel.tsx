@@ -390,7 +390,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
                 type="button"
                 onClick={() => handleParseText(rawOcrInput)}
                 disabled={!rawOcrInput.trim() || isScanning}
-                className="button-primary flex items-center gap-1.5 text-xs py-1.5 px-3"
+                className="button-primary flex items-center gap-1.5 text-xs py-1.5 px-3 transition-transform active:scale-[0.96]"
               >
                 <FileScan size={14} />
                 Parse OCR Text
@@ -401,7 +401,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
       )}
 
       {previewUrl && (
-        <div className="mt-4 rounded-xl border border-border-color overflow-hidden bg-[var(--color-border-light)] shadow-sm">
+        <div className="mt-4 rounded-2xl border border-border-color overflow-hidden bg-[var(--color-border-light)] shadow-sm">
           <div className="flex items-center justify-between px-3 py-2 border-b border-border-color bg-[var(--color-surface-hover)]">
             <span className="text-xs font-medium text-text-main">Receipt Preview</span>
             <div className="flex items-center gap-2">
@@ -413,7 +413,7 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
                 onClick={() => {
                   removeReceipt();
                 }}
-                className="text-xs font-medium text-color-danger hover:underline px-1.5 py-0.5"
+                className="relative text-xs font-medium text-color-danger hover:underline px-2 py-1 after:absolute after:-inset-2 after:content-['']"
               >
                 Remove
               </button>
@@ -446,7 +446,9 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
                 )}
               >
                 JEV: {jevSummary.recommendation}
-                {jevSummary.difference > 0 && ` (Diff: ৳${jevSummary.difference})`}
+                {jevSummary.difference > 0 && (
+                  <span className="tabular-nums"> (Diff: ৳{jevSummary.difference.toFixed(2)})</span>
+                )}
               </span>
             )}
           </div>
