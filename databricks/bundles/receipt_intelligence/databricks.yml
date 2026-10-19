@@ -1,0 +1,35 @@
+bundle:
+  name: luckystore-receipt-intelligence
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: "Target catalog for receipt tables and volumes"
+    default: "workspace"
+  schema:
+    description: "Target schema for receipt tables and volumes"
+    default: "default"
+  warehouse_id:
+    description: "SQL Warehouse ID for queries and transformations"
+    default: "04615c8297bf2512"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      profile: DEFAULT
+    variables:
+      catalog: "workspace"
+      schema: "receipt_intelligence_dev"
+
+  prod:
+    mode: production
+    workspace:
+      profile: DEFAULT
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: "workspace"
+      schema: "receipt_intelligence_prod"
