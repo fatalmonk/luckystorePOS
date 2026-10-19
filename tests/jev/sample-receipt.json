@@ -1,0 +1,22 @@
+{
+  "receipt_id": "TEST-001",
+  "supplier_name": "Example Supplier",
+  "invoice_number": "INV-1001",
+  "invoice_total": 1250.00,
+  "currency": "BDT",
+  "line_items": [
+    {
+      "name": "Product A",
+      "quantity": 5,
+      "unit_price": 150.00,
+      "line_total": 750.00
+    },
+    {
+      "name": "Product B",
+      "quantity": 2,
+      "unit_price": 250.00,
+      "line_total": 500.00
+    }
+  ],
+  "source_image_verified": false
+}

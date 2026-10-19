@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, ClipboardCopy, FileScan, FileText, ImageIcon, LoaderCircle, Upload } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../../lib/AuthContext';
 import { deleteReceiptImage, uploadReceiptImage } from '../../lib/images';
 import { type ReceiptOcrResult, type ReceiptOcrSupplier, parseReceiptFilename, parseReceiptRawText, scanReceiptImage } from './receiptOcr';
+import { performClientDeterministicReconciliation } from './jevVerification';
 
 type ReceiptScanPanelProps = {
   suppliers: ReceiptOcrSupplier[];
@@ -29,6 +30,10 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
   const [statusText, setStatusText] = useState<string>('');
   const [showRawText, setShowRawText] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const jevSummary = useMemo(() => {
+    return result ? performClientDeterministicReconciliation(result) : null;
+  }, [result]);
 
   const scan = useCallback(async (source: File | string) => {
     if (source instanceof File && !source.type.startsWith('image/')) {
@@ -429,7 +434,36 @@ export function ReceiptScanPanel({ suppliers, onApply, onScanStart, onImageUploa
 
       {result && (
         <div className="mt-4 rounded-lg border border-border-color p-3 text-sm shadow-sm">
-          <p className="font-medium text-text-main">Review scanned values</p>
+          <div className="flex items-center justify-between">
+            <p className="font-medium text-text-main">Review scanned values</p>
+            {jevSummary && (
+              <span
+                className={clsx(
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold',
+                  jevSummary.recommendation === 'PASS' && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+                  jevSummary.recommendation === 'REVIEW' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+                  jevSummary.recommendation === 'FAIL' && 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                )}
+              >
+                JEV: {jevSummary.recommendation}
+                {jevSummary.difference > 0 && ` (Diff: ৳${jevSummary.difference})`}
+              </span>
+            )}
+          </div>
+          {jevSummary && jevSummary.recommendation === 'FAIL' && (
+            <div
+              className="mt-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400"
+              role="alert"
+            >
+              <p className="font-semibold">Reconciliation Discrepancy</p>
+              <p className="mt-0.5">{jevSummary.requiredAction}</p>
+              {jevSummary.contradictions.length > 0 && (
+                <ul className="mt-1 list-disc pl-4 space-y-0.5">
+                  {jevSummary.contradictions.map((c, i) => <li key={i}>{c}</li>)}
+                </ul>
+              )}
+            </div>
+          )}
           {result.reviewRequired && (
             <div
               className="mt-2 rounded-md border px-3 py-2 text-xs font-medium"
