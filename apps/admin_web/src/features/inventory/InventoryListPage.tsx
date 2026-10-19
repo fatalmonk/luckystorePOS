@@ -10,7 +10,7 @@ import { useNotify } from '../../components/NotificationContext';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '@/hooks';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { Card } from '@/components/ui';
+import { Badge, Button, Card } from '@/components/ui';
 import { CategoryThumbnailGrid } from '../products/CategoryThumbnailGrid';
 import { SkeletonBlock } from '../../components/Skeleton';
 import { AnimatedMetric } from '../../components/data-display/AnimatedMetric';
@@ -318,84 +318,129 @@ export function InventoryListPage() {
 
   return (
     <div ref={inventoryRegionRef} tabIndex={-1} className="inventory-container flex flex-col pt-6">
-        {/* Cinematic Page Header (gpt-taste) */}
-      <div className="relative w-full max-w-6xl mx-auto py-16 md:py-24 flex flex-col items-center justify-center text-center">
-        {/* Ambient background wash */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0)_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(255,243,77,0.05)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
-        
-        <h1 
-          className="relative z-10 font-display font-bold text-warm-fg leading-tight tracking-tight mb-8"
-          style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', maxWidth: '1000px' }}
-        >
-          Master your inventory flow <span className="inline-block w-24 h-[1em] rounded-full align-middle bg-gradient-to-r from-amber-400 to-yellow-500 mx-2 overflow-hidden shadow-lg opacity-90 border border-warm-border"></span> with precision.
-        </h1>
-        
-        <div className="relative z-10 flex flex-wrap justify-center gap-3 mb-12">
-           <button
-             className="px-8 py-4 bg-warm-accent text-black font-bold rounded-full shadow-xl hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2"
-             onClick={() => setIsAddModalOpen(true)}
-           >
-             <Plus size={20} />
-             Add New Product
-           </button>
-           <Link to="/inventory/history" className="px-8 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-                       <History size={20} />
-                       View Audit Log
-                     </Link>
-                     {user?.role === 'admin' || user?.role === 'manager' && (
-                       <Link to="/purchase" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-                         <ShoppingCart size={20} />
-                         Record Purchase
-                       </Link>
-                     )}
-                     <Link to="/import/products" className="px-6 py-4 bg-warm-surface border border-warm-border text-warm-fg font-bold rounded-full shadow-lg hover:scale-105 transition-transform duration-500 ease-out flex items-center gap-2">
-                       <Upload size={20} />
-                       Import Products
-                     </Link>
+      {/* Top Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Inventory Catalog
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Monitor real-time stock levels, profit margins, and reorder alerts.
+          </p>
         </div>
 
-        {/* Ambient stats bar */}
-        <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold max-w-4xl mx-auto min-h-[42px]">
-            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
-              <Package size={14} className="text-warm-fg" />
-              <AnimatedMetric value={stats.total} /> Total SKUs
-            </span>
-            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
-              <AlertTriangle size={14} className="text-warm-warning" />
-              <AnimatedMetric value={stats.lowStock} /> Low Stock
-            </span>
-            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
-              <TrendingDown size={14} className="text-warm-danger" />
-              <AnimatedMetric value={stats.outOfStock} /> Stockouts
-            </span>
-            <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-warm-surface/80 backdrop-blur-md border border-warm-border/50 shadow-sm">
-              <Wallet size={14} className="text-warm-success" />
-              <AnimatedMetric value={stats.totalValue} format prefix="৳" /> Value
-            </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => setIsAddModalOpen(true)}>
+            <Plus size={16} data-icon="inline-start" />
+            Add Product
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/inventory/history">
+              <History size={16} data-icon="inline-start" />
+              Audit Log
+            </Link>
+          </Button>
+          {(user?.role === 'admin' || user?.role === 'manager') && (
+            <Button variant="outline" asChild>
+              <Link to="/purchase">
+                <ShoppingCart size={16} data-icon="inline-start" />
+                Record Purchase
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" asChild>
+            <Link to="/import/products">
+              <Upload size={16} data-icon="inline-start" />
+              Import
+            </Link>
+          </Button>
         </div>
       </div>
 
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 mb-6">
+        <Card padding="none" className="p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Total SKUs</span>
+            <Package size={16} />
+          </div>
+          <div className="text-2xl font-bold tracking-tight text-foreground mt-2">
+            <AnimatedMetric value={stats.total} />
+          </div>
+        </Card>
+
+        <Card padding="none" className="p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Low Stock</span>
+            <AlertTriangle size={16} className="text-amber-500" />
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              <AnimatedMetric value={stats.lowStock} />
+            </div>
+            {stats.lowStock > 0 && (
+              <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10">
+                Low
+              </Badge>
+            )}
+          </div>
+        </Card>
+
+        <Card padding="none" className="p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Stockouts</span>
+            <TrendingDown size={16} className="text-destructive" />
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              <AnimatedMetric value={stats.outOfStock} />
+            </div>
+            {stats.outOfStock > 0 && (
+              <Badge variant="destructive">
+                Out of Stock
+              </Badge>
+            )}
+          </div>
+        </Card>
+
+        <Card padding="none" className="p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Valuation</span>
+            <Wallet size={16} className="text-primary" />
+          </div>
+          <div className="text-2xl font-bold tracking-tight text-foreground mt-2">
+            <AnimatedMetric value={stats.totalValue} format prefix="৳" />
+          </div>
+        </Card>
+      </div>
+
       {/* Collapsible Analytics Widgets */}
-      <div className="-mx-6 px-6 mb-1">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider m-0 p-0">Analytics</h2>
-          <button
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Movement Analytics
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleWidgets}
-            className="flex items-center gap-1 text-xs text-warm-muted hover:text-warm-fg transition-colors"
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
           >
-            {showWidgets ? 'Hide' : 'Show'}
-            {showWidgets ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+            {showWidgets ? 'Hide Analytics' : 'Show Analytics'}
+            {showWidgets ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
+          </Button>
         </div>
         {showWidgets && (
-          <AnalyticsWidgets
-            topSellingItems={topSellingItems}
-            slowMovingItems={slowMovingItems}
-            dailyTrend={dailyTrend}
-            topSellingLoading={topSellingLoading}
-            slowMovingLoading={slowMovingLoading}
-            dailyTrendLoading={dailyTrendLoading}
-          />
+          <div className="mb-4">
+            <AnalyticsWidgets
+              topSellingItems={topSellingItems}
+              slowMovingItems={slowMovingItems}
+              dailyTrend={dailyTrend}
+              topSellingLoading={topSellingLoading}
+              slowMovingLoading={slowMovingLoading}
+              dailyTrendLoading={dailyTrendLoading}
+            />
+          </div>
         )}
       </div>
 

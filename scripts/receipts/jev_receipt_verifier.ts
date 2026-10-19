@@ -17,6 +17,8 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 export interface ReceiptLineItem {
   name: string;
@@ -125,6 +127,40 @@ export function preventUnauthorizedPosting(callerContext: { role?: string; isAut
  */
 function round2(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Safely resolve TYPESAFE_API_KEY from environment, ~/.config/jev/credentials, or .env.secrets.
+ */
+function getTypesafeApiKey(): string | null {
+  if (process.env.TYPESAFE_API_KEY && process.env.TYPESAFE_API_KEY.trim()) {
+    return process.env.TYPESAFE_API_KEY.trim();
+  }
+  try {
+    const credsPath = resolve(process.env.HOME || '', '.config/jev/credentials');
+    if (existsSync(credsPath)) {
+      const content = readFileSync(credsPath, 'utf-8');
+      for (const line of content.split('\n')) {
+        if (line.trim().startsWith('TYPESAFE_API_KEY=')) {
+          const val = line.trim().split('=')[1]?.trim().replace(/['"]/g, '');
+          if (val) return val;
+        }
+      }
+    }
+  } catch {}
+  try {
+    const repoSecrets = resolve(process.cwd(), '.env.secrets');
+    if (existsSync(repoSecrets)) {
+      const content = readFileSync(repoSecrets, 'utf-8');
+      for (const line of content.split('\n')) {
+        if (line.trim().startsWith('TYPESAFE_API_KEY=')) {
+          const val = line.trim().split('=')[1]?.trim().replace(/['"]/g, '');
+          if (val) return val;
+        }
+      }
+    }
+  } catch {}
+  return null;
 }
 
 /**
@@ -284,9 +320,101 @@ export async function evaluateJevEvidence(
     }
   }
 
-  // If jev-cli is available and not in forced offline mode, run optional CLI eval
+
+  // TypeSafe System One (Jev) native API evaluation
   let evalSource: 'jev_cli' | 'jev_api' | 'advisory_engine' = 'advisory_engine';
-  if (!options.forceOffline && process.env.JEV_CLI_API_KEY) {
+  const typesafeKey = !options.forceOffline ? getTypesafeApiKey() : null;
+
+  if (typesafeKey) {
+    try {
+      const stateObj = {
+        receipt_id: receipt.receipt_id,
+        supplier: receipt.supplier_name,
+        invoice_number: receipt.invoice_number,
+        invoice_total: receipt.invoice_total,
+        item_count: receipt.line_items?.length || 0,
+        raw_text_preview: receipt.ocr_raw_text ? receipt.ocr_raw_text.slice(0, 500) : null,
+      };
+
+      const questions = {
+        has_contradictions: {
+          type: 'noul',
+          instructions: 'Does this receipt extract contain internal contradictions, arithmetic mismatches, or unsupported claims compared to the raw preview?',
+        },
+        is_valid_procurement_invoice: {
+          type: 'noul',
+          instructions: 'Is this document an authentic purchase invoice or delivery challan for store procurement?',
+        },
+        legibility_score: {
+          type: 'score',
+          instructions: 'Rate the legibility of the document text.',
+          criteria: [
+            'Completely unreadable or blurry',
+            'Partially readable, key totals faint or cut off',
+            'Legible, totals and items clear',
+            'Crystal clear high contrast printed text',
+          ],
+        },
+      };
+
+      const res = await fetch('https://api.typesafe.ai/v1/systemone', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${typesafeKey}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'LuckyStore-TypeScript-Verifier/1.0',
+        },
+        body: JSON.stringify({
+          state: stateObj,
+          model: 'jev-latest',
+          questions,
+        }),
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        evalSource = 'jev_api';
+        const answers = data.answers || {};
+
+        if (answers.has_contradictions) {
+          const val = answers.has_contradictions.noul ?? 0;
+          evaluated_questions.push({
+            id: 'has_contradictions',
+            question: questions.has_contradictions.instructions,
+            answer: val > 0.5,
+            confidence: Math.abs(val - 0.5) * 2,
+          });
+          if (val > 0.65) {
+            contradictions.push(`TypeSafe Jev flagged high contradiction probability (${Math.round(val * 100)}%) in receipt data`);
+          }
+        }
+
+        if (answers.is_valid_procurement_invoice) {
+          const val = answers.is_valid_procurement_invoice.noul ?? 1.0;
+          evaluated_questions.push({
+            id: 'is_valid_procurement_invoice',
+            question: questions.is_valid_procurement_invoice.instructions,
+            answer: val >= 0.5,
+            confidence: Math.abs(val - 0.5) * 2,
+          });
+          if (val < 0.35) {
+            warnings.push(`TypeSafe Jev assessed low probability (${Math.round(val * 100)}%) of being an authentic procurement invoice`);
+          }
+        }
+
+        if (answers.legibility_score) {
+          evaluated_questions.push({
+            id: 'legibility_score',
+            question: questions.legibility_score.instructions,
+            answer: answers.legibility_score.score,
+          });
+        }
+      }
+    } catch {
+      evalSource = 'advisory_engine';
+    }
+  } else if (!options.forceOffline && process.env.JEV_CLI_API_KEY) {
     try {
       const stateObj = {
         receipt_id: receipt.receipt_id,

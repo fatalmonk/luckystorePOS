@@ -1,0 +1,19 @@
+{
+  "receipt_id": "LS817",
+  "supplier_name": "Unilever Bangladesh",
+  "invoice_number": "INV-8912",
+  "invoice_date": "2026-09-15",
+  "invoice_total": 2450.00,
+  "currency": "BDT",
+  "doc_type": "purchase_invoice",
+  "line_items": [
+    {
+      "name": "Lux Velvet Glow Soap 100g",
+      "quantity": 50,
+      "unit_price": 49.00,
+      "line_total": 2450.00
+    }
+  ],
+  "source_image_verified": true,
+  "ocr_raw_text": "UNILEVER BANGLADESH LTD\nDelivery Memo No: INV-8912\nDate: 15-09-2026\nCustomer: Lucky Store 1947\nItem: Lux Velvet Glow Soap 100g | Qty: 50 | Rate: 49.00 | Total: 2,450.00 BDT\nNet Total: 2,450.00 BDT\nPayment Status: Cash Paid"
+}

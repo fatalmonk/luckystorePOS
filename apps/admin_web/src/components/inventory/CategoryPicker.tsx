@@ -117,8 +117,8 @@ export function CategoryPicker({
         }}
         disabled={disabled || loading}
         className={clsx(
-          'w-full rounded-md border border-warm-border-warm bg-warm-surface text-warm-fg',
-          'focus:ring-2 focus:ring-warm-accent focus:border-transparent',
+          'w-full rounded-md border border-input bg-background text-foreground',
+          'focus:ring-2 focus:ring-ring focus:border-transparent',
           size === 'sm' ? 'text-[11px] px-2 py-1' : 'text-sm px-3 py-2',
           className
         )}
@@ -154,18 +154,18 @@ export function CategoryPicker({
       title="Click to change category"
       className={clsx(
         'inline-flex items-center rounded-md border transition-colors',
-        'hover:bg-warm-surface-hover focus:outline-none focus:ring-2 focus:ring-warm-accent',
+        'hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring',
         disabled && 'cursor-not-allowed opacity-50',
         selectedCategory
-          ? 'bg-warm-accent/10 border-warm-accent/30 text-warm-fg'
-          : 'bg-warm-surface border-warm-border-warm text-warm-dim',
+          ? 'bg-primary/10 border-primary/30 text-foreground'
+          : 'bg-background border-input text-muted-foreground',
         size === 'sm' ? 'text-[11px] px-2 py-0.5' : 'text-sm px-3 py-1',
         className
       )}
     >
       {loading ? (
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 border-2 border-warm-accent border-t-transparent rounded-full animate-spin" />
+          <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           Loading...
         </span>
       ) : (

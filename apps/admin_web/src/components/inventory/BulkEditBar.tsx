@@ -1,5 +1,5 @@
 import { Package, DollarSign, Download } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Button } from '@/components/ui';
 
 interface BulkEditBarProps {
   selectedCount: number;
@@ -17,21 +17,21 @@ export function BulkEditBar({
   onExport,
 }: BulkEditBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface-default border-t border-slate-200 shadow-lg animate-slideUp">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border shadow-lg animate-in slide-in-from-bottom duration-200">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
         {/* Selection Info */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-primary-default text-white text-xs font-medium flex items-center justify-center">
+            <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center shadow-xs">
               {selectedCount}
             </span>
-            <span className="text-sm text-slate-700">
+            <span className="text-sm font-medium text-foreground">
               {selectedCount === 1 ? 'product' : 'products'} selected
             </span>
           </div>
           <button
             onClick={onClear}
-            className="text-sm text-slate-500 hover:text-slate-700 underline"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
           >
             Clear
           </button>
@@ -39,47 +39,36 @@ export function BulkEditBar({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onExport}
             disabled={selectedCount === 0}
-            className={clsx(
-              'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              selectedCount > 0
-                ? 'text-slate-700 hover:bg-slate-100'
-                : 'text-slate-400 cursor-not-allowed'
-            )}
+            className="text-muted-foreground hover:text-foreground"
           >
-            <Download size={16} />
+            <Download size={15} data-icon="inline-start" />
             Export
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onUpdateStock}
             disabled={selectedCount === 0}
-            className={clsx(
-              'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              selectedCount > 0
-                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            )}
           >
-            <Package size={16} />
+            <Package size={15} data-icon="inline-start" />
             Update Stock
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="default"
+            size="sm"
             onClick={onUpdatePrices}
             disabled={selectedCount === 0}
-            className={clsx(
-              'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              selectedCount > 0
-                ? 'bg-primary-default text-white hover:bg-primary-hover'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            )}
           >
-            <DollarSign size={16} />
+            <DollarSign size={15} data-icon="inline-start" />
             Update Prices
-          </button>
+          </Button>
         </div>
       </div>
     </div>

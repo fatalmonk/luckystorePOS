@@ -1,0 +1,860 @@
+{
+  "datasets": [
+    {
+      "name": "ds_expenses",
+      "displayName": "Procurement Expenses",
+      "queryLines": [
+        "SELECT expense_date, vendor, item_description, amount_bdt, payment_type, expense_category, audit_status\n",
+        "FROM procurement_expenses"
+      ],
+      "columns": [
+        {
+          "displayName": "Total Outflow",
+          "description": "Total expense amount in BDT",
+          "expression": "SUM(`amount_bdt`)"
+        },
+        {
+          "displayName": "Stock Spend",
+          "description": "Spend dedicated to stock purchase in BDT",
+          "expression": "SUM(CASE WHEN `expense_category` = 'Stock Purchase' THEN `amount_bdt` ELSE 0 END)"
+        },
+        {
+          "displayName": "Transaction Count",
+          "description": "Total number of expense transactions",
+          "expression": "COUNT(1)"
+        }
+      ]
+    },
+    {
+      "name": "ds_inventory",
+      "displayName": "Retail Inventory Catalog",
+      "queryLines": [
+        "SELECT sku, name, brand, cost_bdt, price_bdt, mrp_bdt, unit_margin_bdt, margin_percentage\n",
+        "FROM retail_inventory"
+      ],
+      "columns": [
+        {
+          "displayName": "Catalog SKUs",
+          "description": "Count of distinct active SKUs",
+          "expression": "COUNT(`sku`)"
+        },
+        {
+          "displayName": "Average Margin %",
+          "description": "Mean retail margin across catalog (0-1)",
+          "expression": "AVG(`margin_percentage`) / 100.0"
+        }
+      ]
+    },
+    {
+      "name": "ds_monthly_spend",
+      "displayName": "Monthly Outflow by Category",
+      "queryLines": [
+        "SELECT DATE_TRUNC('MONTH', expense_date) AS month_date, expense_category, ROUND(SUM(amount_bdt), 2) AS monthly_spend\n",
+        "FROM procurement_expenses\n",
+        "GROUP BY 1, 2\n",
+        "ORDER BY 1 ASC"
+      ]
+    },
+    {
+      "name": "ds_payment_channels",
+      "displayName": "Payment Channel Outflows",
+      "queryLines": [
+        "SELECT payment_type, ROUND(SUM(amount_bdt), 2) AS total_spend, COUNT(1) AS txn_count\n",
+        "FROM procurement_expenses\n",
+        "GROUP BY payment_type"
+      ]
+    },
+    {
+      "name": "ds_top_vendors",
+      "displayName": "Top Suppliers & Vendors",
+      "queryLines": [
+        "SELECT vendor, payment_type, ROUND(SUM(amount_bdt), 2) AS total_spend, COUNT(1) AS txn_count\n",
+        "FROM procurement_expenses\n",
+        "GROUP BY 1, 2\n",
+        "ORDER BY total_spend DESC\n",
+        "LIMIT 10"
+      ]
+    },
+    {
+      "name": "ds_brand_margins",
+      "displayName": "Brand Margin Performance",
+      "queryLines": [
+        "SELECT brand, COUNT(sku) AS sku_count, ROUND(AVG(margin_percentage), 1) AS avg_margin_pct, ROUND(AVG(unit_margin_bdt), 2) AS avg_unit_margin_bdt\n",
+        "FROM retail_inventory\n",
+        "GROUP BY brand\n",
+        "HAVING COUNT(sku) >= 3\n",
+        "ORDER BY sku_count DESC\n",
+        "LIMIT 10"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "retail_financial_360",
+      "displayName": "Retail & Financial 360",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "header_overview",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 🛒 Lucky Store — Retail & Financial Intelligence 360\n",
+                "\n",
+                "**Unified Executive View:** Outflow procurement analytics across ৳3.60M BDT in expense transactions reconciled against source supplier receipts, alongside retail catalog margins across 581 active SKUs. Formatted with Lucky Store Saffron (`#F0C444`) and Deep Night (`#0B0B0D`) visual branding."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_total_outflow",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_expenses",
+                  "fields": [
+                    {
+                      "name": "monthly(expense_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `expense_date`)"
+                    },
+                    {
+                      "name": "measure(Total Outflow)",
+                      "expression": "MEASURE(`Total Outflow`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "DATE_TRUNC(\"MONTH\", `expense_date`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "title": "Total Outflow (BDT)",
+                "showTitle": true
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Total Outflow)",
+                  "displayName": "Total Outflow",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BDT",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "period": {
+                  "fieldName": "monthly(expense_date)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_stock_procurement",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_expenses",
+                  "fields": [
+                    {
+                      "name": "measure(Stock Spend)",
+                      "expression": "MEASURE(`Stock Spend`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "title": "Stock Procurement Spend",
+                "showTitle": true
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Stock Spend)",
+                  "displayName": "Stock Spend",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BDT",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_catalog_skus",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_inventory",
+                  "fields": [
+                    {
+                      "name": "measure(Catalog SKUs)",
+                      "expression": "MEASURE(`Catalog SKUs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "title": "Active Catalog SKUs",
+                "showTitle": true
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Catalog SKUs)",
+                  "displayName": "Active SKUs",
+                  "format": {
+                    "type": "number",
+                    "abbreviation": "none"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avg_margin",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_inventory",
+                  "fields": [
+                    {
+                      "name": "measure(Average Margin %)",
+                      "expression": "MEASURE(`Average Margin %`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "title": "Average Catalog Margin",
+                "showTitle": true
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Average Margin %)",
+                  "displayName": "Avg Margin",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_monthly_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_monthly_spend",
+                  "fields": [
+                    {
+                      "name": "month_date",
+                      "expression": "`month_date`"
+                    },
+                    {
+                      "name": "monthly_spend",
+                      "expression": "`monthly_spend`"
+                    },
+                    {
+                      "name": "expense_category",
+                      "expression": "`expense_category`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "title": "Monthly Outflow by Category (BDT)",
+                "showTitle": true
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "month_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "monthly_spend",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Outflow (BDT)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BDT",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "expense_category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_payment_channel",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_payment_channels",
+                  "fields": [
+                    {
+                      "name": "payment_type",
+                      "expression": "`payment_type`"
+                    },
+                    {
+                      "name": "total_spend",
+                      "expression": "`total_spend`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "frame": {
+                "title": "Payment Channel Distribution",
+                "showTitle": true
+              },
+              "encodings": {
+                "angle": {
+                  "fieldName": "total_spend",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "payment_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 5,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_top_suppliers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_top_vendors",
+                  "fields": [
+                    {
+                      "name": "vendor",
+                      "expression": "`vendor`"
+                    },
+                    {
+                      "name": "total_spend",
+                      "expression": "`total_spend`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "title": "Top 10 Suppliers by Total Outflow (BDT)",
+                "showTitle": true
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "total_spend",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Total Spend (BDT)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BDT",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "vendor",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Supplier / Vendor"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_brand_margins",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_brand_margins",
+                  "fields": [
+                    {
+                      "name": "brand",
+                      "expression": "`brand`"
+                    },
+                    {
+                      "name": "sku_count",
+                      "expression": "`sku_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "title": "Top Brands by Catalog SKU Breadth",
+                "showTitle": true
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "brand",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Brand"
+                },
+                "y": {
+                  "fieldName": "sku_count",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "SKU Count"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "table_catalog_detail",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_inventory",
+                  "fields": [
+                    {
+                      "name": "sku",
+                      "expression": "`sku`"
+                    },
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "brand",
+                      "expression": "`brand`"
+                    },
+                    {
+                      "name": "cost_bdt",
+                      "expression": "`cost_bdt`"
+                    },
+                    {
+                      "name": "price_bdt",
+                      "expression": "`price_bdt`"
+                    },
+                    {
+                      "name": "unit_margin_bdt",
+                      "expression": "`unit_margin_bdt`"
+                    },
+                    {
+                      "name": "margin_percentage",
+                      "expression": "`margin_percentage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "title": "Catalog Retail Pricing & Margin Detail",
+                "showTitle": true
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "sku",
+                    "displayName": "SKU"
+                  },
+                  {
+                    "fieldName": "name",
+                    "displayName": "Product Name"
+                  },
+                  {
+                    "fieldName": "brand",
+                    "displayName": "Brand"
+                  },
+                  {
+                    "fieldName": "cost_bdt",
+                    "displayName": "Cost (BDT)",
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "BDT",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "price_bdt",
+                    "displayName": "Selling Price (BDT)",
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "BDT",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "unit_margin_bdt",
+                    "displayName": "Unit Margin (BDT)",
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "BDT",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "margin_percentage",
+                    "displayName": "Margin %",
+                    "format": {
+                      "type": "number",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter_expense_date",
+            "queries": [
+              {
+                "name": "ds_date_query",
+                "query": {
+                  "datasetName": "ds_expenses",
+                  "fields": [
+                    {
+                      "name": "expense_date",
+                      "expression": "`expense_date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "expense_date",
+                    "displayName": "Expense Date",
+                    "queryName": "ds_date_query"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Expense Date Range"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_payment_type",
+            "queries": [
+              {
+                "name": "ds_payment_query",
+                "query": {
+                  "datasetName": "ds_expenses",
+                  "fields": [
+                    {
+                      "name": "payment_type",
+                      "expression": "`payment_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "payment_type",
+                    "displayName": "Payment Channel",
+                    "queryName": "ds_payment_query"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Payment Channel"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_brand_name",
+            "queries": [
+              {
+                "name": "ds_brand_query",
+                "query": {
+                  "datasetName": "ds_inventory",
+                  "fields": [
+                    {
+                      "name": "brand",
+                      "expression": "`brand`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "brand",
+                    "displayName": "Catalog Brand",
+                    "queryName": "ds_brand_query"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Catalog Brand"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#F8F9FA",
+        "dark": "#0B0B0D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#16161A"
+      },
+      "widgetBorderColor": {
+        "light": "#E9ECEF",
+        "dark": "#25252A"
+      },
+      "fontColor": {
+        "light": "#0B0B0D",
+        "dark": "#F3F4F6"
+      },
+      "selectionColor": {
+        "light": "#F0C444",
+        "dark": "#F0C444"
+      },
+      "visualizationColors": [
+        "#F0C444",
+        "#E09F3E",
+        "#3A86FF",
+        "#06D6A0",
+        "#8338EC",
+        "#FF5964",
+        "#2EC4B6",
+        "#5C677D"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "widgetCornerRadius": 8
+    }
+  }
+}
