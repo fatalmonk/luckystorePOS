@@ -14,6 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
+import { formatUploadResponseFailure } from './hostinger-upload-diagnostics.mjs';
 
 const archivePath = process.argv[2];
 const token = process.env.HOSTINGER_API_TOKEN;
@@ -84,10 +85,38 @@ function apiRequest(method, endpoint, body = null, headers = {}) {
   });
 }
 
+function readResponseText(response, maxBytes = 8_192) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let capturedBytes = 0;
+    let truncated = false;
+
+    response.on('data', (chunk) => {
+      const buffer = Buffer.from(chunk);
+      const remaining = maxBytes - capturedBytes;
+      if (remaining > 0) {
+        const captured = buffer.subarray(0, remaining);
+        chunks.push(captured);
+        capturedBytes += captured.length;
+      }
+      if (buffer.length > remaining) truncated = true;
+    });
+    response.on('end', () => {
+      const text = Buffer.concat(chunks).toString('utf8');
+      resolve(truncated ? `${text}… [response body truncated]` : text);
+    });
+    response.on('error', reject);
+  });
+}
+
 function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
   return new Promise((resolve, reject) => {
     const targetUrl = new URL(uploadUrl.startsWith('http') ? uploadUrl : `https://srv1621-files.hstgr.io${uploadUrl}`);
-    const postReq = https.request(`${targetUrl.origin}${targetUrl.pathname}/app.zip?override=true`, {
+    const uploadEndpoint = `${targetUrl.origin}${targetUrl.pathname}/app.zip?override=true`;
+    const uploadSecrets = [token, authKey, restAuth, uploadUrl, uploadEndpoint];
+    console.log(`   Upload endpoint host: ${targetUrl.host}; archive size: ${fileSize} bytes`);
+
+    const postReq = https.request(uploadEndpoint, {
       method: 'POST',
       headers: {
         'User-Agent': 'LuckyStore-Deploy/1.0',
@@ -99,19 +128,25 @@ function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
       }
     }, (postRes) => {
       if (postRes.statusCode !== 201 && postRes.statusCode !== 200) {
-        let errBody = '';
-        postRes.on('data', chunk => errBody += chunk);
-        postRes.on('end', () => {
-          const detail = (errBody && errBody.length < 300) ? errBody.trim() : postRes.statusMessage;
-          const err = new Error(`TUS creation failed with status ${postRes.statusCode}: ${detail}`);
+        readResponseText(postRes).then((body) => {
+          const formatted = formatUploadResponseFailure({
+            phase: 'TUS creation',
+            statusCode: postRes.statusCode,
+            statusMessage: postRes.statusMessage,
+            headers: postRes.headers,
+            body,
+            secrets: uploadSecrets,
+          });
+          const err = new Error(formatted);
           err.statusCode = postRes.statusCode;
           reject(err);
-        });
+        }, reject);
         return;
       }
 
+      postRes.resume();
       console.log('Streaming archive via TUS PATCH...');
-      const patchReq = https.request(`${targetUrl.origin}${targetUrl.pathname}/app.zip?override=true`, {
+      const patchReq = https.request(uploadEndpoint, {
         method: 'PATCH',
         headers: {
           'User-Agent': 'LuckyStore-Deploy/1.0',
@@ -124,27 +159,36 @@ function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
         }
       }, (patchRes) => {
         if (patchRes.statusCode === 204 || patchRes.statusCode === 200) {
+          patchRes.resume();
           resolve();
         } else {
-          let errBody = '';
-          patchRes.on('data', chunk => errBody += chunk);
-          patchRes.on('end', () => {
-            const detail = (errBody && errBody.length < 300) ? errBody.trim() : patchRes.statusMessage;
-            const err = new Error(`TUS upload failed with status ${patchRes.statusCode}: ${detail}`);
+          readResponseText(patchRes).then((body) => {
+            const formatted = formatUploadResponseFailure({
+              phase: 'TUS PATCH upload',
+              statusCode: patchRes.statusCode,
+              statusMessage: patchRes.statusMessage,
+              headers: patchRes.headers,
+              body,
+              secrets: uploadSecrets,
+            });
+            const err = new Error(formatted);
             err.statusCode = patchRes.statusCode;
             reject(err);
-          });
+          }, reject);
         }
       });
 
       patchReq.on('error', reject);
-      fs.createReadStream(filePath, { highWaterMark: 1024 * 1024 }).pipe(patchReq);
+      const archiveStream = fs.createReadStream(filePath, { highWaterMark: 1024 * 1024 });
+      archiveStream.on('error', reject);
+      archiveStream.pipe(patchReq);
     });
 
     postReq.on('error', reject);
     postReq.end();
   });
 }
+
 
 async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -257,9 +301,10 @@ async function run() {
       }
     }
   } catch (err) {
-    console.error('❌ Deployment error:', err.message);
+    console.error('❌ Deployment error:', err.stack || err);
     process.exit(1);
   }
+
 }
 
 run();
