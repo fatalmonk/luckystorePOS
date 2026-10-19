@@ -8,9 +8,9 @@ interface StatusBadgeProps {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  OK: { bg: 'bg-warm-success/10', text: 'text-warm-success', border: 'border-warm-success/20' },
-  LOW: { bg: 'bg-warm-warning/10', text: 'text-warm-warning', border: 'border-warm-warning/20' },
-  OUT: { bg: 'bg-warm-danger/10', text: 'text-warm-danger', border: 'border-warm-danger/20' },
+  OK: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20' },
+  LOW: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/20' },
+  OUT: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ 

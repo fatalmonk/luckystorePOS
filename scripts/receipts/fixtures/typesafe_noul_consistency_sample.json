@@ -1,0 +1,14 @@
+{
+  "file_name": "fresh-distributor-invoice-1048.jpg",
+  "ocr_text": "Fresh Distribution Ltd. Invoice 1048. Date 2026-10-18. Soybean oil 5L x 4 BDT 3,120. Fresh sugar 1kg x 10 BDT 1,450. Delivery BDT 100. Grand total BDT 4,670.",
+  "supplier": "Fresh Distribution Ltd.",
+  "purchase_date": "2026-10-18",
+  "currency": "BDT",
+  "line_items": [
+    {"description": "Soybean oil 5L", "quantity": 4, "amount": 3120},
+    {"description": "Fresh sugar 1kg", "quantity": 10, "amount": 1450},
+    {"description": "Delivery", "quantity": 1, "amount": 100}
+  ],
+  "grand_total": 4670,
+  "existing_ledger_candidates": []
+}

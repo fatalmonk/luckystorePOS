@@ -44,7 +44,8 @@
     "doctor:ci": "python3 scripts/doctor/project_doctor.py --ci",
     "cubic": "python3 scripts/ai/cubic_reviewer.py",
     "cubic:staged": "python3 scripts/ai/cubic_reviewer.py --staged",
-    "cubic:ci": "python3 scripts/ai/cubic_reviewer.py --ci"
+    "cubic:ci": "python3 scripts/ai/cubic_reviewer.py --ci",
+    "jev:ledger": "tsx scripts/receipts/run_jev_ledger.ts"
   },
   "license": "ISC",
   "dependencies": {

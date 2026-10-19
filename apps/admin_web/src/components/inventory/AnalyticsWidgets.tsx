@@ -1,4 +1,5 @@
 import { TrendingDown, RefreshCw } from 'lucide-react';
+import { Card } from '@/components/ui';
 
 interface TopSellingItem {
   name?: string;
@@ -42,93 +43,93 @@ export function AnalyticsWidgets({
   dailyTrendLoading,
 }: AnalyticsWidgetsProps) {
   return (
-    <div className="grid grid-cols-3 gap-3 mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
       {/* Top Selling Items */}
-      <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <TrendingDown size={12} className="text-warm-accent rotate-180" />
+      <Card padding="none" className="p-3 shadow-xs">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <TrendingDown size={14} className="text-emerald-500 rotate-180" />
           Top Selling
         </h2>
         {topSellingLoading ? (
-          <div className="space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+          <div className="flex flex-col gap-2">
+            <div className="h-3 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-5/6 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
           </div>
         ) : topSellingItems && topSellingItems.length > 0 ? (
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1.5">
             {topSellingItems.slice(0, 5).map((item: TopSellingItem, i: number) => (
               <li key={i} className="flex items-center justify-between gap-2">
-                <span className="text-xs text-warm-fg truncate flex-1">
+                <span className="text-xs text-foreground truncate flex-1">
                   {item.name || item.item_name || item.product_name}
                 </span>
-                <span className="text-xs font-medium text-warm-accent whitespace-nowrap">
+                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                   {item.qty_sold || item.quantity_sold || item.total_sold}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-warm-muted italic">No data yet</p>
+          <p className="text-xs text-muted-foreground italic">No data yet</p>
         )}
-      </div>
+      </Card>
 
       {/* Slow Moving Items */}
-      <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <TrendingDown size={12} className="text-warm-accent" />
+      <Card padding="none" className="p-3 shadow-xs">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <TrendingDown size={14} className="text-amber-500" />
           Slow Moving
         </h2>
         {slowMovingLoading ? (
-          <div className="space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-2/3 animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+          <div className="flex flex-col gap-2">
+            <div className="h-3 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-5/6 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
           </div>
         ) : slowMovingItems && slowMovingItems.length > 0 ? (
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1.5">
             {slowMovingItems.slice(0, 5).map((item: SlowMovingItem, i: number) => (
               <li key={i} className="flex items-center justify-between gap-2">
-                <span className="text-xs text-warm-fg truncate flex-1">
+                <span className="text-xs text-foreground truncate flex-1">
                   {item.name || item.item_name || item.product_name}
                 </span>
-                <span className="text-xs text-warm-muted whitespace-nowrap">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
                   {item.days_since_last_sale ?? item.days ?? 0}d
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-warm-muted italic">No data yet</p>
+          <p className="text-xs text-muted-foreground italic">No data yet</p>
         )}
-      </div>
+      </Card>
 
       {/* Daily Movement Trend */}
-      <div className="rounded-lg border border-warm-border-warm bg-warm-surface p-3">
-        <h2 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <RefreshCw size={12} className="text-warm-accent" />
+      <Card padding="none" className="p-3 shadow-xs">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <RefreshCw size={14} className="text-primary" />
           14-Day Movement
         </h2>
         {dailyTrendLoading ? (
-          <div className="space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-full animate-pulse rounded bg-warm-dim" />
-            <div className="h-3 w-4/5 animate-pulse rounded bg-warm-dim" />
+          <div className="flex flex-col gap-2">
+            <div className="h-3 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
           </div>
         ) : dailyTrend && dailyTrend.length > 0 ? (
-          <div className="flex items-end gap-[3px] h-8">
+          <div className="flex items-end gap-[3px] h-8 pt-1">
             {dailyTrend.slice(-14).map((day: DailyTrend, i: number) => {
               const qty = Math.abs(day.net_delta);
               const maxQty = Math.max(...dailyTrend.slice(-14).map((d: DailyTrend) => Math.abs(d.net_delta)), 1);
-              const height = Math.max((qty / maxQty) * 100, 4);
+              const height = Math.max((qty / maxQty) * 100, 8);
               return (
                 <div
                   key={i}
-                  className="flex-1 rounded-sm bg-warm-accent/60 hover:bg-warm-accent transition-colors cursor-default"
+                  className="flex-1 rounded-xs bg-primary/70 hover:bg-primary transition-colors cursor-default"
                   style={{ height: `${height}%`, minHeight: '4px' }}
                   title={`${day.trend_date}: ${qty} units`}
                 />
@@ -136,9 +137,9 @@ export function AnalyticsWidgets({
             })}
           </div>
         ) : (
-          <p className="text-xs text-warm-muted italic">No data yet</p>
+          <p className="text-xs text-muted-foreground italic">No data yet</p>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

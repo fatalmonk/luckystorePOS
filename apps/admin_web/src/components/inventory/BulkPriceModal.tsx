@@ -74,33 +74,33 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
         role="dialog"
         aria-modal="true"
         aria-labelledby="bulk-price-modal-title"
-        className="relative bg-warm-surface text-warm-fg border border-warm-border-warm rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200"
+        className="relative bg-card text-card-foreground border border-border rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-warm-border-warm">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
-            <h3 id="bulk-price-modal-title" className="font-semibold text-warm-fg">Update Prices</h3>
-            <p className="text-sm text-warm-muted">{selectedCount} products selected</p>
+            <h3 id="bulk-price-modal-title" className="font-semibold text-foreground">Update Prices</h3>
+            <p className="text-sm text-muted-foreground">{selectedCount} products selected</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="p-1 text-warm-muted hover:text-warm-fg rounded-md transition-colors"
+            className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 flex flex-col gap-4">
           {/* Selling Price */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">
+          <div className="flex flex-col gap-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Selling Price
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {sellingMode === 'percentage' ? '±' : '৳'}
                 </span>
                 <input
@@ -109,18 +109,18 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   placeholder={sellingMode === 'percentage' ? 'e.g. 10' : 'e.g. 150'}
                   value={sellingPrice}
                   onChange={(e) => setSellingPrice(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary-default focus:border-transparent"
+                  className="w-full pl-8 pr-3 py-2 border border-input bg-background rounded-md text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
-              <div className="flex rounded-md border border-slate-200 overflow-hidden">
+              <div className="flex rounded-md border border-input overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setSellingMode('absolute')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     sellingMode === 'absolute'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                   title="Absolute value"
                 >
@@ -130,10 +130,10 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   type="button"
                   onClick={() => setSellingMode('percentage')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     sellingMode === 'percentage'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                   title="Percentage change"
                 >
@@ -141,7 +141,7 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                 </button>
               </div>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {sellingMode === 'percentage' 
                 ? 'Use +10 for 10% increase, -10 for 10% decrease' 
                 : 'Set exact selling price for all selected products'}
@@ -149,11 +149,11 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
           </div>
 
           {/* MRP */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">MRP (optional)</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="block text-sm font-medium text-foreground">MRP (optional)</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {mrpMode === 'percentage' ? '±' : '৳'}
                 </span>
                 <input
@@ -162,18 +162,18 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   placeholder={mrpMode === 'percentage' ? 'e.g. -5' : 'e.g. 200'}
                   value={mrp}
                   onChange={(e) => setMrp(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary-default focus:border-transparent"
+                  className="w-full pl-8 pr-3 py-2 border border-input bg-background rounded-md text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
-              <div className="flex rounded-md border border-slate-200 overflow-hidden">
+              <div className="flex rounded-md border border-input overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setMrpMode('absolute')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     mrpMode === 'absolute'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   <Hash size={14} />
@@ -182,10 +182,10 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   type="button"
                   onClick={() => setMrpMode('percentage')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     mrpMode === 'percentage'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   <Percent size={14} />
@@ -195,11 +195,11 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
           </div>
 
           {/* Cost Price */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">Cost Price (optional)</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="block text-sm font-medium text-foreground">Cost Price (optional)</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {costMode === 'percentage' ? '±' : '৳'}
                 </span>
                 <input
@@ -208,18 +208,18 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   placeholder={costMode === 'percentage' ? 'e.g. 5' : 'e.g. 100'}
                   value={costPrice}
                   onChange={(e) => setCostPrice(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary-default focus:border-transparent"
+                  className="w-full pl-8 pr-3 py-2 border border-input bg-background rounded-md text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
-              <div className="flex rounded-md border border-slate-200 overflow-hidden">
+              <div className="flex rounded-md border border-input overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setCostMode('absolute')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     costMode === 'absolute'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   <Hash size={14} />
@@ -228,10 +228,10 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
                   type="button"
                   onClick={() => setCostMode('percentage')}
                   className={clsx(
-                    'px-2 py-2 text-sm font-medium transition-colors flex items-center gap-1',
+                    'px-2.5 py-2 text-sm font-medium transition-colors flex items-center gap-1',
                     costMode === 'percentage'
-                      ? 'bg-primary-default text-white'
-                      : 'bg-surface-default text-slate-600 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   <Percent size={14} />
@@ -242,11 +242,11 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-2 p-4 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
           >
             Cancel
           </button>
@@ -257,8 +257,8 @@ export function BulkPriceModal({ isOpen, onClose, onSubmit, selectedCount }: Bul
             className={clsx(
               'px-4 py-2 text-sm font-medium rounded-md transition-colors',
               hasValue
-                ? 'bg-primary-default text-white hover:bg-primary-hover'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
             )}
           >
             Apply to {selectedCount} Products
