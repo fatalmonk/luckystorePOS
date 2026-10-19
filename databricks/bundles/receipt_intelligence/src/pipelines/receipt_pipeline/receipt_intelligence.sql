@@ -8,7 +8,7 @@ SELECT
   modificationTime AS ingested_at,
   ai_parse_document(content, map('version', '2.0')) AS parsed
 FROM STREAM read_files(
-  '/Volumes/workspace/default/receipts_landing/',
+  '${landing_volume_path}',
   format => 'binaryFile'
 );
 
