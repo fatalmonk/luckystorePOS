@@ -191,4 +191,43 @@ describe('ReceiptScanPanel OCR flow', () => {
       fieldConflicts: { invoiceTotal: { filenameValue: '200', visionValue: '120', selectedSource: 'filename' } },
     }));
   });
+
+  it('switches to Paste OCR Text mode and parses raw text into form items', () => {
+    const onApply = vi.fn();
+    const onScanStart = vi.fn();
+    render(<ReceiptScanPanel suppliers={suppliers} onApply={onApply} onScanStart={onScanStart} />);
+
+    // Switch to Paste OCR Text tab
+    fireEvent.click(screen.getByRole('button', { name: /Paste OCR Text/ }));
+
+    const textarea = screen.getByRole('textbox', { name: /Raw receipt OCR or memo text/ });
+    expect(textarea).toBeTruthy();
+
+    const rawMemo = `
+Test Supplier
+Invoice: MEMO-101
+চকবার ৮ ৩০ ২৪০
+লেমন ললি ৫ ২০ ১০০
+Total: 340
+`;
+    fireEvent.change(textarea, { target: { value: rawMemo } });
+    fireEvent.click(screen.getByRole('button', { name: /Parse OCR Text/ }));
+
+    expect(onScanStart).toHaveBeenCalled();
+    expect(screen.getByText('Review scanned values')).toBeTruthy();
+    expect(screen.getByText('Test Supplier')).toBeTruthy();
+    expect(screen.getByText('MEMO-101')).toBeTruthy();
+    expect(screen.getByText(/৳ 340/)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to form' }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({
+      extractionMethod: 'text',
+      invoiceNumber: 'MEMO-101',
+      invoiceTotal: '340',
+      items: expect.arrayContaining([
+        expect.objectContaining({ name: 'চকবার', quantity: 8, unitPrice: 30, total: 240 }),
+        expect.objectContaining({ name: 'লেমন ললি', quantity: 5, unitPrice: 20, total: 100 }),
+      ]),
+    }));
+  });
 });
