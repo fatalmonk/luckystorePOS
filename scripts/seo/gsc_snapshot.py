@@ -64,14 +64,15 @@ def clean_rows(data, dimensions):
 
 
 def capture(now=None):
-    names = ("GSC_CLIENT_ID", "GSC_CLIENT_SECRET", "GSC_REFRESH_TOKEN", "GSC_SITE_URL")
+    names = ("GSC_CLIENT_ID", "GSC_CLIENT_SECRET", "GSC_REFRESH_TOKEN")
     config = {name: os.environ.get(name, "").strip() for name in names}
     if any(not value for value in config.values()):
         raise ValueError("Missing GSC configuration")
-    site = config["GSC_SITE_URL"]
+    site = os.environ.get("GSC_SITE_URL", "").strip() or "sc-domain:luckystore1947.com"
     if site not in ("sc-domain:luckystore1947.com", "https://www.luckystore1947.com/",
                     "https://luckystore1947.com/"):
         raise ValueError("Invalid Lucky Store property")
+    config["GSC_SITE_URL"] = site
     opener = urllib.request.build_opener(NoRedirect)
 
     def request(url, body, headers):

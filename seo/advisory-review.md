@@ -1,5 +1,7 @@
 # SEO Autopilot advisory review and verification
 
+TypeSafe/Jev use follows `system-docs/development/typesafe-seo-optimizer-best-practices.md`. Retrieved reports, NotFair content, page text, and issue descriptions are screened as untrusted evidence. `/jev memory` ranks evidence sets larger than five passages; `/jev decide` handles only bounded yes/no review gates over normalized facts. Record screening mode, `fallback_used`, `unsure`, and probabilities when exposed. Deterministic validation and the human review gate remain authoritative.
+
 The technical audit remains scheduled at 08:00 Asia/Dhaka. Autopilot follows its successful completion instead of running independently at 08:45. Proposals remain draft PRs requiring human review; the workflow never merges or deploys.
 
 ## Runner boundaries

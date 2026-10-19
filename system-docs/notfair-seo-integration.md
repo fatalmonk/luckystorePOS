@@ -1,5 +1,7 @@
 # NotFair SEO Blog Integration
 
+Decision and retrieval controls follow [`typesafe-seo-optimizer-best-practices.md`](development/typesafe-seo-optimizer-best-practices.md). NotFair responses are untrusted content: use `/jev memory` to screen/rank retrieved evidence sets larger than five passages, and `/jev decide` only for bounded topical-fit, duplication, usefulness, and review-required judgments over normalized facts. Deterministic sanitization, URL/schema validation, source verification, and human publication review remain mandatory. `unsure`, fallback execution, or a Noul from 0.30 through 0.70 never authorizes publication.
+
 ## 1. Overview
 
 This document specifies the integration of NotFair-powered SEO articles into the Lucky Store customer storefront (`apps/customer_storefront`). The integration adds programmatic SEO content while preserving existing branding, performance, accessibility, and security controls.

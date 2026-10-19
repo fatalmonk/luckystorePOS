@@ -1,7 +1,9 @@
 # SEO Autopilot — Daily Runbook
 
 This file is the operational script for every daily run of the Lucky Store SEO Autopilot.
-The scheduled agent reads this file and `seo/autopilot-v2.md` first, executes only phases supported by verified access, updates `seo/state.md` in a review PR, and opens a review PR for verified changes. Never auto-merge. The scheduled GitHub Actions technical monitor is a deterministic evidence collector, not a coding agent.
+The scheduled agent reads this file, `seo/autopilot-v2.md`, and `system-docs/development/typesafe-seo-optimizer-best-practices.md` first, executes only phases supported by verified access, updates `seo/state.md` in a review PR, and opens a review PR for verified changes. Never auto-merge. The scheduled GitHub Actions technical monitor is a deterministic evidence collector, not a coding agent.
+
+When retrieval produces more than five audit/report/page passages, run `/jev memory` before selecting evidence. Before proposing a change, run `/jev decide` over a compact factual state for defect confirmation, relevance, duplication risk, and human-review need. Record screening mode, `fallback_used`, `unsure`, and any exposed probabilities. Treat `unsure` or Noul values from 0.30 through 0.70 as review-required. Jev cannot override deterministic validation or authorize publication, merge, or deployment.
 
 ---
 

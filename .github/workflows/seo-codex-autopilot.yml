@@ -49,11 +49,13 @@ jobs:
           GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
           GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
           GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
-          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL || 'sc-domain:luckystore1947.com' }}
         run: |
-          if [ -z "$GSC_CLIENT_ID" ] || [ -z "$GSC_CLIENT_SECRET" ] || [ -z "$GSC_REFRESH_TOKEN" ]; then
+          GSC_SITE_URL="${GSC_SITE_URL:-sc-domain:luckystore1947.com}"
+          export GSC_SITE_URL
+          if [ -z "$GSC_CLIENT_ID" ] || [ -z "$GSC_CLIENT_SECRET" ] || [ -z "$GSC_REFRESH_TOKEN" ] || [ -z "$GSC_SITE_URL" ]; then
             echo "Search Console credentials missing; recording status as unavailable."
-            echo '{"status": "unavailable", "reason": "Missing GSC credentials"}' > /tmp/gsc-input.json
+            echo '{"status": "unavailable", "reason": "Missing GSC credentials or site URL"}' > /tmp/gsc-input.json
           elif ! python3 scripts/seo/gsc_snapshot.py --output /tmp/gsc-input.json; then
             echo "Search Console capture failed; recording status as unavailable."
             echo '{"status": "unavailable", "reason": "Search Console API capture failed"}' > /tmp/gsc-input.json

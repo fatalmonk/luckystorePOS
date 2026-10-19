@@ -1,9 +1,9 @@
 [Project]
 Stack: Next.js 15 (customer_storefront), React 19/Vite (admin_web), Flutter (mobile_app), Expo SDK 57 (customer_mobile), Supabase, Cloudflare Workers/R2
-Current: Remote Supabase database migrations fully applied and synchronized; schema up to date
-Done: PR #514 merged; migration history reconciled; applied 6 migrations (20261017100000, 20261017140000, 20261018221500, 20261018222800, 20261019120000, 20261019130000); remote database 100% up to date
+Current: GSC / Google OAuth credentials structured in .env.secrets and template documented
+Done: PR #514 & #515 merged; DB migrations synced; GSC fallback hardened in workflow; formatted GSC OAuth client credentials in .env.secrets; updated .env.secrets.example template; 61/61 SEO tests passing
 Branch: main
-PR: #514 (MERGED)
-Health: 100% test pass rate in CI & local; remote database up to date; working tree clean
+PR: #515 (MERGED)
+Health: 100% test pass rate; secret scan clean; remote DB up to date
 Last Synced: 2026-10-19
-ctx: migrations applied | done: db push applied 6 migrations | next: await next priority
+ctx: GSC credentials structured | done: formatted .env.secrets, updated template | next: await next priority
