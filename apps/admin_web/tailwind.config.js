@@ -2,187 +2,204 @@ import tailwindcssAnimate from 'tailwindcss-animate';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
+    darkMode: ['class'],
+    content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {
-      colors: {
-        foreground: 'hsl(var(--foreground))',
-        background: {
-          DEFAULT: 'var(--color-background-default)',
-          subtle: 'var(--color-background-subtle)',
-        },
-        surface: {
-          DEFAULT: 'var(--color-surface-default)',
-          raised: 'var(--color-surface-raised)',
-          overlay: 'var(--color-surface-overlay)',
-        },
-        primary: {
-          DEFAULT: 'var(--color-primary-default)',
-          hover: 'var(--color-primary-hover)',
-          pressed: 'var(--color-primary-pressed)',
-          subtle: 'var(--color-primary-subtle)',
-          on: 'var(--color-primary-on)',
-          foreground: 'var(--color-primary-on)',
-        },
-        secondary: {
-          DEFAULT: 'var(--color-secondary-default)',
-          hover: 'var(--color-secondary-hover)',
-          subtle: 'var(--color-secondary-subtle)',
-          on: 'var(--color-secondary-on)',
-          foreground: 'var(--color-secondary-on)',
-        },
-        success: {
-          DEFAULT: 'var(--color-success-default)',
-          dark: 'var(--color-success-dark)',
-          subtle: 'var(--color-success-subtle)',
-          on: 'var(--color-success-on)',
-        },
-        danger: {
-          DEFAULT: 'var(--color-danger-default)',
-          dark: 'var(--color-danger-dark)',
-          subtle: 'var(--color-danger-subtle)',
-          on: 'var(--color-danger-on)',
-        },
-        warning: {
-          DEFAULT: 'var(--color-warning-default)',
-          dark: 'var(--color-warning-dark)',
-          subtle: 'var(--color-warning-subtle)',
-          on: 'var(--color-warning-on)',
-        },
-        info: {
-          DEFAULT: 'var(--color-info-default)',
-          subtle: 'var(--color-info-subtle)',
-          on: 'var(--color-info-on)',
-        },
-        // Warm Design System (Redesign)
-        warm: {
-          bg: 'var(--warm-bg)',
-          surface: 'var(--warm-surface)',
-          fg: 'var(--warm-fg)',
-          muted: 'var(--warm-muted)',
-          dim: 'var(--warm-dim)',
-          border: 'var(--warm-border)',
-          'border-warm': 'var(--warm-border-warm)',
-          accent: 'var(--warm-accent)',
-          'accent-light': 'var(--warm-accent-light)',
-          success: 'var(--warm-success)',
-          warning: 'var(--warm-warning)',
-          danger: 'var(--warm-danger)',
-          sand: 'var(--warm-sand)',
-          charcoal: 'var(--warm-charcoal)',
-          dark: 'var(--warm-dark)',
-          deep: 'var(--warm-deep)',
-          silver: 'var(--warm-silver)',
-          ring: 'var(--warm-ring)',
-        },
-        slate: {
-          50: 'var(--slate-50)',
-          100: 'var(--slate-100)',
-          200: 'var(--slate-200)',
-          300: 'var(--slate-300)',
-          400: 'var(--slate-400)',
-          500: 'var(--slate-500)',
-          600: 'var(--slate-600)',
-          700: 'var(--slate-700)',
-          800: 'var(--slate-800)',
-          900: 'var(--slate-900)',
-        },
-        gray: {
-          50: 'var(--slate-50)',
-          100: 'var(--slate-100)',
-          200: 'var(--slate-200)',
-          300: 'var(--slate-300)',
-          400: 'var(--slate-400)',
-          500: 'var(--slate-500)',
-          600: 'var(--slate-600)',
-          700: 'var(--slate-700)',
-          800: 'var(--slate-800)',
-          900: 'var(--slate-900)',
-        },
-        border: {
-          DEFAULT: 'var(--color-border-default)',
-          strong: 'var(--color-border-strong)',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        ring: 'hsl(var(--ring))',
-        input: 'hsl(var(--input))',
-        text: {
-          primary: 'var(--color-text-primary)',
-          secondary: 'var(--color-text-secondary)',
-          muted: 'var(--color-text-muted)',
-          inverse: 'var(--color-text-inverse)',
-          link: 'var(--color-text-link)',
-        },
-      },
-      fontFamily: {
-        primary: 'var(--font-family-primary)',
-        mono: 'var(--font-family-mono)',
-        // Warm Design System fonts
-        display: ['var(--font-display)'],
-        body: ['var(--font-body)'],
-      },
-      boxShadow: {
-        'level-1': 'var(--elevation-1)',
-        'level-2': 'var(--elevation-2)',
-        'level-3': 'var(--elevation-3)',
-      },
-      spacing: {
-        '1': 'var(--space-1)',
-        '2': 'var(--space-2)',
-        '3': 'var(--space-3)',
-        '4': 'var(--space-4)',
-        '5': 'var(--space-5)',
-        '6': 'var(--space-6)',
-        '8': 'var(--space-8)',
-        '10': 'var(--space-10)',
-        '12': 'var(--space-12)',
-        '16': 'var(--space-16)',
-      },
-      keyframes: {
-        'flash-success': {
-          '0%': { backgroundColor: 'var(--color-success-subtle, rgba(34, 197, 94, 0.2))' },
-          '100%': { backgroundColor: 'transparent' },
-        },
-      },
-      animation: {
-        'flash-success': 'flash-success 0.5s ease-out',
-      },
-      borderRadius: {
-        'none': 'var(--radius-none)',
-        'xs': 'var(--radius-xs)',
-        'sm': 'var(--radius-sm)',
-        'md': 'var(--radius-md)',
-        'lg': 'var(--radius-lg)',
-        'xl': 'var(--radius-xl)',
-        'full': 'var(--radius-full)',
-      },
-      transitionTimingFunction: {
-        spring: 'cubic-bezier(0.32, 0.72, 0, 1)',
-        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      },
-    },
+  	extend: {
+  		colors: {
+  			foreground: 'hsl(var(--foreground))',
+  			background: {
+  				DEFAULT: 'var(--color-background-default)',
+  				subtle: 'var(--color-background-subtle)'
+  			},
+  			surface: {
+  				DEFAULT: 'var(--color-surface-default)',
+  				raised: 'var(--color-surface-raised)',
+  				overlay: 'var(--color-surface-overlay)'
+  			},
+  			primary: {
+  				DEFAULT: 'var(--color-primary-default)',
+  				hover: 'var(--color-primary-hover)',
+  				pressed: 'var(--color-primary-pressed)',
+  				subtle: 'var(--color-primary-subtle)',
+  				on: 'var(--color-primary-on)',
+  				foreground: 'var(--color-primary-on)'
+  			},
+  			secondary: {
+  				DEFAULT: 'var(--color-secondary-default)',
+  				hover: 'var(--color-secondary-hover)',
+  				subtle: 'var(--color-secondary-subtle)',
+  				on: 'var(--color-secondary-on)',
+  				foreground: 'var(--color-secondary-on)'
+  			},
+  			success: {
+  				DEFAULT: 'var(--color-success-default)',
+  				dark: 'var(--color-success-dark)',
+  				subtle: 'var(--color-success-subtle)',
+  				on: 'var(--color-success-on)'
+  			},
+  			danger: {
+  				DEFAULT: 'var(--color-danger-default)',
+  				dark: 'var(--color-danger-dark)',
+  				subtle: 'var(--color-danger-subtle)',
+  				on: 'var(--color-danger-on)'
+  			},
+  			warning: {
+  				DEFAULT: 'var(--color-warning-default)',
+  				dark: 'var(--color-warning-dark)',
+  				subtle: 'var(--color-warning-subtle)',
+  				on: 'var(--color-warning-on)'
+  			},
+  			info: {
+  				DEFAULT: 'var(--color-info-default)',
+  				subtle: 'var(--color-info-subtle)',
+  				on: 'var(--color-info-on)'
+  			},
+  			warm: {
+  				bg: 'var(--warm-bg)',
+  				surface: 'var(--warm-surface)',
+  				fg: 'var(--warm-fg)',
+  				muted: 'var(--warm-muted)',
+  				dim: 'var(--warm-dim)',
+  				border: 'var(--warm-border)',
+  				'border-warm': 'var(--warm-border-warm)',
+  				accent: 'var(--warm-accent)',
+  				'accent-light': 'var(--warm-accent-light)',
+  				success: 'var(--warm-success)',
+  				warning: 'var(--warm-warning)',
+  				danger: 'var(--warm-danger)',
+  				sand: 'var(--warm-sand)',
+  				charcoal: 'var(--warm-charcoal)',
+  				dark: 'var(--warm-dark)',
+  				deep: 'var(--warm-deep)',
+  				silver: 'var(--warm-silver)',
+  				ring: 'var(--warm-ring)'
+  			},
+  			slate: {
+  				'50': 'var(--slate-50)',
+  				'100': 'var(--slate-100)',
+  				'200': 'var(--slate-200)',
+  				'300': 'var(--slate-300)',
+  				'400': 'var(--slate-400)',
+  				'500': 'var(--slate-500)',
+  				'600': 'var(--slate-600)',
+  				'700': 'var(--slate-700)',
+  				'800': 'var(--slate-800)',
+  				'900': 'var(--slate-900)'
+  			},
+  			gray: {
+  				'50': 'var(--slate-50)',
+  				'100': 'var(--slate-100)',
+  				'200': 'var(--slate-200)',
+  				'300': 'var(--slate-300)',
+  				'400': 'var(--slate-400)',
+  				'500': 'var(--slate-500)',
+  				'600': 'var(--slate-600)',
+  				'700': 'var(--slate-700)',
+  				'800': 'var(--slate-800)',
+  				'900': 'var(--slate-900)'
+  			},
+  			border: {
+  				DEFAULT: 'var(--color-border-default)',
+  				strong: 'var(--color-border-strong)'
+  			},
+  			card: {
+  				DEFAULT: 'hsl(var(--card))',
+  				foreground: 'hsl(var(--card-foreground))'
+  			},
+  			popover: {
+  				DEFAULT: 'hsl(var(--popover))',
+  				foreground: 'hsl(var(--popover-foreground))'
+  			},
+  			muted: {
+  				DEFAULT: 'hsl(var(--muted))',
+  				foreground: 'hsl(var(--muted-foreground))'
+  			},
+  			accent: {
+  				DEFAULT: 'hsl(var(--accent))',
+  				foreground: 'hsl(var(--accent-foreground))'
+  			},
+  			destructive: {
+  				DEFAULT: 'hsl(var(--destructive))',
+  				foreground: 'hsl(var(--destructive-foreground))'
+  			},
+  			ring: 'hsl(var(--ring))',
+  			input: 'hsl(var(--input))',
+  			text: {
+  				primary: 'var(--color-text-primary)',
+  				secondary: 'var(--color-text-secondary)',
+  				muted: 'var(--color-text-muted)',
+  				inverse: 'var(--color-text-inverse)',
+  				link: 'var(--color-text-link)'
+  			},
+  			sidebar: {
+  				DEFAULT: 'hsl(var(--sidebar-background))',
+  				foreground: 'hsl(var(--sidebar-foreground))',
+  				primary: 'hsl(var(--sidebar-primary))',
+  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+  				accent: 'hsl(var(--sidebar-accent))',
+  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+  				border: 'hsl(var(--sidebar-border))',
+  				ring: 'hsl(var(--sidebar-ring))'
+  			}
+  		},
+  		fontFamily: {
+  			primary: 'var(--font-family-primary)',
+  			mono: 'var(--font-family-mono)',
+  			display: [
+  				'var(--font-display)'
+  			],
+  			body: [
+  				'var(--font-body)'
+  			]
+  		},
+  		boxShadow: {
+  			'level-1': 'var(--elevation-1)',
+  			'level-2': 'var(--elevation-2)',
+  			'level-3': 'var(--elevation-3)'
+  		},
+  		spacing: {
+  			'1': 'var(--space-1)',
+  			'2': 'var(--space-2)',
+  			'3': 'var(--space-3)',
+  			'4': 'var(--space-4)',
+  			'5': 'var(--space-5)',
+  			'6': 'var(--space-6)',
+  			'8': 'var(--space-8)',
+  			'10': 'var(--space-10)',
+  			'12': 'var(--space-12)',
+  			'16': 'var(--space-16)'
+  		},
+  		keyframes: {
+  			'flash-success': {
+  				'0%': {
+  					backgroundColor: 'var(--color-success-subtle, rgba(34, 197, 94, 0.2))'
+  				},
+  				'100%': {
+  					backgroundColor: 'transparent'
+  				}
+  			}
+  		},
+  		animation: {
+  			'flash-success': 'flash-success 0.5s ease-out'
+  		},
+  		borderRadius: {
+  			none: 'var(--radius-none)',
+  			xs: 'var(--radius-xs)',
+  			sm: 'var(--radius-sm)',
+  			md: 'var(--radius-md)',
+  			lg: 'var(--radius-lg)',
+  			xl: 'var(--radius-xl)',
+  			full: 'var(--radius-full)'
+  		},
+  		transitionTimingFunction: {
+  			spring: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  			smooth: 'cubic-bezier(0.4, 0, 0.2, 1)'
+  		}
+  	}
   },
   plugins: [tailwindcssAnimate],
 }
