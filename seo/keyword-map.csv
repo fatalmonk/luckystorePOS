@@ -1,4 +1,29 @@
 query,intent,monthly_volume,difficulty,target_url,status,current_position,last_checked
-online grocery delivery Chattogram,transactional,,,/,planned,,
-grocery delivery Chawkbazar,transactional,,,/delivery,planned,,
-Lucky Store 1947 Chattogram,navigational,,,/,planned,,
+online grocery delivery Chattogram,transactional,,,/,optimize,,2026-10-19
+online grocery shopping Chattogram,transactional,,,/,optimize,,2026-10-19
+grocery delivery Chawkbazar,transactional,,,/delivery,optimize,,2026-10-19
+free grocery delivery Chattogram,transactional,,,/delivery,optimize,,2026-10-19
+cash on delivery grocery Chattogram,transactional,,,/delivery,optimize,,2026-10-19
+Lucky Store 1947 Chattogram,navigational,,,/,implemented,,2026-10-19
+Lucky Store Chawkbazar,navigational,,,/,implemented,,2026-10-19
+Lucky Store delivery area,navigational,,,/delivery,implemented,,2026-10-19
+miniket rice price in Chittagong,transactional,,,/category/rice-and-grain,implemented,,2026-10-19
+chinigura rice price in Chittagong,transactional,,,/category/rice-and-grain,implemented,,2026-10-19
+rice delivery Chattogram,transactional,,,/category/rice-and-grain,optimize,,2026-10-19
+buy rice online Chattogram,transactional,,,/category/rice-and-grain,optimize,,2026-10-19
+fortune basmati rice 1 kg price,transactional,,,/product/fortune-basmati-rice-1-kg--41c9ad69,implemented,,2026-10-19
+fortune basmati rice Chattogram,transactional,,,/product/fortune-basmati-rice-1-kg--41c9ad69,optimize,,2026-10-19
+Radhuni products price Bangladesh,commercial,,,/brand/radhuni,optimize,,2026-10-19
+Radhuni masala online Chattogram,transactional,,,/brand/radhuni,optimize,,2026-10-19
+Radhuni biryani masala 40g price,transactional,,,/brand/radhuni,needs-deduplication,,2026-10-19
+cheap online grocery shopping Chattogram,informational,,,/blog/cheap-online-grocery-shopping-a-practical-chattogram-guide,implemented,,2026-10-19
+Chattogram grocery shopping guide,informational,,,/blog/cheap-online-grocery-shopping-a-practical-chattogram-guide,optimize,,2026-10-19
+চট্টগ্রাম অনলাইন গ্রোসারি,transactional,,,/bn,optimize,,2026-10-19
+চট্টগ্রামে মুদি পণ্য ডেলিভারি,transactional,,,/bn/delivery,optimize,,2026-10-19
+মিনিকেট চালের দাম চট্টগ্রাম,transactional,,,/bn/category/rice-and-grain,optimize,,2026-10-19
+চিনিগুড়া চালের দাম চট্টগ্রাম,transactional,,,/bn/category/rice-and-grain,optimize,,2026-10-19
+ফরচুন বাসমতি চাল ১ কেজি দাম,transactional,,,/bn/product/fortune-basmati-rice-1-kg--41c9ad69,optimize,,2026-10-19
+রাঁধুনি মসলা দাম,commercial,,,/bn/brand/radhuni,optimize,,2026-10-19
+Lucky Store contact,navigational,,,/contact,implemented,,2026-10-19
+Lucky Store privacy policy,navigational,,,/privacy,implemented,,2026-10-19
+Lucky Store terms,navigational,,,/terms,implemented,,2026-10-19
