@@ -53,7 +53,6 @@ jobs:
     env:
       CI: true
       NOTFAIR_SEO_API_KEY: ${{ secrets.NOTFAIR_SEO_API_KEY }}
-      HAS_SUPABASE_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
       NEXT_PUBLIC_IMAGE_BASE_URL: 'http://localhost:3000'
     steps:
       - uses: actions/checkout@v4
