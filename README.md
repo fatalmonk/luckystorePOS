@@ -498,11 +498,12 @@ luckystorePOS/
 </details>
 
 <details>
-<summary><strong>🔍 Vercel (Customer Storefront)</strong></summary>
+<summary><strong>🔍 Hostinger (Customer Storefront)</strong></summary>
 
 <br>
 
-- Separate Vercel project, auto-deploys on push to `main`/`develop` (workflow: `deploy-storefront.yml`)
+- Production runs on Hostinger behind Cloudflare; GitHub Actions builds an immutable Next.js standalone release, deploys it to staging, validates it, then promotes the same artifact to production ([workflow](.github/workflows/storefront-hostinger.yml), [hosting decision](docs/adr/ADR-001-storefront-hosting-hostinger.md))
+- Vercel remains available as the rollback target during the Hostinger cutover
 - Next.js 15 App Router with ISR (60s revalidate), SSR, sitemap + robots generation
 - Live: [luckystore1947.com](https://luckystore1947.com)
 - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_IMAGE_BASE_URL`, `NEXT_PUBLIC_AGENT_WORKER_URL`
