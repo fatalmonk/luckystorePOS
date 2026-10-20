@@ -24,9 +24,16 @@ This document specifies the integration of TypeSafe / JEV as an independent AI a
 
 | Recommendation | Condition | Required Human Action | Posting Authorized? |
 |---|---|---|---|
-| **PASS** | Exact arithmetic match (diff ≤ BDT 0.05), valid line items, complete metadata, source image verified (`source_image_verified: true`), no contradictions. | Ready for authorized manual manager/admin approval. | **No** (Manual approval required) |
-| **REVIEW** | Arithmetic passes or is within tolerance, but source image is unverified (`source_image_verified: false`), or potential duplicate invoice flagged, or low extraction confidence. | Inspect source receipt image in Lucky Store Admin to confirm item details. | **No** |
+| **PASS** | Arithmetic difference ≤ BDT 0.05, valid line items, complete metadata, a separate trusted human source review bound to the current extraction and source bytes, no contradictions or field warnings. | Ready for authorized manual manager/admin approval. | **No** (Manual approval required) |
+| **REVIEW** | Arithmetic passes or is within tolerance, but the separate source review is absent or invalid, a potential duplicate invoice is flagged, or field warnings remain. | Inspect source receipt image in Lucky Store Admin to confirm item details. | **No** |
 | **FAIL** | Arithmetic mismatch (> BDT 0.05), invalid quantities (≤ 0), negative prices (< 0), missing mandatory fields, hallucinated items, or non-purchase document. | Quarantine receipt. Resolve mismatches or re-scan document before re-submission. | **No** |
+
+`source_image_verified` is a legacy extraction field and cannot grant source
+verification. After an authorized human checks the source image, the authenticated
+caller supplies `VerifyReceiptOptions.sourceReview`, including the extraction
+hash, source path/hash, reviewer identity, and review timestamp. Hash checks bind
+the review to the extraction and source bytes; they do not prove image accuracy
+or authenticate the reviewer. See [the source-review contract](../../scripts/receipts/VERIFICATION.md).
 
 ---
 
@@ -87,4 +94,4 @@ python3 -m unittest databricks/bundles/receipt_intelligence/tests/test_receipt_r
 ## 5. Security & Isolation Controls
 - **Tenant Isolation**: Caller tenant ID must match receipt `tenant_id`. Any cross-tenant attempt throws a `SecurityAuthorizationViolationError`.
 - **Posting Boundary**: The helper function `preventUnauthorizedPosting()` unconditionally blocks automated transaction execution. Output payloads immutably enforce `safety.posting_authorized = false` and `safety.inventory_mutation_authorized = false`.
-- **Decimal Math**: Strict 2-decimal rounding prevents floating-point drift when checking the BDT 0.05 tolerance.
+- **Decimal Math**: Calculate quantity × unit price with integer decimal coefficients, round each calculated line half up to paisa, and sum those lines independently. Compare extracted line and invoice totals at their original decimal precision against the inclusive BDT 0.05 tolerance; never round an excess discrepancy into acceptance.

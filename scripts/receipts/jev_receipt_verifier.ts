@@ -19,6 +19,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 export interface ReceiptLineItem {
   name: string;
@@ -100,6 +101,14 @@ export interface ReceiptVerificationReport {
 }
 
 export interface VerifyReceiptOptions {
+  /** Trusted caller supplies a human review, never copied from OCR/receipt JSON. */
+  sourceReview?: {
+    receiptSha256: string;
+    sourcePath: string;
+    sourceSha256: string;
+    reviewedBy: string;
+    reviewedAt: string;
+  };
   knownInvoicesForSupplier?: string[];
   callerTenantId?: string;
   forceOffline?: boolean;
@@ -123,10 +132,62 @@ export function preventUnauthorizedPosting(callerContext: { role?: string; isAut
 }
 
 /**
- * Perform exact 2-decimal rounding.
+ * Decimal coefficients avoid binary floating-point tolerance and rounding errors.
  */
-function round2(val: number): number {
-  return Math.round((val + Number.EPSILON) * 100) / 100;
+function decimalParts(value: number): [bigint, number] {
+  const [mantissa, exponent = '0'] = String(value).toLowerCase().split('e');
+  const [whole, fraction = ''] = mantissa.split('.');
+  return [BigInt(whole + fraction), fraction.length - Number(exponent)];
+}
+
+function decimalCents(...values: number[]): bigint {
+  let coefficient = 1n;
+  let scale = -2;
+  for (const value of values) {
+    const [digits, places] = decimalParts(value);
+    coefficient *= digits;
+    scale += places;
+  }
+  if (scale <= 0) return coefficient * 10n ** BigInt(-scale);
+  const divisor = 10n ** BigInt(scale);
+  return (coefficient + divisor / 2n) / divisor;
+}
+
+const nonBlank = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
+const validAmount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER / 100;
+const abs = (value: bigint): bigint => value < 0n ? -value : value;
+
+/** Compare the original extracted decimal with calculated paisa, without rounding it. */
+function differenceFromCents(value: number, cents: bigint): { amount: number; withinTolerance: boolean } {
+  const [coefficient, places] = decimalParts(value);
+  const scale = Math.max(places, 2);
+  const paisaScale = 10n ** BigInt(scale - 2);
+  const difference = abs(coefficient * 10n ** BigInt(scale - places) - cents * paisaScale);
+  return {
+    amount: Number(`${difference}e-${scale}`),
+    withinTolerance: difference <= 5n * paisaScale,
+  };
+}
+
+/** Binds a separate source review to this exact extraction. */
+export function receiptEvidenceHash(receipt: ReceiptInput): string {
+  return createHash('sha256').update(JSON.stringify(receipt)).digest('hex');
+}
+
+function hasReviewedSource(receipt: ReceiptInput, options: VerifyReceiptOptions): boolean {
+  const review = options.sourceReview;
+  if (!review || !nonBlank(review.reviewedBy) || !nonBlank(review.reviewedAt) ||
+      !Number.isFinite(Date.parse(review.reviewedAt)) || Date.parse(review.reviewedAt) > Date.now() ||
+      review.receiptSha256 !== receiptEvidenceHash(receipt) || !nonBlank(review.sourcePath)) return false;
+  try {
+    const source = readFileSync(review.sourcePath);
+    return /^[a-f0-9]{64}$/.test(review.sourceSha256) &&
+      source.length > 0 && createHash('sha256').update(source).digest('hex') === review.sourceSha256;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -171,17 +232,26 @@ export function executeDeterministicReconciliation(receipt: ReceiptInput): Deter
   const errors: string[] = [];
 
   // Metadata verification
-  if (!receipt.supplier_name || !receipt.supplier_name.trim()) {
+  if (!nonBlank(receipt.supplier_name)) {
     missing_fields.push('supplier_name');
     errors.push('Supplier name is missing or blank');
   }
 
-  if (!receipt.invoice_number || !receipt.invoice_number.trim()) {
+  if (!nonBlank(receipt.invoice_number)) {
     missing_fields.push('invoice_number');
     errors.push('Invoice number is missing or blank');
   }
 
-  if (receipt.invoice_total === null || receipt.invoice_total === undefined || isNaN(receipt.invoice_total)) {
+  if (!nonBlank(receipt.invoice_date)) {
+    missing_fields.push('invoice_date');
+    errors.push('Invoice date is missing or blank');
+  } else if (!/^\d{4}-\d{2}-\d{2}$/.test(receipt.invoice_date) ||
+      !Number.isFinite(Date.parse(receipt.invoice_date)) ||
+      new Date(receipt.invoice_date).toISOString().slice(0, 10) !== receipt.invoice_date) {
+    errors.push('Invoice date must be a valid YYYY-MM-DD calendar date');
+  }
+
+  if (!validAmount(receipt.invoice_total)) {
     missing_fields.push('invoice_total');
     errors.push('Invoice total is missing or not a valid number');
   } else if (receipt.invoice_total < 0) {
@@ -189,7 +259,7 @@ export function executeDeterministicReconciliation(receipt: ReceiptInput): Deter
   }
 
   // Line items verification
-  let calculated_total = 0;
+  let calculatedCents = 0n;
   let line_items_valid = true;
 
   if (!receipt.line_items || !Array.isArray(receipt.line_items) || receipt.line_items.length === 0) {
@@ -201,46 +271,55 @@ export function executeDeterministicReconciliation(receipt: ReceiptInput): Deter
       const item = receipt.line_items[i];
       const idx = i + 1;
 
-      if (!item.name || !item.name.trim()) {
+      if (!item || typeof item !== 'object') {
+        line_items_valid = false;
+        errors.push(`Line item #${idx} must be an object`);
+        continue;
+      }
+
+      if (!nonBlank(item.name)) {
         line_items_valid = false;
         errors.push(`Line item #${idx} missing name description`);
       }
 
-      if (typeof item.quantity !== 'number' || isNaN(item.quantity) || item.quantity <= 0) {
+      if (!validAmount(item.quantity) || item.quantity <= 0) {
         line_items_valid = false;
         errors.push(`Line item #${idx} ("${item.name}") has invalid non-positive quantity: ${item.quantity}`);
       }
 
-      if (typeof item.unit_price !== 'number' || isNaN(item.unit_price) || item.unit_price < 0) {
+      if (!validAmount(item.unit_price)) {
         line_items_valid = false;
         errors.push(`Line item #${idx} ("${item.name}") has invalid negative unit price: ${item.unit_price}`);
       }
 
-      const expectedItemTotal = round2((item.quantity || 0) * (item.unit_price || 0));
+      if (!validAmount(item.quantity) || item.quantity <= 0 || !validAmount(item.unit_price)) continue;
+      const expectedCents = decimalCents(item.quantity, item.unit_price);
+      const expectedItemTotal = Number(expectedCents) / 100;
+      calculatedCents += expectedCents;
 
       if (item.line_total !== null && item.line_total !== undefined) {
-        if (typeof item.line_total !== 'number' || isNaN(item.line_total) || item.line_total < 0) {
+        if (!validAmount(item.line_total)) {
           line_items_valid = false;
           errors.push(`Line item #${idx} ("${item.name}") has negative or non-numeric line total: ${item.line_total}`);
         } else {
-          const itemDiff = Math.abs(item.line_total - expectedItemTotal);
-          if (itemDiff > 0.05) {
+          const itemDiff = differenceFromCents(item.line_total, expectedCents);
+          if (!itemDiff.withinTolerance) {
             line_items_valid = false;
             errors.push(
               `Line item #${idx} ("${item.name}") arithmetic mismatch: qty(${item.quantity}) * unit_price(${item.unit_price}) = ${expectedItemTotal}, but extracted line_total is ${item.line_total}`
             );
           }
-          calculated_total = round2(calculated_total + item.line_total);
         }
-      } else {
-        calculated_total = round2(calculated_total + expectedItemTotal);
       }
     }
   }
 
-  const invoiceTotal = receipt.invoice_total ?? 0;
-  const reconciliation_difference = round2(Math.abs(invoiceTotal - calculated_total));
-  const totals_match = missing_fields.length === 0 && line_items_valid && reconciliation_difference <= 0.05;
+  if (calculatedCents > BigInt(Number.MAX_SAFE_INTEGER)) errors.push('Calculated total exceeds safe monetary range');
+  const calculated_total = Number(calculatedCents) / 100;
+  const invoiceTotal = validAmount(receipt.invoice_total) ? receipt.invoice_total : 0;
+  const difference = differenceFromCents(invoiceTotal, calculatedCents);
+  const reconciliation_difference = difference.amount;
+  const totals_match = errors.length === 0 && line_items_valid && difference.withinTolerance;
 
   return {
     calculated_total,
@@ -268,7 +347,7 @@ export async function evaluateJevEvidence(
   const evaluated_questions: JevQuestionResult[] = [];
 
   // Check currency
-  if (receipt.currency && receipt.currency.toUpperCase() !== 'BDT') {
+  if (receipt.currency && (!nonBlank(receipt.currency) || receipt.currency.toUpperCase() !== 'BDT')) {
     contradictions.push(`Extracted currency is ${receipt.currency}, but Lucky Store operates in BDT`);
   }
 
@@ -281,7 +360,7 @@ export async function evaluateJevEvidence(
 
   // Check for duplicate invoice number under tenant
   let duplicateRisk = false;
-  if (receipt.invoice_number && options.knownInvoicesForSupplier) {
+  if (nonBlank(receipt.invoice_number) && options.knownInvoicesForSupplier) {
     if (options.knownInvoicesForSupplier.includes(receipt.invoice_number.trim())) {
       duplicateRisk = true;
       warnings.push(`Invoice #${receipt.invoice_number} matches an existing registered invoice for this supplier`);
@@ -289,12 +368,12 @@ export async function evaluateJevEvidence(
   }
 
   // Raw OCR source grounding and hallucination check
-  let groundedInSource = true;
-  if (receipt.ocr_raw_text) {
+  let groundedInSource = nonBlank(receipt.ocr_raw_text);
+  if (nonBlank(receipt.ocr_raw_text)) {
     const rawLower = receipt.ocr_raw_text.toLowerCase();
 
     // Check supplier grounding
-    if (receipt.supplier_name) {
+    if (nonBlank(receipt.supplier_name)) {
       const supplierKeywords = receipt.supplier_name.toLowerCase().split(/\s+/).filter(w => w.length > 2);
       const supplierFound = supplierKeywords.some(kw => rawLower.includes(kw));
       if (!supplierFound) {
@@ -308,6 +387,7 @@ export async function evaluateJevEvidence(
     // Check item hallucinations
     if (receipt.line_items && receipt.line_items.length > 0) {
       for (const item of receipt.line_items) {
+        if (!item || !nonBlank(item.name)) continue;
         const itemWords = item.name.toLowerCase().split(/\s+/).filter(w => w.length > 3);
         const matchFound = itemWords.length === 0 || itemWords.some(w => rawLower.includes(w));
         if (!matchFound) {
@@ -485,7 +565,7 @@ export async function verifyReceipt(
   const missingFields = [...deterministic.missing_fields];
   const contradictions = [...jevEvidence.contradictions, ...jevEvidence.hallucinations_detected];
 
-  const sourceVerified = receipt.source_image_verified === true;
+  const sourceVerified = hasReviewedSource(receipt, options);
   const sourceVerificationStatus = sourceVerified ? 'VERIFIED' : 'NOT_COMPLETED';
 
   // Determine Advisory Recommendation: PASS | REVIEW | FAIL
@@ -539,7 +619,7 @@ export async function verifyReceipt(
  * Format report into human-readable BDT currency summary.
  */
 export function formatReportHumanReadable(report: ReceiptVerificationReport): string {
-  const diffFormatted = `৳${report.reconciliation_difference.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  const diffFormatted = `৳${report.reconciliation_difference.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 20 })}`;
   const calcFormatted = `৳${report.calculated_total.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
   const invFormatted = `৳${report.extracted_total.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 

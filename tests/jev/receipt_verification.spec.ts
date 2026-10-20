@@ -11,10 +11,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import {
   verifyReceipt,
+  receiptEvidenceHash,
   executeDeterministicReconciliation,
   preventUnauthorizedPosting,
   SecurityAuthorizationViolationError,
@@ -24,6 +27,96 @@ import {
 describe('Lucky Store JEV Receipt Verification Suite', () => {
   const sampleReceiptPath = resolve(__dirname, 'sample-receipt.json');
   const sampleReceiptData = JSON.parse(readFileSync(sampleReceiptPath, 'utf-8')) as ReceiptInput;
+
+  describe('Validation regressions', () => {
+    const receipt: ReceiptInput = {
+      receipt_id: 'SYNTHETIC-REGRESSION', supplier_name: 'Synthetic Supplier',
+      invoice_number: 'SYNTHETIC-1', invoice_date: '2026-10-21', invoice_total: 1,
+      line_items: [{ name: 'Synthetic item', quantity: 1, unit_price: 1 }],
+    };
+
+    it.each([undefined, '', '2026-02-30', 'not-a-date'])('rejects invalid date %s', invoice_date => {
+      const result = executeDeterministicReconciliation({ ...receipt, invoice_date });
+      expect(result.totals_match).toBe(false);
+      if (!invoice_date) expect(result.missing_fields).toContain('invoice_date');
+    });
+
+    it.each(['1', null, NaN, Infinity, -1, true])('rejects invalid invoice total %s', invoice_total => {
+      expect(executeDeterministicReconciliation({ ...receipt, invoice_total } as ReceiptInput).totals_match).toBe(false);
+    });
+
+    it.each([1.04, 1.05, 1.06])('applies exact line and invoice tolerance for %s', total => {
+      const result = executeDeterministicReconciliation({ ...receipt, invoice_total: total,
+        line_items: [{ name: 'Synthetic item', quantity: 1, unit_price: 1, line_total: total }] });
+      expect(result.line_items_valid).toBe(total <= 1.05);
+      expect(result.totals_match).toBe(total <= 1.05);
+      expect(result.calculated_total).toBe(1);
+    });
+
+    it('rounds decimal products exactly and independently of extracted totals', () => {
+      const result = executeDeterministicReconciliation({ ...receipt, invoice_total: 1.01,
+        line_items: [{ name: 'Synthetic item', quantity: 1, unit_price: 1.005 }] });
+      expect(result.calculated_total).toBe(1.01);
+      expect(result.totals_match).toBe(true);
+    });
+
+    const toleranceCases = [
+      { total: 100.05, accepted: true, difference: 0.05 },
+      { total: 99.95, accepted: true, difference: 0.05 },
+      { total: 100.051, accepted: false, difference: 0.051 },
+      { total: 100.054, accepted: false, difference: 0.054 },
+      { total: 99.949, accepted: false, difference: 0.051 },
+      { total: 99.946, accepted: false, difference: 0.054 },
+      { total: 100.05000000000001, accepted: false, difference: 0.05000000000001 },
+      { total: 99.94999999999999, accepted: false, difference: 0.05000000000001 },
+    ];
+
+    it.each(toleranceCases)('compares invoice $total without rounding away excess discrepancy', ({ total, accepted, difference }) => {
+      const result = executeDeterministicReconciliation({ ...receipt, invoice_total: total,
+        line_items: [{ name: 'Synthetic item', quantity: 1, unit_price: 100, line_total: 100 }] });
+      expect(result.line_items_valid).toBe(true);
+      expect(result.totals_match).toBe(accepted);
+      expect(result.reconciliation_difference).toBe(difference);
+    });
+
+    it.each(toleranceCases)('compares line $total independently of the matching invoice', ({ total, accepted }) => {
+      const result = executeDeterministicReconciliation({ ...receipt, invoice_total: 100,
+        line_items: [{ name: 'Synthetic item', quantity: 1, unit_price: 100, line_total: total }] });
+      expect(result.line_items_valid).toBe(accepted);
+      expect(result.totals_match).toBe(accepted);
+      expect(result.reconciliation_difference).toBe(0);
+    });
+
+    it.each([Infinity, NaN, '1', null])('rejects malformed quantities %s', quantity => {
+      const result = executeDeterministicReconciliation({ ...receipt,
+        line_items: [{ name: 'Synthetic item', quantity, unit_price: 1 }] } as ReceiptInput);
+      expect(result.totals_match).toBe(false);
+    });
+
+    it('requires source bytes and a review bound to the current extraction', async () => {
+      const directory = mkdtempSync(resolve(tmpdir(), 'receipt-review-'));
+      const sourcePath = resolve(directory, 'synthetic-source.txt');
+      const bytes = 'Synthetic test evidence only';
+      writeFileSync(sourcePath, bytes);
+      const sourceReview = {
+        sourcePath, sourceSha256: createHash('sha256').update(bytes).digest('hex'),
+        receiptSha256: receiptEvidenceHash(receipt), reviewedBy: 'synthetic-reviewer',
+        reviewedAt: '2026-01-01T00:00:00Z',
+      };
+      try {
+        const valid = await verifyReceipt(receipt, { forceOffline: true, sourceReview });
+        expect(valid.source_verification_status).toBe('VERIFIED');
+        expect(valid.advisory_recommendation).toBe('PASS');
+        expect(valid.safety.posting_authorized).toBe(false);
+        const changed = await verifyReceipt({ ...receipt, invoice_number: 'CHANGED' }, { forceOffline: true, sourceReview });
+        expect(changed.source_verification_status).toBe('NOT_COMPLETED');
+        writeFileSync(sourcePath, 'changed source');
+        expect((await verifyReceipt(receipt, { forceOffline: true, sourceReview })).source_verification_status).toBe('NOT_COMPLETED');
+        rmSync(sourcePath);
+        expect((await verifyReceipt(receipt, { forceOffline: true, sourceReview })).source_verification_status).toBe('NOT_COMPLETED');
+      } finally { rmSync(directory, { recursive: true, force: true }); }
+    });
+  });
 
   // 1. Positive Verification & Sample Receipt Baseline
   describe('Baseline Sample Receipt (TEST-001)', () => {
@@ -48,15 +141,15 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
       expect(report.advisory_recommendation).toBe('REVIEW');
     });
 
-    it('recommends PASS when source image is verified and all fields match', async () => {
+    it('requires separate source review even when the extraction claims verification', async () => {
       const verifiedReceipt: ReceiptInput = {
         ...sampleReceiptData,
         source_image_verified: true,
       };
 
       const report = await verifyReceipt(verifiedReceipt, { forceOffline: true });
-      expect(report.advisory_recommendation).toBe('PASS');
-      expect(report.source_verification_status).toBe('VERIFIED');
+      expect(report.advisory_recommendation).toBe('REVIEW');
+      expect(report.source_verification_status).toBe('NOT_COMPLETED');
       expect(report.safety.posting_authorized).toBe(false); // Never granted automatically
     });
   });
@@ -66,6 +159,7 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
     it('accepts invoice difference within 0.05 BDT tolerance', () => {
       const receipt: ReceiptInput = {
         receipt_id: 'TOL-01',
+        invoice_date: '2026-10-21',
         supplier_name: 'Pran Foods',
         invoice_number: 'INV-TOL-1',
         invoice_total: 1000.04, // 0.04 BDT diff from line item total 1000.00
@@ -81,6 +175,7 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
     it('rejects invoice difference exceeding 0.05 BDT tolerance', () => {
       const receipt: ReceiptInput = {
         receipt_id: 'TOL-02',
+        invoice_date: '2026-10-21',
         supplier_name: 'Pran Foods',
         invoice_number: 'INV-TOL-2',
         invoice_total: 1000.06, // 0.06 BDT diff > 0.05
@@ -96,6 +191,7 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
     it('detects line item quantity * unit_price arithmetic mismatch', () => {
       const receipt: ReceiptInput = {
         receipt_id: 'MATH-01',
+        invoice_date: '2026-10-21',
         supplier_name: 'Square Consumer',
         invoice_number: 'INV-SQ-01',
         invoice_total: 500.0,
@@ -114,6 +210,7 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
     it('rejects invalid non-positive quantities and negative prices', () => {
       const receipt: ReceiptInput = {
         receipt_id: 'INV-NEG-01',
+        invoice_date: '2026-10-21',
         supplier_name: 'Akij Foods',
         invoice_number: 'INV-AK-01',
         invoice_total: 100.0,
@@ -238,6 +335,7 @@ describe('Lucky Store JEV Receipt Verification Suite', () => {
     it('flags potential duplicate invoice warning for known invoice numbers', async () => {
       const receipt: ReceiptInput = {
         receipt_id: 'DUP-01',
+        invoice_date: '2026-10-21',
         supplier_name: 'Square Consumer',
         invoice_number: 'INV-EXISTING-99',
         invoice_total: 600.0,
