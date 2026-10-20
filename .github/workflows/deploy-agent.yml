@@ -2,7 +2,7 @@ name: Deploy Agent Worker
 
 on:
   push:
-    branches: [feat/agent.luckystore1947, main]
+    branches: [main]
     paths:
       - 'cloudflare/workers/agent/**'
       - '.github/workflows/deploy-agent.yml'
@@ -29,9 +29,7 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: |
-          npm run lint:fix || true
-          npm run lint
+        run: npm run lint
 
       - name: Secret scan
         run: npm run scan:secrets

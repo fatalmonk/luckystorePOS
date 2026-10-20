@@ -315,8 +315,8 @@ Lucky_Store_E-Trade_License_Notarized_Translation.pdf
 /playwright/.cache/
 /playwright/.auth/
 
-# Local audit artifacts
-/.codex-audits/
+# Local audit artifacts (also ignore the local symlink)
+/.codex-audits
 /audit/
 system-docs/competitive/
 lucky-store-brand-guidelines/social-media-post/gemini-reference-assets.zip

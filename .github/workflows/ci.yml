@@ -3,14 +3,14 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main, develop, codex/receipt-vision-pipeline ]
+    branches: [ main, develop ]
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.vscode/**'
       - '.idea/**'
   pull_request:
-    branches: [ main, develop, codex/receipt-vision-pipeline ]
+    branches: [ main, develop ]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -56,8 +56,25 @@ jobs:
 
   flutter_test:
     runs-on: ubuntu-latest
+    outputs:
+      mobile_changed: ${{ steps.mobile_changes.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect mobile changes for APK packaging
+        id: mobile_changes
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- apps/mobile_app/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -111,3 +128,11 @@ jobs:
         run: node scripts/security/secret_scan.js --self-test
       - name: Run Secret Scan
         run: node scripts/security/secret_scan.js
+
+  build_android:
+    name: Android packaging
+    needs: [flutter_test, lint]
+    if: github.event_name == 'push' && needs.flutter_test.outputs.mobile_changed == 'true'
+    uses: ./.github/workflows/flutter-ci.yml
+    permissions:
+      contents: write
