@@ -7,6 +7,8 @@ import { checkRateLimitDB, getRateLimitHeaders } from '../_shared/rate-limit.ts'
 import { reconcileCatalogRows } from './catalog-rows.ts'
 
 const allowedOrigins = [
+  // First-party admin origin must remain available alongside configured origins.
+  'https://admin.luckystore1947.com',
   ...(Deno.env.get('ALLOWED_ORIGINS') ?? Deno.env.get('ALLOWED_ORIGIN') ?? '')
     .split(',')
     .map((origin) => origin.trim())

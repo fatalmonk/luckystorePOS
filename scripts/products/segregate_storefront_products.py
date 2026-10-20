@@ -148,8 +148,8 @@ def main() -> None:
     parser.add_argument(
         "--input",
         type=Path,
-        default=REPO_ROOT / "data" / "items_rows.csv",
-        help="Path to input items_rows.csv",
+        required=True,
+        help="Path to an explicitly supplied items_rows.csv export",
     )
     parser.add_argument(
         "--output",
