@@ -43,6 +43,13 @@ export interface ProductSpecification {
   evidenceRefs: string[];
 }
 
+export interface ProductGalleryImage {
+  url: string;
+  alt: string;
+  /** Optional storefront-only pack-size label; the source product artwork stays untouched. */
+  badge?: string;
+}
+
 export interface ProductFaq {
   question: string;
   answer: string;
@@ -69,6 +76,8 @@ export interface ProductEnrichment {
   brand: string;
   /** Verified net quantity or volume [PACKAGING] */
   netQuantity: string;
+  /** Verified product and packaging photos in display order */
+  galleryImages?: ProductGalleryImage[];
   /** Verified canonical category name [LUCKY_STORE_CATALOG] */
   category: string;
   /** Answer-first opening summary (factual, concise, local purchase context) */

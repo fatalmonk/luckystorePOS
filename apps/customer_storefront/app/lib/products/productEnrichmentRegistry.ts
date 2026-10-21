@@ -2487,11 +2487,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     netQuantity: "120 ml",
     category: "Ice-Cream",
     summary:
-      "Polar Carnival Vanilla Cone Ice Cream in a 120ml crispy cone. The manufacturer describes smooth vanilla ice cream topped with chocolate and crunchy nuts nestled inside a crispy wafer cone. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Carnival Vanilla Cone Ice Cream in a 120ml crispy cone. The manufacturer describes smooth vanilla ice cream topped with chocolate and crunchy nuts in a crispy wafer cone. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Net Volume", value: "120 ml", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Product Type", value: "Cone Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Flavor", value: "Vanilla", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "296.39 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Toppings", value: "Chocolate topping and nuts within a crispy cone", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
@@ -2536,7 +2537,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: "items.id: e8771528-0444-4659-ba97-d71e7a8ff438, SKU: IC-POL-CAR, category: Ice-Cream",
+        evidenceRef: "items.id: e8771528-0444-4659-ba97-d71e7a8ff438, SKU: IC-POL-CAR-VAN, category: Ice-Cream",
         sourceTitle: "Lucky Store Production Catalog",
         skuScope: "e8771528-0444-4659-ba97-d71e7a8ff438",
         verifiedAt: '2026-09-16',
@@ -2554,38 +2555,39 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     },
   },
 
-  // Polar Carnival Vanilla Cone Ice Cream 120ml
+  // Polar Carnival Strawberry Cone Ice Cream 120ml
   '6df59696': {
     slugPrefix: '6df59696',
-    exactName: "Polar Carnival Vanilla Cone Ice Cream 120ml",
+    exactName: "Polar Carnival Strawberry Cone Ice Cream 120ml",
     brand: "Polar",
     netQuantity: "120 ml",
     category: "Ice-Cream",
     summary:
-      "Polar Carnival Vanilla Cone Ice Cream in a 120ml crispy cone. The manufacturer describes smooth vanilla ice cream topped with chocolate and crunchy nuts nestled inside a crispy wafer cone. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Carnival Strawberry Cone Ice Cream in a 120ml crispy cone, combining strawberry ice cream with chocolate and nut topping in a strawberry-flavoured biscuit cone. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Net Volume", value: "120 ml", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Product Type", value: "Cone Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
-      { label: "Energy", value: "296.39 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Flavor", value: "Strawberry", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Energy", value: "326.34 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Toppings", value: "Chocolate topping and nuts within a crispy cone", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
-      "Creamy vanilla ice cream in a crispy wafer cone",
-      "Topped with rich chocolate drizzle and crunchy chopped nuts",
+      "Strawberry ice cream in a crispy cone",
+      "Chocolate and nut topping in a strawberry-flavoured biscuit cone",
       "Classic 120ml single-serve treat",
     ],
     storageInstructions: "Store frozen at -18°C or below. Consume promptly once opened.",
     faqs: [
       {
-        question: "What toppings come on the Polar Carnival Vanilla cone?",
-        answer: "The official Polar product page describes vanilla ice cream finished with chocolate topping and nuts in a crispy cone.",
+        question: "What is in the Polar Carnival Strawberry cone?",
+        answer: "Polar describes strawberry ice cream with chocolate and nut topping in a strawberry-flavoured biscuit cone.",
         evidenceRefs: ["MFR_PRODUCT_PAGE"],
       },
       {
         question: "What is the nutritional energy value?",
-        answer: "The manufacturer declares 296.39 kcal per 100 grams for Carnival Vanilla.",
+        answer: "The manufacturer declares 326.34 kcal per 100 grams for Carnival Strawberry.",
         evidenceRefs: ["MFR_PRODUCT_PAGE"],
       },
       {
@@ -2597,10 +2599,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Carnival Vanilla page: 120 ml cone, 296.39 kcal/100g, chocolate topping and nuts",
-        sourceTitle: "Carnival (Vanilla) - Polar Ice Cream",
-        sourceUrl: "https://polarbd.com/en/product/cone-carnival-vanilla/",
-        skuScope: "Polar Carnival Vanilla 120ml",
+        evidenceRef: "Official Polar Carnival Strawberry page: 120 ml cone, 326.34 kcal/100g, chocolate and nut topping in a strawberry-flavoured biscuit cone",
+        sourceTitle: "Carnival Strawberry - Polar Ice Cream",
+        sourceUrl: "https://polarbd.com/en/product/cone-carnival-strawberry/",
+        skuScope: "Polar Carnival Strawberry 120ml",
         verifiedAt: '2026-09-16',
       },
       STORAGE_SPEC: {
@@ -2611,7 +2613,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: "items.id: 6df59696-6647-4c08-8cd4-4a137da6326b, SKU: IC-POL-CAR-3, category: Ice-Cream",
+        evidenceRef: "items.id: 6df59696-6647-4c08-8cd4-4a137da6326b, SKU: IC-POL-CAR-STR, category: Ice-Cream",
         sourceTitle: "Lucky Store Production Catalog",
         skuScope: "6df59696-6647-4c08-8cd4-4a137da6326b",
         verifiedAt: '2026-09-16',
@@ -3461,6 +3463,24 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     exactName: "Polar Royal Sundae Cup Ice Cream 100ml",
     brand: "Polar",
     netQuantity: "100 ml",
+    galleryImages: [
+      {
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-front.webp",
+        alt: "Polar Royal Sundae cup with caramel and chocolate ripple",
+      },
+      {
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-INGREDIENTS.webp",
+        alt: "Polar Royal Sundae ingredients and allergen label",
+      },
+      {
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-NUTRITION.webp",
+        alt: "Polar Royal Sundae nutrition information",
+      },
+      {
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-BARCODE.webp",
+        alt: "Polar Royal Sundae barcode panel",
+      },
+    ],
     category: "Ice-Cream",
     summary:
       "Polar Royal Sundae Cup Ice Cream in a 100ml cup. The manufacturer describes a combination of caramel and chocolate ripple variations, making it a delicious choice for personal enjoyment or treating guests. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
@@ -52514,12 +52534,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
 
   '236b5858': {
     slugPrefix: '236b5858',
-    exactName: "Polar Mango/Chocolate Cup",
+    exactName: "Polar Mango Cup",
     brand: "Polar",
     netQuantity: "Standard Pack",
     category: "Ice Cream & Desserts",
     summary:
-      "Polar Mango/Chocolate Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Mango Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
       { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
@@ -52528,7 +52548,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
-      "Authentic on-pack Polar specification: Polar Mango/Chocolate Cup",
+      "Confirmed product identity: Polar Mango Cup",
       "Standard factory-sealed Standard Pack consumer packaging",
       "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
     ],
@@ -52538,7 +52558,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
       {
-        question: "Can I inspect Polar Mango/Chocolate Cup at my doorstep before payment?",
+        question: "Can I inspect Polar Mango Cup at my doorstep before payment?",
         answer:
           "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
@@ -52609,12 +52629,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
 
   '39d85f5f': {
     slugPrefix: '39d85f5f',
-    exactName: "Polar Premium Cup",
+    exactName: "Polar Chocolate Premium Cup",
     brand: "Polar",
     netQuantity: "Standard Pack",
     category: "Ice Cream & Desserts",
     summary:
-      "Polar Premium Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Chocolate Premium Cup from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
       { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
@@ -52623,7 +52643,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
-      "Authentic on-pack Polar specification: Polar Premium Cup",
+      "Confirmed product identity: Polar Chocolate Premium Cup",
       "Standard factory-sealed Standard Pack consumer packaging",
       "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
     ],
@@ -52633,7 +52653,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
       {
-        question: "Can I inspect Polar Premium Cup at my doorstep before payment?",
+        question: "Can I inspect Polar Chocolate Premium Cup at my doorstep before payment?",
         answer:
           "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
@@ -52704,12 +52724,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
 
   '94c748e3': {
     slugPrefix: '94c748e3',
-    exactName: "Polar Regular 1 Liter",
+    exactName: "Polar Vanilla 1 Liter",
     brand: "Polar",
     netQuantity: "1 L",
     category: "Ice Cream & Desserts",
     summary:
-      "Polar Regular 1 Liter from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Vanilla 1 Liter from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
       { label: "Net Quantity", value: "1 L", evidenceRefs: ["PACK_FRONT"] },
@@ -52718,7 +52738,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
-      "Authentic on-pack Polar specification: Polar Regular 1 Liter",
+      "Confirmed product identity: Polar Vanilla 1 Liter",
       "Standard factory-sealed 1 L consumer packaging",
       "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
     ],
@@ -52728,7 +52748,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
       {
-        question: "Can I inspect Polar Regular 1 Liter at my doorstep before payment?",
+        question: "Can I inspect Polar Vanilla 1 Liter at my doorstep before payment?",
         answer:
           "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
@@ -52799,22 +52819,29 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
 
   'eca88367': {
     slugPrefix: 'eca88367',
-    exactName: "Polar Tub Regular 1/2 Liter",
+    exactName: "Polar Tub Regular Vanilla 1/2 Liter",
     brand: "Polar",
-    netQuantity: "2 L",
+    netQuantity: "500 ml",
+    galleryImages: [
+      {
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-VA1.webp",
+        alt: "Polar Vanilla 1 Liter tub artwork",
+        badge: "1/2 L",
+      },
+    ],
     category: "Ice Cream & Desserts",
     summary:
-      "Polar Tub Regular 1/2 Liter from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Tub Regular Vanilla in a 500 ml (1/2 L) tub from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
-      { label: "Net Quantity", value: "2 L", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Net Quantity", value: "500 ml (1/2 L)", evidenceRefs: ["PACK_DESC"] },
       { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
       { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
       "Authentic on-pack Polar specification: Polar Tub Regular 1/2 Liter",
-      "Standard factory-sealed 2 L consumer packaging",
+      "Vanilla flavor in a 500 ml (1/2 L) consumer tub",
       "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
     ],
     usageDirections:
@@ -52838,7 +52865,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       PACK_FRONT: {
         source: "PACKAGING",
-        evidenceRef: "On-pack front label: Polar Tub Regular 1/2 Liter, net quantity: 2 L",
+        evidenceRef: "On-pack front label: Polar Tub Regular 1/2 Liter, net quantity: 500 ml (1/2 L)",
         sourceTitle: "Polar Front Packaging Label",
         skuScope: "eca88367-4d03-4562-b7e8-88ef2eea38c7",
         verifiedAt: "2026-10-11",

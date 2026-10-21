@@ -12,6 +12,7 @@ interface ProductJsonLdProps {
   name?: string;
   brand?: string;
   canonicalUrl?: string;
+  images?: string[];
 }
 
 function getOfferShippingDetails(product: Product) {
@@ -52,7 +53,7 @@ function getOfferShippingDetails(product: Product) {
   };
 }
 
-export function ProductJsonLd({ product, description, name, brand, canonicalUrl: providedCanonicalUrl }: ProductJsonLdProps) {
+export function ProductJsonLd({ product, description, name, brand, canonicalUrl: providedCanonicalUrl, images }: ProductJsonLdProps) {
   const canonicalSlug = toProductSlug(product.name, product.id);
   const canonicalUrl = providedCanonicalUrl || `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const effectiveName = name || product.name;
@@ -65,7 +66,9 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
     '@context': 'https://schema.org/',
     '@type': 'Product',
     name: effectiveName,
-    image: product.image_url ? [product.image_url] : undefined,
+    image: images !== undefined
+      ? images.length > 0 ? images : undefined
+      : product.image_url ? [product.image_url] : undefined,
     description: description || product.description || `${effectiveName} available at Lucky Store in Chattogram`,
     sku: effectiveSku,
     ...(gtinInfo ? { [gtinInfo.property]: gtinInfo.value } : {}),

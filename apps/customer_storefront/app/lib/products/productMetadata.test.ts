@@ -1,8 +1,84 @@
 import { describe, expect, it } from 'vitest';
-import { formatProductMetaDescription, formatProductMetaTitle } from './productMetadata';
+import {
+  buildProductMetaKeywords,
+  buildProductMetadata,
+  formatProductMetaDescription,
+  formatProductMetaTitle,
+} from './productMetadata';
 import { getEnrichedProductData } from './productEnrichment';
 
 describe('Product metadata identity', () => {
+  it.each([
+    ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml'],
+    ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml'],
+    ['94c748e3', 'Polar Vanilla 1 Liter'],
+    ['eca88367', 'Polar Tub Regular Vanilla 1/2 Liter'],
+    ['236b5858', 'Polar Mango Cup'],
+    ['39d85f5f', 'Polar Chocolate Premium Cup'],
+  ])('uses the approved identity for Polar record %s', (id, expectedName) => {
+    expect(getEnrichedProductData(id)?.exactName).toBe(expectedName);
+  });
+
+  it.each([
+    ['fc6d963a', 'Polar Chocobar Vanilla Ice Cream 72ml'],
+    ['604e6bb0', 'Polar Ice Lolly Lemon 62ml'],
+    ['2c367e44', 'Polar Robusto Salted Caramel Ice Cream 92ml'],
+    ['fcefa591', 'Polar Tornado Strawberry Ice Cream Stick 55ml'],
+  ])('keeps existing variant-specific enrichment for %s without creating sibling products', (id, expectedName) => {
+    expect(getEnrichedProductData(id)?.exactName).toBe(expectedName);
+  });
+
+  it('removes the old Vanilla claims from the Carnival Strawberry enrichment', () => {
+    const item = getEnrichedProductData('6df59696')!;
+    expect(item.summary).toContain('Strawberry');
+    expect(item.summary).not.toContain('vanilla');
+    expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Energy', value: '326.34 kcal per 100g' }));
+  });
+
+  it('uses the confirmed half-liter quantity and a storefront badge over the original 1 L artwork', () => {
+    const item = getEnrichedProductData('eca88367')!;
+    expect(item.netQuantity).toBe('500 ml');
+    expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Net Quantity', value: '500 ml (1/2 L)' }));
+    expect(item.galleryImages?.[0]).toMatchObject({ badge: '1/2 L', alt: 'Polar Vanilla 1 Liter tub artwork' });
+    expect(item.galleryImages?.[0]?.url).toContain('IC-POL-VA1.webp');
+    expect(item.highlights?.join(' ')).not.toContain('2 L consumer packaging');
+  });
+
+  it('creates product-specific search and social metadata with canonical alternatives and chosen images', () => {
+    const metadata = buildProductMetadata({
+      name: 'Polar Chocolate Cup',
+      price: 30,
+      unit: 'pc',
+      description: 'Polar Chocolate Cup 100 ml from Lucky Store.',
+      canonicalUrl: 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+      imageUrl: '/products/polar/chocolate-cup-front.webp',
+      images: [{ url: '/products/polar/chocolate-cup-front.webp', alt: 'Chocolate cup package' }],
+      brand: 'Polar',
+      category: 'Ice-Cream',
+    });
+
+    expect(metadata.title).toEqual({ absolute: expect.stringContaining('Polar Chocolate Cup') });
+    expect(metadata.description).toBe('Polar Chocolate Cup 100 ml from Lucky Store.');
+    expect(metadata.keywords).toEqual(expect.arrayContaining(['Polar Chocolate Cup', 'Polar ice cream', 'Ice-Cream']));
+    expect(metadata.alternates).toMatchObject({
+      canonical: 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+      languages: {
+        'en-BD': 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+        'bn-BD': 'https://www.luckystore1947.com/bn/product/polar-chocolate-cup--f6d581d5',
+      },
+    });
+    expect(metadata.openGraph).toMatchObject({
+      type: 'website',
+      url: 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+      images: [{ url: '/products/polar/chocolate-cup-front.webp', alt: 'Chocolate cup package' }],
+    });
+    expect(metadata.twitter).toMatchObject({
+      card: 'summary_large_image',
+      images: ['/products/polar/chocolate-cup-front.webp'],
+    });
+    expect(buildProductMetaKeywords('Polar Chocolate Cup', 'Polar', 'Ice-Cream')).toHaveLength(6);
+  });
+
   it.each(['029b62d8', 'bdcf65f2'])('keeps the full %s product identity before delivery prose', (id) => {
     const item = getEnrichedProductData(id)!;
     const description = formatProductMetaDescription(item.exactName, 83, 'pc');

@@ -20,6 +20,7 @@
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.20",
+    "embla-carousel-react": "^8.6.0",
     "notfair-nextjs-blog": "https://github.com/nowork-studio/notfair-nextjs-blog/releases/download/v0.4.1/notfair-nextjs-blog-0.4.1.tgz",
     "postcss": "^8.5.23",
     "react": "^19.0.0",

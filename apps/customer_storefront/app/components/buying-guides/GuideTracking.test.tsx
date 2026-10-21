@@ -60,6 +60,8 @@ describe('buying-guide direct cart action', () => {
     addToCart.mockReturnValue(false);
     render(<GuideAddToCartButton product={product} slug="biscuits-bangladesh" revision={1} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add Olympic Energy Plus Biscuits 150g to cart' }));
-    expect(screen.getByRole('status').textContent).toContain('Already at the available stock limit');
+    const status = screen.getByRole('status').textContent || '';
+    expect(status).toContain('Unable to add this item right now');
+    expect(status).not.toContain('Added to cart');
   });
 });
