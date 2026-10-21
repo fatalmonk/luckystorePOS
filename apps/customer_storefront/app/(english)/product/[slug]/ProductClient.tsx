@@ -11,14 +11,13 @@ import { useToast } from '../../../components/Toast';
 import { useCartContext } from '../../../components/CartProvider';
 import { QtyNumber } from '../../../components/ui/QtyNumber';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
-import { ProductJsonLd } from '../../../components/seo/ProductJsonLd';
 import { FaqJsonLd } from '../../../components/seo/FaqJsonLd';
 import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import { formatBdt } from '../../../lib/formatPrice';
 import type { Product, ProductEnrichment } from '../../../lib/products';
 import { TrustStrip } from '../../../components/product/TrustStrip';
 import { ProductCarousel } from '../../../components/product/ProductCarousel';
-import { ProductImage } from '../../../components/product/ProductImage';
+import { ProductImageGallery } from '../../../components/product/ProductImageGallery';
 import { trackViewItem } from '../../../lib/analytics';
 import { DELIVERY_POLICY } from '../../../lib/deliveryData';
 import { getBrandHref } from '../../../lib/brandsData';
@@ -30,6 +29,7 @@ interface ProductClientProps {
   productUrlName?: string;
   productCanonicalUrl?: string;
   enrichment?: ProductEnrichment;
+  galleryImages?: ProductEnrichment['galleryImages'];
 }
 
 export function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
@@ -37,7 +37,7 @@ export function getCategoryBreadcrumbHref(category: string, locale: Locale): str
   return withLocale(`/category/${canonical}`, locale);
 }
 
-function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
+function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment, galleryImages: providedGalleryImages }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
@@ -82,6 +82,13 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   const overviewText = (isBn && product.description) ? product.description : (enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`);
   const productBrand = enrichment?.brand || product.brand;
   const brandHref = getBrandHref(productBrand, locale);
+  const galleryImages = providedGalleryImages !== undefined
+    ? providedGalleryImages
+    : enrichment?.galleryImages !== undefined
+      ? enrichment.galleryImages
+      : product.image_url
+        ? [{ url: product.image_url, alt: displayName }]
+        : [];
 
   // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
   const specifications = [
@@ -97,13 +104,6 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
 
   return (
     <>
-      <ProductJsonLd
-        product={product}
-        name={displayName}
-        brand={enrichment?.brand}
-        description={overviewText}
-        canonicalUrl={productCanonicalUrl}
-      />
       {enrichment?.faqs && enrichment.faqs.length > 0 && (
         <FaqJsonLd items={enrichment.faqs} />
       )}
@@ -126,17 +126,12 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
           {/* Hero / Buying Panel */}
           <div className="grid gap-6 py-5 md:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] md:items-start md:gap-8 lg:gap-10">
             <div className="mx-auto w-full max-w-[420px] md:sticky md:top-24 md:max-w-none">
-              <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-warm-image-well">
-                <ProductImage
-                  src={product.image_url}
-                  alt={displayName}
-                  category={product.category}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  imageClassName="w-full h-full object-contain p-6 sm:p-8 lg:p-10"
-                  priority
-                  iconSize={64}
-                />
-              </div>
+              <ProductImageGallery
+                images={galleryImages}
+                productName={displayName}
+                category={product.category}
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </div>
 
             <div className="rounded-warm-panel border border-warm-border bg-warm-bg p-4 shadow-warm-panel sm:p-6 lg:p-7">
@@ -448,7 +443,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   );
 }
 
-export default function ProductClient({ product, crossSell, locale, productUrlName, productCanonicalUrl, enrichment }: ProductClientProps) {
+export default function ProductClient({ product, crossSell, locale, productUrlName, productCanonicalUrl, enrichment, galleryImages }: ProductClientProps) {
   return (
     <ProductContent
       product={product}
@@ -457,6 +452,7 @@ export default function ProductClient({ product, crossSell, locale, productUrlNa
       productUrlName={productUrlName}
       productCanonicalUrl={productCanonicalUrl}
       enrichment={enrichment}
+      galleryImages={galleryImages}
     />
   );
 }

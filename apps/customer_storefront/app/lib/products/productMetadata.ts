@@ -1,4 +1,64 @@
 import { formatBdt } from '../formatPrice';
+import type { Metadata } from 'next';
+
+export interface ProductMetadataInput {
+  name: string;
+  price: number;
+  unit?: string;
+  description: string;
+  canonicalUrl: string;
+  imageUrl: string;
+  images?: Array<{ url: string; alt: string }>;
+  brand?: string;
+  category?: string;
+}
+
+export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {
+  return [...new Set([
+    name,
+    brand && `${brand} ice cream`,
+    category,
+    `${name} Chattogram`,
+    'ice cream Chattogram',
+    'Lucky Store',
+  ].filter((value): value is string => Boolean(value)))];
+}
+
+export function buildProductMetadata(input: ProductMetadataInput): Metadata {
+  const title = formatProductMetaTitle(input.name, input.price, input.unit);
+  const images = input.images?.length ? input.images : [{ url: input.imageUrl, alt: input.name }];
+
+  return {
+    title: { absolute: title },
+    description: input.description,
+    keywords: buildProductMetaKeywords(input.name, input.brand, input.category),
+    alternates: {
+      canonical: input.canonicalUrl,
+      languages: {
+        'en-BD': input.canonicalUrl,
+        'bn-BD': input.canonicalUrl.replace('/product/', '/bn/product/'),
+        'x-default': input.canonicalUrl,
+      },
+    },
+    openGraph: {
+      // Next.js 15 rejects `product` as an Open Graph type; Product JSON-LD below
+      // carries the product-specific offer and identity data instead.
+      type: 'website',
+      locale: 'en_BD',
+      url: input.canonicalUrl,
+      siteName: 'Lucky Store',
+      title,
+      description: input.description,
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: input.description,
+      images: [input.imageUrl],
+    },
+  };
+}
 
 /**
  * Formats a clean, high-intent product title within Google SERP display limits (<= 60 chars).
