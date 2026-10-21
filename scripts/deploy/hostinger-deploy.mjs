@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
-import { formatUploadResponseFailure } from './hostinger-upload-diagnostics.mjs';
+import { formatUploadResponseFailure, isTransientUploadFailure } from './hostinger-upload-diagnostics.mjs';
 
 const archivePath = process.argv[2];
 const token = process.env.HOSTINGER_API_TOKEN;
@@ -196,12 +196,12 @@ async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRe
       await uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize);
       return;
     } catch (err) {
-      const isTransient = [403, 408, 409, 429, 500, 502, 503, 504].includes(err.statusCode);
-      if (attempt === maxRetries || !isTransient) {
+      if (attempt === maxRetries || !isTransientUploadFailure(err)) {
         throw err;
       }
       const backoffSec = attempt * 2;
-      console.warn(`⚠️  TUS upload attempt ${attempt}/${maxRetries} failed (${err.message}). Retrying in ${backoffSec}s...`);
+      const failureReason = err.code || err.statusCode || err.message || 'unknown error';
+      console.warn(`⚠️  TUS upload attempt ${attempt}/${maxRetries} failed (${failureReason}). Retrying in ${backoffSec}s...`);
       await new Promise(r => setTimeout(r, backoffSec * 1000));
     }
   }

@@ -1,4 +1,17 @@
 const MAX_LOGGED_RESPONSE_CHARS = 4_000;
+const TRANSIENT_HTTP_STATUSES = new Set([403, 408, 409, 429, 500, 502, 503, 504]);
+const TRANSIENT_NETWORK_CODES = new Set([
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'EAI_AGAIN',
+]);
+
+export function isTransientUploadFailure(error) {
+  return TRANSIENT_HTTP_STATUSES.has(error?.statusCode)
+    || TRANSIENT_NETWORK_CODES.has(error?.code);
+}
 
 export function formatUploadResponseFailure({
   phase,
