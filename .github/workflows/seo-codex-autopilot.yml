@@ -73,7 +73,7 @@ jobs:
     if: >-
       always() &&
       github.repository == 'fatalmonk/luckystorePOS' && github.ref == 'refs/heads/main' &&
-      !contains(needs.gsc.result, 'cancelled') &&
+      needs.gsc.result == 'success' &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'main' &&
@@ -98,6 +98,18 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
+
+      - name: 'Preflight: audited commit matches checked-out main'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          AUDIT_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = workflow_run ] && [ "$AUDIT_HEAD_SHA" != "$BASE_SHA" ]; then
+            echo '::error::Audit commit differs from the automation base commit.'
+            exit 1
+          fi
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
 
       - name: 'Preflight: configured API key'
         env:
@@ -180,7 +192,7 @@ jobs:
 
   evidence:
     needs: propose
-    if: needs.propose.outputs.changed == 'true'
+    if: needs.propose.result == 'success' && needs.propose.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: seo-autopilot
@@ -228,7 +240,7 @@ jobs:
 
   verify:
     needs: [propose, evidence]
-    if: needs.propose.outputs.changed == 'true'
+    if: needs.propose.result == 'success' && needs.evidence.result == 'success' && needs.propose.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # No environment or injected API credentials on the execution runner.
@@ -292,7 +304,7 @@ jobs:
 
   publish:
     needs: [propose, evidence, verify]
-    if: needs.propose.outputs.changed == 'true'
+    if: needs.propose.result == 'success' && needs.evidence.result == 'success' && needs.verify.result == 'success' && needs.propose.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
