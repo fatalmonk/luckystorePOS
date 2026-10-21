@@ -8,6 +8,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.json'
+      - 'scripts/deploy/**'
+      - 'scripts/ci/smoke-test.mjs'
       - '.github/workflows/storefront-hostinger.yml'
   workflow_dispatch:
     inputs:
@@ -39,14 +41,13 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PROMOTE_TO_INPUT: ${{ inputs.promote_to }}
-          HOSTINGER_CUTOVER_DONE: ${{ vars.HOSTINGER_CUTOVER_DONE }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             PROMOTE_TO="$PROMOTE_TO_INPUT"
-          elif [ "$HOSTINGER_CUTOVER_DONE" = "true" ]; then
-            PROMOTE_TO="production"
           else
-            PROMOTE_TO="staging"
+            # Every storefront-related push to main deploys to production after
+            # the staging deployment and smoke suite both succeed.
+            PROMOTE_TO="production"
           fi
 
           echo "promote_to=$PROMOTE_TO" >> $GITHUB_OUTPUT
@@ -150,7 +151,7 @@ jobs:
 
   # ── Step 5: Production Deployment Gate ─────────────────────
   deploy-production:
-    name: Deploy to Production (Gated)
+    name: Deploy to Production (After Staging Validation)
     needs: [resolve-context, test-staging]
     if: needs.resolve-context.outputs.promote_to == 'production'
     runs-on: ubuntu-latest

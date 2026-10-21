@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { formatUploadResponseFailure } from './hostinger-upload-diagnostics.mjs';
+import { formatUploadResponseFailure, isTransientUploadFailure } from './hostinger-upload-diagnostics.mjs';
+
+test('retries transient Hostinger upload network failures', () => {
+  assert.equal(isTransientUploadFailure({ code: 'ETIMEDOUT' }), true);
+  assert.equal(isTransientUploadFailure({ code: 'ECONNRESET' }), true);
+  assert.equal(isTransientUploadFailure({ code: 'EAI_AGAIN' }), true);
+  assert.equal(isTransientUploadFailure({ code: 'CERT_HAS_EXPIRED' }), false);
+});
+
+test('preserves retry handling for transient Hostinger HTTP responses', () => {
+  assert.equal(isTransientUploadFailure({ statusCode: 503 }), true);
+  assert.equal(isTransientUploadFailure({ statusCode: 400 }), false);
+});
 
 test('formats Hostinger upload status and response body without exposing upload credentials', () => {
   const message = formatUploadResponseFailure({
