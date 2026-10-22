@@ -23,9 +23,12 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   admin_web_check:
+    needs: secret_scan
+    if: ${{ always() && needs.secret_scan.outputs.admin_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +58,8 @@ jobs:
           npm run build
 
   flutter_test:
+    needs: secret_scan
+    if: ${{ always() && needs.secret_scan.outputs.mobile_changed == 'true' }}
     runs-on: ubuntu-latest
     outputs:
       mobile_changed: ${{ steps.mobile_changes.outputs.changed }}
@@ -70,7 +75,7 @@ jobs:
         run: |
           if [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
-          elif git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- apps/mobile_app/; then
+          elif git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- apps/mobile_app/ .github/workflows/flutter-ci.yml; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -97,6 +102,8 @@ jobs:
           flutter test test/performance/inventory_search.dart --reporter=compact
 
   lint:
+    needs: secret_scan
+    if: ${{ always() && needs.secret_scan.outputs.mobile_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -117,9 +124,74 @@ jobs:
           flutter analyze
 
   secret_scan:
+    outputs:
+      admin_changed: ${{ steps.detect_mobile_changes.outputs.admin_changed }}
+      mobile_changed: ${{ steps.detect_mobile_changes.outputs.changed }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Detect Flutter app changes
+        id: detect_mobile_changes
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const mobilePath = /^(apps\/mobile_app\/|\.github\/workflows\/(ci|flutter-ci)\.yml$)/;
+            const adminSkipPath = /^apps\/(mobile_app|customer_mobile|customer_storefront|scraper)\//;
+            try {
+              let changedFiles = [];
+
+              if (context.eventName === 'pull_request') {
+                if ((context.payload.pull_request?.changed_files ?? 0) >= 3000) {
+                  core.warning('Pull request file list may be truncated; running Flutter checks.');
+                  core.setOutput('changed', 'true');
+                  core.setOutput('admin_changed', 'true');
+                  return;
+                }
+                const files = await github.paginate(github.rest.pulls.listFiles, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number,
+                  per_page: 100,
+                });
+                changedFiles = files.map(file => file.filename);
+              } else if (context.eventName === 'push') {
+                const commits = context.payload.commits ?? [];
+                if (commits.length === 0 || commits.length >= 2048 || commits.some(commit =>
+                  (commit.added?.length ?? 0) +
+                  (commit.modified?.length ?? 0) +
+                  (commit.removed?.length ?? 0) >= 300
+                )) {
+                  core.warning('Push file list may be incomplete; running Flutter checks.');
+                  core.setOutput('changed', 'true');
+                  core.setOutput('admin_changed', 'true');
+                  return;
+                }
+                changedFiles = commits.flatMap(commit => [
+                  ...(commit.added ?? []),
+                  ...(commit.modified ?? []),
+                  ...(commit.removed ?? []),
+                ]);
+              } else {
+                core.setOutput('changed', 'true');
+                core.setOutput('admin_changed', 'true');
+                return;
+              }
+
+              const changed = changedFiles.some(path => mobilePath.test(path));
+              const adminChanged = changedFiles.length === 0 || changedFiles.some(path => !adminSkipPath.test(path));
+              core.notice(changed
+                ? 'Flutter files changed; running Flutter checks.'
+                : 'No Flutter files changed; skipping Flutter checks.');
+              core.setOutput('changed', String(changed));
+              core.notice(adminChanged
+                ? 'Admin or shared files changed; running admin checks.'
+                : 'Only independent app files changed; skipping admin checks.');
+              core.setOutput('admin_changed', String(adminChanged));
+            } catch (error) {
+              core.warning(`Could not determine changed files; running all checks. ${error.message}`);
+              core.setOutput('changed', 'true');
+              core.setOutput('admin_changed', 'true');
+            }
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
