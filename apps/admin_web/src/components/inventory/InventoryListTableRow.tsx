@@ -226,6 +226,7 @@ function InventoryListTableRowComponent({
           <div className="relative w-9 h-9 rounded-md bg-surface-subtle flex items-center justify-center overflow-hidden flex-shrink-0">
             <ImageUploadZone
               currentImageUrl={item.image_url}
+              productName={item.name}
               onUpload={handleImageUpload}
               size="sm"
               showOnHover={true}

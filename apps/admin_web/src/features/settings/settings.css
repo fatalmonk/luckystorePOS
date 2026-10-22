@@ -1,0 +1,37 @@
+.settings-layout {
+  min-width: 0;
+}
+
+.settings-tabs {
+  flex: 0 0 250px;
+}
+
+.settings-content {
+  min-width: 0;
+}
+
+@media (max-width: 798px) {
+  .settings-layout {
+    flex-direction: column;
+    gap: var(--space-4) !important;
+  }
+
+  .settings-tabs {
+    width: 100% !important;
+    flex: 0 0 auto;
+    flex-direction: row !important;
+    gap: var(--space-2) !important;
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+  }
+
+  .settings-tabs .tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .settings-content .card {
+    padding: var(--space-4) !important;
+    overflow-x: auto;
+  }
+}

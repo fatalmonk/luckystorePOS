@@ -59,7 +59,7 @@
     "creditDue": "Credit Due",
     "realizedRevenue": "Realized Revenue",
    "days": "days",
-   "salesVsExpenses": "Sales vs Expenses (Last 14 Days)",
+   "salesVsExpenses": "Sales vs Expenses (Latest 14 Recorded Dates)",
    "revenueCovers": "Revenue covers",
    "totalBalance": "Total Balance",
    "currentAvailableBalance": "Current Available Balance",
@@ -67,7 +67,7 @@
    "creditDue": "Credit Due",
    "lowStock": "Low Stock Alerts",
    "stockHealthy": "Stock is healthy",
-   "salesVsExpenses": "Sales vs Expenses (Last 14 Days)",
+   "salesVsExpenses": "Sales vs Expenses (Latest 14 Recorded Dates)",
     "noDailySales": "No daily sales data available.",
     "addDailySales": "Add daily sales"
   },

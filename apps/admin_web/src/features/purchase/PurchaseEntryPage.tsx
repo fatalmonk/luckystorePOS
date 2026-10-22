@@ -828,6 +828,21 @@ export const PurchaseEntryPage: React.FC = () => {
   const receiptProvenanceSummary = Object.entries(receiptFieldSources ?? {})
     .map(([field, source]) => `${field}: ${source}`)
     .join(', ');
+  const postingBlockReason = duplicateInvoiceCheckPending
+    ? receiptPostingBlockReason({
+      isDraft: false,
+      duplicateCheckPending: true,
+      warnings: ocrWarnings,
+      reviewAcknowledged: receiptReviewAcknowledged,
+    })
+    : ocrWarnings.length > 0 && !receiptReviewAcknowledged
+      ? receiptPostingBlockReason({
+        isDraft: false,
+        duplicateCheckPending: false,
+        warnings: ocrWarnings,
+        reviewAcknowledged: false,
+      })
+      : null;
 
   // ── Submit ──────────────────────────────────────────────────────
   const submit = async (asDraft: boolean) => {
@@ -1602,6 +1617,7 @@ export const PurchaseEntryPage: React.FC = () => {
               </> : <>
               <button
                 title="Post purchase receipt to ledger"
+                aria-describedby={postingBlockReason ? 'purchase-posting-block-reason' : undefined}
                 onClick={() => submit(false)}
                 disabled={loading || duplicateInvoiceCheckPending || (ocrWarnings.length > 0 && !receiptReviewAcknowledged)}
                 className="button-primary flex w-full items-center justify-center gap-2 py-3 transition-transform active:scale-[0.96]"
@@ -1609,6 +1625,11 @@ export const PurchaseEntryPage: React.FC = () => {
                 <Send size={18} />
                 {loading ? 'Posting...' : 'POST RECEIPT'}
               </button>
+              {postingBlockReason && (
+                <p id="purchase-posting-block-reason" className="text-xs text-amber-700 dark:text-amber-300" role="status">
+                  {postingBlockReason} You can still save this receipt as a draft.
+                </p>
+              )}
               <button
                 title="Save purchase as draft"
                 onClick={() => submit(true)}
@@ -1668,7 +1689,8 @@ export const PurchaseEntryPage: React.FC = () => {
         </button>
         <button
           aria-label="Post purchase receipt to ledger"
-          title="Post purchase receipt to ledger"
+          title={postingBlockReason || 'Post purchase receipt to ledger'}
+          aria-describedby={postingBlockReason ? 'purchase-posting-block-reason-mobile' : undefined}
           onClick={() => submit(false)}
           disabled={loading || duplicateInvoiceCheckPending || (ocrWarnings.length > 0 && !receiptReviewAcknowledged)}
           className="button-primary flex shrink-0 items-center gap-2 px-4 py-2 transition-transform active:scale-[0.96]"
@@ -1677,6 +1699,11 @@ export const PurchaseEntryPage: React.FC = () => {
           <Send size={16} />
           {loading ? 'Posting\u2026' : 'POST'}
         </button>
+        {postingBlockReason && (
+          <span id="purchase-posting-block-reason-mobile" className="sr-only" role="status">
+            {postingBlockReason} You can still save this receipt as a draft.
+          </span>
+        )}
         </>}
       </div>
 

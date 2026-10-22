@@ -11,6 +11,24 @@ export function normalizeCompetitorKey(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+/** Returns a fractional price gap: positive means our price exceeds the reference price. */
+export function calculatePriceGapFraction(
+  ourPrice: number | null | undefined,
+  referencePrice: number | null | undefined,
+): number | null {
+  if (
+    ourPrice == null ||
+    referencePrice == null ||
+    !Number.isFinite(ourPrice) ||
+    !Number.isFinite(referencePrice) ||
+    referencePrice <= 0
+  ) {
+    return null;
+  }
+
+  return (ourPrice - referencePrice) / referencePrice;
+}
+
 // ---------------------------------------------------------------------------
 // Effective competitor prices (RPC: get_effective_competitor_prices)
 // Returns exactly one row per competitor with freshness status.
@@ -74,7 +92,7 @@ export async function fetchCompetitorPrices(
     competitor_original_price: row.competitor_original_price ?? null,
     competitor_product_url: row.competitor_product_url ?? null,
     our_price: row.our_price ?? null,
-    price_gap_percent: row.price_gap_percent ?? null,
+    price_gap_percent: calculatePriceGapFraction(row.our_price ?? null, row.competitor_price ?? null),
     source: row.source ?? 'scraper',
     is_override_active: row.is_override_active ?? false,
     manual_override_reason: row.manual_override_reason ?? null,
@@ -90,6 +108,36 @@ export async function fetchCompetitorPrices(
     created_at: row.created_at,
     updated_at: row.updated_at,
   }));
+}
+
+export async function fetchCompetitorPriceCounts(
+  storeId: string,
+): Promise<{ total: number; matched: number; unmatched: number }> {
+  const [total, matched, unmatched] = await Promise.all([
+    supabase
+      .from('competitor_prices')
+      .select('id', { count: 'exact', head: true })
+      .eq('store_id', storeId),
+    supabase
+      .from('competitor_prices')
+      .select('id', { count: 'exact', head: true })
+      .eq('store_id', storeId)
+      .not('item_id', 'is', null),
+    supabase
+      .from('competitor_prices')
+      .select('id', { count: 'exact', head: true })
+      .eq('store_id', storeId)
+      .is('item_id', null),
+  ]);
+
+  const error = total.error ?? matched.error ?? unmatched.error;
+  if (error) throw error;
+
+  return {
+    total: total.count ?? 0,
+    matched: matched.count ?? 0,
+    unmatched: unmatched.count ?? 0,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +169,7 @@ export async function fetchPriceAlerts(
     item_name: row.item_name,
     our_price: row.our_price,
     market_avg_price: row.market_avg_price,
-    price_gap_percent: row.price_gap_percent,
+    price_gap_percent: calculatePriceGapFraction(row.our_price, row.market_avg_price) ?? row.price_gap_percent,
     competitors: row.competitors ? Object.keys(row.competitors) : [],
   }));
 }

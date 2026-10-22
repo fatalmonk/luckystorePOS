@@ -5,6 +5,7 @@ import { Camera, Upload, X, Loader2 } from 'lucide-react';
 
 interface ImageUploadZoneProps {
   currentImageUrl?: string;
+  productName?: string;
   onUpload: (file: File) => Promise<void>;
   onRemove?: () => void;
   size?: 'sm' | 'md' | 'lg';
@@ -15,6 +16,7 @@ interface ImageUploadZoneProps {
 
 export function ImageUploadZone({
   currentImageUrl,
+  productName,
   onUpload,
   onRemove,
   size = 'md',
@@ -99,7 +101,7 @@ export function ImageUploadZone({
         {/* Current Image */}
         <img
           src={currentImageUrl}
-          alt="Product"
+          alt={productName?.trim() || ''}
           className="h-full w-full object-cover"
         />
 

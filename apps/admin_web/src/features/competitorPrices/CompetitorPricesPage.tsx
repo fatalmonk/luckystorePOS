@@ -6,11 +6,13 @@ import { useNotify } from '@/components';
 import { DataTable, Column } from '@/components';
 import {
   fetchCompetitorPrices,
+  fetchCompetitorPriceCounts,
   fetchPriceAlerts,
   clearManualCompetitorPrice,
 } from '../../lib/api/domains/competitorPrices';
 import { AddPriceModal } from './AddPriceModal';
 import { LinkProductModal } from './LinkProductModal';
+import { summarizeCompetitorScrapeHealth } from './scrapeHealth';
 import type { CompetitorPrice, PriceAlert } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
 import './competitorPrices.css';
@@ -23,6 +25,15 @@ function formatDateTime(dateStr: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatPriceGapPercent(value: number): string {
+  const percent = value * 100;
+  return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+}
+
+function formatMetricCount(value: number | undefined): string {
+  return value == null ? '—' : value.toLocaleString();
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
@@ -53,11 +64,19 @@ export function CompetitorPricesPage() {
     enabled: !!storeId,
   });
 
+  const { data: metrics } = useQuery({
+    queryKey: ['competitorPriceCounts', storeId],
+    queryFn: () => fetchCompetitorPriceCounts(storeId!),
+    enabled: !!storeId,
+  });
+
   const { data: alerts } = useQuery({
     queryKey: ['priceAlerts', storeId],
     queryFn: () => fetchPriceAlerts(storeId!),
     enabled: !!storeId,
   });
+
+  const scrapeHealth = useMemo(() => summarizeCompetitorScrapeHealth(prices ?? []), [prices]);
 
   const clearOverrideMutation = useMutation({
     mutationFn: ({ itemId, competitorKey }: { itemId: string; competitorKey: string }) =>
@@ -67,6 +86,7 @@ export function CompetitorPricesPage() {
         queryKey: ['competitorPrices', 'effective', storeId, variables.itemId],
       });
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
+      queryClient.invalidateQueries({ queryKey: ['competitorPriceCounts', storeId] });
       notify('Manual override cleared', 'success');
     },
     onError: () => notify('Failed to clear override', 'error'),
@@ -82,20 +102,6 @@ export function CompetitorPricesPage() {
       if (p.competitor_name) set.add(p.competitor_name);
     });
     return Array.from(set).sort();
-  }, [prices]);
-
-  // Key metrics
-  const metrics = useMemo(() => {
-    if (!prices) return { total: 0, matched: 0, unmatched: 0, overrides: 0 };
-    let matched = 0;
-    let unmatched = 0;
-    let overrides = 0;
-    prices.forEach((p) => {
-      if (p.our_price != null || p.item_id != null) matched++;
-      else unmatched++;
-      if (p.is_override_active || p.source === 'manual') overrides++;
-    });
-    return { total: prices.length, matched, unmatched, overrides };
   }, [prices]);
 
   // Sorting state
@@ -269,12 +275,12 @@ export function CompetitorPricesPage() {
       header: sortableHeader('Gap', 'price_gap_percent'),
       accessor: (row: CompetitorPrice) => {
         if (row.price_gap_percent == null) return <span className="text-warm-muted text-xs">—</span>;
-        const pct = Math.round(row.price_gap_percent * 100);
-        const isHigher = pct > 0;
-        const isLower = pct < 0;
+        const percent = row.price_gap_percent * 100;
+        const isHigher = percent > 0;
+        const isLower = percent < 0;
         return (
           <span className={`font-mono font-medium ${isHigher ? 'text-danger' : isLower ? 'text-success' : 'text-muted'}`}>
-            {isHigher ? '+' : ''}{pct}%
+            {formatPriceGapPercent(row.price_gap_percent)}
           </span>
         );
       },
@@ -370,21 +376,43 @@ export function CompetitorPricesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
           <span className="text-xs text-warm-muted font-medium">Scraped Observations</span>
-          <span className="text-2xl font-bold font-mono mt-1">{metrics.total.toLocaleString()}</span>
+          <span className="text-2xl font-bold font-mono mt-1">{formatMetricCount(metrics?.total)}</span>
         </div>
         <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col">
-          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Matched Items (With Our Price)</span>
-          <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{metrics.matched.toLocaleString()}</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Matched Observations</span>
+          <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatMetricCount(metrics?.matched)}</span>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col">
-          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unmatched Scrapes</span>
-          <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{metrics.unmatched.toLocaleString()}</span>
+          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unmatched Observations</span>
+          <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{formatMetricCount(metrics?.unmatched)}</span>
         </div>
         <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
           <span className="text-xs text-warm-muted font-medium">Price Alerts</span>
           <span className="text-2xl font-bold font-mono text-warm-warning mt-1">{alerts?.length || 0}</span>
         </div>
       </div>
+
+      <section className="rounded-xl border border-warm-border bg-warm-surface/40 p-4" aria-label="Scraper health">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold">Scraper health</h2>
+            {scrapeHealth.latestSuccessful ? (
+              <p className="mt-1 text-xs text-warm-muted">
+                Latest successful scrape: {formatDateTime(scrapeHealth.latestSuccessful.scraped_at)}
+                {scrapeHealth.latestSuccessful.competitor_name ? ` · ${scrapeHealth.latestSuccessful.competitor_name}` : ''}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-warm-muted">No successful scraper observation is available in the loaded records.</p>
+            )}
+          </div>
+          {scrapeHealth.latestNonSuccess && (
+            <p className="text-xs text-amber-700 dark:text-amber-300" role="status">
+              Latest non-success observation: {scrapeHealth.latestNonSuccess.scrape_status} · {scrapeHealth.latestNonSuccess.competitor_name} · {formatDateTime(scrapeHealth.latestNonSuccess.scraped_at)}
+            </p>
+          )}
+        </div>
+        <p className="mt-2 text-[11px] text-warm-muted">Status reflects the newest records currently loaded; it does not confirm the scraper schedule or provide a retry action.</p>
+      </section>
 
       {/* Alerts Summary Banner */}
       {alerts && alerts.length > 0 && (
@@ -410,7 +438,7 @@ export function CompetitorPricesPage() {
                     <span className="font-mono font-semibold">{formatCurrency(alert.market_avg_price)}</span>
                   </div>
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400">
-                    +{Math.round(alert.price_gap_percent * 100)}%
+                    {formatPriceGapPercent(alert.price_gap_percent)}
                   </span>
                 </div>
               </div>
@@ -431,7 +459,7 @@ export function CompetitorPricesPage() {
                 : 'hover:bg-warm-surface text-warm-muted'
             }`}
           >
-            All Observations ({metrics.total})
+            All Observations ({formatMetricCount(metrics?.total)})
           </button>
           <button
             onClick={() => setActiveTab('matched')}
@@ -442,7 +470,7 @@ export function CompetitorPricesPage() {
             }`}
           >
             <CheckCircle2 size={13} />
-            Matched Only ({metrics.matched})
+            Matched Only ({formatMetricCount(metrics?.matched)})
           </button>
           <button
             onClick={() => setActiveTab('unmatched')}
@@ -453,7 +481,7 @@ export function CompetitorPricesPage() {
             }`}
           >
             <HelpCircle size={13} />
-            Unmatched Scrapes ({metrics.unmatched})
+            Unmatched Scrapes ({formatMetricCount(metrics?.unmatched)})
           </button>
           {alerts && alerts.length > 0 && (
             <button
@@ -498,6 +526,9 @@ export function CompetitorPricesPage() {
       </div>
 
       {/* Prices Table */}
+      <p className="text-xs text-warm-muted" aria-live="polite">
+        Showing {sortedPrices.length.toLocaleString()} loaded observations matching the current filters.
+      </p>
       <DataTable
         data={sortedPrices}
         columns={columns}
