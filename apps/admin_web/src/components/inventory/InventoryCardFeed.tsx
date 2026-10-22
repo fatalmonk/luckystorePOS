@@ -105,25 +105,19 @@ export function InventoryCardFeed({
   const paddingTop = virtualRows.length > 0 ? Math.max(0, virtualRows[0].start - scrollMargin) : 0;
   const paddingBottom = virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0;
 
-  const getGridColsClass = () => {
-    if (cols === 4) return 'grid-cols-4';
-    if (cols === 3) return 'grid-cols-3';
-    if (cols === 2) return 'grid-cols-2';
-    return 'grid-cols-1';
-  };
-
   return (
     <div 
       ref={containerRef} 
-      className="w-full relative"
+      className="relative w-full min-w-0 max-w-full"
       style={{ minHeight: totalSize }}
     >
       <div 
         style={{
           transform: `translateY(${paddingTop}px)`,
           paddingBottom: paddingBottom + 16,
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
         }}
-        className={`grid gap-3 px-3 w-full ${getGridColsClass()}`}
+        className="grid min-w-0 max-w-full w-full grid-cols-1 gap-3 px-3"
       >
         {virtualRows.map((virtualRow) => {
           // Render item cells dynamically based on active columns count per row
@@ -138,6 +132,7 @@ export function InventoryCardFeed({
                 return (
                   <div 
                     key={item.id}
+                    className="w-full min-w-0 max-w-full"
                     ref={colIdx === 0 ? rowVirtualizer.measureElement : undefined} 
                     data-index={virtualRow.index}
                   >

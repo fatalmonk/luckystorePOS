@@ -74,7 +74,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
 
   return (
     <div
-      className={`relative p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 shadow-sm select-none overflow-hidden ${
+      className={`relative w-full min-w-0 max-w-full p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 shadow-sm select-none overflow-hidden ${
         isSelected
           ? 'border-primary shadow-level-1 ring-1 ring-primary/20'
           : isHighlighted
@@ -145,8 +145,8 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
         </label>
       )}
 
-      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}      {/* Product name heading - moved outside button for accessibility */}
-      <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
+      {/* Product name heading - moved outside button for accessibility */}
+      <h3 className="min-w-0 max-w-full break-words pl-8 pr-8 font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2">
         {item.name}
       </h3>
 
@@ -195,21 +195,21 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           </div>
 
           {/* Pricing sub-panel + Margin badge / Reorder button */}
-          <div className="flex gap-2 sm:gap-2.5 justify-between items-center mt-auto min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 mt-auto">
             <div
-              className={`flex-1 min-w-0 flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
+              className={`min-w-0 flex-[1_1_100px] flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
                 isOutOfStock ? 'opacity-40' : ''
               }`}
             >
-              <div className="flex justify-between items-center tabular-nums">
+              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1 tabular-nums">
                 <span className="text-text-muted text-[10px] sm:text-[11px]">Cost:</span>
-                <span className="font-semibold">৳{(item.cost || 0).toFixed(2)}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">৳{(item.cost || 0).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center tabular-nums">
+              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1 tabular-nums">
                 <span className="text-text-muted text-[10px] sm:text-[11px]">MRP:</span>
-                <span className="font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
               </div>
-              <div className="flex justify-between items-center pt-0.5 border-t border-border/20 tabular-nums">
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-1 pt-0.5 border-t border-border/20 tabular-nums">
                 <div className="flex items-center gap-1 min-w-0 truncate pr-1">
                   <span className="text-text-muted text-[10px] sm:text-[11px]">Price:</span>
                   {discountPct !== null && (
@@ -218,11 +218,11 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                     </span>
                   )}
                 </div>
-                <span className="font-bold flex-shrink-0">৳{(item.price || 0).toFixed(2)}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-bold">৳{(item.price || 0).toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="ml-auto max-w-full flex-shrink-0">
               {isOutOfStock ? (
                 <span
                   className="flex flex-col items-center justify-center px-2 sm:px-2.5 py-2 rounded-xl sm:rounded-2xl border border-danger/30 bg-danger-subtle text-danger w-[62px] sm:w-[70px] shadow-xs"
