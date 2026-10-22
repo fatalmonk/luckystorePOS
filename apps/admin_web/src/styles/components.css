@@ -358,14 +358,18 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
+  max-width: 100%;
   background-color: var(--bg-app);
   color: var(--text-main);
 }
 
   .pos-content {
     display: grid;
-    grid-template-columns: 1fr 350px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 350px);
     flex: 1;
+    min-width: 0;
+    max-width: 100%;
     overflow: hidden;
     gap: var(--space-4);
     padding: var(--space-4);
@@ -373,7 +377,7 @@
 
   @media (max-width: 1280px) {
     .pos-content {
-      grid-template-columns: 1fr 350px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 350px);
       gap: var(--space-3);
       padding: var(--space-3);
     }
@@ -381,13 +385,15 @@
 
   @media (max-width: 1024px) {
     .pos-content {
-      grid-template-columns: 1fr 350px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 350px);
     }
   }
 
 .pos-products {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-4);
 }
 
@@ -588,6 +594,8 @@
 .pos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-4);
 }
 
@@ -788,6 +796,10 @@
 }
 
 @media (max-width: 768px) {
+  .pos-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .pos-billing {
     border-left: none;
     border-top: 1px solid var(--border-color);
@@ -1158,7 +1170,7 @@
   }
 
   .pos-content {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
   }
 }
 
