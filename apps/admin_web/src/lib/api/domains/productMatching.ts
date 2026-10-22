@@ -16,7 +16,7 @@ type PackageDetails = {
 };
 
 const VARIANTS = [
-  'extra hot', 'unsalted', 'salted', 'lemon', 'orange', 'chocolate', 'strawberry',
+  'extra hot', 'unsalted', 'salted', 'lemon', 'orange', 'strawberry',
   'vanilla', 'mint', 'spicy', 'mild', 'original', 'classic', 'regular', 'sugar free',
 ];
 

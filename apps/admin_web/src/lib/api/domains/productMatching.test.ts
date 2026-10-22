@@ -85,6 +85,21 @@ describe('conservative competitor product matching', () => {
     ).status).toBe('REJECTED');
   });
 
+  it('does not let a product-family word mask a later conflicting variant', () => {
+    expect(classifyCompetitorProductMatch(
+      { name: 'Acme Chocolate Mint 500g', brand: 'Acme' },
+      { name: 'Acme Chocolate Original 500g', brand: 'Acme' },
+    ).status).toBe('REJECTED');
+  });
+
+  it('allows a previously verified mapping when the observation omits a variant qualifier', () => {
+    expect(classifyCompetitorProductMatch(
+      { name: 'Acme Chocolate' },
+      { name: 'Acme Chocolate Original 500g', brand: 'Acme' },
+      { previouslyVerified: true },
+    ).status).toBe('VERIFIED');
+  });
+
   it('marks missing package quantity as ambiguous without independent identity evidence', () => {
     expect(classifyCompetitorProductMatch(
       { name: 'Acme Laundry Powder Original', brand: 'Acme' },

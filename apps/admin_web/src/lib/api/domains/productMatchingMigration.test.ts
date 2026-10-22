@@ -53,4 +53,17 @@ describe('conservative competitor matcher migration contract', () => {
     expect(migration).toContain('REVOKE EXECUTE');
     expect(migration).toContain('GRANT EXECUTE');
   });
+
+  it('preserves the existing PostgREST batch parameter name and default', () => {
+    expect(migration).toContain('p_batch_size integer DEFAULT 1000');
+    expect(migration).toContain('LIMIT p_batch_size');
+    expect(migration).not.toContain('p_max_attempts');
+  });
+
+  it('does not expose matcher helper RPCs to anonymous callers', () => {
+    expect(migration).toContain('REVOKE EXECUTE ON FUNCTION public.extract_product_variant(text) FROM PUBLIC, anon');
+    expect(migration).toContain('REVOKE EXECUTE ON FUNCTION public.is_valid_product_gtin(text) FROM PUBLIC, anon');
+    expect(migration).toContain('GRANT EXECUTE ON FUNCTION public.extract_product_variant(text) TO authenticated, service_role');
+    expect(migration).toContain('GRANT EXECUTE ON FUNCTION public.is_valid_product_gtin(text) TO authenticated, service_role');
+  });
 });

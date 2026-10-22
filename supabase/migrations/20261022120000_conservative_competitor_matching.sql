@@ -74,8 +74,12 @@ LANGUAGE sql
 IMMUTABLE
 SET search_path = ''
 AS $$
-  SELECT (regexp_match(lower(coalesce(p_text, '')),
-    '\m(extra hot|sugar free|unsalted|salted|lemon|orange|chocolate|strawberry|vanilla|mint|spicy|mild|original|classic|regular)\M'))[1];
+  -- Collect every explicit qualifier; "chocolate" is a family word and must
+  -- not mask a later flavor such as "mint" or "original".
+  SELECT string_agg(DISTINCT matched.variant[1], '|' ORDER BY matched.variant[1])
+  FROM regexp_matches(lower(coalesce(p_text, '')),
+    '\m(extra hot|sugar free|unsalted|salted|lemon|orange|strawberry|vanilla|mint|spicy|mild|original|classic|regular)\M', 'g')
+    AS matched(variant);
 $$;
 
 CREATE OR REPLACE FUNCTION public.is_valid_product_gtin(p_value text)
@@ -314,6 +318,7 @@ DECLARE
   v_tenant_id uuid;
   r record;
   v_res record;
+  v_linked record;
   v_our_price numeric;
   v_status text;
 BEGIN
@@ -331,9 +336,32 @@ BEGIN
     WHERE cp.store_id = p_store_id AND cp.source = 'scraper'
   LOOP
     v_processed := v_processed + 1;
-    SELECT * INTO v_res FROM public.match_competitor_price_item(
-      p_store_id, r.product_name, r.scraped_barcode, r.competitor_product_url, r.scraped_brand
-    );
+    -- Keep an explicit user confirmation only while the current observation
+    -- still has no conflicting attributes; never trust its status marker alone.
+    IF r.matcher_version = 'safe-v2:VERIFIED:user-confirmed' AND r.item_id IS NOT NULL THEN
+      SELECT i.id, i.name, i.brand, i.barcode
+      INTO v_linked
+      FROM public.items i
+      WHERE i.id = r.item_id AND i.tenant_id = v_tenant_id AND i.is_active = true;
+
+      IF v_linked.id IS NOT NULL AND public.classify_competitor_product_match(
+        r.product_name, r.scraped_brand, r.scraped_barcode,
+        v_linked.name, v_linked.brand, v_linked.barcode, true
+      ) = 'VERIFIED' THEN
+        SELECT r.item_id AS item_id,
+          1.00000::numeric(6,5) AS match_confidence,
+          r.matcher_version AS matcher_version
+        INTO v_res;
+      ELSE
+        SELECT * INTO v_res FROM public.match_competitor_price_item(
+          p_store_id, r.product_name, r.scraped_barcode, r.competitor_product_url, r.scraped_brand
+        );
+      END IF;
+    ELSE
+      SELECT * INTO v_res FROM public.match_competitor_price_item(
+        p_store_id, r.product_name, r.scraped_barcode, r.competitor_product_url, r.scraped_brand
+      );
+    END IF;
     v_status := split_part(v_res.matcher_version, ':', 2);
 
     IF v_res.item_id IS DISTINCT FROM r.item_id
@@ -373,7 +401,7 @@ DROP FUNCTION IF EXISTS public.rematch_unmatched_competitor_prices(uuid);
 DROP FUNCTION IF EXISTS public.rematch_unmatched_competitor_prices(uuid, integer);
 CREATE FUNCTION public.rematch_unmatched_competitor_prices(
   p_store_id uuid DEFAULT NULL,
-  p_max_attempts integer DEFAULT 500
+  p_batch_size integer DEFAULT 1000
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -392,8 +420,8 @@ BEGIN
      AND (p_store_id IS NULL OR public.get_current_user_store_id() IS DISTINCT FROM p_store_id) THEN
     RAISE EXCEPTION 'not authorized for store' USING ERRCODE = '42501';
   END IF;
-  IF p_max_attempts < 1 OR p_max_attempts > 5000 THEN
-    RAISE EXCEPTION 'invalid max attempts';
+  IF p_batch_size < 1 OR p_batch_size > 5000 THEN
+    RAISE EXCEPTION 'invalid batch size';
   END IF;
 
   FOR r IN
@@ -404,7 +432,7 @@ BEGIN
     WHERE cp.item_id IS NULL AND cp.scrape_status = 'success'
       AND (p_store_id IS NULL OR cp.store_id = p_store_id)
     ORDER BY cp.scraped_at DESC
-    LIMIT p_max_attempts
+    LIMIT p_batch_size
   LOOP
     v_processed := v_processed + 1;
     v_status := 'REJECTED';
@@ -534,6 +562,10 @@ REVOKE EXECUTE ON FUNCTION public.classify_competitor_product_match(text, text, 
 GRANT EXECUTE ON FUNCTION public.classify_competitor_product_match(text, text, text, text, text, text, boolean) TO authenticated, service_role;
 REVOKE EXECUTE ON FUNCTION public.extract_product_pack_signature(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.extract_product_pack_signature(text) TO authenticated, service_role;
+REVOKE EXECUTE ON FUNCTION public.extract_product_variant(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.extract_product_variant(text) TO authenticated, service_role;
+REVOKE EXECUTE ON FUNCTION public.is_valid_product_gtin(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_valid_product_gtin(text) TO authenticated, service_role;
 
 -- User-driven links are independently verified, but hard attribute conflicts remain rejected.
 DROP FUNCTION IF EXISTS public.link_competitor_price_item(uuid, uuid, uuid);
