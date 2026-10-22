@@ -15,6 +15,7 @@ const row = (id: string, source: CompetitorPrice['source'], status: string | nul
   source,
   is_override_active: false,
   matcher_version: 'test',
+  match_status: 'AMBIGUOUS',
   scraped_at: scrapedAt,
   scrape_status: status,
   created_at: scrapedAt,

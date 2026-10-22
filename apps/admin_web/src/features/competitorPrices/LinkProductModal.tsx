@@ -4,6 +4,7 @@ import { X, Search, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useNotify } from '@/components';
 import { linkScrapedProductToItem } from '../../lib/api/domains/competitorPrices';
+import { classifyCompetitorProductMatch } from '../../lib/api/domains/productMatching';
 import { supabase } from '@/lib/supabase';
 import type { CompetitorPrice } from '../../lib/api/types';
 import { formatCurrency } from '../../lib/format';
@@ -19,10 +20,12 @@ interface ItemCandidate {
   name: string;
   sku: string;
   price: number;
+  brand: string | null;
+  barcode: string | null;
 }
 
 export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps) {
-  const { storeId } = useAuth();
+  const { storeId, tenantId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
 
@@ -30,27 +33,30 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
   const [searchQuery, setSearchQuery] = useState(priceRecord?.product_name || '');
   const [competitorUrl, setCompetitorUrl] = useState(priceRecord?.competitor_product_url || '');
   const [selectedItem, setSelectedItem] = useState<ItemCandidate | null>(null);
+  const [confirmProductIdentity, setConfirmProductIdentity] = useState(false);
 
   const { data: searchResults, isLoading: searchLoading } = useQuery({
-    queryKey: ['itemCandidateSearch', searchQuery.trim()],
+    queryKey: ['itemCandidateSearch', tenantId, storeId, searchQuery.trim()],
     queryFn: async () => {
       const q = searchQuery.trim();
       if (q.length < 2) return [];
       const { data } = await supabase
         .from('items')
-        .select('id, name, sku, price')
+        .select('id, name, sku, price, brand, barcode')
+        .eq('tenant_id', tenantId!)
         .or(`name.ilike.%${q}%,sku.ilike.%${q}%`)
         .limit(10);
       return (data || []) as unknown as ItemCandidate[];
     },
-    enabled: !!priceRecord && searchQuery.trim().length >= 2,
+    enabled: !!priceRecord && !!storeId && !!tenantId && searchQuery.trim().length >= 2,
   });
 
   const linkMutation = useMutation({
-    mutationFn: (itemId: string) =>
-      linkScrapedProductToItem(storeId!, priceRecord!.id, itemId, competitorUrl),
+    mutationFn: ({ itemId, confirmed }: { itemId: string; confirmed: boolean }) =>
+      linkScrapedProductToItem(storeId!, priceRecord!.id, itemId, competitorUrl, confirmed),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
+      queryClient.invalidateQueries({ queryKey: ['competitorPriceCounts', storeId] });
       notify('Competitor price linked successfully!', 'success');
       onClose();
     },
@@ -59,13 +65,28 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
 
   if (!priceRecord) return null;
 
+  const selectedMatch = selectedItem
+    ? classifyCompetitorProductMatch(
+      { name: priceRecord.product_name },
+      { name: selectedItem.name, brand: selectedItem.brand, barcode: selectedItem.barcode },
+    )
+    : null;
+
   const handleSave = () => {
     if (!selectedItem) {
       notify('Please select an inventory item first', 'error');
 
       return;
     }
-    linkMutation.mutate(selectedItem.id);
+    if (selectedMatch?.status === 'REJECTED') {
+      notify('Product package or variant conflicts with the selected catalog item', 'error');
+      return;
+    }
+    if (selectedMatch?.status !== 'VERIFIED' && !confirmProductIdentity) {
+      notify('Verify the exact product identity before linking', 'error');
+      return;
+    }
+    linkMutation.mutate({ itemId: selectedItem.id, confirmed: confirmProductIdentity });
   };
 
   return (
@@ -140,7 +161,7 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedItem(null)}
+                  onClick={() => { setSelectedItem(null); setConfirmProductIdentity(false); }}
                   style={{ fontSize: 11, color: '#dc2626', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   Change
@@ -183,7 +204,7 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
                 {searchResults?.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => { setSelectedItem(item); setConfirmProductIdentity(false); }}
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', border: '1px solid var(--border-default)', borderRadius: 8, cursor: 'pointer', transition: 'border-color 0.15s' }}
                     onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#059669')}
                     onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-default)')}
@@ -200,6 +221,24 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
               </div>
             </div>
           )}
+
+          {selectedItem && selectedMatch && (
+            <div className="form-group" role="status">
+              <p className="text-xs">
+                Match evidence: <strong>{selectedMatch.status}</strong> · {selectedMatch.reason}
+              </p>
+              {selectedMatch.status !== 'VERIFIED' && selectedMatch.status !== 'REJECTED' && (
+                <label className="flex items-start gap-2 text-xs mt-2">
+                  <input
+                    type="checkbox"
+                    checked={confirmProductIdentity}
+                    onChange={(event) => setConfirmProductIdentity(event.target.checked)}
+                  />
+                  I verified this is the same exact package, unit count, and product variant.
+                </label>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -209,7 +248,9 @@ export function LinkProductModal({ priceRecord, onClose }: LinkProductModalProps
           </button>
           <button
             type="button"
-            disabled={!selectedItem || linkMutation.isPending}
+            disabled={!selectedItem || selectedMatch?.status === 'REJECTED'
+              || (selectedMatch?.status !== 'VERIFIED' && !confirmProductIdentity)
+              || linkMutation.isPending}
             onClick={handleSave}
             style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: selectedItem ? '#059669' : '#aaa', color: '#fff', cursor: selectedItem ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}
           >
