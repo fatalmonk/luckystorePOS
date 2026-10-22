@@ -221,7 +221,7 @@ Fresh checks after these changes:
 - ESLint: 0 errors; 3 existing `react-hooks/incompatible-library` warnings in `data-table.tsx`, `InventoryCardFeed.tsx`, and `InventoryListTable.tsx`, none in changed competitor-pricing files.
 - Production build: passed; Vite emitted the existing >1 MB chunk warning.
 - `git diff --check`: passed.
-- GitHub Actions and secret/security checks: to be refreshed after the authorized push of this commit.
+- GitHub checks for pushed commit `44d9ee6497f6670f1cf84a822d84b5281992e1d3`: 12 passed, 0 failed, and 2 skipped (Android packaging and Supabase Preview). `admin_web_check`, E2E Tests, Project Health & Security Audit, Lint & Typecheck, `lint`, and `secret_scan` passed. CodeRabbit, Vercel preview statuses, preview comments, and Workers Builds also reported success. Supabase Preview being skipped means no hosted migration preview was run.
 - Browser smoke: incomplete. Jev Browser Use tools were absent; CUA found Chrome closed and no tabs. The local PostgreSQL fixture has no PostgREST service or authenticated browser session.
 
 **Remaining merge conditions:** verify the pushed commit's GitHub checks; run PostgREST/browser smoke in an isolated Supabase preview or authorized local session; keep production read-only until the repository owner approves deployment. No production data, migration, rematch, scraper, deployment, or merge was touched by this review.
@@ -236,3 +236,5 @@ Fresh checks after these changes:
 ### Publish state
 
 The local branch is `fix/competitor-prices-matching`, based on `origin/main` `cd1b61632f0bfc83a484ffac326677522f46a6fd`; PR #535 remains a draft targeting `main`. Before the remediation push, the PR head was `95dbffa648013ea699d3073b5395059d8f8cc7c5` and its then-current required checks had passed; Supabase Preview and Android packaging were skipped. The original PR #534 worktree was inspected read-only and not modified. The remediation commit SHA and refreshed post-push checks should be recorded below after publication.
+
+Post-push GitHub evidence was refreshed on 2026-10-22 with `gh pr view 535 --json statusCheckRollup` and `gh pr checks 535`. PR #535 remains open and draft, targets `main`, and currently reports mergeable at the GitHub graph level. This is not a merge approval: a real Supabase/PostgREST migration preview and browser smoke are still absent. GitHub’s push response also reported 15 Dependabot alerts on the default branch (1 critical, 3 high, 9 moderate, 2 low); these are repository-level alerts and are not established as introduced by this PR. The PR `secret_scan` passed. No production deployment or migration was run; the Vercel statuses are the PR automation preview checks.
