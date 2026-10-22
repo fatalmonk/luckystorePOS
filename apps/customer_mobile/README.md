@@ -1,5 +1,7 @@
 # Welcome to your Expo app 👋
 
+> **Paused:** This app is temporarily excluded from the root npm workspaces while its Expo/Metro dependency tree includes the vulnerable `braces@3.0.3` release (GHSA-vfj7-8cjw-p6xm). Its source remains tracked. Before resuming development, reassess the advisory and dependency tree, then restore `apps/customer_mobile` to the root `workspaces` list and regenerate the root lockfile.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
