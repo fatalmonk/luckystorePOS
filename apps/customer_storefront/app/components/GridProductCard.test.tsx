@@ -27,7 +27,7 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('./product/ProductImage', () => ({
-  ProductImage: ({ alt }: { alt: string }) => <span role="img" aria-label={alt} />,
+  ProductImage: ({ alt, src }: { alt: string; src?: string }) => <span role="img" aria-label={alt} data-src={src} />,
 }));
 
 vi.mock('../hooks/useProductCart', () => ({
@@ -89,6 +89,17 @@ describe('GridProductCard', () => {
 
     expect(screen.getByRole('link', { name: 'View Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
     expect(screen.getByRole('link', { name: 'Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
+  });
+
+  it('uses the curated Kheer half-liter image when the catalog image is missing', () => {
+    renderCard({
+      id: '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb',
+      name: 'Polar Kheer 1/2 Liter',
+      image_url: undefined,
+    });
+
+    expect(screen.getByRole('img', { name: 'Polar Kheer ice cream tub with a 1/2L size label' }))
+      .toHaveAttribute('data-src', 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp');
   });
 
   it('keeps add, increment, and decrement actions inside buttons', () => {

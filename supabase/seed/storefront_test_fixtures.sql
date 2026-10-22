@@ -38,7 +38,8 @@ VALUES
   ('c0000000-0000-0000-0000-000000000004', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cleaning Supplies', 'Cleaning Supplies', 'cleaning-supplies', '🧼', true, 4),
   ('c0000000-0000-0000-0000-000000000005', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cooking Essentials', 'Cooking Essentials', 'cooking-essentials', '🌾', true, 5),
   ('c0000000-0000-0000-0000-000000000006', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Beverages', 'Beverages', 'beverages', '🧃', true, 6),
-  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Personal Care', 'Personal Care', 'personal-care', '🧺', true, 7)
+  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Personal Care', 'Personal Care', 'personal-care', '🧺', true, 7),
+  ('c0000000-0000-0000-0000-000000000008', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Frozen Desserts', 'Frozen Desserts', 'frozen-desserts', '🍦', true, 8)
 ON CONFLICT (id) DO UPDATE SET
   store_id = EXCLUDED.store_id,
   tenant_id = EXCLUDED.tenant_id,
@@ -49,13 +50,31 @@ ON CONFLICT (id) DO UPDATE SET
   active = EXCLUDED.active,
   display_order = EXCLUDED.display_order;
 
--- 4. Deterministic Products (items)
+-- 4. Retire legacy E2E IDs that shared a URL prefix. Preserve their ledger history
+-- while freeing their SKUs for the replacement fixture IDs.
+UPDATE public.items
+SET
+  sku = CASE WHEN sku LIKE 'LEGACY-E2E-%' THEN sku ELSE 'LEGACY-E2E-' || sku END,
+  is_active = false
+WHERE tenant_id = '00000000-0000-0000-0000-000000000001'
+  AND id IN (
+    'a0740000-0000-0000-0000-000000000001',
+    'a0740000-0000-0000-0000-000000000002',
+    'a0740000-0000-0000-0000-000000000003',
+    'a0740000-0000-0000-0000-000000000004',
+    'a0740000-0000-0000-0000-000000000005',
+    'a0740000-0000-0000-0000-000000000006',
+    'a0740000-0000-0000-0000-000000000007',
+    'a0740000-0000-0000-0000-000000000099'
+  );
+
+-- 5. Deterministic Products (items)
 INSERT INTO public.items (
   id, tenant_id, name, brand, price, mrp, cost, category_id, sku, barcode, is_active, image_url, description
 )
 VALUES
   (
-    'a0740000-0000-0000-0000-000000000001',
+    'a0740001-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000001',
     'Miniket Rice Premium',
     'Lucky Store',
@@ -70,7 +89,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000002',
+    'a0740002-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000001',
     'Aarong Dairy Pure Liquid Milk',
     'Aarong Dairy',
@@ -85,7 +104,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000003',
+    'a0740003-0000-0000-0000-000000000003',
     '00000000-0000-0000-0000-000000000001',
     'Fresh Farm Eggs Layer (12 pcs)',
     'Lucky Store',
@@ -100,7 +119,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000004',
+    'a0740004-0000-0000-0000-000000000004',
     '00000000-0000-0000-0000-000000000001',
     'Bombay Sweets Potato Crackers',
     'Bombay Sweets',
@@ -115,7 +134,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000005',
+    'a0740005-0000-0000-0000-000000000005',
     '00000000-0000-0000-0000-000000000001',
     'Vim Dishwashing Liquid 500ml',
     'Vim',
@@ -130,7 +149,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000006',
+    'a0740006-0000-0000-0000-000000000006',
     '00000000-0000-0000-0000-000000000001',
     'Pran Mustard Oil 500ml',
     'Pran',
@@ -145,7 +164,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000099',
+    'a0740099-0000-0000-0000-000000000099',
     '00000000-0000-0000-0000-000000000001',
     'Auth test rice',
     'Lucky Store',
@@ -160,7 +179,7 @@ VALUES
     'Deterministic storefront E2E fixture.'
   ),
   (
-    'a0740000-0000-0000-0000-000000000007',
+    'a0740007-0000-0000-0000-000000000007',
     '00000000-0000-0000-0000-000000000001',
     'Radhuni Turmeric Powder 200g',
     'Radhuni',
@@ -173,6 +192,21 @@ VALUES
     true,
     '/banners/promo_cooking_400.webp',
     'Deterministic storefront E2E fixture.'
+  ),
+  (
+    '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb',
+    '00000000-0000-0000-0000-000000000001',
+    'Polar Kheer 1/2 Liter',
+    'Polar',
+    190.00,
+    200.00,
+    170.00,
+    'c0000000-0000-0000-0000-000000000008',
+    'IC-POL-K1L',
+    'IC-POL-K1L',
+    true,
+    'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp',
+    'Polar Kheer ice cream in a 1/2 L pack.'
   )
 ON CONFLICT (id) DO UPDATE SET
   tenant_id = EXCLUDED.tenant_id,
@@ -191,14 +225,15 @@ ON CONFLICT (id) DO UPDATE SET
 -- 5. Stock Levels for Store 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
 INSERT INTO public.stock_levels (store_id, item_id, qty, reserved, qty_reserved_online)
 VALUES
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000001', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000002', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000003', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000004', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000005', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000006', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000099', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000007', 0, 0, 0) -- out of stock item
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740001-0000-0000-0000-000000000001', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740002-0000-0000-0000-000000000002', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740003-0000-0000-0000-000000000003', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740004-0000-0000-0000-000000000004', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740005-0000-0000-0000-000000000005', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740006-0000-0000-0000-000000000006', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740099-0000-0000-0000-000000000099', 50, 0, 0),
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740007-0000-0000-0000-000000000007', 0, 0, 0), -- out of stock item
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb', 50, 0, 0)
 ON CONFLICT (store_id, item_id) DO UPDATE SET
   qty = EXCLUDED.qty,
   reserved = EXCLUDED.reserved,

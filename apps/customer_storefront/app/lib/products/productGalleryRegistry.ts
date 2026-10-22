@@ -1,11 +1,15 @@
 import type { ProductGalleryImage } from './productEnrichmentTypes';
 
-/** Verified local catalogue images for Polar products with curated gallery assets. */
+/** Verified catalogue images for Polar products with curated gallery assets. */
 const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
-  // These audit-confirmed source images are broken. Empty arrays suppress those
-  // unverified URLs from social and Product metadata until matching artwork exists.
+  // Double Sundae remains unresolved; Kheer 500 ml uses the verified 1/2L overlay below.
   '70a322a1': [],
-  '79e0ece1': [],
+  '79e0ece1': [
+    {
+      url: 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp',
+      alt: 'Polar Kheer ice cream tub with a 1/2L size label',
+    },
+  ],
   '5830390b': [
     { url: '/products/polar/carnival-butterscotch.webp', alt: 'Polar Carnival Butterscotch cone ice cream' },
   ],
