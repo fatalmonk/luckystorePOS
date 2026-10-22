@@ -197,7 +197,7 @@ $$;
 -- Add the structured scraped brand as an optional argument. Existing four-argument
 -- callers remain compatible because this parameter has a default.
 DROP FUNCTION IF EXISTS public.match_competitor_price_item(uuid, text, text, text);
-CREATE FUNCTION public.match_competitor_price_item(
+CREATE OR REPLACE FUNCTION public.match_competitor_price_item(
   p_store_id uuid,
   p_scraped_product_name text,
   p_scraped_barcode text DEFAULT NULL,
@@ -399,7 +399,7 @@ $$;
 -- as if both were a single numeric weight. Replace it with the same conservative classifier.
 DROP FUNCTION IF EXISTS public.rematch_unmatched_competitor_prices(uuid);
 DROP FUNCTION IF EXISTS public.rematch_unmatched_competitor_prices(uuid, integer);
-CREATE FUNCTION public.rematch_unmatched_competitor_prices(
+CREATE OR REPLACE FUNCTION public.rematch_unmatched_competitor_prices(
   p_store_id uuid DEFAULT NULL,
   p_batch_size integer DEFAULT 1000
 )
@@ -570,7 +570,7 @@ GRANT EXECUTE ON FUNCTION public.is_valid_product_gtin(text) TO authenticated, s
 -- User-driven links are independently verified, but hard attribute conflicts remain rejected.
 DROP FUNCTION IF EXISTS public.link_competitor_price_item(uuid, uuid, uuid);
 DROP FUNCTION IF EXISTS public.link_competitor_price_item(uuid, uuid, uuid, text);
-CREATE FUNCTION public.link_competitor_price_item(
+CREATE OR REPLACE FUNCTION public.link_competitor_price_item(
   p_store_id uuid,
   p_price_record_id uuid,
   p_item_id uuid,

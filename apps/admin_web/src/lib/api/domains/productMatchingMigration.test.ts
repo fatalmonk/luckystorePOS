@@ -66,4 +66,8 @@ describe('conservative competitor matcher migration contract', () => {
     expect(migration).toContain('GRANT EXECUTE ON FUNCTION public.extract_product_variant(text) TO authenticated, service_role');
     expect(migration).toContain('GRANT EXECUTE ON FUNCTION public.is_valid_product_gtin(text) TO authenticated, service_role');
   });
+
+  it('uses replaceable definitions for repeatable function migrations', () => {
+    expect(migration).not.toMatch(/^CREATE FUNCTION\s+/m);
+  });
 });
