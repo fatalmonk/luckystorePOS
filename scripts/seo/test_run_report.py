@@ -17,7 +17,7 @@ class RunReportTests(unittest.TestCase):
         self.assertEqual(report["status"], "no_change")
         self.assertIn("Next action", markdown)
         self.assertIsNone(report["pr_url"])
-        self.assertEqual(report["evidence"]["gsc_performance"], "available")
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
         self.assertEqual(report["evidence"]["indexing"], "not_verified")
 
     def test_gsc_failure_is_blocked_when_propose_skipped(self):
@@ -33,13 +33,59 @@ class RunReportTests(unittest.TestCase):
                                  "verify": {"result": "success"},
                                  "publish": {"result": "success", "outputs": {"pr_url": url}}})
         self.assertEqual(report["status"], "proposal_created")
-        self.assertEqual(report["evidence"]["gsc_performance"], "failed")
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
 
     def test_gsc_skipped_with_no_change_marks_unavailable(self):
         report, _ = self.report({"gsc": {"result": "skipped"},
                                  "propose": {"result": "success", "outputs": {"changed": "false", "guard": "success"}}})
         self.assertEqual(report["status"], "no_change")
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
+
+    def test_successful_jobs_with_unavailable_snapshot_report_unavailable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Path(directory, "gsc.json")
+            snapshot.write_text(json.dumps({"status": "unavailable", "reason": "OAuth failed"}))
+            needs = {name: {"result": "success"} for name in
+                     ("gsc", "propose", "evidence", "verify", "publish")}
+            report, _ = build_report(needs, "123", "1", "a" * 40, str(snapshot))
         self.assertEqual(report["evidence"]["gsc_performance"], "unavailable")
+
+    def test_successful_jobs_with_missing_snapshot_never_report_available(self):
+        needs = {name: {"result": "success"} for name in
+                 ("gsc", "propose", "evidence", "verify", "publish")}
+        report, _ = build_report(needs, "123", "1", "a" * 40, None)
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
+
+    def test_successful_jobs_with_malformed_snapshot_never_report_available(self):
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Path(directory, "gsc.json")
+            snapshot.write_text(json.dumps({"status": "available"}))
+            needs = {name: {"result": "success"} for name in
+                     ("gsc", "propose", "evidence", "verify", "publish")}
+            report, _ = build_report(needs, "123", "1", "a" * 40, str(snapshot))
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
+
+    def test_valid_snapshot_reports_available(self):
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Path(directory, "gsc.json")
+            result = lambda dimensions: {"dimensions": dimensions, "rows": [], "row_limit_reached": False}
+            window = {"start_date": "2026-01-01", "end_date": "2026-01-28",
+                      "totals": result([]), "pages": result(["page"]), "queries": result(["query"])}
+            snapshot.write_text(json.dumps({
+                "schema_version": 1, "source": "Google Search Console Search Analytics API",
+                "captured_at": "2026-01-29T00:00:00+00:00", "windows": {"current": window, "previous": window},
+            }))
+            report, _ = build_report({"gsc": {"result": "success"}}, "123", "1", "a" * 40, str(snapshot))
+        self.assertEqual(report["evidence"]["gsc_performance"], "available")
+
+    def test_missing_or_malformed_snapshot_is_unverified(self):
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Path(directory, "gsc.json")
+            snapshot.write_text("not json")
+            self.assertEqual(self.report({"gsc": {"result": "success"}})[0]["evidence"]["gsc_performance"], "unverified")
+            needs = {"gsc": {"result": "success"}}
+            report, _ = build_report(needs, "123", "1", "a" * 40, str(snapshot))
+        self.assertEqual(report["evidence"]["gsc_performance"], "unverified")
 
     def test_existing_pr_reports_review_needed(self):
         report, _ = self.report({"propose": {"result": "success", "outputs": {"overlap": "true"}}})
