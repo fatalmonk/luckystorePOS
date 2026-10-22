@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle, ArrowRight, X, Sparkles, Building2, Package, CreditCard, Users, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Circle, ArrowRight, X, Sparkles, Building2, Package, CreditCard, Users, RefreshCw, type LucideIcon } from 'lucide-react';
 
 export interface SetupChecklistItem {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   isCompleted: boolean;
   status: 'pending' | 'error' | 'success';
   actionPath: string;
