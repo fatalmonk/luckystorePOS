@@ -16,3 +16,16 @@ test('service-role fallback includes the Polar Kheer test fixture and its catego
 test('service-role fallback creates stock rows for every product fixture', () => {
   assert.match(seedSource, /const stockLevels = products\.map\(\(p\) => \(\{[\s\S]*?item_id: p\.id,[\s\S]*?qty: p\.id ===[^\n]+\? 0 : 50/);
 });
+
+test('product fixtures use unique URL ID prefixes', () => {
+  const productBlock = seedSource.match(/const products = \[([\s\S]*?)\n  \];/)?.[1] ?? '';
+  const serviceIds = [...productBlock.matchAll(/id: '(a074[0-9a-f-]{32})'/g)].map(([, id]) => id);
+  const itemBlock = sqlFixture.split('INSERT INTO public.items (')[1]?.split('ON CONFLICT (id) DO UPDATE SET')[0] ?? '';
+  const sqlIds = [...itemBlock.matchAll(/^\s*'(a074[0-9a-f-]{32})',\s*$/gm)].map(([, id]) => id);
+  const prefixes = (ids) => ids.map((id) => id.replaceAll('-', '').slice(0, 8));
+
+  assert.ok(serviceIds.length > 0, 'service-role product fixtures should be present');
+  assert.ok(sqlIds.length > 0, 'SQL product fixtures should be present');
+  assert.equal(new Set(prefixes(serviceIds)).size, serviceIds.length);
+  assert.equal(new Set(prefixes(sqlIds)).size, sqlIds.length);
+});

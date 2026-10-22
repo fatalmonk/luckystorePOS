@@ -38,7 +38,7 @@ function shuffleProducts<T extends { id: string }>(items: T[]): T[] {
 
 export const FALLBACK_PRODUCTS: Product[] = [
   {
-    id: 'a0740000-0000-0000-0000-000000000001',
+    id: 'a0740001-0000-0000-0000-000000000001',
     name: 'Miniket Rice Premium',
     emoji: '🌾',
     price: 85,
@@ -51,7 +51,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     brand: 'Lucky Store',
   },
   {
-    id: 'a0740000-0000-0000-0000-000000000002',
+    id: 'a0740002-0000-0000-0000-000000000002',
     name: 'Aarong Dairy Pure Liquid Milk',
     emoji: '🥛',
     price: 90,
@@ -63,7 +63,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     brand: 'Aarong Dairy',
   },
   {
-    id: 'a0740000-0000-0000-0000-000000000003',
+    id: 'a0740003-0000-0000-0000-000000000003',
     name: 'Fresh Farm Eggs Layer (12 pcs)',
     emoji: '🥚',
     price: 145,
@@ -76,7 +76,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     brand: 'Lucky Store',
   },
   {
-    id: 'a0740000-0000-0000-0000-000000000004',
+    id: 'a0740004-0000-0000-0000-000000000004',
     name: 'Bombay Sweets Potato Crackers',
     emoji: '🍿',
     price: 25,
@@ -88,7 +88,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     description: 'Deterministic storefront E2E fixture.',
   },
   {
-    id: 'a0740000-0000-0000-0000-000000000005',
+    id: 'a0740005-0000-0000-0000-000000000005',
     name: 'Vim Dishwashing Liquid 500ml',
     emoji: '🧼',
     price: 130,
