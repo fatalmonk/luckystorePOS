@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Autoplay from 'embla-carousel-autoplay';
 import type { ProductGalleryImage } from '../../lib/products/productEnrichmentTypes';
 import type { CarouselApi } from '../ui/carousel';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
@@ -16,6 +17,7 @@ interface ProductImageGalleryProps {
 }
 
 export function ProductImageGallery({ images, productName, category, sizes }: ProductImageGalleryProps) {
+  const autoplay = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
 
@@ -48,6 +50,7 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
       <Carousel
         setApi={setApi}
         opts={{ containScroll: 'trimSnaps', loop: false }}
+        plugins={images.length > 1 ? [autoplay.current] : []}
         aria-label={`${productName} product images`}
       >
         <CarouselContent>
