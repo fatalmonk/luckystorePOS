@@ -169,6 +169,28 @@ async function runViaServiceRoleClient(url, key) {
   const { error: cErr } = await supabase.from('categories').upsert(categories, { onConflict: 'id' });
   if (cErr) throw cErr;
 
+  // Retire the previous E2E IDs before inserting products with distinct URL prefixes.
+  // Keep their rows and ledger history; the old SKUs must be freed for the new IDs.
+  const legacyFixtureIds = [1, 2, 3, 4, 5, 6, 7, 99]
+    .map((number) => `a0740000-0000-0000-0000-${String(number).padStart(12, '0')}`);
+  const { data: legacyItems, error: legacyReadError } = await supabase
+    .from('items')
+    .select('id,sku')
+    .eq('tenant_id', TENANT_ID)
+    .in('id', legacyFixtureIds);
+  if (legacyReadError) throw legacyReadError;
+  for (const item of legacyItems || []) {
+    const legacySku = item.sku && !item.sku.startsWith('LEGACY-E2E-')
+      ? `LEGACY-E2E-${item.sku}`
+      : item.sku;
+    const { error: legacyUpdateError } = await supabase
+      .from('items')
+      .update({ sku: legacySku, is_active: false })
+      .eq('id', item.id)
+      .eq('tenant_id', TENANT_ID);
+    if (legacyUpdateError) throw legacyUpdateError;
+  }
+
   // 4. Products
   const products = [
     { id: 'a0740001-0000-0000-0000-000000000001', tenant_id: TENANT_ID, name: 'Miniket Rice Premium', brand: 'Lucky Store', price: 85, mrp: 95, cost: 70, category_id: 'c0000000-0000-0000-0000-000000000001', sku: 'RICE-MIN-01', barcode: null, is_active: true, image_url: '/banners/promo_welcome_v2_400.webp', description: 'Deterministic storefront E2E fixture.' },
@@ -179,7 +201,7 @@ async function runViaServiceRoleClient(url, key) {
     { id: 'a0740006-0000-0000-0000-000000000006', tenant_id: TENANT_ID, name: 'Pran Mustard Oil 500ml', brand: 'Pran', price: 180, mrp: 195, cost: 150, category_id: 'c0000000-0000-0000-0000-000000000005', sku: 'OIL-PRAN-500', barcode: null, is_active: true, image_url: '/banners/promo_cooking_400.webp', description: 'Deterministic storefront E2E fixture.' },
     { id: 'a0740099-0000-0000-0000-000000000099', tenant_id: TENANT_ID, name: 'Auth test rice', brand: 'Lucky Store', price: 100, mrp: 100, cost: 80, category_id: 'c0000000-0000-0000-0000-000000000001', sku: 'AUTH-TEST-01', barcode: null, is_active: true, image_url: '/banners/promo_welcome_v2_400.webp', description: 'Deterministic test product for auth boundary and checkout test verification.' },
     { id: 'a0740007-0000-0000-0000-000000000007', tenant_id: TENANT_ID, name: 'Radhuni Turmeric Powder 200g', brand: 'Radhuni', price: 95, mrp: 95, cost: 75, category_id: 'c0000000-0000-0000-0000-000000000005', sku: 'RAD-TUR-200', barcode: null, is_active: true, image_url: '/banners/promo_cooking_400.webp', description: 'Deterministic storefront E2E fixture.' },
-    { id: '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb', tenant_id: TENANT_ID, name: 'Polar Kheer 1/2 Liter', brand: 'Polar', price: 190, mrp: 200, cost: 170, category_id: 'c0000000-0000-0000-0000-000000000008', sku: 'IC-POL-K1L', barcode: 'IC-POL-K1L', is_active: true, image_url: '/products/polar/kheer-500ml-1-2l.png', description: 'Polar Kheer ice cream in a 1/2 L pack.' },
+    { id: '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb', tenant_id: TENANT_ID, name: 'Polar Kheer 1/2 Liter', brand: 'Polar', price: 190, mrp: 200, cost: 170, category_id: 'c0000000-0000-0000-0000-000000000008', sku: 'IC-POL-K1L', barcode: 'IC-POL-K1L', is_active: true, image_url: 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp', description: 'Polar Kheer ice cream in a 1/2 L pack.' },
   ];
   const { error: iErr } = await supabase.from('items').upsert(products, { onConflict: 'id' });
   if (iErr) throw iErr;

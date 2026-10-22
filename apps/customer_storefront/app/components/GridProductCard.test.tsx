@@ -99,7 +99,7 @@ describe('GridProductCard', () => {
     });
 
     expect(screen.getByRole('img', { name: 'Polar Kheer ice cream tub with a 1/2L size label' }))
-      .toHaveAttribute('data-src', '/products/polar/kheer-500ml-1-2l.png');
+      .toHaveAttribute('data-src', 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp');
   });
 
   it('keeps add, increment, and decrement actions inside buttons', () => {

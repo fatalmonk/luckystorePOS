@@ -50,7 +50,25 @@ ON CONFLICT (id) DO UPDATE SET
   active = EXCLUDED.active,
   display_order = EXCLUDED.display_order;
 
--- 4. Deterministic Products (items)
+-- 4. Retire legacy E2E IDs that shared a URL prefix. Preserve their ledger history
+-- while freeing their SKUs for the replacement fixture IDs.
+UPDATE public.items
+SET
+  sku = CASE WHEN sku LIKE 'LEGACY-E2E-%' THEN sku ELSE 'LEGACY-E2E-' || sku END,
+  is_active = false
+WHERE tenant_id = '00000000-0000-0000-0000-000000000001'
+  AND id IN (
+    'a0740000-0000-0000-0000-000000000001',
+    'a0740000-0000-0000-0000-000000000002',
+    'a0740000-0000-0000-0000-000000000003',
+    'a0740000-0000-0000-0000-000000000004',
+    'a0740000-0000-0000-0000-000000000005',
+    'a0740000-0000-0000-0000-000000000006',
+    'a0740000-0000-0000-0000-000000000007',
+    'a0740000-0000-0000-0000-000000000099'
+  );
+
+-- 5. Deterministic Products (items)
 INSERT INTO public.items (
   id, tenant_id, name, brand, price, mrp, cost, category_id, sku, barcode, is_active, image_url, description
 )
@@ -187,7 +205,7 @@ VALUES
     'IC-POL-K1L',
     'IC-POL-K1L',
     true,
-    '/products/polar/kheer-500ml-1-2l.png',
+    'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp',
     'Polar Kheer ice cream in a 1/2 L pack.'
   )
 ON CONFLICT (id) DO UPDATE SET

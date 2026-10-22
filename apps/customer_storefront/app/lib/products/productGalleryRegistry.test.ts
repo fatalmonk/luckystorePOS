@@ -23,7 +23,7 @@ describe('product gallery registry', () => {
     expect(getProductGalleryImages('70a322a1-0000-0000-0000-000000000000')).toEqual([]);
     expect(getProductGalleryImages('79e0ece1-0000-0000-0000-000000000000')).toEqual([
       {
-        url: '/products/polar/kheer-500ml-1-2l.png',
+        url: 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp',
         alt: 'Polar Kheer ice cream tub with a 1/2L size label',
       },
     ]);
