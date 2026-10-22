@@ -9,6 +9,7 @@ import {
   fetchCompetitorPriceCounts,
   fetchPriceAlerts,
   clearManualCompetitorPrice,
+  formatPriceGapPercent,
 } from '../../lib/api/domains/competitorPrices';
 import { AddPriceModal } from './AddPriceModal';
 import { LinkProductModal } from './LinkProductModal';
@@ -27,11 +28,6 @@ function formatDateTime(dateStr: string): string {
   });
 }
 
-function formatPriceGapPercent(value: number): string {
-  const percent = value * 100;
-  return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
-}
-
 function formatMetricCount(value: number | undefined): string {
   return value == null ? '—' : value.toLocaleString();
 }
@@ -40,6 +36,13 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   success: { label: 'OK', color: 'text-warm-success' },
   error: { label: 'Error', color: 'text-warm-danger' },
   not_found: { label: '404', color: 'text-warm-warning' },
+};
+
+const MATCH_BADGE: Record<CompetitorPrice['match_status'], { color: string }> = {
+  VERIFIED: { color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+  PROBABLE: { color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400' },
+  AMBIGUOUS: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  REJECTED: { color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
 };
 
 type ViewTab = 'all' | 'matched' | 'unmatched' | 'alerts' | 'overrides';
@@ -124,8 +127,8 @@ export function CompetitorPricesPage() {
     if (!prices) return [];
     return prices.filter((p: CompetitorPrice) => {
       // Tab filter
-      if (activeTab === 'matched' && p.our_price == null && p.item_id == null) return false;
-      if (activeTab === 'unmatched' && (p.our_price != null || p.item_id != null)) return false;
+      if (activeTab === 'matched' && p.item_id == null) return false;
+      if (activeTab === 'unmatched' && p.item_id != null) return false;
       if (activeTab === 'alerts' && !alertItemIds.has(p.item_id)) return false;
       if (activeTab === 'overrides' && !p.is_override_active && p.source !== 'manual') return false;
 
@@ -213,15 +216,12 @@ export function CompetitorPricesPage() {
         <div className="competitor-product-cell">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-medium">{row.item_name || 'Unknown'}</span>
-            {row.item_id ? (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                Matched
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                Unmatched
-              </span>
-            )}
+            <span
+              className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${MATCH_BADGE[row.match_status].color}`}
+              aria-label={`Product match status: ${row.match_status}`}
+            >
+              {row.match_status}
+            </span>
           </div>
           {row.sku && <span className="text-muted text-xs block">{row.sku}</span>}
           {alertItemIds.has(row.item_id) && (
@@ -259,7 +259,9 @@ export function CompetitorPricesPage() {
       header: sortableHeader('Our Price', 'our_price'),
       accessor: (row: CompetitorPrice) => (
         <span className="font-mono font-semibold">
-          {row.our_price != null ? formatCurrency(row.our_price) : <span className="text-warm-muted font-normal text-xs">—</span>}
+          {row.our_price != null && Number.isFinite(row.our_price) && row.our_price > 0
+            ? formatCurrency(row.our_price)
+            : <span className="text-warm-muted font-normal text-xs">N/A</span>}
         </span>
       ),
     },
@@ -267,14 +269,16 @@ export function CompetitorPricesPage() {
       header: sortableHeader('Their Price', 'competitor_price'),
       accessor: (row: CompetitorPrice) => (
         <span className="font-mono font-semibold">
-          {formatCurrency(row.competitor_price)}
+          {Number.isFinite(row.competitor_price) && row.competitor_price > 0
+            ? formatCurrency(row.competitor_price)
+            : <span className="text-warm-muted font-normal text-xs">N/A</span>}
         </span>
       ),
     },
     {
       header: sortableHeader('Gap', 'price_gap_percent'),
       accessor: (row: CompetitorPrice) => {
-        if (row.price_gap_percent == null) return <span className="text-warm-muted text-xs">—</span>;
+        if (row.price_gap_percent == null) return <span className="text-warm-muted text-xs">N/A</span>;
         const percent = row.price_gap_percent * 100;
         const isHigher = percent > 0;
         const isLower = percent < 0;
@@ -375,15 +379,15 @@ export function CompetitorPricesPage() {
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
-          <span className="text-xs text-warm-muted font-medium">Scraped Observations</span>
+          <span className="text-xs text-warm-muted font-medium">Store Observations</span>
           <span className="text-2xl font-bold font-mono mt-1">{formatMetricCount(metrics?.total)}</span>
         </div>
         <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col">
-          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Matched Observations</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Linked records (Store)</span>
           <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatMetricCount(metrics?.matched)}</span>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col">
-          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unmatched Observations</span>
+          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unlinked records (Store)</span>
           <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{formatMetricCount(metrics?.unmatched)}</span>
         </div>
         <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
@@ -431,11 +435,11 @@ export function CompetitorPricesPage() {
                 <div className="flex items-center justify-between text-xs mt-2 pt-2 border-t border-warm-border">
                   <div>
                     <span className="text-warm-muted">Our: </span>
-                    <span className="font-mono font-semibold">{formatCurrency(alert.our_price)}</span>
+                    <span className="font-mono font-semibold">{alert.our_price == null ? 'N/A' : formatCurrency(alert.our_price)}</span>
                   </div>
                   <div>
                     <span className="text-warm-muted">Market: </span>
-                    <span className="font-mono font-semibold">{formatCurrency(alert.market_avg_price)}</span>
+                    <span className="font-mono font-semibold">{alert.market_avg_price == null ? 'N/A' : formatCurrency(alert.market_avg_price)}</span>
                   </div>
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400">
                     {formatPriceGapPercent(alert.price_gap_percent)}
@@ -470,7 +474,7 @@ export function CompetitorPricesPage() {
             }`}
           >
             <CheckCircle2 size={13} />
-            Matched Only ({formatMetricCount(metrics?.matched)})
+            Linked Only ({formatMetricCount(metrics?.matched)})
           </button>
           <button
             onClick={() => setActiveTab('unmatched')}
@@ -481,7 +485,7 @@ export function CompetitorPricesPage() {
             }`}
           >
             <HelpCircle size={13} />
-            Unmatched Scrapes ({formatMetricCount(metrics?.unmatched)})
+            Unlinked ({formatMetricCount(metrics?.unmatched)})
           </button>
           {alerts && alerts.length > 0 && (
             <button
@@ -499,7 +503,8 @@ export function CompetitorPricesPage() {
         </div>
 
         {/* Search & Competitor Filter */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span className="text-[10px] text-warm-muted whitespace-nowrap">Store-wide counts; list filters do not change counts.</span>
           {competitorOptions.length > 0 && (
             <select
               value={selectedCompetitor}
@@ -533,9 +538,11 @@ export function CompetitorPricesPage() {
         data={sortedPrices}
         columns={columns}
         emptyMessage={
-          activeTab === 'matched'
-            ? 'No matched competitor prices found. Run the matching pipeline to link scraped items.'
-            : 'No competitor prices found.'
+          searchQuery.trim() || selectedCompetitor !== 'all'
+            ? 'No observations match the current search and competitor filter.'
+            : activeTab === 'matched'
+              ? 'No matched competitor prices found.'
+              : 'No competitor prices found.'
         }
       />
 

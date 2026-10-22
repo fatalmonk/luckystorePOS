@@ -250,6 +250,9 @@ dist_public/
 !/docs/README.md
 !/docs/adr/
 !/docs/adr/**
+!/docs/audits/
+/docs/audits/*
+!/docs/audits/competitor-prices-final-review.md
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql

@@ -6,27 +6,22 @@ import type {
   CompetitorPriceFormData,
   CompetitorPriceFilters,
 } from '../types';
+import { calculateVerifiedPriceGap, resolveProductMatchStatus } from './productMatching';
+import { calculatePriceGapFraction } from './priceGap';
+
+export { calculatePriceGapFraction } from './priceGap';
 
 export function normalizeCompetitorKey(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-/** Returns a fractional price gap: positive means our price exceeds the reference price. */
-export function calculatePriceGapFraction(
-  ourPrice: number | null | undefined,
-  referencePrice: number | null | undefined,
-): number | null {
-  if (
-    ourPrice == null ||
-    referencePrice == null ||
-    !Number.isFinite(ourPrice) ||
-    !Number.isFinite(referencePrice) ||
-    referencePrice <= 0
-  ) {
-    return null;
-  }
-
-  return (ourPrice - referencePrice) / referencePrice;
+/** Formats a fractional gap as a percentage while preserving the agreed sign convention. */
+export function formatPriceGapPercent(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return 'N/A';
+  const percent = value * 100;
+  if (!Number.isFinite(percent)) return 'N/A';
+  const rounded = Math.round((percent + Number.EPSILON) * 100) / 100;
+  return `${rounded > 0 ? '+' : ''}${rounded.toFixed(2)}%`;
 }
 
 // ---------------------------------------------------------------------------
@@ -44,7 +39,16 @@ export async function fetchEffectiveCompetitorPrices(
     p_item_id: itemId,
   });
   if (error) throw error;
-  return (data ?? []) as EffectiveCompetitorPrice[];
+  return ((data ?? []) as EffectiveCompetitorPrice[]).map((row) => {
+    const match_status = resolveProductMatchStatus(
+      row.matcher_version, null, row.item_id, row.source, row.is_override_active,
+    );
+    return {
+      ...row,
+      match_status,
+      price_gap_percent: calculateVerifiedPriceGap(match_status, row.our_price, row.competitor_price),
+    };
+  }).filter((row) => row.match_status === 'VERIFIED' && row.price_gap_percent != null);
 }
 
 // ---------------------------------------------------------------------------
@@ -79,7 +83,14 @@ export async function fetchCompetitorPrices(
     rows = rows.filter((r) => r.competitor_key?.toLowerCase().includes(lower));
   }
 
-  return rows.map((row) => ({
+  return rows.map((row) => {
+    const hasVisibleCatalogItem = row.item_id != null && row.items != null;
+    const match_status = hasVisibleCatalogItem
+      ? resolveProductMatchStatus(
+        row.matcher_version, row.match_metadata, row.item_id, row.source, row.is_override_active,
+      )
+      : row.item_id == null ? 'REJECTED' : 'AMBIGUOUS';
+    return ({
     id: row.id,
     store_id: row.store_id,
     item_id: row.item_id,
@@ -91,8 +102,14 @@ export async function fetchCompetitorPrices(
     competitor_price: row.competitor_price,
     competitor_original_price: row.competitor_original_price ?? null,
     competitor_product_url: row.competitor_product_url ?? null,
-    our_price: row.our_price ?? null,
-    price_gap_percent: calculatePriceGapFraction(row.our_price ?? null, row.competitor_price ?? null),
+    // Do not expose or compare a stored catalog price when the linked item is not visible in this tenant.
+    our_price: hasVisibleCatalogItem ? row.our_price ?? null : null,
+    // Unmatched rows have no validated Lucky Store product identity, so their gap is not comparable.
+    price_gap_percent: calculateVerifiedPriceGap(
+      match_status,
+      row.our_price ?? null,
+      row.competitor_price ?? null,
+    ),
     source: row.source ?? 'scraper',
     is_override_active: row.is_override_active ?? false,
     manual_override_reason: row.manual_override_reason ?? null,
@@ -102,12 +119,14 @@ export async function fetchCompetitorPrices(
     scrape_run_id: row.scrape_run_id ?? null,
     match_confidence: row.match_confidence ?? null,
     matcher_version: row.matcher_version ?? 'legacy-v0',
+    match_status,
     match_metadata: row.match_metadata ?? null,
     scraped_at: row.scraped_at,
     scrape_status: row.scrape_status ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
-  }));
+  });
+  });
 }
 
 export async function fetchCompetitorPriceCounts(
@@ -147,9 +166,9 @@ export async function fetchCompetitorPriceCounts(
 interface PriceAlertResponse {
   item_id: string;
   item_name: string;
-  our_price: number;
-  market_avg_price: number;
-  price_gap_percent: number;
+  our_price: number | null;
+  market_avg_price: number | null;
+  price_gap_percent: number | null;
   competitors: Record<string, number> | null;
 }
 
@@ -169,7 +188,7 @@ export async function fetchPriceAlerts(
     item_name: row.item_name,
     our_price: row.our_price,
     market_avg_price: row.market_avg_price,
-    price_gap_percent: calculatePriceGapFraction(row.our_price, row.market_avg_price) ?? row.price_gap_percent,
+    price_gap_percent: calculatePriceGapFraction(row.our_price, row.market_avg_price),
     competitors: row.competitors ? Object.keys(row.competitors) : [],
   }));
 }
@@ -259,33 +278,14 @@ export async function linkScrapedProductToItem(
   priceRecordId: string,
   itemId: string,
   competitorUrl?: string,
+  confirmedProductIdentity: boolean = false,
 ): Promise<void> {
-  // 1. Try dedicated SECURITY DEFINER RPC first
-  const { error: rpcErr } = await (supabase.rpc as any)('link_competitor_price_item', {
+  const { error } = await (supabase.rpc as any)('link_competitor_price_item', {
     p_store_id: storeId,
     p_price_record_id: priceRecordId,
     p_item_id: itemId,
     p_competitor_product_url: competitorUrl ?? null,
+    p_confirmed_product_identity: confirmedProductIdentity,
   });
-
-  if (!rpcErr) return;
-
-  // 2. Fallback to set_manual_competitor_price SECURITY DEFINER RPC
-  const { data: rec, error: fetchErr } = await supabase
-    .from('competitor_prices')
-    .select('*')
-    .eq('id', priceRecordId)
-    .single();
-
-  if (fetchErr || !rec) throw fetchErr || new Error('Record not found');
-
-  await setManualCompetitorPrice(
-    storeId,
-    itemId,
-    rec.competitor_key,
-    rec.competitor_name,
-    rec.competitor_price,
-    'User 1-click link',
-    competitorUrl || rec.competitor_product_url || undefined,
-  );
+  if (error) throw error;
 }

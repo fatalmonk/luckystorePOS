@@ -337,6 +337,7 @@ export interface StaffPerformanceItem {
 
 /** Freshness status returned by get_effective_competitor_prices */
 export type CompetitorPriceStatus = 'fresh' | 'stale' | 'manual';
+export type ProductMatchStatus = 'VERIFIED' | 'PROBABLE' | 'AMBIGUOUS' | 'REJECTED';
 
 /** Row returned by get_effective_competitor_prices RPC */
 export interface EffectiveCompetitorPrice {
@@ -354,6 +355,7 @@ export interface EffectiveCompetitorPrice {
   competitor_product_url: string | null;
   match_confidence: number | null;
   matcher_version: string;
+  match_status: ProductMatchStatus;
   status: CompetitorPriceStatus;
 }
 
@@ -381,6 +383,7 @@ export interface CompetitorPrice {
   scrape_run_id?: string | null;
   match_confidence?: number | null;
   matcher_version: string;
+  match_status: ProductMatchStatus;
   match_metadata?: Record<string, unknown> | null;
   scraped_at: string;
   scrape_status?: string | null;
@@ -391,9 +394,9 @@ export interface CompetitorPrice {
 export interface PriceAlert {
   item_id: string;
   item_name: string;
-  our_price: number;
-  market_avg_price: number;
-  price_gap_percent: number;
+  our_price: number | null;
+  market_avg_price: number | null;
+  price_gap_percent: number | null;
   competitors: string[];
 }
 
