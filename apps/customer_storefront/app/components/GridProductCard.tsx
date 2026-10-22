@@ -6,6 +6,7 @@ import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
+import { getProductGalleryImages } from '../lib/products/productGalleryRegistry';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import type { Product } from '../lib/types';
@@ -42,6 +43,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   const discountPercentage = getDiscountBadgePercentage(product);
   const stockLow = product.stock === 1;
   const outOfStock = product.stock <= 0;
+  const localGalleryImage = getProductGalleryImages(product.id)?.[0];
   const badgeLabel = outOfStock
     ? dict.productCard.outOfStock
     : stockLow
@@ -100,8 +102,8 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
         className="product-card-image-well relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
         <ProductImage
-          src={product.image_url}
-          alt={product.name}
+          src={product.image_url || localGalleryImage?.url}
+          alt={localGalleryImage?.alt || product.name}
           category={product.category}
           sizes="(max-width: 640px) calc(50vw - 24px), (max-width: 1024px) calc(33vw - 24px), (max-width: 1280px) calc(25vw - 24px), 301px"
           imageClassName="product-image-on-well object-contain p-1"

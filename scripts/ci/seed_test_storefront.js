@@ -164,6 +164,7 @@ async function runViaServiceRoleClient(url, key) {
     { id: 'c0000000-0000-0000-0000-000000000005', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Cooking Essentials', category: 'Cooking Essentials', slug: 'cooking-essentials', emoji: '🌾', active: true, display_order: 5 },
     { id: 'c0000000-0000-0000-0000-000000000006', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Beverages', category: 'Beverages', slug: 'beverages', emoji: '🧃', active: true, display_order: 6 },
     { id: 'c0000000-0000-0000-0000-000000000007', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Personal Care', category: 'Personal Care', slug: 'personal-care', emoji: '🧺', active: true, display_order: 7 },
+    { id: 'c0000000-0000-0000-0000-000000000008', store_id: STORE_ID, tenant_id: TENANT_ID, name: 'Frozen Desserts', category: 'Frozen Desserts', slug: 'frozen-desserts', emoji: '🍦', active: true, display_order: 8 },
   ];
   const { error: cErr } = await supabase.from('categories').upsert(categories, { onConflict: 'id' });
   if (cErr) throw cErr;
@@ -178,6 +179,7 @@ async function runViaServiceRoleClient(url, key) {
     { id: 'a0740000-0000-0000-0000-000000000006', tenant_id: TENANT_ID, name: 'Pran Mustard Oil 500ml', brand: 'Pran', price: 180, mrp: 195, cost: 150, category_id: 'c0000000-0000-0000-0000-000000000005', sku: 'OIL-PRAN-500', barcode: null, is_active: true, image_url: '/banners/promo_cooking_400.webp', description: 'Deterministic storefront E2E fixture.' },
     { id: 'a0740000-0000-0000-0000-000000000099', tenant_id: TENANT_ID, name: 'Auth test rice', brand: 'Lucky Store', price: 100, mrp: 100, cost: 80, category_id: 'c0000000-0000-0000-0000-000000000001', sku: 'AUTH-TEST-01', barcode: null, is_active: true, image_url: '/banners/promo_welcome_v2_400.webp', description: 'Deterministic test product for auth boundary and checkout test verification.' },
     { id: 'a0740000-0000-0000-0000-000000000007', tenant_id: TENANT_ID, name: 'Radhuni Turmeric Powder 200g', brand: 'Radhuni', price: 95, mrp: 95, cost: 75, category_id: 'c0000000-0000-0000-0000-000000000005', sku: 'RAD-TUR-200', barcode: null, is_active: true, image_url: '/banners/promo_cooking_400.webp', description: 'Deterministic storefront E2E fixture.' },
+    { id: '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb', tenant_id: TENANT_ID, name: 'Polar Kheer 1/2 Liter', brand: 'Polar', price: 190, mrp: 200, cost: 170, category_id: 'c0000000-0000-0000-0000-000000000008', sku: 'IC-POL-K1L', barcode: 'IC-POL-K1L', is_active: true, image_url: '/products/polar/kheer-500ml-1-2l.png', description: 'Polar Kheer ice cream in a 1/2 L pack.' },
   ];
   const { error: iErr } = await supabase.from('items').upsert(products, { onConflict: 'id' });
   if (iErr) throw iErr;

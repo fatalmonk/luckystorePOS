@@ -19,9 +19,14 @@ describe('product gallery registry', () => {
     ]);
   });
 
-  it('distinguishes known broken source images from products with no curated entry', () => {
+  it('uses the 1/2L overlay image for Kheer and keeps Double Sundae unresolved', () => {
     expect(getProductGalleryImages('70a322a1-0000-0000-0000-000000000000')).toEqual([]);
-    expect(getProductGalleryImages('79e0ece1-0000-0000-0000-000000000000')).toEqual([]);
+    expect(getProductGalleryImages('79e0ece1-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: '/products/polar/kheer-500ml-1-2l.png',
+        alt: 'Polar Kheer ice cream tub with a 1/2L size label',
+      },
+    ]);
     expect(getProductGalleryImages('aaaaaaaa-0000-0000-0000-000000000000')).toBeUndefined();
   });
 

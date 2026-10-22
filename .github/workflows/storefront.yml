@@ -43,6 +43,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      - run: node --test scripts/ci/seed_test_storefront.test.js
       - run: npm run lint --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx tsc --noEmit
 

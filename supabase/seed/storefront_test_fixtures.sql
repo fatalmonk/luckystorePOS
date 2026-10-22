@@ -38,7 +38,8 @@ VALUES
   ('c0000000-0000-0000-0000-000000000004', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cleaning Supplies', 'Cleaning Supplies', 'cleaning-supplies', '🧼', true, 4),
   ('c0000000-0000-0000-0000-000000000005', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Cooking Essentials', 'Cooking Essentials', 'cooking-essentials', '🌾', true, 5),
   ('c0000000-0000-0000-0000-000000000006', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Beverages', 'Beverages', 'beverages', '🧃', true, 6),
-  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Personal Care', 'Personal Care', 'personal-care', '🧺', true, 7)
+  ('c0000000-0000-0000-0000-000000000007', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Personal Care', 'Personal Care', 'personal-care', '🧺', true, 7),
+  ('c0000000-0000-0000-0000-000000000008', '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '00000000-0000-0000-0000-000000000001', 'Frozen Desserts', 'Frozen Desserts', 'frozen-desserts', '🍦', true, 8)
 ON CONFLICT (id) DO UPDATE SET
   store_id = EXCLUDED.store_id,
   tenant_id = EXCLUDED.tenant_id,
@@ -173,6 +174,21 @@ VALUES
     true,
     '/banners/promo_cooking_400.webp',
     'Deterministic storefront E2E fixture.'
+  ),
+  (
+    '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb',
+    '00000000-0000-0000-0000-000000000001',
+    'Polar Kheer 1/2 Liter',
+    'Polar',
+    190.00,
+    200.00,
+    170.00,
+    'c0000000-0000-0000-0000-000000000008',
+    'IC-POL-K1L',
+    'IC-POL-K1L',
+    true,
+    '/products/polar/kheer-500ml-1-2l.png',
+    'Polar Kheer ice cream in a 1/2 L pack.'
   )
 ON CONFLICT (id) DO UPDATE SET
   tenant_id = EXCLUDED.tenant_id,
@@ -198,7 +214,8 @@ VALUES
   ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000005', 50, 0, 0),
   ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000006', 50, 0, 0),
   ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000099', 50, 0, 0),
-  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000007', 0, 0, 0) -- out of stock item
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740000-0000-0000-0000-000000000007', 0, 0, 0), -- out of stock item
+  ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', '79e0ece1-0c5e-4e2f-a003-d2f37b73fafb', 50, 0, 0)
 ON CONFLICT (store_id, item_id) DO UPDATE SET
   qty = EXCLUDED.qty,
   reserved = EXCLUDED.reserved,
