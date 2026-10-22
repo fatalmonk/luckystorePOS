@@ -65,7 +65,6 @@
   "workspaces": [
     "apps/customer_storefront",
     "apps/admin_web",
-    "apps/customer_mobile",
     "apps/scraper"
   ],
   "overrides": {
