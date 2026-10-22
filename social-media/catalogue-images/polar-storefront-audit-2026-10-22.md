@@ -73,3 +73,14 @@ Prices use **sale / regular** notation in Bangladeshi taka. “Image” is based
 - Live storefront cards and detail pages were used for public names, displayed prices, page content, and visual image checks. Prices were not checked against an authoritative source.
 - Visual inspection confirmed a good Royal Sundae image and broken images on Chocolate Cup, Double Sundae and Kheer 1/2 Liter. The other product images were checked through page metadata/image references only, not individually opened at full size.
 - This audit does not change product records, images, SEO, prices or inventory. It does not verify private admin-only AI SEO fields or internal database state.
+
+## Follow-up record
+
+This remains a dated pre-remediation baseline. Subsequent merged work includes:
+
+- [PR #526](https://github.com/fatalmonk/luckystorePOS/pull/526) added Polar product gallery and metadata work.
+- [PR #528](https://github.com/fatalmonk/luckystorePOS/pull/528) repaired the Hostinger storefront deployment workflow.
+- [PR #530](https://github.com/fatalmonk/luckystorePOS/pull/530) added deterministic Kheer fixture parity; the current fixture and gallery registry reference the R2-hosted Kheer image URL.
+- [PR #531](https://github.com/fatalmonk/luckystorePOS/pull/531) restored the missing-image export and Search Console evidence reporting.
+
+These changes do not establish that every catalog identity, image, metadata field, redirect, or private AI SEO field noted here has been corrected. Recheck the current storefront and catalog before closing individual findings; deployment success alone does not verify them.
