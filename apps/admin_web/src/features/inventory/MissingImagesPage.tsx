@@ -6,12 +6,14 @@ import { useNotify } from '@/components';
 import { PageHeader } from '@/components';
 import { Card } from '@/components';
 import { Button } from '@/components';
-import { Upload, ImageIcon, Check, X, Package } from 'lucide-react';
+import { Upload, ImageIcon, Check, X, Package, Download } from 'lucide-react';
 import { uploadProcessedImage } from '../../lib/images';
+import { downloadCSV } from '@/lib/format';
 import type { InventoryItem } from '@/types/inventory';
 import { ErrorState } from '@/components';
 import { SkeletonBlock } from '@/components';
 import { getProductImageSnapshot, publishProductImage } from '../../lib/r2';
+import { supabase } from '@/lib/supabase';
 
 export function MissingImagesPage() {
   const { storeId, tenantId } = useAuth();
@@ -42,6 +44,32 @@ export function MissingImagesPage() {
     }
     return groups;
   }, [productsMissingImages]);
+
+  const handleExportMissingImages = async () => {
+    const { data: brandRows, error: brandError } = await supabase
+      .from('items')
+      .select('id, brand')
+      .in('id', productsMissingImages.map((item) => item.id));
+
+    if (brandError) {
+      notify(`Could not load product brands: ${brandError.message}`, 'error');
+      return;
+    }
+
+    const brandById = new Map((brandRows ?? []).map((row) => [row.id, row.brand ?? '']));
+    downloadCSV(
+      productsMissingImages.map((item) => ({
+        category: item.category_name || 'Uncategorized',
+        product_name: item.name,
+        brand: brandById.get(item.id) || '',
+        brand_website: '',
+        sku: item.sku || 'N/A',
+        stock: item.current_qty,
+        unit: 'pcs',
+      })),
+      'missing-images.csv',
+    );
+  };
 
   // Handle file selection
   const handleFileSelect = (productId: string, file: File) => {
@@ -114,13 +142,23 @@ export function MissingImagesPage() {
         title="Products Missing Images"
         subtitle={`${productsMissingImages.length} products need images`}
         actions={
-          <Button
-            variant="secondary"
-            icon={<Check size={18} />}
-            onClick={() => refetch()}
-          >
-            Refresh
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              icon={<Download size={18} />}
+              disabled={isLoading || productsMissingImages.length === 0}
+              onClick={handleExportMissingImages}
+            >
+              Export CSV
+            </Button>
+            <Button
+              variant="secondary"
+              icon={<Check size={18} />}
+              onClick={() => refetch()}
+            >
+              Refresh
+            </Button>
+          </div>
         }
       />
 

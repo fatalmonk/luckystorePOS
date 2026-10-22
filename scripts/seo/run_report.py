@@ -7,7 +7,38 @@ from pathlib import Path
 import re
 
 
-def build_report(needs, run_id, attempt, sha):
+def _gsc_snapshot_status(snapshot_path):
+    if not snapshot_path:
+        return "unverified"
+    try:
+        snapshot = json.loads(Path(snapshot_path).read_text())
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return "unverified"
+    if not isinstance(snapshot, dict):
+        return "unverified"
+    if snapshot.get("status") == "unavailable":
+        return "unavailable"
+    if "status" in snapshot and snapshot.get("status") != "available":
+        return "unverified"
+    windows = snapshot.get("windows")
+    if (snapshot.get("schema_version") != 1 or
+            snapshot.get("source") != "Google Search Console Search Analytics API" or
+            not isinstance(snapshot.get("captured_at"), str) or
+            not isinstance(windows, dict) or set(windows) != {"current", "previous"}):
+        return "unverified"
+    for window in windows.values():
+        if not isinstance(window, dict) or not isinstance(window.get("start_date"), str) or not isinstance(window.get("end_date"), str):
+            return "unverified"
+        for kind, dimensions in (("totals", []), ("pages", ["page"]), ("queries", ["query"])):
+            result = window.get(kind)
+            if (not isinstance(result, dict) or result.get("dimensions") != dimensions or
+                    not isinstance(result.get("rows"), list) or
+                    not isinstance(result.get("row_limit_reached"), bool)):
+                return "unverified"
+    return "available"
+
+
+def build_report(needs, run_id, attempt, sha, gsc_snapshot_path=None):
     if not re.fullmatch(r"\d+", run_id) or not re.fullmatch(r"\d+", attempt):
         raise ValueError("Invalid run identity")
     if not re.fullmatch(r"[a-f0-9]{40}", sha):
@@ -46,7 +77,7 @@ def build_report(needs, run_id, attempt, sha):
         next_action = "Inspect the workflow run before retrying; do not infer a successful SEO change."
     evidence = {
         "technical_audit": _evidence_status(needs.get("propose", {}).get("outputs", {}).get("audit")),
-        "gsc_performance": _evidence_status(jobs["gsc"]),
+        "gsc_performance": _gsc_snapshot_status(gsc_snapshot_path),
         "indexing": "not_verified",
         "ai_visibility": "not_verified",
         "production": "not_verified",
@@ -85,10 +116,11 @@ def _evidence_status(result):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument("--gsc-snapshot", default=os.environ.get("GSC_SNAPSHOT_PATH"))
     args = parser.parse_args()
     report, markdown = build_report(json.loads(os.environ["SEO_JOB_RESULTS"]),
                                    os.environ["SEO_RUN_ID"], os.environ["SEO_RUN_ATTEMPT"],
-                                   os.environ["SEO_BASE_SHA"])
+                                   os.environ["SEO_BASE_SHA"], args.gsc_snapshot)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
