@@ -111,6 +111,7 @@ export function App() {
                   <Route path="canva-connect" element={<LazyRoute><LazyCanvaConnectionPage /></LazyRoute>} />
                   <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
                   <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
+                  <Route path="import" element={<Navigate to="/import/products" replace />} />
                   <Route path="import/parties" element={<LazyRoute><LazyImportPartiesPage /></LazyRoute>} />
                   <Route path="import/products" element={<LazyRoute><LazyImportProductsPage /></LazyRoute>} />
                   <Route path="other-income" element={<LazyRoute><LazyOtherIncomePage /></LazyRoute>} />

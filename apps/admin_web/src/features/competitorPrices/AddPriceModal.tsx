@@ -64,6 +64,7 @@ export function AddPriceModal({ isOpen, onClose }: AddPriceModalProps) {
         queryKey: ['competitorPrices', 'effective', storeId, data.item_id],
       });
       queryClient.invalidateQueries({ queryKey: ['competitorPrices'] });
+      queryClient.invalidateQueries({ queryKey: ['competitorPriceCounts', storeId] });
       notify('Competitor price added', 'success');
       resetForm();
       onClose();

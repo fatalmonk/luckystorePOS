@@ -12,10 +12,10 @@ export function DashboardV2Page() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
           title="Dashboard v2"
-          subtitle="Modern analytics preview powered by shadcn/ui and Radix components."
+          subtitle="Design preview only. Metrics and records below are static sample data, not live store activity."
         />
         <Badge variant="outline" className="w-fit border-[#f0c444] text-[#0B0B0D] dark:text-[#f0c444] font-semibold">
-          Preview Route
+          Sample data preview
         </Badge>
       </div>
 

@@ -218,6 +218,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       {isMobile && !hidden && (
         <div
           className="sidebar-backdrop"
+          aria-hidden="true"
           onClick={onClose}
           style={{
             position: 'fixed',
@@ -229,6 +230,9 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
       )}
       <aside
         ref={sidebarRef}
+        aria-label="Primary navigation"
+        aria-hidden={isMobile && hidden ? true : undefined}
+        inert={isMobile && hidden ? true : undefined}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={clsx(
@@ -277,6 +281,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                           )}
                           title={item.label}
                           aria-label={item.label}
+                          aria-current={isActive ? 'page' : undefined}
                         >
                           <item.icon size={18} className="flex-shrink-0" />
                         </NavLink>
@@ -287,7 +292,10 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                   // Expanded Mode: Collapsible Accordion Group
                   <>
                     <button
+                      type="button"
                       onClick={() => toggleGroup(group.id)}
+                      aria-expanded={isExpanded}
+                      aria-controls={`nav-group-${group.id}`}
                       className={clsx(
                         'w-full flex items-center justify-between py-2 px-3 rounded-lg text-left transition-all duration-200',
                         isAnyActive 
@@ -307,8 +315,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                     </button>
 
                     {/* Accordion Content */}
-                    {isExpanded && (
-                      <nav className="flex flex-col gap-1 pl-2 mt-1 border-l border-warm-border-warm/40 ml-4 animate-fade-in transition-all duration-200">
+                    <nav id={`nav-group-${group.id}`} hidden={!isExpanded} aria-label={group.titleKey.startsWith('nav.') ? t(group.titleKey, group.titleKey.replace('nav.group', '')) : group.titleKey} className="flex flex-col gap-1 pl-2 mt-1 border-l border-warm-border-warm/40 ml-4 animate-fade-in transition-all duration-200">
                         {group.items.map((item) => {
                           const isActive = isRouteActive(item.path, !!item.children);
                           return (
@@ -323,6 +330,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                                     : 'text-warm-muted hover:bg-warm-border-warm/40 hover:text-warm-fg'
                                 )}
                                 end={!item.children}
+                                aria-current={isActive ? 'page' : undefined}
                               >
                                 <item.icon size={15} className="flex-shrink-0" />
                                 <span className="truncate">{item.label}</span>
@@ -344,6 +352,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                                             ? 'text-warm-accent bg-warm-bg'
                                             : 'text-warm-dim hover:text-warm-fg hover:bg-warm-border-warm/40'
                                         )}
+                                        aria-current={isChildActive ? 'page' : undefined}
                                       >
                                         {child.label}
                                       </NavLink>
@@ -354,8 +363,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
                             </div>
                           );
                         })}
-                      </nav>
-                    )}
+                    </nav>
                   </>
                 )}
               </div>

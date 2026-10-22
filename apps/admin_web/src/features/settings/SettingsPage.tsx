@@ -14,6 +14,8 @@ import { Modal } from '@/components';
 import { PageHeader } from '@/components';
 import { useNotify } from '@/components';
 
+import './settings.css';
+
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
   manager: 'Manager',
@@ -42,12 +44,17 @@ export function SettingsPage() {
         subtitle="Manage your shop's users and configuration." 
       />
 
-      <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
+      <div className="settings-layout" style={{ display: 'flex', gap: 'var(--space-8)' }}>
         {/* Vertical Tabs */}
-        <aside style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        <aside className="settings-tabs" role="tablist" aria-label="Settings sections" style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
           <button
+            type="button"
+            role="tab"
+            id="settings-tab-users"
+            aria-controls="settings-panel"
             onClick={() => handleTabChange('users')}
             className={clsx('tab-btn', activeTab === 'users' && 'active')}
+            aria-selected={activeTab === 'users'}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
               borderRadius: 'var(--radius-md)', border: 'none', textAlign: 'left', fontWeight: '600',
@@ -58,8 +65,13 @@ export function SettingsPage() {
             <Users size={18} /> Users & Roles
           </button>
           <button
+            type="button"
+            role="tab"
+            id="settings-tab-payments"
+            aria-controls="settings-panel"
             onClick={() => handleTabChange('payments')}
             className={clsx('tab-btn', activeTab === 'payments' && 'active')}
+            aria-selected={activeTab === 'payments'}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
               borderRadius: 'var(--radius-md)', border: 'none', textAlign: 'left', fontWeight: '600',
@@ -70,8 +82,13 @@ export function SettingsPage() {
             <CreditCard size={18} /> Payment Methods
           </button>
           <button
+            type="button"
+            role="tab"
+            id="settings-tab-receipt"
+            aria-controls="settings-panel"
             onClick={() => handleTabChange('receipt')}
             className={clsx('tab-btn', activeTab === 'receipt' && 'active')}
+            aria-selected={activeTab === 'receipt'}
             style={{
               display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
               borderRadius: 'var(--radius-md)', border: 'none', textAlign: 'left', fontWeight: '600',
@@ -84,7 +101,7 @@ export function SettingsPage() {
         </aside>
 
         {/* Tab Content */}
-        <main style={{ flex: 1 }}>
+        <main className="settings-content" role="tabpanel" id="settings-panel" aria-labelledby={`settings-tab-${activeTab}`} style={{ flex: 1 }}>
           <div className="card" style={{ padding: 'var(--space-8)' }}>
             {activeTab === 'users' && <UsersSettings storeId={storeId} />}
             {activeTab === 'payments' && <PaymentsSettings storeId={storeId} />}
