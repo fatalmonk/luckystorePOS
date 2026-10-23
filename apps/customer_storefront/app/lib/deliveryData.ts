@@ -98,6 +98,25 @@ export const DELIVERY_FAQS: DeliveryFaqItem[] = [
   },
 ];
 
+export const BENGALI_DELIVERY_FAQS: DeliveryFaqItem[] = [
+  {
+    question: 'আমার ঠিকানায় ডেলিভারি হবে কি?',
+    answer: `চকবাজারের Lucky Store থেকে শুধু ${DELIVERY_POLICY.radiusKm} কিমি ব্যাসার্ধের মধ্যে থাকা ঠিকানায় ডেলিভারি দেওয়া হয়। কাছাকাছি এলাকার সব ঠিকানা এই সীমার মধ্যে পড়ে না। বিস্তারিত জানতে ডেলিভারি এলাকার তথ্য দেখুন।`,
+  },
+  {
+    question: 'কত টাকার অর্ডারে ফ্রি ডেলিভারি?',
+    answer: `৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি। এর কম অর্ডারে ডেলিভারি চার্জ ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}।`,
+  },
+  {
+    question: 'অর্ডার ও পেমেন্ট কীভাবে করব?',
+    answer: 'পণ্য কার্টে যোগ করে চেকআউটে ডেলিভারির ঠিকানা দিন। পণ্য হাতে পেয়ে পরীক্ষা করার পর ক্যাশ অন ডেলিভারি (COD) বা bKash-এ পেমেন্ট করতে পারবেন।',
+  },
+  {
+    question: 'ডেলিভারির সময় কখন?',
+    answer: `ডেলিভারি সেবার সময় ${DELIVERY_POLICY.deliveryHours.display}। অর্ডার দেওয়ার আগে আপনার ঠিকানা ডেলিভারি সীমার মধ্যে আছে কি না নিশ্চিত করুন।`,
+  },
+];
+
 export function getDeliveryShippingServiceSchema() {
   return {
     '@type': 'ShippingService',
@@ -146,6 +165,22 @@ export function getDeliveryFaqSchema() {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: DELIVERY_FAQS.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+export function getBengaliDeliveryFaqSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: 'bn-BD',
+    mainEntity: BENGALI_DELIVERY_FAQS.map((faq) => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {

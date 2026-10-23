@@ -142,11 +142,12 @@ competitor_signals:
 ## 2026-10-15 evidence and verification status
 
 - **Verified live (limited):** Public web fetches of `https://luckystore1947.com/` and `/delivery` resolved to `https://www.luckystore1947.com/` and `/delivery`, with page titles. The available extractor exposed only a cart fragment, so homepage body content, rendered JSON-LD, canonical tags and checkout behavior were **not** verified.
-- **Not verified:** Live `/robots.txt`, `/sitemap.xml`, `/bn/delivery`, `/blog`; no HTTP status or parsed XML count obtained. A failed fetch is not evidence of a 404, robots block or indexing defect.
+- **Verified 2026-10-23 (immutable Vercel deployment, `/bn/delivery`):** HTTP 200, prerender header present, Bengali document language and expected title/description/canonical/hreflang metadata. The returned HTML contained no literal `<h1>`, three `BAILOUT_TO_CLIENT_SIDE_RENDERING` markers, FAQ text in the response (rendered-DOM visibility not confirmed), and no `FAQPage` markup. This is a server-rendering verification concern for the deployed build; it does not establish the current branch behavior because the deployment predates these local changes. FAQ schema absence alone is not treated as an SEO defect.
+- **Not verified:** Live `/robots.txt`, `/sitemap.xml`, `/delivery`, `/blog`; no status or parsed XML count obtained in this run. A failed fetch is not evidence of a 404, robots block or indexing defect.
 - **Repo-confirmed:** PR #480 is merged and the current Bengali delivery page renders visible buyer FAQs without FAQPage JSON-LD; English `/delivery` retains matching visible FAQ content and schema. PR #481 was based on the pre-#480 version, so its Bengali schema removal is already present in current `main`.
 - **Access:** Search Console and analytics workspace integration returned 403 (not a member); no ranking, click, impression, index coverage, AI citation or order conversion figures were collected.
 - **Buyer objective:** Clarify eligibility (1 km Chawkbazar), fees (free on ৳500+, otherwise ৳40), checkout and payment for eligible Bengali shoppers. No change to delivery policy, pricing, stock or fulfillment logic.
-- **Next verification:** Inspect deployed `/delivery` and `/bn/delivery` HTML, sitemap and robots from a trusted network; verify GSC/GA access and completed-order events before attributing impact.
+- **Next verification:** After an authorized deployment of the scoped branch, inspect `/delivery` and `/bn/delivery` HTML for server-rendered headings/content, bailout markers, and matching visible FAQ/schema; inspect sitemap and robots; verify GSC/GA access and completed-order events before attributing impact. Browser verification remains restricted to localhost:3000.
 
 ---
 

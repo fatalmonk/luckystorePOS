@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
+import { createStandaloneRuntimeManifest } from './standalone-runtime-manifest.mjs';
 
 const ROOT_DIR = process.cwd();
 const STANDALONE_DIR = path.join(ROOT_DIR, 'apps/customer_storefront/.next/standalone');
@@ -39,21 +40,7 @@ fs.writeFileSync(
 const appPkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'apps/customer_storefront/package.json'), 'utf8'));
 
 // 4. Create root package.json for standalone
-const rootPkg = {
-  name: 'luckystore-storefront-standalone',
-  version: '1.0.0',
-  private: true,
-  main: 'server.js',
-  scripts: {
-    build: 'node -e "console.log(\'Release package verified\')"',
-    start: 'node server.js'
-  },
-  dependencies: {
-    ...appPkg.dependencies,
-    next: '15.5.25',
-    sharp: '^0.35.2'
-  }
-};
+const rootPkg = createStandaloneRuntimeManifest(appPkg);
 
 fs.writeFileSync(path.join(STANDALONE_DIR, 'package.json'), JSON.stringify(rootPkg, null, 2));
 

@@ -244,11 +244,13 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
             </p>
           </section>
 
-          {product.nutrition && (
+          {locale === 'en' && (enrichment?.nutrition || product.nutrition) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-3 text-warm-fg">Nutrition per 100ml</h2>
+              <h2 className="text-base font-bold mb-3 text-warm-fg">
+                {enrichment?.nutrition ? `Nutrition ${enrichment.nutrition.basis}` : 'Nutrition Facts'}
+              </h2>
               <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
-                {product.nutrition}
+                {enrichment?.nutrition?.text || product.nutrition}
               </p>
             </section>
           )}

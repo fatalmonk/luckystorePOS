@@ -67,6 +67,27 @@ export interface CategoryOption {
 }
 
 export function Header({ className = '', locale }: HeaderProps) {
+  const pathname = usePathname() || '/';
+  const localizedPathname = stripLocalePrefix(pathname);
+  const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
+    localizedPathname.startsWith(path),
+  );
+
+  return (
+    <Suspense
+      fallback={(
+        <div
+          aria-hidden="true"
+          className={isDistractionFreePage ? 'h-14' : 'h-[108px] md:h-[112px]'}
+        />
+      )}
+    >
+      <HeaderContent className={className} locale={locale} />
+    </Suspense>
+  );
+}
+
+function HeaderContent({ className = '', locale }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -403,12 +424,12 @@ export function Header({ className = '', locale }: HeaderProps) {
 
       {/* Mobile category/filter strip — replaced by compact category rail */}
       {!isDistractionFreePage && (
-        <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
+        <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 md:ml-[72px] lg:hidden">
           <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 px-4 scrollbar-hide py-0.5 scroll-fade-x" aria-label="Categories">
             <Link
               href={withLocale('/category', currentLocale)}
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
                   ? 'bg-warm-fg text-warm-bg'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -420,7 +441,7 @@ export function Header({ className = '', locale }: HeaderProps) {
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
-              itemClassName="flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
         </div>

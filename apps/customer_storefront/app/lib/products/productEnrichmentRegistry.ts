@@ -2411,6 +2411,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "120 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 320.53 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Carnival Butterscotch Cone Ice Cream in a 120ml crispy cone. The manufacturer describes crispy butter-flavoured biscuits filled with butterscotch ice cream, butterscotch ripple, caramel toppings, and butterscotch chips. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -2419,6 +2420,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Cone Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "320.53 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Toppings & Inclusions", value: "Caramel toppings, butterscotch ripple, and butterscotch chips", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, glucose, whey powder, cocoa butter, wheat flour, fat-reduced cocoa powder, emulsifiers, stabilizers, butterscotch, caramel, toffee and vanilla flavours, maize starch, permitted colours, sodium chloride, and raising agent.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, gluten (wheat), and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -2447,7 +2450,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Carnival Butterscotch page: 120 ml cone, 320.53 kcal/100g, caramel toppings, butterscotch ripple, butterscotch chips",
+        evidenceRef: "Official Polar Carnival Butterscotch page: 120 ml cone; 320.53 kcal/100g; crispy butter-flavoured biscuit, butterscotch ice cream and ripple, caramel toppings, butterscotch chips; ingredients and allergens declared on the product page",
         sourceTitle: "Carnival Butterscotch - Polar Ice Cream",
         sourceUrl: "https://polarbd.com/en/product/cone-carnival-butterscotch/",
         skuScope: "Polar Carnival Butterscotch 120ml",
@@ -2486,6 +2489,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "120 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 296.39 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Carnival Vanilla Cone Ice Cream in a 120ml crispy cone. The manufacturer describes smooth vanilla ice cream topped with chocolate and crunchy nuts in a crispy wafer cone. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -2495,6 +2499,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Flavor", value: "Vanilla", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "296.39 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Toppings", value: "Chocolate topping and nuts within a crispy cone", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, cocoa powder, whey powder, glucose, peanut, wheat flour, emulsifiers, stabilizers, vanilla flavour, maize starch, sodium chloride, raising agent, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, peanut, gluten (wheat), and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -2523,7 +2529,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Carnival Vanilla page: 120 ml cone, 296.39 kcal/100g, chocolate topping and nuts",
+        evidenceRef: "Official Polar Carnival Vanilla page: 120 ml cone; 296.39 kcal/100g; vanilla ice cream, chocolate topping and nuts; ingredients and allergens declared on the product page",
         sourceTitle: "Carnival (Vanilla) - Polar Ice Cream",
         sourceUrl: "https://polarbd.com/en/product/cone-carnival-vanilla/",
         skuScope: "Polar Carnival Vanilla 120ml",
@@ -2638,6 +2644,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "72 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 293.59 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Chocobar Vanilla Ice Cream on a stick in a 72ml bar. The manufacturer describes an incredible combination of chocolate-coated vanilla ice cream, creating an enduring classic favorite. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -2645,6 +2652,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Net Volume", value: "72 ml", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Product Type", value: "Stick Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "293.59 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, cocoa powder, glucose, whey powder, emulsifiers, stabilizer, vanilla flavour, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Coating", value: "Rich chocolate coating over creamy vanilla ice cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
@@ -2713,14 +2722,17 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 273.36 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Coffee Ice Cream Tub in a 1000ml family tub. The manufacturer highlights a superb combination of aromatic coffee and chocolate chips creating a delicious dessert for family occasions. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
-      { label: "Net Volume", value: "1000 ml (1 Litre)", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Net Volume", value: "1000 ml (1 Litre)", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Product Type", value: "Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Coffee with Chocolate Chips", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "273.36 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Gelling agents, water, sugar, skimmed and full cream milk powders, milk fat, vegetable fat, cocoa mass and butter, glucose, whey powder, emulsifiers, stabilizers, cocoa powder, roasted coffee, coffee extract, cappuccino, tiramisu and butterscotch flavours, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -2738,7 +2750,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       {
         question: "What is the package size and calorie value?",
         answer: "It comes in a 1000 ml (1 Litre) tub with an energy value of 273.36 kcal per 100 grams.",
-        evidenceRefs: ["MFR_PRODUCT_PAGE"],
+        evidenceRefs: ["CATALOG_RECORD", "MFR_PRODUCT_PAGE"],
       },
       {
         question: "Can I inspect the ice cream tub upon delivery?",
@@ -2749,10 +2761,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Coffee page: 1000 ml tub, 273.36 kcal/100g, coffee and chocolate chips",
+        evidenceRef: "Official Polar Coffee page: 273.36 kcal/100g, coffee and chocolate chips; the manufacturer page does not state tub volume",
         sourceTitle: "Coffee - Polar Ice Cream",
         sourceUrl: "https://polarbd.com/en/product/tub-coffee/",
-        skuScope: "Polar Coffee 1L tub",
+        skuScope: "Polar Coffee store SKU IC-POL-COF",
         verifiedAt: '2026-09-16',
       },
       STORAGE_SPEC: {
@@ -2763,20 +2775,20 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: "items.id: 2e948079-ebb6-498f-b14a-fda18fbbf721, SKU: IC-POL-COF, category: Ice-Cream",
+        evidenceRef: "items.id: 2e948079-ebb6-498f-b14a-fda18fbbf721, SKU: IC-POL-COF, name: Coffee 1 L, category: Ice-Cream",
         sourceTitle: "Lucky Store Production Catalog",
         skuScope: "2e948079-ebb6-498f-b14a-fda18fbbf721",
-        verifiedAt: '2026-09-16',
+        verifiedAt: '2026-10-22',
       },
       STORE_INSPECTION_POLICY: PILOT_STORE_INSPECTION_POLICY,
     },
     fieldEvidence: {
       exactName: ["MFR_PRODUCT_PAGE","CATALOG_RECORD"],
       brand: ["MFR_PRODUCT_PAGE"],
-      netQuantity: ["MFR_PRODUCT_PAGE"],
+      netQuantity: ["CATALOG_RECORD"],
       category: ["CATALOG_RECORD"],
-      summary: ["MFR_PRODUCT_PAGE","STORE_INSPECTION_POLICY"],
-      highlights: [["MFR_PRODUCT_PAGE"],["MFR_PRODUCT_PAGE"],["MFR_PRODUCT_PAGE"]],
+      summary: ["MFR_PRODUCT_PAGE","CATALOG_RECORD","STORE_INSPECTION_POLICY"],
+      highlights: [["MFR_PRODUCT_PAGE"],["CATALOG_RECORD"],["MFR_PRODUCT_PAGE"]],
       storageInstructions: ["STORAGE_SPEC"],
     },
   },
@@ -2788,6 +2800,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "82 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 327.23 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Crunchy Ice Cream Stick in an 82ml bar. The manufacturer describes velvety vanilla ice cream wrapped around by a crunchy layer of toffee, rich in taste and loved by dessert lovers. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -2796,6 +2809,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Stick Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Coating", value: "Crunchy layer of toffee over vanilla ice cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "327.23 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, skimmed and full cream milk powders, vegetable fat, milk fat, glucose, emulsifiers, stabilizers, wheat flour, maize starch, vanilla and toffee flavours, permitted colours, and raising agent.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, gluten (flour), and soy lecithin.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -2863,14 +2878,17 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 257.13 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Doi Ice Cream Tub in a 1 Liter tub. The manufacturer highlights the traditional taste of sweet Bengali yogurt (Doi) transformed into a creamy frozen dessert rich in milk nutrition. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
-      { label: "Net Volume", value: "1 Liter (1000 ml)", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Net Volume", value: "1 Liter (1000 ml)", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Product Type", value: "Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Traditional Sweet Yogurt (Doi)", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "257.13 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, full cream milk powder, vegetable fat, yoghurt, yoghurt powder, glucose, chana powder, emulsifiers, stabilizers, yoghurt flavour, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein and lactose.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -2888,7 +2906,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       {
         question: "What is the package volume and calories?",
         answer: "It comes in a 1 Liter tub with an energy rating of 257.13 kcal.",
-        evidenceRefs: ["MFR_PRODUCT_PAGE"],
+        evidenceRefs: ["CATALOG_RECORD", "MFR_PRODUCT_PAGE"],
       },
       {
         question: "Can I inspect this ice cream tub before paying?",
@@ -2899,10 +2917,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Doi page: 1 Liter tub, 257.13 kcal, traditional Doi flavor rich in milk nutrition",
+        evidenceRef: "Official Polar Doi page: 257.13 kcal/100g, traditional Doi flavor rich in milk nutrition; the manufacturer page does not state tub volume",
         sourceTitle: "Doi - Polar Ice Cream",
         sourceUrl: "https://polarbd.com/en/product/tub-doi/",
-        skuScope: "Polar Doi 1L tub",
+        skuScope: "Polar Doi store SKU IC-POL-D1L",
         verifiedAt: '2026-09-16',
       },
       STORAGE_SPEC: {
@@ -2913,20 +2931,20 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: "items.id: 54a7520e-a90e-42ec-884f-c8f4d25abaac, SKU: IC-POL-D1L, category: Ice-Cream",
+        evidenceRef: "items.id: 54a7520e-a90e-42ec-884f-c8f4d25abaac, SKU: IC-POL-D1L, name: Doi 1 Liter, category: Ice-Cream",
         sourceTitle: "Lucky Store Production Catalog",
         skuScope: "54a7520e-a90e-42ec-884f-c8f4d25abaac",
-        verifiedAt: '2026-09-16',
+        verifiedAt: '2026-10-22',
       },
       STORE_INSPECTION_POLICY: PILOT_STORE_INSPECTION_POLICY,
     },
     fieldEvidence: {
       exactName: ["MFR_PRODUCT_PAGE","CATALOG_RECORD"],
       brand: ["MFR_PRODUCT_PAGE"],
-      netQuantity: ["MFR_PRODUCT_PAGE"],
+      netQuantity: ["CATALOG_RECORD"],
       category: ["CATALOG_RECORD"],
-      summary: ["MFR_PRODUCT_PAGE","STORE_INSPECTION_POLICY"],
-      highlights: [["MFR_PRODUCT_PAGE"],["MFR_PRODUCT_PAGE"],["MFR_PRODUCT_PAGE"]],
+      summary: ["MFR_PRODUCT_PAGE","CATALOG_RECORD","STORE_INSPECTION_POLICY"],
+      highlights: [["MFR_PRODUCT_PAGE"],["MFR_PRODUCT_PAGE"],["CATALOG_RECORD"]],
       storageInstructions: ["STORAGE_SPEC"],
     },
   },
@@ -3013,6 +3031,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 240.23 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Kheer Ice Cream Tub in a 1000ml family tub. The manufacturer highlights the traditional aromatic taste of Kheer, enriched with a delightful topping of crunchy nuts and sweet raisins. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3021,6 +3040,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Traditional Kheer with Nuts and Raisins", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "240.23 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, skimmed and full cream milk powders, vegetable fat, khejur gur, resin, roasted almond nut, glucose, stabilizers, emulsifiers, payesh flavour, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, and almond nut.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3163,6 +3184,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "40 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 210.94 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Malai Ice Cream on a stick in a 40ml format. The manufacturer celebrates reminiscent childhood flavors with rich, sweet clotted cream (malai) taste. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3171,6 +3193,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Stick Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Traditional Clotted Cream (Malai)", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "210.94 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, glucose, emulsifiers, stabilizers, condensed-milk flavour, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein and lactose.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3238,6 +3262,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 199.34 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Mango Ice Cream Tub in a 1000ml family tub. The manufacturer highlights delicious tropical mango flavor that uplifts your mood anytime and anywhere. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3246,6 +3271,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Tropical Mango", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "199.34 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, skimmed and full cream milk powders, vegetable fat, mango pulp, glucose, emulsifiers, stabilizers, mango flavour, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein and lactose.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3313,6 +3340,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 236.72 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Red Velvet Ice Cream Tub in a 1000ml gourmet tub. The manufacturer describes a rich blend of cheesy ice cream and premium velvety cake, leaving a lingering, luxurious dessert experience. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3321,6 +3349,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Premium Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Cheesy Ice Cream and Premium Velvety Cake", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "236.72 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, skimmed and full cream milk powders, vegetable fat, milk fat, glucose, cheese powder, cake paste, emulsifiers, stabilizers, vanilla and cheese flavours, maize starch, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "The manufacturer declares milk protein, lactose, peanut, gluten (wheat), and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3463,10 +3493,11 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     exactName: "Polar Royal Sundae Cup Ice Cream 100ml",
     brand: "Polar",
     netQuantity: "100 ml",
+    nutrition: { basis: "per 100 g", text: "Caramel: 246.23 kcal; Chocolate: 243.95 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     galleryImages: [
       {
         url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-front.webp",
-        alt: "Polar Royal Sundae cup with caramel and chocolate ripple",
+        alt: "Polar Royal Sundae cup; caramel and chocolate ripple are separate variants",
       },
       {
         url: "https://images.luckystore1947.com/products/polar/IC-POL-ROY-INGREDIENTS.webp",
@@ -3483,17 +3514,19 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     ],
     category: "Ice-Cream",
     summary:
-      "Polar Royal Sundae Cup Ice Cream in a 100ml cup. The manufacturer describes a combination of caramel and chocolate ripple variations, making it a delicious choice for personal enjoyment or treating guests. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Royal Sundae Cup Ice Cream is available in a 100 ml cup with caramel or chocolate ripple, depending on the variant. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
       { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Net Volume", value: "100 ml", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Product Type", value: "Cup Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
-      { label: "Flavor Profile", value: "Caramel and Chocolate Ripple", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
-      { label: "Energy", value: "243.95 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Flavor Profile", value: "Caramel or Chocolate Ripple (variant-dependent)", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Energy by Variant", value: "Caramel: 246.23 kcal per 100g; Chocolate: 243.95 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients (Caramel Variant)", value: "Water, sugar, skimmed milk powder, vegetable fat, full cream milk powder, almond nut, glucose, emulsifiers, stabilizers, caramel and toffee flavours, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "The manufacturer lists milk protein, lactose, and soy (lecithin); almond nut appears in the caramel variant's ingredients.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
-      "Dual ripple of rich caramel and chocolate sauce",
+      "Available in caramel or chocolate ripple variants",
       "Convenient 100ml personal dessert cup",
       "Smart treat for guests and family desserts",
     ],
@@ -3501,12 +3534,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     faqs: [
       {
         question: "What flavors are inside Polar Royal Sundae Cup?",
-        answer: "The official Polar page describes a swirl of caramel and chocolate ripple through creamy ice cream.",
+        answer: "The manufacturer lists caramel and chocolate ripple as separate Royal Sundae variants.",
         evidenceRefs: ["MFR_PRODUCT_PAGE"],
       },
       {
         question: "What is the portion size and calorie content?",
-        answer: "It comes in a 100 ml cup with an energy value of 243.95 kcal per 100 grams.",
+        answer: "The 100 ml cup is sold in caramel and chocolate variants. Polar lists 246.23 kcal per 100 g for caramel and 243.95 kcal per 100 g for chocolate.",
         evidenceRefs: ["MFR_PRODUCT_PAGE"],
       },
       {
@@ -3518,7 +3551,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: "Official Polar Royal Sundae page: 100 ml cup, 243.95 kcal/100g, caramel and chocolate ripple",
+        evidenceRef: "Official Polar Royal Sundae page: 100 ml cup; separate caramel and chocolate ripple variants; energy is 246.23 kcal/100g for caramel and 243.95 kcal/100g for chocolate; ingredient and allergen declaration for caramel variant",
         sourceTitle: "Royal Sundae - Polar Ice Cream",
         sourceUrl: "https://polarbd.com/en/product/cup-royal-sundae/",
         skuScope: "Polar Royal Sundae 100ml cup",
@@ -3557,6 +3590,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "62 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 190.48 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Cool Shell N Core Ice Cream on a stick in a 62ml bar. The manufacturer describes a creamy vanilla core covered by a refreshing frozen layer of strawberry shell, providing an exponential flavor combination. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3565,6 +3599,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Stick Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Combination", value: "Vanilla core enclosed by strawberry shell", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "190.48 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed milk powder, glucose, emulsifiers, stabilizers, vanilla and strawberry flavours, acidity regulator, and permitted colours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein and lactose.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3632,6 +3668,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "55 ml",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 229.39 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Shor Malai Ice Cream on a stick in a 55ml format. The manufacturer describes an authentic, stunning combination of rich milk cream (shor) and traditionally curdled milk for a deep heritage dessert taste. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3640,6 +3677,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Heritage Stick Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Ingredients Highlight", value: "Milk cream and curdled milk combination", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "229.39 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, concentrated date juice, curdled milk, glucose, emulsifiers, stabilizers, cream aroma, and condensed-milk flavour.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, and soy (lecithin).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -3782,6 +3821,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Polar",
     netQuantity: "1 Litre",
     category: "Ice-Cream",
+    nutrition: { basis: "per 100 g", text: "Energy: 228.61 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
       "Polar Zafran Malai Ice Cream Tub in a 1000ml family tub. The manufacturer describes royal saffron (zafran) and malai-flavored ice cream with an exquisite addition of crunchy nut and raisin toppings, perfect for royal family celebrations. Available from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
@@ -3790,6 +3830,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Product Type", value: "Tub Ice Cream", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Flavor Profile", value: "Saffron (Zafran) and Malai with Nut and Raisin Topping", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Energy", value: "228.61 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, khejur gur, chana, glucose, almond nut, raisin, emulsifiers, stabilizers, and zafran, cream-aroma and condensed-milk flavours.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, and almond nut.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Storage", value: "Keep frozen at -18°C or below", evidenceRefs: ["STORAGE_SPEC"] },
     ],
     highlights: [
@@ -52249,28 +52291,29 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
 
   '4ca03fce': {
     slugPrefix: '4ca03fce',
-    exactName: "Polar Chocodelight",
+    exactName: "Polar Chocodelight Cone Ice Cream 120 ml",
     brand: "Polar",
-    netQuantity: "Standard Pack",
+    netQuantity: "120 ml",
     category: "Ice Cream & Desserts",
+    nutrition: { basis: "per 100 g", text: "Energy: 314.81 kcal", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     summary:
-      "Polar Chocodelight from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
+      "Polar Chocodelight is a 120 ml chocolate ice cream cone with nut and chocolate ripple. Order from Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection before payment.",
     specifications: [
-      { label: "Brand", value: "Polar", evidenceRefs: ["PACK_FRONT"] },
-      { label: "Net Quantity", value: "Standard Pack", evidenceRefs: ["PACK_FRONT"] },
+      { label: "Brand", value: "Polar", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Net Volume", value: "120 ml", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
       { label: "Catalog Category", value: "Ice Cream & Desserts", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Manufacturer", value: "Dhaka Ice Cream Industries Ltd.", evidenceRefs: ["MFR_SPEC"] },
-      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+      { label: "Energy", value: "314.81 kcal per 100g", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Ingredients", value: "Water, sugar, vegetable fat, skimmed and full cream milk powders, cocoa powder, peanut, glucose, whey powder, wheat flour, emulsifiers, stabilizers, gelling agent, chocolate and vanilla flavours, maize starch, permitted colours, sodium chloride, and raising agent.", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
+      { label: "Allergen Declaration", value: "Contains milk protein, lactose, peanut, soy (lecithin), and gluten (wheat).", evidenceRefs: ["MFR_PRODUCT_PAGE"] },
     ],
     highlights: [
-      "Authentic on-pack Polar specification: Polar Chocodelight",
-      "Standard factory-sealed Standard Pack consumer packaging",
+      "Chocolate ice cream with nut and chocolate ripple",
+      "120 ml cone format",
       "Produced and distributed by Dhaka Ice Cream Industries Ltd.",
     ],
     usageDirections:
       "Use as indicated on physical product packaging for optimal quality and freshness.",
-    storageInstructions:
-      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
       {
         question: "Can I inspect Polar Chocodelight at my doorstep before payment?",
@@ -52287,23 +52330,24 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     ],
     evidenceManifest: {
       PACK_FRONT: {
-        source: "PACKAGING",
-        evidenceRef: "On-pack front label: Polar Chocodelight, net quantity: Standard Pack",
-        sourceTitle: "Polar Front Packaging Label",
+        source: "MANUFACTURER",
+        evidenceRef: "Official Polar Chocodelight product image shows the branded chocolate-and-nut ice-cream cone",
+        sourceTitle: "Polar Chocodelight Product Image",
         skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
-        verifiedAt: "2026-10-11",
+        verifiedAt: "2026-10-22",
+      },
+      MFR_PRODUCT_PAGE: {
+        source: "MANUFACTURER",
+        evidenceRef: "Official Polar Chocodelight page: 120 ml cone, chocolate ice cream with nut and chocolate ripple, 314.81 kcal per 100 g, ingredients and allergens declared on the product page",
+        sourceTitle: "Chocodelight - Polar Ice Cream",
+        sourceUrl: "https://polarbd.com/en/product/cone-chocodelight/",
+        skuScope: "Polar Chocodelight cone 120 ml",
+        verifiedAt: "2026-10-22",
       },
       PACK_DESC: {
         source: "PACKAGING",
         evidenceRef: "On-pack product description: Polar Chocodelight ice cream.",
         sourceTitle: "Polar Packaging Specification Details",
-        skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
-        verifiedAt: "2026-10-11",
-      },
-      PACK_STORAGE: {
-        source: "PACKAGING",
-        evidenceRef: "On-pack storage instructions: Store in a cool dry place away from heat",
-        sourceTitle: "Polar Storage Guidelines",
         skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
         verifiedAt: "2026-10-11",
       },
@@ -52316,10 +52360,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       CATALOG_RECORD: {
         source: "LUCKY_STORE_CATALOG",
-        evidenceRef: "items.sku: IC-POL-CHO-2, category: Ice Cream & Desserts",
+        evidenceRef: "items.id: 4ca03fce-c4b6-493a-af3d-d6c941bfba68, SKU: IC-POL-CHD, name: Polar Chocodelight, category: Ice Cream & Desserts",
         sourceTitle: "Lucky Store Catalog Item Master",
         skuScope: "4ca03fce-c4b6-493a-af3d-d6c941bfba68",
-        verifiedAt: "2026-10-11",
+        verifiedAt: "2026-10-23",
       },
       STORE_DELIVERY_POLICY: {
         source: "LUCKY_STORE_POLICY",
@@ -52331,14 +52375,13 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
     },
     fieldEvidence: {
-      exactName: ["PACK_FRONT", "CATALOG_RECORD"],
+      exactName: ["PACK_FRONT", "CATALOG_RECORD", "MFR_PRODUCT_PAGE"],
       brand: ["PACK_FRONT", "MFR_SPEC"],
-      netQuantity: ["PACK_FRONT"],
+      netQuantity: ["MFR_PRODUCT_PAGE"],
       category: ["CATALOG_RECORD"],
-      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
-      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
+      summary: ["MFR_PRODUCT_PAGE", "STORE_INSPECTION_POLICY"],
+      highlights: [["MFR_PRODUCT_PAGE"], ["MFR_PRODUCT_PAGE"], ["MFR_SPEC"]],
       usageDirections: ["PACK_FRONT"],
-      storageInstructions: ["PACK_STORAGE"],
     },
   },
 

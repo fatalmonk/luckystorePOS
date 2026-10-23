@@ -22,6 +22,9 @@ dev = [
     "pytest>=8.0.0",
     "playwright>=1.40.0",
 ]
+image-background-removal = [
+    "rembg[cpu]==2.0.86",
+]
 
 # Dependency-only tooling manifest; scripts run directly from the repository.
 # Do not discover unrelated monorepo directories as Python packages.

@@ -6,9 +6,11 @@ import { JsonLd } from '../../components/seo/JsonLd';
 import {
   DELIVERY_POLICY,
   DELIVERY_FAQS,
+  BENGALI_DELIVERY_FAQS,
   COVERED_AREAS,
   getDeliveryShippingServiceSchema,
   getDeliveryFaqSchema,
+  getBengaliDeliveryFaqSchema,
   getDeliveryBreadcrumbSchema,
 } from '../deliveryData';
 import { middleware } from '../../../middleware';
@@ -165,6 +167,21 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
       const breadcrumbSchema = getDeliveryBreadcrumbSchema();
       expect(breadcrumbSchema['@type']).toBe('BreadcrumbList');
       expect(breadcrumbSchema.itemListElement[1].item).toBe(DELIVERY_POLICY.canonicalUrl);
+    });
+
+    it('provides Bengali FAQ JSON-LD matching the visible delivery FAQ language and policy', () => {
+      const faqSchema = getBengaliDeliveryFaqSchema();
+      expect(faqSchema['@type']).toBe('FAQPage');
+      expect(faqSchema.inLanguage).toBe('bn-BD');
+      expect(faqSchema.mainEntity).toHaveLength(BENGALI_DELIVERY_FAQS.length);
+      expect(faqSchema.mainEntity.map((item) => item.name)).toEqual(
+        BENGALI_DELIVERY_FAQS.map((faq) => faq.question),
+      );
+      expect(faqSchema.mainEntity.map((item) => item.acceptedAnswer.text)).toEqual(
+        BENGALI_DELIVERY_FAQS.map((faq) => faq.answer),
+      );
+      expect(JSON.stringify(faqSchema)).toContain(`${DELIVERY_POLICY.freeDeliveryThresholdBdt}`);
+      expect(JSON.stringify(faqSchema)).toContain(DELIVERY_POLICY.deliveryHours.display);
     });
   });
 

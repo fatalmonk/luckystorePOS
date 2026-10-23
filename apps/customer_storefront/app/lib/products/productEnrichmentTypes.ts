@@ -82,6 +82,8 @@ export interface ProductEnrichment {
   category: string;
   /** Answer-first opening summary (factual, concise, local purchase context) */
   summary: string;
+  /** Optional manufacturer nutrition text with its explicitly stated measurement basis. */
+  nutrition?: { basis: string; text: string; evidenceRefs: string[] };
   /** Structured tabular specifications with machine-readable provenance */
   specifications: ProductSpecification[];
   /** Packaging-supported key highlights [PACKAGING/MANUFACTURER/CALCULATED] */

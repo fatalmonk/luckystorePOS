@@ -7,6 +7,8 @@ import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
 import { isMissingItemTranslationsTableError } from '../../../../lib/translationErrors';
 import { getEnrichedProductData } from '../../../../lib/products/productEnrichment';
+import { getProductGalleryImages } from '../../../../lib/products/productGalleryRegistry';
+import { ProductJsonLd } from '../../../../components/seo/ProductJsonLd';
 import type { Product } from '../../../../lib/products/types';
 import ProductClient from '../../../../(english)/product/[slug]/ProductClient';
 
@@ -62,7 +64,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
   const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
-  const imageUrl = localized.product.image_url || '/lucky-store-social-share-v2.png';
+  const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
+  const galleryImages = enrichment?.galleryImages?.length
+    ? enrichment.galleryImages
+    : getProductGalleryImages(localized.product.id);
+  const metadataImage = galleryImages?.[0];
+  const imageUrl = galleryImages !== undefined
+    ? metadataImage?.url || '/lucky-store-social-share-v2.png'
+    : localized.product.image_url || '/lucky-store-social-share-v2.png';
+  const imageAlt = metadataImage?.alt || localized.product.name;
   const title = `${localized.product.name} – ${formatBdt(localized.product.price)}`;
 
   return {
@@ -86,7 +96,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       images: [
         {
           url: imageUrl,
-          alt: localized.product.name,
+          alt: imageAlt,
         },
       ],
     },
@@ -115,15 +125,35 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
         summary: localized.product.description || rawEnrichment.summary,
       }
     : rawEnrichment;
+  const galleryImages = enrichment?.galleryImages?.length
+    ? enrichment.galleryImages
+    : getProductGalleryImages(localized.product.id);
+  const productImages = galleryImages !== undefined
+    ? galleryImages.map(({ url }) => url)
+    : localized.product.image_url
+      ? [localized.product.image_url]
+      : [];
+  const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
 
   return (
-    <ProductClient
-      product={localized.product}
-      crossSell={[]}
-      locale="bn"
-      productUrlName={localized.sourceName}
-      productCanonicalUrl={`https://www.luckystore1947.com/bn/product/${canonicalSlug}`}
-      enrichment={enrichment}
-    />
+    <>
+      <ProductJsonLd
+        product={localized.product}
+        name={localized.product.name}
+        brand={enrichment?.brand || localized.product.brand}
+        description={localized.product.description || enrichment?.summary}
+        canonicalUrl={canonicalUrl}
+        images={productImages}
+      />
+      <ProductClient
+        product={localized.product}
+        crossSell={[]}
+        locale="bn"
+        productUrlName={localized.sourceName}
+        productCanonicalUrl={canonicalUrl}
+        enrichment={enrichment}
+        galleryImages={galleryImages}
+      />
+    </>
   );
 }

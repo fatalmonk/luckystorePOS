@@ -39,7 +39,9 @@ describe('ProductJsonLd', () => {
 
     expect(jsonLd['@type']).toBe('Product');
     expect(jsonLd.name).toBe('Polar Chocolate Cup');
-    expect(jsonLd.image).toEqual(['/products/polar/chocolate-cup-front.webp']);
+    expect(jsonLd.image).toEqual([
+      'https://www.luckystore1947.com/products/polar/chocolate-cup-front.webp',
+    ]);
     expect(jsonLd.offers).toMatchObject({
       price: 30,
       priceCurrency: 'BDT',
@@ -50,6 +52,31 @@ describe('ProductJsonLd', () => {
 
   it('omits explicitly unresolved product images rather than emitting a broken URL', () => {
     const jsonLd = parseJsonLd(renderToStaticMarkup(<ProductJsonLd product={product} images={[]} />));
+    expect(jsonLd).not.toHaveProperty('image');
+  });
+
+  it('preserves absolute image URLs and normalizes protocol-relative URLs', () => {
+    const jsonLd = parseJsonLd(renderToStaticMarkup(
+      <ProductJsonLd
+        product={product}
+        images={[
+          'https://images.luckystore1947.com/products/polar/chocolate-cup-front.webp',
+          '//images.luckystore1947.com/products/polar/chocolate-cup-side.webp',
+        ]}
+      />
+    ));
+
+    expect(jsonLd.image).toEqual([
+      'https://images.luckystore1947.com/products/polar/chocolate-cup-front.webp',
+      'https://images.luckystore1947.com/products/polar/chocolate-cup-side.webp',
+    ]);
+  });
+
+  it('omits image URLs with non-web protocols', () => {
+    const jsonLd = parseJsonLd(renderToStaticMarkup(
+      <ProductJsonLd product={product} images={['javascript:alert(1)']} />
+    ));
+
     expect(jsonLd).not.toHaveProperty('image');
   });
 
