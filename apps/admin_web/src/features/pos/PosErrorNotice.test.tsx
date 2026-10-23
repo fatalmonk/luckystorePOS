@@ -8,8 +8,10 @@ describe('PosErrorNotice', () => {
     render(<PosErrorNotice message="Barcode not found" onDismiss={onDismiss} />);
 
     const alert = screen.getByRole('alert');
+    const message = alert.querySelector('span');
     expect(alert).toHaveTextContent('Barcode not found');
-    expect(alert.querySelector('span')).toHaveStyle({ minWidth: '0px', overflowWrap: 'anywhere' });
+    expect(message?.style.minWidth).toBe('0');
+    expect(message?.style.overflowWrap).toBe('anywhere');
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss error message' }));
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
