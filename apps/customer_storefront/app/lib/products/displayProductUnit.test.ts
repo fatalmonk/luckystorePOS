@@ -7,7 +7,7 @@ describe('getDisplayProductUnit', () => {
   });
 
   it('keeps fractional package sizes together instead of reading the denominator as the size', () => {
-    expect(getDisplayProductUnit('Frozen dessert 1/2 Liter', 'pc')).toBe('1/2 Liter');
+    expect(getDisplayProductUnit('Polar Kheer 1/2 Liter', 'pc')).toBe('1/2 Liter');
   });
 
   it('keeps generic units when the product name has no measurable pack size', () => {
