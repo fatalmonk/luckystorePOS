@@ -536,9 +536,14 @@ export function CompetitorPricesPage() {
       <p className="text-xs text-warm-muted" aria-live="polite">
         Showing {sortedPrices.length.toLocaleString()} loaded observations matching the current filters.
       </p>
+      <p className="text-xs text-warm-muted md:hidden">
+        Scroll the table horizontally to compare prices and reach row actions.
+      </p>
       <DataTable
         data={sortedPrices}
         columns={columns}
+        tableLabel="Competitor price observations"
+        pinFirstColumn
         emptyMessage={
           searchQuery.trim() || selectedCompetitor !== 'all'
             ? 'No observations match the current search and competitor filter.'
