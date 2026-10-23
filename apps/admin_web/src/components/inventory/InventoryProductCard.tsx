@@ -201,7 +201,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           {/* Pricing sub-panel + Margin badge / Reorder button */}
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 mt-auto">
             <div
-              className={`min-w-0 flex-[1_1_100px] flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
+              className={`min-w-0 flex-[1_1_100%] sm:flex-[1_1_100px] flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
                 isOutOfStock ? 'opacity-40' : ''
               }`}
             >
@@ -213,7 +213,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 <span className="text-text-muted text-[10px] sm:text-[11px]">MRP:</span>
                 <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
               </div>
-              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-1 pt-0.5 border-t border-border/20 tabular-nums">
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 pt-0.5 border-t border-border/20 tabular-nums">
                 <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 pr-1">
                   <span className="shrink-0 text-text-muted text-[10px] sm:text-[11px]">Price:</span>
                   {discountPct !== null && (
