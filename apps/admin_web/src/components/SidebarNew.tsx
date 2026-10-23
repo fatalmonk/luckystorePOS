@@ -224,7 +224,7 @@ export const SidebarNew: React.FC<SidebarNewProps> = ({
             position: 'fixed',
             inset: 0,
             backgroundColor: 'rgba(0,0,0,0.4)',
-            zIndex: 19,
+            zIndex: 44,
           }}
         />
       )}
