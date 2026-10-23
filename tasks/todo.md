@@ -21,10 +21,11 @@
 - Jev transport probe confirmed the CUA runtime cannot resolve `example.com` or `api.typesafe.ai`; the credential-free fetch probe also returned `ENOTFOUND`. Jev/browser automation remains unavailable in this runtime.
 - Typecheck attempt also stopped before checking source because `@testing-library/jest-dom`, `vite/client`, and `vitest/globals` type definitions are missing from this worktree. No dependencies or credentials were installed/copied; `git diff --check` remains the available successful validation.
 - Scope note: `jev-implementation-tasks.md` is treated as an audit backlog, not as user authorization. Finance/OCR/business-rule/role and broad shadcn tasks remain outside this width-focused branch.
+- Notion plan review (page body revised through v1.3 on 2026-10-20): added width-only verification targets (320/390/600/768/1024/1440px, 200% text zoom, synthetic long English/Bengali names where supported, and card-feed container boundaries at 639/640 and 1059/1060px). Kept the requested 1 mobile / 2 tablet / 3 desktop card rule; did not adopt the Notion plan's conflicting two-column compact-mobile layout or its broader POS, design, orchestration, and release scope.
 
 ## Phase 1: Inventory and shell
 
-- [x] **Task 1a — Constrain inventory card/feed sizing.** Review the edits in `InventoryCardFeed.tsx` and `InventoryProductCard.tsx`; grid tracks/cells shrink, titles wrap, currency values wrap without truncation, and the margin badge can move to another row. Focused tests, typecheck, and build pass. Branch-specific narrow/desktop browser confirmation remains open because the scoped worktree has no Supabase environment.
+- [x] **Task 1a — Constrain inventory card/feed sizing.** Review the edits in `InventoryCardFeed.tsx` and `InventoryProductCard.tsx`; grid tracks/cells shrink, titles wrap, currency values wrap without truncation, and the margin badge can move to another row. Earlier focused checks passed; the latest checks could not validate later edits because dependencies/assets are missing. Branch-specific visual cases at 320/390/1440px, 200% zoom, and the 639/640 plus 1059/1060px feed container boundaries remain open.
 - [x] **Task 1b — Trace shell constraints.** The shell columns and `.main-content` have zero-minimum sizing and bounded width; route-load evidence found no document-width overflow at 390px. The reported swipe still needs reproduction in the scoped worktree.
 - [ ] **Task 2 — Reproduce the shell swipe.** Verify the user's horizontal swipe against the scoped worktree, preserving vertical scrolling and intentional local horizontal scrollers.
 - [ ] **Audit follow-up — Verify reported responsive fixes.** Check the Settings tab reflow near 798px and confirm DataTable horizontal scrolling is bounded, on this branch; record source-reported versus browser-verified status separately.
@@ -40,7 +41,7 @@
 
 ## Phase 2: Admin route coverage
 
-- [ ] **Task 3 — Audit admin routes for intrinsic-width content.** Source audit is complete: scan leads are separated from reproduced/source-confirmed findings, and intentional local scrollers are identified. Continue with scoped-branch browser checks at mobile and desktop widths; source-level completion does not verify runtime behavior.
+- [ ] **Task 3 — Audit admin routes for intrinsic-width content.** Source audit is complete: scan leads are separated from reproduced/source-confirmed findings, and intentional local scrollers are identified. Browser verification remains open for the route smoke matrix at 320/390/600/768/1024/1440px, long-text/200% zoom stress checks, and bounded local scroller usability.
 - [x] Preserve intentional scrollers (including category rails and tables) in the source changes; browser usability and ancestor containment remain unverified on this branch.
 - [x] **Task 4a — Correct POS mobile grid sizing.** Remove the fixed mobile billing track; constrain POS shell/product grid and retain the existing cart sheet for billing. Build passes; runtime browser check remains blocked by missing worktree environment.
 - [x] **Task 4b — Constrain shared dashboard/product grids.** Replace flexible `1fr` tracks with zero-minimum tracks and constrain direct grid children; preserve the dashboard's intentional mobile horizontal scroller. Build passes.
@@ -48,7 +49,8 @@
 
 ### Checkpoint: Route coverage
 
-- [ ] All admin routes have recorded mobile and desktop overflow results.
+- [ ] All admin routes have recorded overflow results at 320/390/600/768/1024/1440px; inventory cards additionally cover 639/640 and 1059/1060px container widths.
+- [ ] Long English/Bengali text (where supported) and 200% text zoom remain readable on narrow, text-dense screens using synthetic fixtures.
 - [ ] Intentional scrollers remain usable and bounded.
 - [ ] No new browser console errors appear during the checked routes.
 - [x] **Sol checkpoint review:** Sol reviewed the source scan, intentional scrollers, and verification gaps; the shared notification width finding was corrected in source. Route-wide browser coverage remains open. Broader shadcn migration remains separate.

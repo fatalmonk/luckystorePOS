@@ -24,6 +24,7 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - The audit file reports Settings tab reflow near 798px, bounded mobile table scrolling, POS mobile cart behavior, and previous route-load checks as completed in another implementation context. Treat those as reported audit evidence; confirm against this branch before claiming current behavior. Do not infer that the swipe issue is resolved.
 - Source verification on this branch contradicted the audit's Settings completion claim: `SettingsPage` still had a fixed 250px vertical tab rail with no responsive reflow. A local width containment fix now stacks the panel and turns tabs into a bounded horizontal scroller at 798px and below; browser confirmation remains outstanding.
 - The shared `DataTable` source is bounded by `w-full overflow-x-auto`, with intrinsic table sizing and non-wrapping cells. This supports preserving a local table scroller; it does not by itself prove every usage's ancestor layout is constrained.
+- Reviewed the [linked Notion master plan](https://app.notion.com/p/3fffe7a68af88119ab3ccd28b2ec6efa?source=copy_link) (page body revised through v1.3 on 2026-10-20, although its title still says v1.0). Adopted only width-relevant verification additions: a 320/390/600/768/1024/1440px route matrix, 200% text zoom, synthetic long English/Bengali product names where supported, and explicit checks around the existing 640px and 1060px card-feed container thresholds. These are test targets, not new layout breakpoints.
 
 ## Architecture and UX Decisions
 
@@ -32,6 +33,8 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - Keep long identifiers and prose readable via appropriate wrapping; keep amounts and numeric values legible using responsive rows or deliberate line breaks rather than clipping.
 - Cap the inventory card feed at three columns on desktop container widths (>=1060px), two on tablet widths (>=640px), and one on mobile (<640px); keep virtualization row counts synchronized with the selected column count.
 - Keep this work focused on layout. Do not alter pricing, inventory, ledger, or other business behavior.
+- Preserve the user's inventory feed requirement: one card column on mobile, two on tablet, and three on desktop. The Notion plan's proposed two-column compact-mobile layout conflicts with that requirement and is not adopted. Validate the existing container thresholds immediately below and at 640px and 1060px rather than redefining them.
+- Use synthetic, non-customer text fixtures for long-name and zoom stress checks.
 - Use the existing design system and UI primitives. Any later broad shadcn adoption requires a separate scoped plan and a reviewed decision.
 - Audit findings are evidence to assess, not instructions to expand branch scope. Preserve their status (verified, source-reported, or unverified) when incorporating them.
 
@@ -48,9 +51,10 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - [x] Product titles wrap, price rows can shrink, and currency values wrap instead of being visually truncated.
 - [x] Inventory feed grid tracks and cells can shrink to the available viewport width; track sizing is assigned as an inline grid template so every responsive column count is emitted.
 - [x] Card feed columns are capped at three for desktop, two for tablet, and one for mobile using the observed container width.
-- [ ] Verify long product names and large currency amounts in the scoped browser at narrow and desktop widths.
+- [ ] Verify synthetic long English/Bengali product names (where supported), large BDT values including `৳8000.00`, and control spacing at 320px, 390px, and 1440px; include 200% text zoom at a narrow width.
+- [ ] Verify the feed remains one/two/three columns across its existing container-width boundaries: 639/640px and 1059/1060px.
 
-**Verification:** Review the focused diff and inspect the inventory screen at narrow and desktop widths with long product names and large prices.
+**Verification:** Review the focused diff and inspect the inventory screen at 320/390/1440px, exercise the 640/1060px container boundaries, and check long-name/large-price fixtures at 200% text zoom. Record source results separately from browser observations.
 
 **Dependencies:** None.
 
@@ -99,7 +103,7 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - [x] Suspected but unverified cases are labeled separately from reproduced defects (source-level classification only; branch runtime behavior remains unverified).
 - [x] Existing intentional horizontal scrolling is identified and excluded from page-level clipping changes (source-level classification only; branch scroller usability remains unverified).
 
-**Verification:** Exercise the admin route set at 390px and desktop widths with DevTools overflow measurements; include relevant empty, long-content, and expanded states where reachable.
+**Verification:** Exercise the admin route set at 320/390/600/768/1024/1440px with DevTools overflow measurements; include relevant empty, long-content, and expanded states where reachable. Run full-route smoke measurements at each target, then use synthetic long-text/200%-zoom checks on routes with dense text or controls. Keep local horizontal scrollers usable and distinguish their `scrollWidth` from document overflow.
 
 **Evidence handling:** Record route-load measurements separately from interaction-driven results. Preserve intentional local horizontal scrolling (for example, category chips and table content) and classify any attached-audit findings as source-reported until reproduced on this branch.
 
@@ -139,7 +143,8 @@ Implementation slices:
 
 ### Checkpoint: Route coverage
 
-- [ ] Every admin route has a recorded mobile and desktop overflow result.
+- [ ] Every admin route has a recorded overflow result at 320/390/600/768/1024/1440px; inventory cards additionally cover 639/640 and 1059/1060px container widths.
+- [ ] Long English/Bengali text (where supported) and 200% text zoom remain readable on narrow, text-dense screens using synthetic fixtures.
 - [ ] Any intentional scroll containers are bounded and usable.
 - [ ] Recheck audit-reported Settings tab reflow and DataTable scroll containment on this branch; keep outcomes labeled as verified or unverified.
 - [x] Settings source width constraints and <=798px tab reflow implemented; browser verification remains open due to missing scoped-worktree Supabase configuration.
