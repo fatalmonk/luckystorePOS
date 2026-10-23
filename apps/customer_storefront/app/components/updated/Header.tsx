@@ -115,6 +115,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
   const mobileOverlaySearchRef = useRef<HTMLDivElement>(null);
   const mobileInlineSearchRef = useRef<HTMLFormElement>(null);
   const desktopSearchRef = useRef<HTMLDivElement>(null);
+  const mobileCategoriesRef = useRef<HTMLDivElement>(null);
   const desktopCategoriesRef = useRef<HTMLElement>(null);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
@@ -143,6 +144,15 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
     }
     setSelectedCategory('all');
   }, [localizedPathname]);
+
+  useEffect(() => {
+    if (selectedCategory === 'all' || activeCatalogTheme) return;
+
+    const activeCategory = mobileCategoriesRef.current?.querySelector<HTMLAnchorElement>(
+      'a[aria-current="page"]',
+    );
+    activeCategory?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [activeCatalogTheme, selectedCategory]);
 
   // Close suggestions when clicking outside or pressing Escape
   useEffect(() => {
@@ -424,27 +434,33 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
 
       {/* Mobile category/filter strip — replaced by compact category rail */}
       {!isDistractionFreePage && (
-        <div className="mx-auto flex max-w-7xl items-center gap-1.5 px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden">
-            <Link
-              href={withLocale('/category', currentLocale)}
-              aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`inline-flex h-9 min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                selectedCategory === 'all' && !activeCatalogTheme
-                  ? 'bg-warm-fg text-warm-bg'
-                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-              }`}
-            >
-              {dict.header.allCategories}
-            </Link>
-          <nav className="flex h-[44px] min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-hide scroll-fade-x" aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}>
+        <nav
+          aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}
+          className="mx-auto flex max-w-7xl items-center gap-1.5 px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden"
+        >
+          <Link
+            href={withLocale('/category', currentLocale)}
+            aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
+            className={`inline-flex h-9 min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              selectedCategory === 'all' && !activeCatalogTheme
+                ? 'bg-warm-fg text-warm-bg'
+                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+            }`}
+          >
+            {dict.header.allCategories}
+          </Link>
+          <div
+            ref={mobileCategoriesRef}
+            className="flex h-[44px] min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-hide scroll-fade-x"
+          >
             <CategoryRailItems
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
               itemClassName="flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
-          </nav>
-        </div>
+          </div>
+        </nav>
       )}
 
       {showDesktopCategories && !isDistractionFreePage && (
