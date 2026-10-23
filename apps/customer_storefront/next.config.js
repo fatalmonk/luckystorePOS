@@ -6,35 +6,16 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,
   images: {
+    // Keep remote images browser-loaded until the standalone optimizer can
+    // validate every redirect destination and reject private network targets.
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 160, 224, 280, 320, 384],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.r2.cloudflarestorage.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.luckystore1947.com',
-      },
-      {
-        // images.luckystore1947.com is now included above for Next.js image optimization,
-        // allowing on-the-fly resizing to resolve Lighthouse warnings for oversized images.
-        protocol: 'https',
-        hostname: '*.workers.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'notfair.co',
-        pathname: '/api/seo/**',
-      },
-    ],
+    // Do not enable the public Next image optimizer until remote redirects are
+    // validated against private and loopback IP ranges. unoptimized images load
+    // directly in the browser and this empty allowlist rejects crafted optimizer URLs.
+    remotePatterns: [],
   },
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js'],

@@ -67,6 +67,27 @@ export interface CategoryOption {
 }
 
 export function Header({ className = '', locale }: HeaderProps) {
+  const pathname = usePathname() || '/';
+  const localizedPathname = stripLocalePrefix(pathname);
+  const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
+    localizedPathname.startsWith(path),
+  );
+
+  return (
+    <Suspense
+      fallback={(
+        <div
+          aria-hidden="true"
+          className={isDistractionFreePage ? 'h-14' : 'h-[108px] md:h-[112px]'}
+        />
+      )}
+    >
+      <HeaderContent className={className} locale={locale} />
+    </Suspense>
+  );
+}
+
+function HeaderContent({ className = '', locale }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -403,12 +424,11 @@ export function Header({ className = '', locale }: HeaderProps) {
 
       {/* Mobile category/filter strip — replaced by compact category rail */}
       {!isDistractionFreePage && (
-        <div className="mx-auto max-w-7xl px-3 pb-2 sm:px-6 lg:hidden">
-          <nav className="flex flex-nowrap items-center overflow-x-auto h-[44px] gap-1.5 px-4 scrollbar-hide py-0.5 scroll-fade-x" aria-label="Categories">
+        <div className="mx-auto flex max-w-7xl items-center gap-1.5 px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden">
             <Link
               href={withLocale('/category', currentLocale)}
               aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              className={`inline-flex h-9 min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
                 selectedCategory === 'all' && !activeCatalogTheme
                   ? 'bg-warm-fg text-warm-bg'
                   : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -416,34 +436,35 @@ export function Header({ className = '', locale }: HeaderProps) {
             >
               {dict.header.allCategories}
             </Link>
+          <nav className="flex h-[44px] min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-hide scroll-fade-x" aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}>
             <CategoryRailItems
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
-              itemClassName="flex-shrink-0 inline-flex h-9 min-h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
         </div>
       )}
 
       {showDesktopCategories && !isDistractionFreePage && (
-        <div className="relative hidden h-14 border-t border-transparent bg-warm-bg dark:border-transparent md:ml-[72px] lg:flex">
+        <div className="relative hidden h-14 items-center gap-2 border-t border-transparent bg-warm-bg px-6 dark:border-transparent md:ml-[72px] lg:flex">
+          <Link
+            href={withLocale('/category', currentLocale)}
+            aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
+            className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+              selectedCategory === 'all' && !activeCatalogTheme
+                ? 'bg-warm-fg text-warm-bg'
+                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
+            }`}
+          >
+            {dict.header.allCategories}
+          </Link>
           <nav
             ref={desktopCategoriesRef}
-            aria-label="Product categories"
-            className="flex h-full items-center gap-2 overflow-x-auto px-6 pr-16 scrollbar-hide scroll-fade-x"
+            aria-label={currentLocale === 'bn' ? 'পণ্যের ক্যাটাগরি' : 'Product categories'}
+            className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-x-auto pr-16 scrollbar-hide scroll-fade-x"
           >
-            <Link
-              href={withLocale('/category', currentLocale)}
-              aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-              className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-                selectedCategory === 'all' && !activeCatalogTheme
-                  ? 'bg-warm-fg text-warm-bg'
-                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-              }`}
-            >
-              {dict.header.allCategories}
-            </Link>
             <CategoryRailItems
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
@@ -487,7 +508,7 @@ export function Header({ className = '', locale }: HeaderProps) {
       className={
         showDesktopCategories
           ? 'h-[108px] md:h-[112px]'
-          : 'h-14'
+        : 'h-14'
       }
       aria-hidden="true"
     />

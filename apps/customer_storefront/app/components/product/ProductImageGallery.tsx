@@ -33,12 +33,12 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
 
   if (images.length === 0) {
     return (
-      <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-warm-image-well">
+      <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-white">
         <ProductImage
           alt={productName}
           category={category}
           sizes={sizes}
-          imageClassName="w-full h-full object-contain p-6 sm:p-8 lg:p-10"
+          imageClassName="w-full h-full object-contain p-2 sm:p-3"
           iconSize={64}
         />
       </div>
@@ -56,13 +56,13 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
         <CarouselContent>
           {images.map((image, index) => (
             <CarouselItem key={`${image.url}-${index}`}>
-              <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-warm-image-well">
+              <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-white">
                 <ProductImage
                   src={image.url}
                   alt={image.alt || `${productName}, image ${index + 1}`}
                   category={category}
                   sizes={sizes}
-                  imageClassName="h-full w-full object-contain p-6 sm:p-8 lg:p-10"
+                  imageClassName="h-full w-full object-contain p-2 sm:p-3"
                   priority={index === 0}
                   iconSize={64}
                 />

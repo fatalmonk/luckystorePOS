@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { CategoryIcon, resolveCategoryIcon } from '../icons/CategoryIcons';
 
 interface ProductImageFallbackProps {
@@ -171,11 +172,20 @@ export function ProductImage({
 }: ProductImageProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
   const rawSrc = src?.trim() || null;
   const secureSrc = rawSrc?.startsWith('http://') ? 'https://' + rawSrc.slice('http://'.length) : rawSrc;
   const usableSrc = secureSrc === '/images/products/default.svg' ? null : secureSrc;
 
   useEffect(() => {
+    const image = imageRef.current;
+    if (image?.complete) {
+      const loaded = image.naturalWidth > 0;
+      setImageLoaded(true);
+      setImageError(!loaded);
+      return;
+    }
+
     setImageError(false);
     setImageLoaded(false);
   }, [usableSrc]);
@@ -204,15 +214,14 @@ export function ProductImage({
           }}
         />
       ) : showImage && usableSrc ? (
-        // Keep the supplied object URL intact. The browser uses the source's
-        // actual format; product derivative filenames are not guaranteed.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
+          ref={imageRef}
           src={usableSrc}
           alt={alt}
+          fill
           sizes={sizes}
+          priority={priority}
           className={`absolute inset-0 h-full w-full ${imageClassName}`}
-          loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
           onLoad={() => setImageLoaded(true)}

@@ -96,6 +96,36 @@ describe('ProductClient Brand Linking', () => {
     }
   });
 
+  it('renders manufacturer nutrition with the source measurement basis', () => {
+    const enrichment = getEnrichedProductData('d132ec9d')!;
+    render(
+      <ProductClient
+        product={{ ...mockProduct, id: createProductId('d132ec9d'), name: enrichment.exactName }}
+        crossSell={[]}
+        locale="en"
+        enrichment={enrichment}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Nutrition per 100 g' })).toBeInTheDocument();
+    expect(screen.getByText('Caramel: 246.23 kcal; Chocolate: 243.95 kcal')).toBeInTheDocument();
+  });
+
+  it('does not show English nutrition enrichment on the Bengali product page', () => {
+    const enrichment = getEnrichedProductData('d132ec9d')!;
+    render(
+      <ProductClient
+        product={{ ...mockProduct, id: createProductId('d132ec9d'), name: enrichment.exactName }}
+        crossSell={[]}
+        locale="bn"
+        enrichment={enrichment}
+      />,
+    );
+
+    expect(screen.queryByRole('heading', { name: 'Nutrition per 100 g' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Caramel: 246.23 kcal; Chocolate: 243.95 kcal')).not.toBeInTheDocument();
+  });
+
   it('renders brand links to dedicated brand hub in Bengali locale', () => {
     render(<ProductClient product={mockProduct} crossSell={[]} locale="bn" />);
 

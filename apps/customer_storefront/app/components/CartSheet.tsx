@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';
 import { useToast } from './Toast';
 import { Button } from './ui/Button';
 import { QtyNumber } from './ui/QtyNumber';
 import { formatBdt } from '../lib/formatPrice';
 import { ProductImage } from './product/ProductImage';
+import { getLocaleFromPathname, withLocale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
+import { getDisplayProductUnit } from '../lib/products/displayProductUnit';
 
 interface CartSheetProps {
   open: boolean;
@@ -18,6 +21,9 @@ interface CartSheetProps {
 
 export function CartSheet({ open, onClose }: CartSheetProps) {
   const router = useRouter();
+  const pathname = usePathname() || '/';
+  const locale = getLocaleFromPathname(pathname);
+  const dict = getDictionary(locale);
   const { showToast } = useToast();
   const { cart, updateQty, removeFromCart, undoRemove, totalItems, subtotal, deliveryFee, total, effectivePrice } = useCartContext();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -25,7 +31,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
 
   const handleRemove = (itemId: string, itemName: string) => {
     removeFromCart(itemId);
-    showToast(`Removed ${itemName} from cart`, { label: 'Undo', onClick: undoRemove }, 4000);
+    showToast(dict.cartSheet.removed.replace('{name}', itemName), { label: dict.cartSheet.undo, onClick: undoRemove }, 4000);
   };
 
   useEffect(() => {
@@ -98,12 +104,12 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3">
           <h2 id="cart-sheet-title" className="text-lg font-extrabold tracking-tight">
-            Cart <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
+            {dict.cartSheet.title} <span className="text-warm-muted font-semibold text-sm ml-1">({totalItems})</span>
           </h2>
           <button
             onClick={onClose}
             className="size-11 rounded-full bg-warm-border-light grid place-items-center text-warm-muted hover:bg-warm-border-light transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-label="Close cart"
+            aria-label={dict.cartSheet.close}
           >
             <X weight="bold" size={18} aria-hidden="true" />
           </button>
@@ -113,13 +119,13 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {cart.length === 0 ? (
             <div className="text-center py-10 px-4">
-              <p className="text-warm-muted text-sm">Your cart is empty.</p>
+              <p className="text-warm-muted text-sm">{dict.cartSheet.empty}</p>
               <Link
-                href="/category"
+                href={withLocale('/category', locale)}
                 onClick={onClose}
                 className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-warm-accent px-5 py-2.5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover"
               >
-                Browse groceries
+                {dict.cartSheet.browse}
               </Link>
             </div>
           ) : (
@@ -145,18 +151,18 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[13px] truncate text-warm-fg">{item.name}</p>
                     <p className="text-xs text-warm-muted">
-                      {formatBdt(price)} / {item.unit}
+                      {formatBdt(price)} / {getDisplayProductUnit(item.name, item.unit)}
                       {price < item.price && <span className="ml-1 line-through">{formatBdt(item.price)}</span>}
                     </p>
                     <button
                       onClick={() => handleRemove(item.id, item.name)}
                       className="mt-0.5 inline-flex min-h-11 items-center gap-1 px-0.5 text-xs text-warm-danger transition-colors hover:text-warm-danger-dark"
-                      aria-label={`Remove ${item.name}`}
+                      aria-label={`${dict.cartSheet.remove} ${item.name}`}
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
                       </svg>
-                      Remove
+                      {dict.cartSheet.remove}
                     </button>
                   </div>
                   <div className="col-start-2 flex min-w-0 items-center justify-between gap-2">
@@ -164,7 +170,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                       <button
                         onClick={() => updateQty(item.id, -1)}
                         className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-lg border border-warm-border bg-warm-bg text-sm font-semibold transition-colors hover:border-warm-accent hover:text-warm-fg active:scale-95"
-                        aria-label={`Decrease ${item.name} quantity`}
+                      aria-label={dict.cartSheet.decrease.replace('{name}', item.name)}
                       >
                         −
                       </button>
@@ -172,7 +178,7 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
                       <button
                         onClick={() => updateQty(item.id, 1)}
                         className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-lg border border-warm-border bg-warm-bg text-sm font-semibold transition-colors hover:border-warm-accent hover:text-warm-fg active:scale-95"
-                        aria-label={`Increase ${item.name} quantity`}
+                      aria-label={dict.cartSheet.increase.replace('{name}', item.name)}
                       >
                         +
                       </button>
@@ -193,16 +199,17 @@ export function CartSheet({ open, onClose }: CartSheetProps) {
           <div className="border-t border-warm-border-light px-5 py-4 flex items-center gap-4">
             <div className="flex-1">
               <p className="text-xs text-warm-muted uppercase tracking-widest font-semibold mb-0.5">
-                {totalItems} items {deliveryFee === 0 && '· Free delivery'}
+                {totalItems.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en')} {locale === 'bn' ? dict.catalog.items : totalItems === 1 ? dict.catalog.item : dict.catalog.items}
+                {' · '}{deliveryFee === 0 ? dict.cartSheet.freeDelivery : `${dict.cartSheet.delivery} ${formatBdt(deliveryFee)}`}
               </p>
-              <p className="text-xl font-extrabold">{formatBdt(total)}</p>
+              <p className="text-xl font-extrabold"><span className="sr-only">{dict.cartSheet.total}: </span>{formatBdt(total)}</p>
             </div>
             <Button
-              onClick={() => { onClose(); router.push('/checkout'); }}
+              onClick={() => { onClose(); router.push(withLocale('/checkout', locale)); }}
               className="flex-0 w-[140px]"
               data-testid="sheet-checkout-btn"
             >
-              Checkout →
+              {dict.cartSheet.checkout}
             </Button>
           </div>
         )}

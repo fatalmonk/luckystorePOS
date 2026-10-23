@@ -82,6 +82,16 @@ describe('DesktopQuickRail', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/profile#orders'));
   });
 
+  it('keeps the Bengali prefix when auth resolution fails', async () => {
+    mockPathname = '/bn';
+    mockLoading = true;
+    ensureAuth.mockRejectedValue(new Error('auth unavailable'));
+    render(<DesktopQuickRail />);
+
+    fireEvent.click(screen.getByRole('link', { name: 'Account' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/bn/profile'));
+  });
+
   it('defers desktop initialization until after load', () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() });

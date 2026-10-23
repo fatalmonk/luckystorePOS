@@ -58,7 +58,12 @@ describe('Header catalog filter strip', () => {
   it('exposes the desktop category strip and quick rail on catalog routes', () => {
     render(<Header />);
 
-    expect(screen.getByRole('navigation', { name: 'Product categories' })).toBeInTheDocument();
+    const categories = screen.getByRole('navigation', { name: 'Product categories' });
+    expect(categories).toBeInTheDocument();
+    expect(within(categories).queryByRole('link', { name: 'All' })).not.toBeInTheDocument();
+    const allLinks = screen.getAllByRole('link', { name: 'All' });
+    expect(allLinks).toHaveLength(2);
+    allLinks.forEach((link) => expect(link).toBeInTheDocument());
     expect(screen.getByText('Quick rail')).toBeInTheDocument();
     const menuButtons = screen.getAllByRole('button', { name: 'Open menu' });
     expect(menuButtons).toHaveLength(2);
@@ -69,9 +74,8 @@ describe('Header catalog filter strip', () => {
     mockSearchParams = new URLSearchParams('theme=deals');
     render(<Header />);
 
-    const categories = screen.getByRole('navigation', { name: 'Product categories' });
-    expect(within(categories).getByRole('link', { name: 'All' })).not.toHaveAttribute(
-      'aria-current',
-    );
+    screen.getAllByRole('link', { name: 'All' }).forEach((link) => {
+      expect(link).not.toHaveAttribute('aria-current');
+    });
   });
 });

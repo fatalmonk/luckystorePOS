@@ -217,6 +217,27 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(getEnrichedProductData('legacy-b8a7c6c6-product')).toBe(PRODUCT_ENRICHMENTS.b8a7c6c6);
     });
 
+    it('attributes Polar Coffee and Doi tub volumes to catalog records when manufacturer pages omit them', () => {
+      const cases = [
+        { key: '2e948079', catalogName: 'Coffee 1 L', question: /package size/i },
+        { key: '54a7520e', catalogName: 'Doi 1 Liter', question: /package volume/i },
+      ];
+
+      for (const { key, catalogName, question } of cases) {
+        const item = PRODUCT_ENRICHMENTS[key];
+        const volumeSpec = item.specifications.find((spec) => spec.label === 'Net Volume');
+        const sizeFaq = item.faqs.find((faq) => question.test(faq.question));
+
+        expect(item.fieldEvidence.netQuantity).toEqual(['CATALOG_RECORD']);
+        expect(item.fieldEvidence.summary).toContain('CATALOG_RECORD');
+        expect(item.evidenceManifest.CATALOG_RECORD.evidenceRef).toContain(`name: ${catalogName}`);
+        expect(item.evidenceManifest.MFR_PRODUCT_PAGE.evidenceRef).not.toMatch(/1000\s?ml|1\s?lit(?:er|re)/i);
+        expect(volumeSpec?.evidenceRefs).toEqual(['CATALOG_RECORD']);
+        expect(sizeFaq?.evidenceRefs).toEqual(['CATALOG_RECORD', 'MFR_PRODUCT_PAGE']);
+        expect(item.fieldEvidence.highlights).toContainEqual(['CATALOG_RECORD']);
+      }
+    });
+
     it('ensures all enriched items have complete, verified content contracts with referential integrity', () => {
       const enrichmentKeys = Object.keys(PRODUCT_ENRICHMENTS);
       expect(enrichmentKeys.length).toBeGreaterThanOrEqual(85);
@@ -251,6 +272,14 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
           expect(spec.evidenceRefs).toBeDefined();
           expect(spec.evidenceRefs.length).toBeGreaterThanOrEqual(1);
           for (const ref of spec.evidenceRefs) {
+            expect(manifestKeys).toContain(ref);
+          }
+        }
+        if (item.nutrition) {
+          expect(item.nutrition.basis).toBeTruthy();
+          expect(item.nutrition.text).toBeTruthy();
+          expect(item.nutrition.evidenceRefs.length).toBeGreaterThanOrEqual(1);
+          for (const ref of item.nutrition.evidenceRefs) {
             expect(manifestKeys).toContain(ref);
           }
         }
@@ -513,6 +542,9 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(butterscotch?.brand).toBe('Polar');
       expect(butterscotch?.netQuantity).toBe('120 ml');
       expect(butterscotch?.specifications.find((s) => s.label === 'Energy')?.value).toBe('320.53 kcal per 100g');
+      expect(butterscotch?.specifications.find((s) => s.label === 'Ingredients')).toBeDefined();
+      expect(butterscotch?.specifications.find((s) => s.label === 'Allergen Declaration')?.value).toContain('wheat');
+      expect(butterscotch?.nutrition).toEqual({ basis: 'per 100 g', text: 'Energy: 320.53 kcal', evidenceRefs: ['MFR_PRODUCT_PAGE'] });
       expect(butterscotch?.evidenceManifest.MFR_PRODUCT_PAGE.sourceUrl).toBe(
         'https://polarbd.com/en/product/cone-carnival-butterscotch/',
       );
@@ -521,6 +553,27 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(vanillaCone).toBeDefined();
       expect(vanillaCone?.brand).toBe('Polar');
       expect(vanillaCone?.netQuantity).toBe('120 ml');
+      expect(vanillaCone?.specifications.find((s) => s.label === 'Ingredients')).toBeDefined();
+      expect(vanillaCone?.specifications.find((s) => s.label === 'Allergen Declaration')?.value).toContain('peanut');
+      expect(vanillaCone?.nutrition).toEqual({ basis: 'per 100 g', text: 'Energy: 296.39 kcal', evidenceRefs: ['MFR_PRODUCT_PAGE'] });
+
+      const royal = getEnrichedProductData('d132ec9d');
+      expect(royal?.specifications.find((s) => s.label === 'Energy by Variant')?.value).toBe('Caramel: 246.23 kcal per 100g; Chocolate: 243.95 kcal per 100g');
+      expect(royal?.specifications.find((s) => s.label === 'Ingredients (Caramel Variant)')?.value).toContain('almond nut');
+      expect(royal?.nutrition).toEqual({ basis: 'per 100 g', text: 'Caramel: 246.23 kcal; Chocolate: 243.95 kcal', evidenceRefs: ['MFR_PRODUCT_PAGE'] });
+
+      const polarManufacturerMatches = [
+        '5830390b', 'e8771528', 'fc6d963a', '4ca03fce', '2e948079',
+        '8f7ce150', '54a7520e', 'c1895793', 'b77e2fe6', 'f2d567f0',
+        'bc7de70f', 'd132ec9d', 'fe31ca90', '2233c416', 'be49558d',
+      ];
+      for (const id of polarManufacturerMatches) {
+        const item = getEnrichedProductData(id);
+        expect(item?.specifications.find((s) => s.label.startsWith('Ingredients'))).toBeDefined();
+        expect(item?.specifications.find((s) => s.label === 'Allergen Declaration')).toBeDefined();
+        expect(item?.nutrition?.basis).toBe('per 100 g');
+        expect(item?.nutrition?.evidenceRefs).toContain('MFR_PRODUCT_PAGE');
+      }
 
       const chocobar = getEnrichedProductData('fc6d963a');
       expect(chocobar).toBeDefined();

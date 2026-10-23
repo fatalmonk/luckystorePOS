@@ -40,7 +40,7 @@ Lucky Store enforces a strict customer-protection delivery policy centered on tr
 - **Delivery Fee:**
   - Free delivery on all orders of ৳500 or more.
   - Standard ৳40 delivery fee on orders below ৳500.
-- **Delivery Speed:** Same-day delivery, typically delivered within 60 to 90 minutes during operating hours.
+- **Dispatch Timing:** Orders placed during active delivery hours are dispatched the same day from the Chawkbazar hub. The published delivery policy does not specify an arrival-time estimate.
 - **100% Doorstep Inspection Guarantee:** Customers inspect seals, expiration dates, and package integrity before handing over payment. If any item is unsatisfactory, the customer may reject it immediately at the door with zero cancellation fee.
 
 ---

@@ -61,14 +61,22 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
   const matchedBrand = getBrandByName(effectiveBrand);
   const gtinInfo = validateGtin(product.barcode);
   const effectiveSku = product.sku || product.id;
+  const imageUrls = (images !== undefined ? images : product.image_url ? [product.image_url] : [])
+    .map((image) => {
+      try {
+        const url = new URL(image, 'https://www.luckystore1947.com');
+        return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+      } catch {
+        return null;
+      }
+    })
+    .filter((image): image is string => image !== null);
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org/',
     '@type': 'Product',
     name: effectiveName,
-    image: images !== undefined
-      ? images.length > 0 ? images : undefined
-      : product.image_url ? [product.image_url] : undefined,
+    image: imageUrls.length > 0 ? imageUrls : undefined,
     description: description || product.description || `${effectiveName} available at Lucky Store in Chattogram`,
     sku: effectiveSku,
     ...(gtinInfo ? { [gtinInfo.property]: gtinInfo.value } : {}),

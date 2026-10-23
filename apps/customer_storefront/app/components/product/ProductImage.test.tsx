@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ProductImage } from './ProductImage';
 
 describe('ProductImage', () => {
@@ -45,9 +45,42 @@ describe('ProductImage', () => {
     );
 
     const image = screen.getByRole('img', { name: 'Broken item' });
-    expect(image).toHaveAttribute('src', 'https://example.com/broken.webp');
+    expect(image.getAttribute('src')).toContain(encodeURIComponent('https://example.com/broken.webp'));
 
     fireEvent.error(image);
     expect(screen.getByRole('img', { name: 'Broken item image unavailable' })).toBeInTheDocument();
+  });
+
+  it('requests responsive image candidates for product photos', () => {
+    render(
+      <ProductImage
+        src="https://images.luckystore1947.com/products/item.webp"
+        alt="Product packshot"
+        category="Snacks"
+        sizes="(max-width: 640px) 50vw, 240px"
+      />,
+    );
+
+    const image = screen.getByRole('img', { name: 'Product packshot' });
+    expect(image.getAttribute('srcSet')).toContain('/_next/image?url=');
+    expect(image).toHaveAttribute('sizes', '(max-width: 640px) 50vw, 240px');
+  });
+
+  it('hides the loading placeholder when a cached image is already complete on mount', () => {
+    vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(120);
+
+    render(
+      <ProductImage
+        src="https://example.com/cached.webp"
+        alt="Cached item"
+        category="Snacks"
+        sizes="100px"
+        showLoadingState
+      />,
+    );
+
+    expect(screen.queryByTestId('product-image-loading')).not.toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 });

@@ -1,19 +1,24 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Locale } from '../../lib/i18n/config';
+import { withLocale } from '../../lib/i18n/config';
+import { getDictionary } from '../../lib/i18n/dictionaries';
 
 interface TrustStripProps {
   className?: string;
+  locale?: Locale;
 }
 
 /**
  * Compact trust strip for the product detail page.
  * Surfaces delivery policy, COD, and doorstep inspection reassurance linking to /delivery.
  */
-export function TrustStrip({ className = '' }: TrustStripProps) {
+export function TrustStrip({ className = '', locale = 'en' }: TrustStripProps) {
+  const dict = getDictionary(locale);
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       <Link
-        href="/delivery"
+        href={withLocale('/delivery', locale)}
         className="inline-flex items-center gap-1.5 text-xs text-warm-muted hover:text-warm-fg transition-colors group"
       >
         <svg
@@ -30,7 +35,7 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
         </svg>
         <span className="underline decoration-warm-border group-hover:decoration-warm-fg underline-offset-2">
-          Free delivery ৳500+ (1 km)
+          {dict.trustStrip.freeDeliveryTitle}
         </span>
       </Link>
 
@@ -52,13 +57,13 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
           <circle cx="7.5" cy="15.5" r="0.5" fill="currentColor" />
           <circle cx="16.5" cy="15.5" r="0.5" fill="currentColor" />
         </svg>
-        <span>Cash on delivery</span>
+        <span>{dict.trustStrip.codTitle}</span>
       </div>
 
       <span className="text-warm-border" aria-hidden="true">·</span>
 
       <Link
-        href="/delivery"
+        href={withLocale('/delivery', locale)}
         className="inline-flex items-center gap-1.5 text-xs text-warm-muted hover:text-warm-fg transition-colors group"
       >
         <svg
@@ -75,7 +80,7 @@ export function TrustStrip({ className = '' }: TrustStripProps) {
           <path d="m9 12 2 2 4-4" />
         </svg>
         <span className="underline decoration-warm-border group-hover:decoration-warm-fg underline-offset-2">
-          Doorstep inspection
+          {dict.productPage.doorstepInspection}
         </span>
       </Link>
     </div>

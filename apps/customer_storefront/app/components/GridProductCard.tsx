@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Heart } from '@phosphor-icons/react';
 import { formatBdt } from '../lib/formatPrice';
+import { getDisplayProductUnit } from '../lib/products/displayProductUnit';
 import { getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import { getProductGalleryImages } from '../lib/products/productGalleryRegistry';
@@ -44,6 +45,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   const stockLow = product.stock === 1;
   const outOfStock = product.stock <= 0;
   const localGalleryImage = getProductGalleryImages(product.id)?.[0];
+  const productImageSrc = product.image_url || localGalleryImage?.url;
   const badgeLabel = outOfStock
     ? dict.productCard.outOfStock
     : stockLow
@@ -102,7 +104,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
         className="product-card-image-well relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
       >
         <ProductImage
-          src={product.image_url || localGalleryImage?.url}
+          src={productImageSrc}
           alt={localGalleryImage?.alt || product.name}
           category={product.category}
           sizes="(max-width: 640px) calc(50vw - 24px), (max-width: 1024px) calc(33vw - 24px), (max-width: 1280px) calc(25vw - 24px), 301px"
@@ -124,7 +126,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
             </h3>
           </Link>
 
-          <p className="text-xs leading-none text-warm-dim">{product.unit}</p>
+          <p className="text-xs leading-none text-warm-dim">{getDisplayProductUnit(product.name, product.unit)}</p>
 
           <div className="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
             <span className="font-mono text-lg font-bold tabular-nums text-warm-fg">{formatLocalizedBdt(product.price, locale)}</span>
