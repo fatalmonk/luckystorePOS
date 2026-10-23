@@ -162,6 +162,19 @@ class AuditInputTests(unittest.TestCase):
                 report=copy.deepcopy(self.report); report['provenance'][field]=value
                 with self.assertRaises(ValueError): validate(report,self.run,456,'abc',self.now)
 
+    def test_incomplete_audit_is_review_only(self):
+        report=copy.deepcopy(self.report)
+        report['status']='incomplete'
+        report['limitations']=['sitemap transport failure; count unverified']
+        with self.assertRaises(ValueError):
+            validate(report,self.run,456,'abc',self.now)
+
+    def test_confirmed_issues_audit_is_accepted(self):
+        report=copy.deepcopy(self.report)
+        report['status']='issues_found'
+        report['issues']=['sample: canonical mismatch']
+        self.assertEqual(validate(report,self.run,456,'abc',self.now),report)
+
     def test_legacy_schema_and_execution_failure_rejected(self):
         for field,value in [('schema_version',1),('status','execution_failed'),('base_url','https://other.example')]:
             with self.subTest(field=field):
