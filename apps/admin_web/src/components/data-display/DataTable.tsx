@@ -49,7 +49,7 @@ export function DataTable<T extends object>({
                 className={clsx(
                   'px-4 py-3 text-xs font-semibold text-warm-muted uppercase tracking-wider',
                   ALIGN_MAP[col.align ?? 'left'],
-                  pinFirstColumn && idx === 0 && 'sticky left-0 z-20 w-[65vw] min-w-40 max-w-64 bg-warm-border-warm'
+                  pinFirstColumn && idx === 0 && 'sticky left-0 z-20 w-[40vw] min-w-32 max-w-56 bg-warm-border-warm'
                 )}
               >
                 {col.header}
@@ -90,7 +90,7 @@ export function DataTable<T extends object>({
                         'px-4 py-3 text-sm text-warm-fg',
                         ALIGN_MAP[col.align ?? 'left'],
                         pinFirstColumn && colIdx === 0
-                          ? 'sticky left-0 z-10 w-[65vw] min-w-40 max-w-64 whitespace-normal [overflow-wrap:anywhere] bg-warm-surface'
+                          ? 'sticky left-0 z-10 w-[40vw] min-w-32 max-w-56 whitespace-normal [overflow-wrap:anywhere] bg-warm-surface'
                           : 'whitespace-nowrap'
                       )}
                     >
