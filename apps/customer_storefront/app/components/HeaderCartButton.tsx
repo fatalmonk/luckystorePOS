@@ -5,6 +5,9 @@ import { ShoppingCartSimple } from '@phosphor-icons/react';
 import { useCartSheet } from '../hooks/useCartSheet';
 import { formatBdt } from '../lib/formatPrice';
 import { useCartContext } from './CartProvider';
+import { usePathname } from 'next/navigation';
+import { getLocaleFromPathname } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 interface HeaderCartButtonProps {
   compact?: boolean;
@@ -12,6 +15,9 @@ interface HeaderCartButtonProps {
 }
 
 export function HeaderCartButton({ compact = false, iconSize }: HeaderCartButtonProps) {
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
+  const dict = getDictionary(locale);
   const { totalItems, total, isLoaded } = useCartContext();
   const { open } = useCartSheet();
 
@@ -31,7 +37,11 @@ export function HeaderCartButton({ compact = false, iconSize }: HeaderCartButton
                 : 'h-11 w-11 border border-warm-border bg-warm-surface hover:bg-warm-image-well'
             }`
       }`}
-      aria-label={`Cart ${isLoaded && totalItems > 0 ? `(${totalItems} items, ${formatBdt(total)})` : '(empty)'}`}
+      aria-label={isLoaded && totalItems > 0
+        ? dict.header.cartItems
+          .replace('{count}', totalItems.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en'))
+          .replace('{total}', formatBdt(total))
+        : dict.header.cartEmpty}
     >
       <ShoppingCartSimple className={compact ? 'relative z-10' : undefined} weight="bold" size={iconPx} aria-hidden="true" />
       {!compact && isLoaded && totalItems > 0 && (

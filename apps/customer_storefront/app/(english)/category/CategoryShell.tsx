@@ -176,13 +176,13 @@ export function CategoryShell({
     <>
       {itemListSchema && <JsonLd data={itemListSchema} />}
       <Header />
-      <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-4 sm:pt-6' : ''}`}>
+      <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-2 sm:pt-4' : ''}`}>
         {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
           <Suspense fallback={<CategoryGridSkeleton />}>
             <CategoryGrid searchParams={searchParams} locale={locale} />
           </Suspense>
         ) : (
-          <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+          <div className="p-2 sm:p-4 space-y-5 sm:space-y-5 max-w-7xl mx-auto">
             <div className="space-y-4">
               {!isAllProducts && (
                 <Breadcrumbs

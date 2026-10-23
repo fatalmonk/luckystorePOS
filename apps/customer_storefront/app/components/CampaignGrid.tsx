@@ -80,7 +80,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               <Link
                 href={withLocale('/delivery', locale)}
                 data-cro="hero-delivery-eligibility"
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#fff2c9] px-5 text-sm font-semibold text-[#0B0B0D] transition-colors hover:bg-[#ffedb4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003d24]"
+                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warm-surface/95 px-5 text-sm font-semibold text-[#0B0B0D] transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003d24]"
               >
                 <MapPin size={17} aria-hidden="true" />
                 {dict.campaign.deliveryCta}

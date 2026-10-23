@@ -12,25 +12,26 @@ import { trackViewItemList } from '../lib/analytics';
 import type { Locale } from '../lib/i18n/config';
 import { withLocale, getLocaleFromPathname } from '../lib/i18n/config';
 import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
+import { getDictionary } from '../lib/i18n/dictionaries';
 
 const PRICE_OPTIONS = [
-  { value: '0-100', label: 'Under ৳100' },
-  { value: '100-500', label: '৳100 – ৳500' },
-  { value: '500-1000', label: '৳500 – ৳1000' },
-  { value: '1000-999999', label: '৳1000+' },
+  { value: '0-100', label: 'Under ৳100', bn: '৳১০০-এর কম' },
+  { value: '100-500', label: '৳100 – ৳500', bn: '৳১০০ – ৳৫০০' },
+  { value: '500-1000', label: '৳500 – ৳1000', bn: '৳৫০০ – ৳১০০০' },
+  { value: '1000-999999', label: '৳1000+', bn: '৳১০০০+' },
 ];
 
 const AVAILABILITY_OPTIONS = [
-  { value: 'in_stock', label: 'In Stock' },
-  { value: 'low_stock', label: 'Low Stock (≤5)' },
-  { value: 'out_of_stock', label: 'Out of Stock' },
+  { value: 'in_stock', label: 'In Stock', bn: 'স্টকে আছে' },
+  { value: 'low_stock', label: 'Low Stock (≤5)', bn: 'স্টক কম (≤৫)' },
+  { value: 'out_of_stock', label: 'Out of Stock', bn: 'স্টক শেষ' },
 ];
 
 const SORT_OPTIONS = [
-  { value: 'best', label: 'Best Match' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'newest', label: 'Newest' },
+  { value: 'best', label: 'Best Match', bn: 'সেরা মিল' },
+  { value: 'price_asc', label: 'Price: Low to High', bn: 'দাম: কম থেকে বেশি' },
+  { value: 'price_desc', label: 'Price: High to Low', bn: 'দাম: বেশি থেকে কম' },
+  { value: 'newest', label: 'Newest', bn: 'নতুন পণ্য' },
 ];
 
 const BRAND_ALIASES: Record<string, string> = {
@@ -91,6 +92,11 @@ export function CatalogLayout({
   const router = useRouter();
   const pathname = usePathname();
   const effectiveLocale = locale || getLocaleFromPathname(pathname);
+  const dict = getDictionary(effectiveLocale);
+  const categoryRecord = categories.find((category) => category.slug === categorySlug);
+  const categoryLabel = effectiveLocale === 'bn'
+    ? BENGALI_CATEGORY_NAMES[normalizeCategorySlug(categorySlug)] || categoryRecord?.name || categorySlug.replace(/-/g, ' ')
+    : group?.label || categoryRecord?.name || categorySlug.replace(/-/g, ' ');
   const urlParams = useSearchParams();
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -190,6 +196,7 @@ export function CatalogLayout({
   // Count active filters
   const totalActiveFilterCount =
     activePrices.length + activeAvailabilities.length + activeBrands.length + (activeSort !== 'best' ? 1 : 0);
+  const hasFilterCriteria = totalActiveFilterCount > 0 || Boolean(searchQuery.trim());
 
   // Helper to push URL query updates
   const updateQueryParam = (key: string, values: string[]) => {
@@ -232,6 +239,7 @@ export function CatalogLayout({
     params.delete('availability');
     params.delete('brand');
     params.delete('sort');
+    params.delete('q');
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   };
 
@@ -313,13 +321,13 @@ export function CatalogLayout({
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-              {effectiveLocale === 'bn' ? 'হোম' : 'Home'}
+                  {dict.catalog.home}
             </Link>
             {brandName ? (
               <>
                 <span>/</span>
                 <Link href={withLocale('/brand', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                  {effectiveLocale === 'bn' ? 'ব্র্যান্ডসমূহ' : 'Brands'}
+                  {dict.catalog.brands}
                 </Link>
                 <span>/</span>
                 <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">
@@ -330,13 +338,13 @@ export function CatalogLayout({
               <>
                 <span>/</span>
                 <Link href={withLocale('/category', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
-                  {effectiveLocale === 'bn' ? 'ক্যাটাগরি' : 'Shop'}
+                  {dict.catalog.shop}
                 </Link>
                 {categorySlug !== 'all' && (
                   <>
                     <span>/</span>
                     <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
-                      {effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[categorySlug] || categorySlug.replace(/-/g, ' ')) : categorySlug.replace(/-/g, ' ')}
+                      {categoryLabel}
                     </span>
                   </>
                 )}
@@ -348,12 +356,12 @@ export function CatalogLayout({
             {(() => {
               const TitleTag = headingLevel || (categorySlug !== 'all' ? 'h2' : 'h1');
               const titleText = searchQuery
-                ? `Search results for "${searchQuery}"`
+                ? dict.catalog.searchResults.replace('{query}', searchQuery)
                 : brandName
                 ? (effectiveLocale === 'bn' ? `${brandName}-এর পণ্যসমূহ` : `${brandName} Products`)
                 : categorySlug !== 'all'
-                ? (group?.label || categorySlug.replace(/-/g, ' '))
-                : 'All Products';
+                ? categoryLabel
+                : dict.catalog.allProducts;
 
               return (
                 <TitleTag className="text-lg font-black tracking-tight text-warm-fg">
@@ -366,7 +374,7 @@ export function CatalogLayout({
               aria-atomic="true"
               className="px-2.5 py-0.5 rounded-full bg-warm-bg border border-warm-border text-xs font-extrabold text-warm-fg"
             >
-              {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
+              {effectiveLocale === 'bn' ? `${filtered.length.toLocaleString('bn-BD')} ${dict.catalog.items}` : `${filtered.length} ${filtered.length === 1 ? dict.catalog.item : dict.catalog.items}`}
             </span>
           </div>
         </div>
@@ -382,7 +390,7 @@ export function CatalogLayout({
             className="md:hidden min-h-[44px] flex items-center gap-2 px-3.5 py-2 rounded-full bg-warm-fg text-warm-accent font-extrabold text-xs shadow-warm-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-all"
           >
             <Funnel weight="fill" size={16} />
-            <span>Filters</span>
+            <span>{dict.catalog.filters}</span>
             {totalActiveFilterCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-warm-accent text-warm-fg flex items-center justify-center text-[10px] font-black">
                 {totalActiveFilterCount}
@@ -392,16 +400,16 @@ export function CatalogLayout({
 
           {/* Sort Selector */}
           <div className="flex items-center gap-1.5 bg-warm-image-well border border-warm-image-well-border rounded-warm-control px-3 py-1.5 min-h-[44px] text-xs font-bold text-warm-fg">
-            <span className="text-warm-muted hidden sm:inline">Sort:</span>
+            <span className="text-warm-muted hidden sm:inline">{dict.catalog.sort}</span>
             <select
               value={activeSort}
               onChange={(e) => handleSortChange(e.target.value)}
               className="bg-transparent outline-none font-bold text-xs text-warm-fg cursor-pointer"
-              aria-label="Sort products"
+              aria-label={dict.catalog.sortLabel}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {effectiveLocale === 'bn' ? opt.bn : opt.label}
                 </option>
               ))}
             </select>
@@ -430,16 +438,16 @@ export function CatalogLayout({
           <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-4 shadow-warm-panel space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">
-                Explore Sub-categories
+                {dict.catalog.subCategories}
               </span>
               <span className="text-xs text-warm-muted font-bold">
-                {subCats.length} sub-categories
+                {dict.catalog.subCategoryCount.replace('{count}', subCats.length.toLocaleString(effectiveLocale === 'bn' ? 'bn-BD' : 'en'))}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {subCats.map((sub) => {
                 const isActive = categorySlug === sub.slug;
-                const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[sub.slug] || sub.name) : sub.name;
+                const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(sub.slug)] || sub.name) : sub.name;
                 return (
                   <Link
                     key={sub.id}
@@ -467,9 +475,10 @@ export function CatalogLayout({
       {/* Active Filter Chips Bar */}
       {totalActiveFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1">
-          <span className="text-xs font-bold text-warm-muted">Active Filters:</span>
+              <span className="text-xs font-bold text-warm-muted">{dict.catalog.activeFilters}</span>
           {activePrices.map((p) => {
-            const label = PRICE_OPTIONS.find((opt) => opt.value === p)?.label || p;
+            const option = PRICE_OPTIONS.find((opt) => opt.value === p);
+            const label = option ? (effectiveLocale === 'bn' ? option.bn : option.label) : p;
             return (
               <button
                 key={p}
@@ -484,7 +493,8 @@ export function CatalogLayout({
             );
           })}
           {activeAvailabilities.map((a) => {
-            const label = AVAILABILITY_OPTIONS.find((opt) => opt.value === a)?.label || a;
+            const option = AVAILABILITY_OPTIONS.find((opt) => opt.value === a);
+            const label = option ? (effectiveLocale === 'bn' ? option.bn : option.label) : a;
             return (
               <button
                 key={a}
@@ -506,7 +516,7 @@ export function CatalogLayout({
               aria-label={`Remove ${b} brand filter`}
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full bg-warm-surface border border-warm-border text-warm-fg text-xs font-bold hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors shadow-warm-sm"
             >
-              <span>Brand: {b}</span>
+              <span>{dict.catalog.brand}: {b}</span>
               <X weight="bold" size={14} className="text-warm-muted" />
             </button>
           ))}
@@ -515,7 +525,7 @@ export function CatalogLayout({
             onClick={clearAllFilters}
             className="text-xs font-extrabold text-warm-danger hover:underline px-3 py-2 min-h-[44px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent rounded-full"
           >
-            Clear All
+            {dict.catalog.clearAll}
           </button>
         </div>
       )}
@@ -526,7 +536,7 @@ export function CatalogLayout({
         <aside className="hidden md:block md:col-span-3 sticky top-[120px] z-20 max-h-[calc(100vh-8.5rem)] overflow-y-auto custom-scrollbar bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-5 shadow-warm-panel space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-transparent">
             <h2 className="font-extrabold text-sm text-warm-fg flex items-center gap-1.5">
-              <Funnel weight="bold" size={16} /> Filters
+              <Funnel weight="bold" size={16} /> {dict.catalog.filters}
             </h2>
             {totalActiveFilterCount > 0 && (
               <button
@@ -534,7 +544,7 @@ export function CatalogLayout({
                 onClick={clearAllFilters}
                 className="text-[11px] font-bold text-warm-danger hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-warm-accent rounded"
               >
-                Clear All
+                {dict.catalog.clearAll}
               </button>
             )}
           </div>
@@ -544,7 +554,7 @@ export function CatalogLayout({
           {/* Brand Filter (conditional) */}
           {availableBrands.length > 1 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h3>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.brands}</h3>
               <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
                 {availableBrands.map((b) => (
                   <label
@@ -569,7 +579,7 @@ export function CatalogLayout({
 
           {/* Price Range Filter */}
           <div className={`space-y-2 ${availableBrands.length > 1 ? 'pt-2 border-t border-warm-border/40' : ''}`}>
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.priceRange}</h3>
             <div className="space-y-1.5">
               {PRICE_OPTIONS.map((opt) => (
                 <label
@@ -582,7 +592,7 @@ export function CatalogLayout({
                     onChange={() => togglePriceFilter(opt.value)}
                     className="w-4 h-4 rounded border-2 border-warm-border text-warm-fg accent-warm-fg focus:ring-1 focus:ring-warm-accent cursor-pointer"
                   />
-                  <span>{opt.label}</span>
+                  <span>{effectiveLocale === 'bn' ? opt.bn : opt.label}</span>
                 </label>
               ))}
             </div>
@@ -590,7 +600,7 @@ export function CatalogLayout({
 
           {/* Availability Filter */}
           <div className="space-y-2 pt-2 border-t border-warm-border/40">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Stock Status</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.availability}</h3>
             <div className="space-y-1.5">
               {AVAILABILITY_OPTIONS.map((opt) => (
                 <label
@@ -603,7 +613,7 @@ export function CatalogLayout({
                     onChange={() => toggleAvailFilter(opt.value)}
                     className="w-4 h-4 rounded border-2 border-warm-border text-warm-fg accent-warm-fg focus:ring-1 focus:ring-warm-accent cursor-pointer"
                   />
-                  <span>{opt.label}</span>
+                  <span>{effectiveLocale === 'bn' ? opt.bn : opt.label}</span>
                 </label>
               ))}
             </div>
@@ -611,21 +621,27 @@ export function CatalogLayout({
         </aside>
 
         {/* Products Grid Area */}
-        <section aria-label="Product catalog" className="md:col-span-9 space-y-6">
+        <section aria-label={effectiveLocale === 'bn' ? 'পণ্যের তালিকা' : 'Product catalog'} className="md:col-span-9 space-y-6">
           {filtered.length === 0 ? (
             <div className="bg-warm-bg border border-warm-border/60 rounded-warm-panel p-12 text-center space-y-3">
               <MagnifyingGlass className="mx-auto text-warm-muted" size={36} weight="bold" aria-hidden="true" />
-              <h3 className="text-lg font-bold text-warm-fg">No products match your filters</h3>
+              <h3 className="text-lg font-bold text-warm-fg">{hasFilterCriteria ? dict.catalog.noProductsMatch : dict.catalog.noProductsCategory}</h3>
               <p className="text-xs text-warm-muted max-w-sm mx-auto">
-                Try clearing some of your price or availability filters to view more products.
+                {hasFilterCriteria ? dict.catalog.noProductsMatchHint : dict.catalog.noProductsCategoryHint}
               </p>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="px-5 py-2.5 rounded-full bg-warm-fg text-warm-accent font-extrabold text-xs hover:bg-warm-fg-strong transition-all shadow-sm"
-              >
-                Clear All Filters
-              </button>
+              {hasFilterCriteria ? (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="px-5 py-2.5 rounded-full bg-warm-fg text-warm-accent font-extrabold text-xs hover:bg-warm-fg-strong transition-all shadow-sm"
+                >
+                  {dict.catalog.clearAllFilters}
+                </button>
+              ) : (
+                <Link href={withLocale('/category', effectiveLocale)} className="inline-flex min-h-11 items-center rounded-full bg-warm-fg px-5 text-xs font-extrabold text-warm-accent">
+                  {dict.catalog.browseCategories}
+                </Link>
+              )}
             </div>
           ) : (
             <>
@@ -676,13 +692,13 @@ export function CatalogLayout({
             <div className="flex items-center justify-between p-4 border-b border-warm-border/60">
               <div className="flex items-center gap-2">
                 <Funnel weight="bold" size={18} />
-                <h3 className="text-base font-extrabold text-warm-fg">Filter &amp; Sort</h3>
+                <h3 className="text-base font-extrabold text-warm-fg">{dict.catalog.filterAndSort}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="w-11 h-11 rounded-full bg-warm-bg flex items-center justify-center text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent transition-colors"
-                aria-label="Close filters"
+                aria-label={dict.catalog.closeFilters}
               >
                 <X weight="bold" size={18} />
               </button>
@@ -693,7 +709,7 @@ export function CatalogLayout({
               {/* Mobile Brand Filter */}
               {availableBrands.length > 1 && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Brands</h4>
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.brands}</h4>
                   <div className="flex flex-wrap gap-2">
                     {availableBrands.map((b) => (
                       <button
@@ -716,7 +732,7 @@ export function CatalogLayout({
 
               {/* Mobile Price Filter */}
               <div className="space-y-2">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Price Range</h4>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.priceRange}</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {PRICE_OPTIONS.map((opt) => (
                     <button
@@ -730,7 +746,7 @@ export function CatalogLayout({
                           : 'bg-warm-bg text-warm-fg border-warm-border/60'
                       }`}
                     >
-                      {opt.label}
+                      {effectiveLocale === 'bn' ? opt.bn : opt.label}
                     </button>
                   ))}
                 </div>
@@ -738,7 +754,7 @@ export function CatalogLayout({
 
               {/* Mobile Availability Filter */}
               <div className="space-y-2">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">Stock Status</h4>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">{dict.catalog.stockStatus}</h4>
                 <div className="grid grid-cols-3 gap-2">
                   {AVAILABILITY_OPTIONS.map((opt) => (
                     <button
@@ -752,7 +768,7 @@ export function CatalogLayout({
                           : 'bg-warm-bg text-warm-fg border-warm-border/60'
                       }`}
                     >
-                      {opt.label}
+                      {effectiveLocale === 'bn' ? opt.bn : opt.label}
                     </button>
                   ))}
                 </div>
@@ -766,7 +782,7 @@ export function CatalogLayout({
                 onClick={clearAllFilters}
                 className="min-h-11 flex-1 rounded-warm-control bg-warm-bg py-3 text-xs font-black uppercase tracking-wider text-warm-fg transition-colors hover:bg-warm-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Clear All
+                {dict.catalog.clearAll}
               </button>
               <button
                 type="button"

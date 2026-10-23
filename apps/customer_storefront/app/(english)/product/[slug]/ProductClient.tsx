@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { toProductSlug } from '../../../lib/products/slugify';
 import { withLocale, type Locale } from '../../../lib/i18n/config';
-import { getCanonicalCategorySlug, normalizeCategorySlug } from '../../../lib/types';
+import { BENGALI_CATEGORY_NAMES, getCanonicalCategorySlug, normalizeCategorySlug } from '../../../lib/types';
 import React, { useEffect } from 'react';
 import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
@@ -21,6 +21,8 @@ import { ProductImageGallery } from '../../../components/product/ProductImageGal
 import { trackViewItem } from '../../../lib/analytics';
 import { DELIVERY_POLICY } from '../../../lib/deliveryData';
 import { getBrandHref } from '../../../lib/brandsData';
+import { getDictionary } from '../../../lib/i18n/dictionaries';
+import { getDisplayProductUnit } from '../../../lib/products/displayProductUnit';
 
 interface ProductClientProps {
   product: Product;
@@ -51,13 +53,16 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   }, [product, addViewed]);
 
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
+  const isBn = locale === 'bn';
+  const dict = getDictionary(locale);
+  const displayName = (isBn && product.name) ? product.name : (enrichment?.exactName || product.name);
 
   const stockStatus =
     product.stock <= 0
-      ? { text: 'Out of Stock', color: 'text-warm-danger', bg: 'bg-warm-danger-bg', aria: 'Out of stock' }
+      ? { text: dict.productPage.outOfStock, color: 'text-warm-danger', bg: 'bg-warm-danger-bg', aria: dict.productPage.outOfStock }
       : product.stock <= 5
-      ? { text: `Only ${product.stock} left`, color: 'text-warm-warning', bg: 'bg-warm-warning-bg', aria: `Low stock, only ${product.stock} left` }
-      : { text: 'In Stock', color: 'text-warm-success', bg: 'bg-warm-success-bg', aria: 'In stock' };
+      ? { text: dict.productPage.onlyLeft.replace('{count}', product.stock.toLocaleString(isBn ? 'bn-BD' : 'en')), color: 'text-warm-warning', bg: 'bg-warm-warning-bg', aria: dict.productPage.onlyLeft.replace('{count}', product.stock.toLocaleString(isBn ? 'bn-BD' : 'en')) }
+      : { text: dict.productPage.inStock, color: 'text-warm-success', bg: 'bg-warm-success-bg', aria: dict.productPage.inStock };
 
   const handleAdd = () => {
     if (product.stock <= 0) {
@@ -65,7 +70,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
       return;
     }
     addToCart(product);
-    showToast(`Added ${product.name} to cart`);
+    showToast(`${dict.productPage.addedToCart}: ${displayName}`);
   };
 
   const handleUpdateQty = (delta: number) => {
@@ -77,8 +82,6 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   };
 
   const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
-  const isBn = locale === 'bn';
-  const displayName = (isBn && product.name) ? product.name : (enrichment?.exactName || product.name);
   const overviewText = (isBn && product.description) ? product.description : (enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`);
   const productBrand = enrichment?.brand || product.brand;
   const brandHref = getBrandHref(productBrand, locale);
@@ -91,15 +94,22 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
         : [];
 
   // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
+  const displayUnit = getDisplayProductUnit(displayName, enrichment?.netQuantity || product.unit);
+  const genericUnit = /^(?:pc|pcs|piece|pieces)$/i.test(product.unit?.trim() || '');
+  const productSpecifications = enrichment?.specifications || [
+    ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
+    ...(product.category ? [{ label: 'Category', value: product.category }] : []),
+    ...(displayUnit ? [{ label: 'Net Quantity', value: displayUnit }] : []),
+    { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
+    { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
+  ];
   const specifications = [
     ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
-    ...(enrichment?.specifications || [
-      ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
-      ...(product.category ? [{ label: 'Category', value: product.category }] : []),
-      ...(product.unit ? [{ label: 'Net Quantity', value: product.unit }] : []),
-      { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
-      { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
-    ]),
+    ...productSpecifications.map((spec) =>
+      spec.label.toLowerCase() === 'net quantity' && genericUnit && displayUnit
+        ? { ...spec, value: displayUnit }
+        : spec,
+    ),
   ];
 
   return (
@@ -110,14 +120,14 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
       <Header />
 
       <main className="flex-1 pb-28 md:pb-12">
-        <div className="mx-auto mt-2 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-6">
+          <div className="mx-auto mt-1 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-3">
           {/* Breadcrumb Navigation */}
           <div className="pt-2 md:pt-0">
       <Breadcrumbs
         homeHref={withLocale('/', locale)}
         homeLabel={locale === 'bn' ? 'হোম' : 'Home'}
         items={[
-                { label: product.category, href: getCategoryBreadcrumbHref(product.category, locale) },
+                { label: isBn ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(product.category)] || product.category) : product.category, href: getCategoryBreadcrumbHref(product.category, locale) },
                 { label: displayName, href: productUrl },
               ]}
             />
@@ -141,7 +151,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
                     {displayName}
                   </h1>
                   <p className="text-sm text-warm-muted">
-                    {enrichment?.netQuantity || product.unit}
+                    {displayUnit}
                     {productBrand && (
                       <>
                         {' · '}
@@ -178,7 +188,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
 
               {/* Action Area — Desktop & Inline */}
               <div className="mt-6">
-                <TrustStrip className="mb-4" />
+                <TrustStrip className="mb-4" locale={locale} />
                 {qtyInCart > 0 ? (
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -229,7 +239,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
                     onClick={handleAdd}
                     className="h-12 px-8 rounded-warm-control bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   >
-                    Add to Cart
+                  {dict.productPage.addToCart}
                   </button>
                 )}
               </div>
@@ -238,7 +248,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
 
           {/* Section 1: Answer-First Overview */}
           <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-            <h2 className="text-base font-bold mb-3 text-warm-fg">Product Overview</h2>
+            <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.overview}</h2>
             <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
               {overviewText}
             </p>
@@ -246,9 +256,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
 
           {locale === 'en' && (enrichment?.nutrition || product.nutrition) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-3 text-warm-fg">
-                {enrichment?.nutrition ? `Nutrition ${enrichment.nutrition.basis}` : 'Nutrition Facts'}
-              </h2>
+              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.nutrition}{enrichment?.nutrition?.basis ? ` ${enrichment.nutrition.basis}` : ''}</h2>
               <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
                 {enrichment?.nutrition?.text || product.nutrition}
               </p>
@@ -257,7 +265,7 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
 
           {/* Section 2: Verified Specifications Table */}
           <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-            <h2 className="text-base font-bold mb-4 text-warm-fg">Product Specifications</h2>
+            <h2 className="text-base font-bold mb-4 text-warm-fg">{dict.productPage.specifications}</h2>
             <div className="overflow-hidden rounded-warm-panel border border-warm-border max-w-3xl">
               <table className="w-full text-left text-sm">
                 <tbody>
@@ -274,7 +282,13 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
                           scope="row"
                           className="py-3 px-4 font-semibold text-warm-fg w-1/3 border-b border-warm-border/60 text-xs sm:text-sm"
                         >
-                          {spec.label}
+                          {spec.label === 'Store SKU' ? dict.productPage.storeSku
+                            : spec.label === 'Brand' ? dict.productPage.brand
+                              : spec.label === 'Category' ? dict.productPage.category
+                                : spec.label === 'Net Quantity' ? dict.productPage.netQuantity
+                                  : spec.label === 'Fulfillment' ? dict.productPage.fulfillment
+                                    : spec.label === 'Inspection Guarantee' ? dict.productPage.inspectionGuarantee
+                                      : spec.label}
                         </th>
                         <td className="py-3 px-4 text-warm-muted border-b border-warm-border/60 text-xs sm:text-sm">
                           {isBrandRow ? (

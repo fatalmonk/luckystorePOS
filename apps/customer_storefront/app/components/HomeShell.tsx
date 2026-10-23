@@ -89,7 +89,7 @@ export function HomeShell({
       <Header locale={locale} />
       <CartStorageNotice />
       <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
-        <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pb-20 sm:pt-7 lg:pb-24">
+        <div className="mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 sm:pb-20 sm:pt-4 lg:pb-24">
           <div className="flex flex-col gap-4 sm:gap-5">
             <CampaignGrid products={campaignProducts} locale={locale} />
 
