@@ -210,8 +210,8 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
                 <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
               </div>
               <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-1 pt-0.5 border-t border-border/20 tabular-nums">
-                <div className="flex items-center gap-1 min-w-0 truncate pr-1">
-                  <span className="text-text-muted text-[10px] sm:text-[11px]">Price:</span>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 pr-1">
+                  <span className="shrink-0 text-text-muted text-[10px] sm:text-[11px]">Price:</span>
                   {discountPct !== null && (
                     <span className="text-[9px] sm:text-[10px] font-bold text-success bg-success-subtle border border-success/20 px-1 py-0.5 rounded leading-none flex-shrink-0">
                       -{discountPct}%

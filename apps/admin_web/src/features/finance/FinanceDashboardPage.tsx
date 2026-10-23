@@ -90,20 +90,20 @@ export function FinanceDashboardPage() {
       {/* Date Filter Bar — floating pill strip, theme-aware */}
       <div className="px-6 mb-8">
         <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center gap-3">
-          <div className="flex items-center gap-2 bg-[var(--color-paper)]/80 backdrop-blur-md border border-[var(--color-border)] rounded-full px-4 py-2">
+          <div className="grid w-full min-w-0 max-w-full grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 rounded-2xl bg-[var(--color-paper)]/80 backdrop-blur-md border border-[var(--color-border)] px-3 py-2 md:w-auto md:gap-2 md:rounded-full md:px-4">
             <Calendar size={14} className="text-[var(--color-accent)] shrink-0" />
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent border-none text-sm text-[var(--color-foreground)] focus:outline-none w-[120px]"
+              className="w-full min-w-0 bg-transparent border-none text-xs sm:text-sm text-[var(--color-foreground)] focus:outline-none md:w-[120px]"
             />
             <span className="text-[var(--color-muted)]">→</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent border-none text-sm text-[var(--color-foreground)] focus:outline-none w-[120px]"
+              className="w-full min-w-0 bg-transparent border-none text-xs sm:text-sm text-[var(--color-foreground)] focus:outline-none md:w-[120px]"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">

@@ -452,7 +452,7 @@ export function CompetitorPricesPage() {
       )}
 
       {/* Navigation Controls: Tabs, Search & Filters */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-warm-border">
+      <div className="flex min-w-0 max-w-full flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-warm-border">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0">
           <button
@@ -503,13 +503,15 @@ export function CompetitorPricesPage() {
         </div>
 
         {/* Search & Competitor Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
-          <span className="text-[10px] text-warm-muted whitespace-nowrap">Store-wide counts; list filters do not change counts.</span>
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
+          <span className="min-w-0 max-w-full text-[10px] text-warm-muted break-words">
+            Store-wide counts; list filters do not change counts.
+          </span>
           {competitorOptions.length > 0 && (
             <select
               value={selectedCompetitor}
               onChange={(e) => setSelectedCompetitor(e.target.value)}
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
+              className="max-w-full text-xs px-2.5 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
             >
               <option value="all">All Competitors</option>
               {competitorOptions.map((c) => (
@@ -517,14 +519,14 @@ export function CompetitorPricesPage() {
               ))}
             </select>
           )}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative min-w-0 max-w-full flex-[1_1_12rem]">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-warm-muted" />
             <input
               type="text"
               placeholder="Search product, SKU..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
+              className="w-full min-w-0 text-xs pl-8 pr-3 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
             />
           </div>
         </div>

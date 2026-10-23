@@ -37,7 +37,6 @@ export function InventoryCardFeed({
     if (!el) return;
 
     const calcCols = (width: number) => {
-      if (width >= 1480) return 4;
       if (width >= 1060) return 3;
       if (width >= 640) return 2;
       return 1;
