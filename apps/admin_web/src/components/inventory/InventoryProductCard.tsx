@@ -74,7 +74,7 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
 
   return (
     <div
-      className={`relative p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 shadow-sm select-none overflow-hidden ${
+      className={`relative w-full min-w-0 max-w-full p-3.5 sm:p-4 bg-surface rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 shadow-sm select-none overflow-hidden ${
         isSelected
           ? 'border-primary shadow-level-1 ring-1 ring-primary/20'
           : isHighlighted
@@ -82,71 +82,75 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           : 'border-border hover:border-primary/45'
       }`}
     >
-      {/* 3-dot overlay actions button on top-right of the card */}
-      <div className="absolute top-2.5 right-2.5 z-20">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu(!showMenu);
-          }}
-          className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-surface-raised active:bg-surface-raised text-text-secondary transition-colors"
-          aria-label={`Actions for ${item.name}`}
-          aria-haspopup="menu"
-          aria-expanded={showMenu}
-        >
-          <MoreVertical size={16} />
-        </button>
-
-        {showMenu && (
-          <>
-            <div
-              className="fixed inset-0 z-30"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(false);
-              }}
+      {/* Keep selection and menu actions in their own row so the title can use full width. */}
+      <div className="flex w-full min-w-0 items-center justify-between">
+        {onToggleSelect ? (
+          <label className="backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-11 h-11 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-surface">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect(item.id)}
+              aria-label={`Select ${item.name}`}
+              className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
             />
-            <div className="absolute right-0 mt-1 w-44 rounded-xl border border-border/80 bg-surface-overlay/95 backdrop-blur-md shadow-level-2 z-40 py-1 text-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-              <button
-                onClick={(e) => handleAction(e, onViewHistory)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
-              >
-                <History size={16} />
-                <span>History</span>
-              </button>
-              <button
-                onClick={(e) => handleAction(e, onEditProduct)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
-              >
-                <Pencil size={16} />
-                <span>Edit Product</span>
-              </button>
-              <button
-                onClick={(e) => handleAction(e, onDelete)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-danger active:bg-background-subtle"
-              >
-                <Trash2 size={16} />
-                <span>Delete</span>
-              </button>
-            </div>
-          </>
+          </label>
+        ) : (
+          <span aria-hidden="true" className="h-11 w-11" />
         )}
+
+        <div className="relative z-20">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="flex items-center justify-center w-11 h-11 rounded-full hover:bg-surface-raised active:bg-surface-raised text-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            aria-label={`Actions for ${item.name}`}
+            aria-haspopup="menu"
+            aria-expanded={showMenu}
+          >
+            <MoreVertical size={16} />
+          </button>
+
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                }}
+              />
+              <div className="absolute right-0 mt-1 w-44 rounded-xl border border-border/80 bg-surface-overlay/95 backdrop-blur-md shadow-level-2 z-40 py-1 text-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <button
+                  onClick={(e) => handleAction(e, onViewHistory)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
+                >
+                  <History size={16} />
+                  <span>History</span>
+                </button>
+                <button
+                  onClick={(e) => handleAction(e, onEditProduct)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
+                >
+                  <Pencil size={16} />
+                  <span>Edit Product</span>
+                </button>
+                <button
+                  onClick={(e) => handleAction(e, onDelete)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-danger active:bg-background-subtle"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {onToggleSelect && (
-        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(item.id)}
-            aria-label={`Select ${item.name}`}
-            className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
-          />
-        </label>
-      )}
-
-      {/* Main card body split into Left block (Image + Stock status) and Right block (Texts + pricing info) */}      {/* Product name heading - moved outside button for accessibility */}
-      <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 pr-6">
+      {/* Product name heading - moved outside button for accessibility */}
+      <h3 className="min-w-0 max-w-full break-words font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2">
         {item.name}
       </h3>
 
@@ -195,34 +199,34 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           </div>
 
           {/* Pricing sub-panel + Margin badge / Reorder button */}
-          <div className="flex gap-2 sm:gap-2.5 justify-between items-center mt-auto min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 mt-auto">
             <div
-              className={`flex-1 min-w-0 flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
+              className={`min-w-0 flex-[1_1_100%] sm:flex-[1_1_100px] flex flex-col gap-0.5 sm:gap-1 text-[11px] sm:text-xs text-text-primary bg-surface-raised/50 rounded-xl p-2 sm:p-2.5 transition-opacity ${
                 isOutOfStock ? 'opacity-40' : ''
               }`}
             >
-              <div className="flex justify-between items-center tabular-nums">
+              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1 tabular-nums">
                 <span className="text-text-muted text-[10px] sm:text-[11px]">Cost:</span>
-                <span className="font-semibold">৳{(item.cost || 0).toFixed(2)}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">৳{(item.cost || 0).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center tabular-nums">
+              <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1 tabular-nums">
                 <span className="text-text-muted text-[10px] sm:text-[11px]">MRP:</span>
-                <span className="font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-semibold">{item.mrp == null ? 'Not set' : `৳${item.mrp.toFixed(2)}`}</span>
               </div>
-              <div className="flex justify-between items-center pt-0.5 border-t border-border/20 tabular-nums">
-                <div className="flex items-center gap-1 min-w-0 truncate pr-1">
-                  <span className="text-text-muted text-[10px] sm:text-[11px]">Price:</span>
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 pt-0.5 border-t border-border/20 tabular-nums">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 pr-1">
+                  <span className="shrink-0 text-text-muted text-[10px] sm:text-[11px]">Price:</span>
                   {discountPct !== null && (
                     <span className="text-[9px] sm:text-[10px] font-bold text-success bg-success-subtle border border-success/20 px-1 py-0.5 rounded leading-none flex-shrink-0">
                       -{discountPct}%
                     </span>
                   )}
                 </div>
-                <span className="font-bold flex-shrink-0">৳{(item.price || 0).toFixed(2)}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere] text-right font-bold">৳{(item.price || 0).toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="ml-auto max-w-full flex-shrink-0">
               {isOutOfStock ? (
                 <span
                   className="flex flex-col items-center justify-center px-2 sm:px-2.5 py-2 rounded-xl sm:rounded-2xl border border-danger/30 bg-danger-subtle text-danger w-[62px] sm:w-[70px] shadow-xs"

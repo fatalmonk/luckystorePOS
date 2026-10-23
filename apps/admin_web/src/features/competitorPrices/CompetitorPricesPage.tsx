@@ -305,15 +305,16 @@ export function CompetitorPricesPage() {
     {
       header: '',
       accessor: (row: CompetitorPrice) => (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-1 justify-end md:gap-2">
           {!row.item_id && (
             <button
               onClick={() => setLinkingRecord(row)}
-              className="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center gap-1 transition-colors"
+              className="min-w-11 min-h-11 px-2.5 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center justify-center gap-1 transition-colors md:min-w-0 md:min-h-0"
+              aria-label={`Link ${row.item_name || 'competitor observation'} to inventory product`}
               title="1-Click Link to Inventory Product"
             >
-              <LinkIcon size={12} />
-              1-Click Link
+              <LinkIcon size={16} aria-hidden="true" />
+              <span className="hidden md:inline">1-Click Link</span>
             </button>
           )}
           {row.competitor_product_url && (
@@ -321,7 +322,8 @@ export function CompetitorPricesPage() {
               href={row.competitor_product_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-icon"
+              className="btn-icon min-w-11 min-h-11 md:min-w-0 md:min-h-0"
+              aria-label={`View ${row.item_name || 'competitor product'} on ${row.competitor_name}`}
               title="View competitor page"
             >
               <ExternalLink size={16} />
@@ -452,7 +454,7 @@ export function CompetitorPricesPage() {
       )}
 
       {/* Navigation Controls: Tabs, Search & Filters */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-warm-border">
+      <div className="flex min-w-0 max-w-full flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-warm-border">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0">
           <button
@@ -503,13 +505,15 @@ export function CompetitorPricesPage() {
         </div>
 
         {/* Search & Competitor Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
-          <span className="text-[10px] text-warm-muted whitespace-nowrap">Store-wide counts; list filters do not change counts.</span>
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
+          <span className="min-w-0 max-w-full text-[10px] text-warm-muted break-words">
+            Store-wide counts; list filters do not change counts.
+          </span>
           {competitorOptions.length > 0 && (
             <select
               value={selectedCompetitor}
               onChange={(e) => setSelectedCompetitor(e.target.value)}
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
+              className="max-w-full text-xs px-2.5 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
             >
               <option value="all">All Competitors</option>
               {competitorOptions.map((c) => (
@@ -517,14 +521,14 @@ export function CompetitorPricesPage() {
               ))}
             </select>
           )}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative min-w-0 max-w-full flex-[1_1_12rem]">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-warm-muted" />
             <input
               type="text"
               placeholder="Search product, SKU..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
+              className="w-full min-w-0 text-xs pl-8 pr-3 py-1.5 rounded-lg border border-warm-border bg-warm-paper text-warm-foreground focus:outline-none"
             />
           </div>
         </div>
@@ -534,9 +538,14 @@ export function CompetitorPricesPage() {
       <p className="text-xs text-warm-muted" aria-live="polite">
         Showing {sortedPrices.length.toLocaleString()} loaded observations matching the current filters.
       </p>
+      <p className="text-xs text-warm-muted md:hidden">
+        Scroll the table horizontally to compare prices and reach row actions.
+      </p>
       <DataTable
         data={sortedPrices}
         columns={columns}
+        tableLabel="Competitor price observations"
+        pinFirstColumn
         emptyMessage={
           searchQuery.trim() || selectedCompetitor !== 'all'
             ? 'No observations match the current search and competitor filter.'

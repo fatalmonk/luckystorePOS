@@ -16,7 +16,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   return (
     <NotificationContext.Provider value={{ notify }}>
       {children}
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ position: 'fixed', bottom: '24px', left: '16px', right: '16px', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
         {notifications.map(n => (
           <div 
             key={n.id} 
@@ -28,14 +28,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               display: 'flex',
               alignItems: 'center',
               gap: 'var(--space-3)',
+              boxSizing: 'border-box',
               boxShadow: 'var(--shadow-lg)',
               animation: 'slideIn 0.3s ease-out',
-              minWidth: '300px',
-              maxWidth: '450px'
+              minWidth: 0,
+              maxWidth: 'min(450px, 100%)'
             }}
           >
             {n.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
-            <span style={{ flex: 1, fontWeight: '600' }}>{n.message}</span>
+            <span style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere', fontWeight: '600' }}>{n.message}</span>
             <button onClick={() => setNotifications(prev => prev.filter(item => item.id !== n.id))} style={{ color: 'white', opacity: 0.7 }}>
               <X size={16} />
             </button>

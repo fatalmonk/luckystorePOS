@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
-import { Banknote, Smartphone, CreditCard, Wallet, PlusCircle, AlertCircle, X, RefreshCw } from 'lucide-react';
+import { Banknote, Smartphone, CreditCard, Wallet, PlusCircle, X, RefreshCw } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { PosErrorNotice } from './PosErrorNotice';
 
 function getPaymentIcon(name: string) {
   const lower = name.toLowerCase();
@@ -335,7 +336,7 @@ export function PaymentModal({
 
         {/* Error */}
         {error && (
-          <div style={{
+          <PosErrorNotice message={error} iconSize={16} style={{
             padding: 'var(--space-3)',
             marginBottom: 'var(--space-3)',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -346,10 +347,7 @@ export function PaymentModal({
             alignItems: 'center',
             gap: 'var(--space-2)',
             fontSize: 'var(--font-size-sm)',
-          }}>
-            <AlertCircle size={16} />
-            <span>{error}</span>
-          </div>
+          }} />
         )}
 
         {/* Actions */}

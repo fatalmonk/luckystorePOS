@@ -4,7 +4,7 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
 import { SkeletonBlock } from '@/components';
 import { useRealtimeSubscription } from '@/hooks';
-import { Search, ScanLine, AlertCircle, X, RefreshCw, ShoppingCart, ChevronUp } from 'lucide-react';
+import { Search, ScanLine, AlertCircle, RefreshCw, ShoppingCart, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ReceiptPreview } from './ReceiptPreview';
 import { CartPanel } from './CartPanel';
@@ -13,6 +13,7 @@ import { usePosCart } from './usePosCart';
 import { usePosScanner } from './usePosScanner';
 import { usePosSale } from './usePosSale';
 import { ProductCard } from '../../components/product/ProductCard';
+import { PosErrorNotice } from './PosErrorNotice';
 
 import './receipt.css';
 
@@ -187,7 +188,7 @@ export function QuickPosPage() {
 
           {/* Error Display */}
           {error && !sale.showPaymentModal && (
-            <div className="card" style={{
+            <PosErrorNotice message={error} onDismiss={() => setError(null)} style={{
               padding: 'var(--space-4)',
               marginBottom: 'var(--space-4)',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -196,16 +197,7 @@ export function QuickPosPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 'var(--space-2)'
-            }}>
-              <AlertCircle size={18} />
-              <span>{error}</span>
-              <button
-                onClick={() => setError(null)}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
+            }} className="card" />
           )}
 
           <div className="pos-grid">

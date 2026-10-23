@@ -38,15 +38,15 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="settings-container">
+    <div className="settings-container min-w-0 max-w-full">
       <PageHeader 
         title="Settings" 
         subtitle="Manage your shop's users and configuration." 
       />
 
-      <div className="settings-layout" style={{ display: 'flex', gap: 'var(--space-8)' }}>
+      <div className="settings-layout min-w-0 max-w-full" style={{ display: 'flex', gap: 'var(--space-8)' }}>
         {/* Vertical Tabs */}
-        <aside className="settings-tabs" role="tablist" aria-label="Settings sections" style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        <aside className="settings-tabs min-w-0 max-w-full" role="tablist" aria-label="Settings sections" style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
           <button
             type="button"
             role="tab"
@@ -101,8 +101,8 @@ export function SettingsPage() {
         </aside>
 
         {/* Tab Content */}
-        <main className="settings-content" role="tabpanel" id="settings-panel" aria-labelledby={`settings-tab-${activeTab}`} style={{ flex: 1 }}>
-          <div className="card" style={{ padding: 'var(--space-8)' }}>
+        <main className="settings-content min-w-0" role="tabpanel" id="settings-panel" aria-labelledby={`settings-tab-${activeTab}`} style={{ flex: 1 }}>
+          <div className="card min-w-0 max-w-full" style={{ padding: 'var(--space-8)' }}>
             {activeTab === 'users' && <UsersSettings storeId={storeId} />}
             {activeTab === 'payments' && <PaymentsSettings storeId={storeId} />}
             {activeTab === 'receipt' && <ReceiptSettings storeId={storeId} />}
