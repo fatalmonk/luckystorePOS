@@ -441,7 +441,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
           <Link
             href={withLocale('/category', currentLocale)}
             aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-            className={`inline-flex h-9 min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+            className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
               selectedCategory === 'all' && !activeCatalogTheme
                 ? 'bg-warm-fg text-warm-bg'
                 : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -468,7 +468,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
           <Link
             href={withLocale('/category', currentLocale)}
             aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-            className={`inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+            className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
               selectedCategory === 'all' && !activeCatalogTheme
                 ? 'bg-warm-fg text-warm-bg'
                 : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
@@ -485,7 +485,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
-              itemClassName="inline-flex h-8 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
 
