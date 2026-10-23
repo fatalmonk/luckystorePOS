@@ -82,71 +82,75 @@ export const InventoryProductCard = React.memo(function InventoryProductCard({
           : 'border-border hover:border-primary/45'
       }`}
     >
-      {/* 3-dot overlay actions button on top-right of the card */}
-      <div className="absolute top-2.5 right-2.5 z-20">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu(!showMenu);
-          }}
-          className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-surface-raised active:bg-surface-raised text-text-secondary transition-colors"
-          aria-label={`Actions for ${item.name}`}
-          aria-haspopup="menu"
-          aria-expanded={showMenu}
-        >
-          <MoreVertical size={16} />
-        </button>
-
-        {showMenu && (
-          <>
-            <div
-              className="fixed inset-0 z-30"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(false);
-              }}
+      {/* Keep selection and menu actions in their own row so the title can use full width. */}
+      <div className="flex w-full min-w-0 items-center justify-between">
+        {onToggleSelect ? (
+          <label className="backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-11 h-11 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-surface">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect(item.id)}
+              aria-label={`Select ${item.name}`}
+              className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
             />
-            <div className="absolute right-0 mt-1 w-44 rounded-xl border border-border/80 bg-surface-overlay/95 backdrop-blur-md shadow-level-2 z-40 py-1 text-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-              <button
-                onClick={(e) => handleAction(e, onViewHistory)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
-              >
-                <History size={16} />
-                <span>History</span>
-              </button>
-              <button
-                onClick={(e) => handleAction(e, onEditProduct)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
-              >
-                <Pencil size={16} />
-                <span>Edit Product</span>
-              </button>
-              <button
-                onClick={(e) => handleAction(e, onDelete)}
-                className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-danger active:bg-background-subtle"
-              >
-                <Trash2 size={16} />
-                <span>Delete</span>
-              </button>
-            </div>
-          </>
+          </label>
+        ) : (
+          <span aria-hidden="true" className="h-11 w-11" />
         )}
+
+        <div className="relative z-20">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="flex items-center justify-center w-11 h-11 rounded-full hover:bg-surface-raised active:bg-surface-raised text-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            aria-label={`Actions for ${item.name}`}
+            aria-haspopup="menu"
+            aria-expanded={showMenu}
+          >
+            <MoreVertical size={16} />
+          </button>
+
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                }}
+              />
+              <div className="absolute right-0 mt-1 w-44 rounded-xl border border-border/80 bg-surface-overlay/95 backdrop-blur-md shadow-level-2 z-40 py-1 text-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <button
+                  onClick={(e) => handleAction(e, onViewHistory)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
+                >
+                  <History size={16} />
+                  <span>History</span>
+                </button>
+                <button
+                  onClick={(e) => handleAction(e, onEditProduct)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-text-primary active:bg-background-subtle"
+                >
+                  <Pencil size={16} />
+                  <span>Edit Product</span>
+                </button>
+                <button
+                  onClick={(e) => handleAction(e, onDelete)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-background-subtle flex items-center gap-2 text-danger active:bg-background-subtle"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {onToggleSelect && (
-        <label className="absolute top-2.5 left-2.5 z-20 backdrop-blur-md bg-surface/80 border border-border/80 rounded-lg w-7 h-7 flex items-center justify-center hover:bg-surface-raised active:scale-95 transition-all shadow-sm">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(item.id)}
-            aria-label={`Select ${item.name}`}
-            className="rounded border-border text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
-          />
-        </label>
-      )}
-
       {/* Product name heading - moved outside button for accessibility */}
-      <h3 className="min-w-0 max-w-full break-words pl-8 pr-8 font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2">
+      <h3 className="min-w-0 max-w-full break-words font-semibold text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2">
         {item.name}
       </h3>
 

@@ -1,8 +1,8 @@
-# Implementation Plan: Admin Horizontal Width Constraints
+# Implementation Plan: Admin Responsive Layout and Usability
 
 ## Overview
 
-Harden horizontal sizing across `admin_web` so long strings, large prices, dense tables, grids, and flex children cannot widen the viewport or make the page slide sideways. Start with the product card and its feed, then verify the shared application shell and address only the page-level sources demonstrated by inspection or browser evidence. The current request is width containment first; a general shadcn component migration is outside this plan.
+Harden responsive layout and a small set of source-confirmed admin usability issues in `admin_web`. The first phase addresses horizontal width containment so long strings, large prices, dense tables, grids, and flex children cannot widen the viewport or make the page slide sideways. Follow-on tasks cover a few specific touch target and scanner feedback issues found in the linked Notion plan and source inspection. A general shadcn component migration is outside this plan.
 
 ## Current State and Evidence
 
@@ -16,6 +16,8 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - Browser retry (2026-10-23) found no listener on port 5173; Chrome reported `ERR_CONNECTION_REFUSED` for `/inventory`. The Jev reload did not execute because the CUA runtime returned a Typesafe DNS lookup failure (`ENOTFOUND`). A typecheck attempt stopped because `@testing-library/jest-dom`, `vite/client`, and `vitest/globals` type definitions are missing. No branch browser/typecheck/build verification is available until the local environment is repaired; no dependency installation or credential access was attempted.
 - Isolated in-app browser retry (2026-10-23 01:45 local): navigation to `http://localhost:5173/` returned `net::ERR_CONNECTION_REFUSED`, consistent with the fresh port check showing no listener. No everyday Chrome profile was attached; branch browser verification remains blocked.
 - Isolated in-app browser retry (2026-10-23 02:15 UTC): a fresh temporary tab again returned `net::ERR_CONNECTION_REFUSED` for `http://localhost:5173/`; a concurrent listener check was empty. This is a local-app availability blocker, not evidence that the branch passes or fails its visual checks.
+- Isolated in-app browser retry (2026-10-23 03:15 UTC): CUA's Chrome inventory showed a user-profile tab at `localhost:3000`, but that profile was not attached. A fresh isolated in-app tab to port 3000 returned `net::ERR_CONNECTION_REFUSED`, and a listener check was empty. No everyday Chrome session was used; branch browser verification remains blocked.
+- Focused accessibility tests were attempted from the scoped workspace and could not start because `vitest` is absent. Reusing the root checkout's Vitest binary also failed before test discovery because its installation could not resolve `@vitest/utils`. No package installation or dependency copying was attempted.
 - Credential-free Jev transport probe returned `ENOTFOUND` for DNS lookups of both `example.com` and `api.typesafe.ai`, and the `https://example.com` fetch. This confirms broader CUA DNS/network unavailability rather than a provider-only lookup failure.
 - Chrome baseline check (2026-10-23): Inventory at a 390px emulated viewport had document/body/main widths of 390px before and after a simulated horizontal touch swipe; `.main-content` bounds and transform were unchanged, and the console had no errors. Settings reflowed to a vertical page layout with a locally scrollable tab row at 390px and 798px, then returned to its side-by-side layout at 799px; document width matched the viewport at each tested width. However, port 5173's Vite process is rooted at `/Users/mac.alvi/Desktop/Projects/LuckyStore/apps/admin_web`, not this scoped worktree. These are original-checkout baseline observations only and do not verify the branch edits or close branch browser tasks. The temporary viewport was reset.
 - First-pass source scan in this branch found 159 width-related utility/pattern matches across 53 files and 41 horizontal overflow/scroll declarations across 19 files. Relevant local-scroll candidates include shared DataTable, InventoryListTable, ImportWizard preview, category chips, competitor filters, finance/date controls, expenses, other income, purchase history, reports, and sales. These counts include harmless fixed-size controls and skeletons; they are leads, not defect counts. The scan alone did not reproduce additional page-level overflow.
@@ -24,7 +26,8 @@ Harden horizontal sizing across `admin_web` so long strings, large prices, dense
 - The audit file reports Settings tab reflow near 798px, bounded mobile table scrolling, POS mobile cart behavior, and previous route-load checks as completed in another implementation context. Treat those as reported audit evidence; confirm against this branch before claiming current behavior. Do not infer that the swipe issue is resolved.
 - Source verification on this branch contradicted the audit's Settings completion claim: `SettingsPage` still had a fixed 250px vertical tab rail with no responsive reflow. A local width containment fix now stacks the panel and turns tabs into a bounded horizontal scroller at 798px and below; browser confirmation remains outstanding.
 - The shared `DataTable` source is bounded by `w-full overflow-x-auto`, with intrinsic table sizing and non-wrapping cells. This supports preserving a local table scroller; it does not by itself prove every usage's ancestor layout is constrained.
-- Reviewed the [linked Notion master plan](https://app.notion.com/p/3fffe7a68af88119ab3ccd28b2ec6efa?source=copy_link) (page body revised through v1.3 on 2026-10-20, although its title still says v1.0). Adopted only width-relevant verification additions: a 320/390/600/768/1024/1440px route matrix, 200% text zoom, synthetic long English/Bengali product names where supported, and explicit checks around the existing 640px and 1060px card-feed container thresholds. These are test targets, not new layout breakpoints.
+- Reviewed the [linked Notion master plan](https://app.notion.com/p/3fffe7a68af88119ab3ccd28b2ec6efa?source=copy_link) (page body revised through v1.3 on 2026-10-20, although its title still says v1.0). For the initial width phase, adopted width-relevant verification additions: a 320/390/600/768/1024/1440px route matrix, 200% text zoom, synthetic long English/Bengali product names where supported, and explicit checks around the existing 640px and 1060px card-feed container thresholds. These are test targets, not new layout breakpoints.
+- Broadened follow-on scope from the same Notion plan only where source inspection shows a small, testable UI issue: the `InventoryProductCard` checkbox label has a 28px target (its menu button already inherits a global 44px minimum despite 28/32px width utilities); `CartItemRow` quantity actions render at 40px due to component styles; and the POS error card renders a plain message span without an explicit live announcement. The Notion plan recommends 44x44px interaction targets and polite/alert announcements for scanner or sync feedback. Treat these as usability targets, not a claim that every element currently violates a legal/accessibility standard. Source review flagged title-width and announcement-duplication risks; preserve full title width and verify existing notification semantics before implementing.
 
 ## Architecture and UX Decisions
 
@@ -151,6 +154,43 @@ Implementation slices:
 - [ ] Browser console has no new errors during the checked routes.
 - [x] **Sol review:** Sol reviewed the route source audit, intentional scrollers, and verification gaps. The notification and Competitor Prices source findings were addressed; route-wide browser coverage remains open. Any broader design-system or component migration remains separately scoped.
 
+### Separate follow-up: Focused admin usability
+
+These tasks broaden the workflow beyond width containment using source-confirmed UI evidence and relevant guidance from the linked Notion plan. Keep the changes presentation-only; do not alter POS transactions, quantities, stock, pricing, or inventory rules.
+
+#### Task 5: Improve selected touch targets for inventory and POS actions
+
+**Description:** Make the InventoryProductCard checkbox selection control and POS cart quantity controls meet the plan's 44x44px touch target guidance. Place the inventory menu and selection control in a consistent in-flow control row (the menu already inherits a global 44px minimum) and preserve compact icon treatment. Review title spacing and nearby controls for overlap; do not expand this into a full admin-wide touch target audit.
+
+**Acceptance criteria:**
+- [ ] The named actions provide at least a 44x44px pointer target at compact breakpoints where layout permits.
+- [ ] Icons retain visible focus styling and accessible names; menu and card controls do not overlap title or selection controls.
+- [ ] POS quantity/remove behavior and inventory card actions are unchanged.
+- [ ] Focused source/component tests cover sizing classes and accessible names; verify the rendered 44x44px target boxes in a browser at mobile and desktop widths when the scoped app is available.
+
+**Files likely touched:** `apps/admin_web/src/components/inventory/InventoryProductCard.tsx`, `apps/admin_web/src/features/pos/CartItemRow.tsx`, and focused tests.
+
+**Estimated scope:** Small.
+
+#### Task 6: Announce POS scanner and operational errors accessibly
+
+**Description:** Make the existing POS error/out-of-stock message available to assistive technology using an appropriate alert/live-region semantic. First confirm that a shared notification layer does not already announce this same content; avoid duplicate announcements. Preserve the current message lifetime and dismissal behavior.
+
+**Acceptance criteria:**
+- [ ] A scanner not-found/scan-error message and an existing out-of-stock warning are announced once when shown.
+- [ ] The message remains visibly readable and preserves each surface's existing dismissal/lifetime behavior; scanner, cart, stock, and sale behavior is unchanged.
+- [ ] Focused tests cover announcement semantics and optional dismissal without live backend data; review confirms the existing parent-owned dismissal/lifetime behavior is unchanged.
+
+**Files likely touched:** `apps/admin_web/src/features/pos/QuickPosPage.tsx`, `apps/admin_web/src/features/pos/PaymentModal.tsx`, shared `PosErrorNotice.tsx`, and its focused test.
+
+**Estimated scope:** Small.
+
+#### Accessibility follow-up checkpoint
+
+- [x] Sol reviewed the proposed task scopes and approved the Task 5 and Task 6 source patches at their implementation checkpoints.
+- [ ] Tasks 5 and 6 pass focused source tests; record any browser-only target sizing or screen reader checks separately if the scoped environment remains unavailable.
+- [x] No business logic or design-system migration is included in these follow-ons.
+
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
@@ -172,4 +212,6 @@ Implementation slices:
 - Broad shadcn migration across all admin pages.
 - Visual redesign or replacement of the incumbent admin design system.
 - Changes to inventory, pricing, sales, finance, or ledger logic.
+- New transaction, offline, sync, scanner hardware, printing, role, auth, schema, or business-rule capabilities.
+- Broad admin-wide accessibility remediation beyond Tasks 5 and 6.
 - Production deployment, PR creation, or merge.

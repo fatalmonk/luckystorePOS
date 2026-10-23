@@ -45,7 +45,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item, onUpdateQty, onR
       {/* Middle: Quantity Controls */}
       <div className="billing-item-controls flex items-center gap-1 shrink-0">
         <button 
-          className="button-outline w-10 h-10 flex items-center justify-center p-0 text-lg font-bold rounded-md" 
+          className="button-outline w-11 h-11 shrink-0 flex items-center justify-center p-0 text-lg font-bold rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           onClick={handleDecrement} 
           aria-label="Decrease quantity"
         >
@@ -55,7 +55,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item, onUpdateQty, onR
           {item.qty}
         </span>
         <button 
-          className="button-outline w-10 h-10 flex items-center justify-center p-0 text-lg font-bold rounded-md" 
+          className="button-outline w-11 h-11 shrink-0 flex items-center justify-center p-0 text-lg font-bold rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           onClick={handleIncrement} 
           aria-label="Increase quantity"
         >

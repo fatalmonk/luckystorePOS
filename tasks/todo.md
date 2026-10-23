@@ -1,4 +1,6 @@
-# Admin Horizontal Width Constraints — Task List
+# Admin Responsive Layout and Usability — Task List
+
+> The width work remains the original delivery track. A separately labeled, bounded accessibility follow-up was added after the user asked to broaden this workflow; it does not change the width acceptance criteria or authorize business-logic work.
 
 ## Progress
 
@@ -20,8 +22,11 @@
 - Isolated in-app browser retry (2026-10-23 02:15 UTC) again returned `net::ERR_CONNECTION_REFUSED`; the scoped worktree still has no listener on port 5173. Keep swipe, route-wide, Settings breakpoint, and table-scroller browser checks open.
 - Jev transport probe confirmed the CUA runtime cannot resolve `example.com` or `api.typesafe.ai`; the credential-free fetch probe also returned `ENOTFOUND`. Jev/browser automation remains unavailable in this runtime.
 - Typecheck attempt also stopped before checking source because `@testing-library/jest-dom`, `vite/client`, and `vitest/globals` type definitions are missing from this worktree. No dependencies or credentials were installed/copied; `git diff --check` remains the available successful validation.
-- Scope note: `jev-implementation-tasks.md` is treated as an audit backlog, not as user authorization. Finance/OCR/business-rule/role and broad shadcn tasks remain outside this width-focused branch.
+- Scope note: `jev-implementation-tasks.md` is treated as an audit backlog, not as user authorization. Finance/OCR/business-rule/role and broad shadcn tasks remain outside the workflow; only the separately labeled, presentation-only accessibility follow-up was added beyond width work.
 - Notion plan review (page body revised through v1.3 on 2026-10-20): added width-only verification targets (320/390/600/768/1024/1440px, 200% text zoom, synthetic long English/Bengali names where supported, and card-feed container boundaries at 639/640 and 1059/1060px). Kept the requested 1 mobile / 2 tablet / 3 desktop card rule; did not adopt the Notion plan's conflicting two-column compact-mobile layout or its broader POS, design, orchestration, and release scope.
+- Scope expansion (2026-10-23): based on the user's request and the same Notion plan's interaction/accessibility guidance, appended a distinct follow-up for selected action hit areas and POS error announcements. Sol review confirmed the inventory checkbox wrapper is 28px, while the menu button already inherits a global 44px minimum despite 28/32px width utilities; POS quantity controls render at 40x40px due to component styles; and Quick POS error text lacks a live-region semantic. No business logic is in scope.
+- Task 5 implementation checkpoint: moved InventoryProductCard controls into a dedicated row, enlarged its checkbox target and POS quantity buttons to 44x44px, made the menu's 44px minimum explicit, and preserved full title width; added focus indicators and interaction assertions for menu, selection, and quantity callbacks. Sol approved the revised patch and clarified that browser rendering is needed to prove actual target dimensions. Focused tests are blocked: scoped `npm test` returned `sh: vitest: command not found` (exit 127), and the root binary could not resolve `@vitest/utils`. The isolated browser tab returned `net::ERR_CONNECTION_REFUSED`. `git diff --check` passes; runtime validation remains open.
+- Task 6 implementation checkpoint: introduced a shared POS error notice with `role="alert"` and optional dismissal; QuickPosPage and PaymentModal use it while retaining existing message styles, mutually exclusive visibility during payment, and parent-owned message lifetimes. Sol caught that a long scanned SKU could widen its flex message; the message now has `minWidth: 0`/`overflowWrap: anywhere`, with the icon and dismiss control kept from shrinking. Sol approved the corrected source patch. Focused tests cover the live alert, long-string wrapping, and optional dismiss action. The suite cannot start because scoped Vitest is missing, and the root binary cannot resolve `@vitest/utils`; call-site timing/exclusivity and screen-reader behavior remain unverified.
 
 ## Phase 1: Inventory and shell
 
@@ -54,3 +59,11 @@
 - [ ] Intentional scrollers remain usable and bounded.
 - [ ] No new browser console errors appear during the checked routes.
 - [x] **Sol checkpoint review:** Sol reviewed the source scan, intentional scrollers, and verification gaps; the shared notification width finding was corrected in source. Route-wide browser coverage remains open. Broader shadcn migration remains separate.
+
+## Separate follow-up: Selected admin accessibility improvements
+
+- [x] **Task 5 — Implement selected action hit-area improvements.** InventoryProductCard controls now occupy a dedicated row, the checkbox target and POS quantity controls use explicit 44x44px sizing, and the menu's inherited 44px minimum is made explicit; the title retains its full width. Focused interaction tests were added and Sol approved the revised patch. The test command cannot execute until Vitest dependencies are available, and browser verification of rendered hit boxes is still open.
+- [ ] **Task 5 validation — Run focused tests and verify rendered targets** when dependencies and the scoped browser environment are available. Confirm title spacing at mobile and desktop widths.
+- [x] **Task 6 — Implement POS operational error announcements.** Shared `PosErrorNotice` gives existing scanner, out-of-stock, and payment errors an alert semantic. QuickPosPage hides its alert while the PaymentModal is shown, preventing duplicate announcement; each surface's current visibility and dismissal/lifetime behavior remains in place. Focused semantics/dismiss tests were added.
+- [ ] **Task 6 validation — Run focused tests** when dependencies are available; confirm call-site timing/exclusivity and screen-reader announcement in browser if runtime access returns.
+- [x] **Sol scope review:** confirmed the source measurements, recommended title-spacing and announcement checks, and advised keeping the accessibility work as a separate follow-up. Review each implementation patch with Sol before marking its checkpoint complete. This follow-up is presentation/accessibility only and does not include new scanner, offline, sync, transaction, stock, pricing, or schema behavior.
