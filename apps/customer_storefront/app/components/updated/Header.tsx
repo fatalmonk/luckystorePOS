@@ -292,12 +292,12 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 -translate-y-0.5 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-2" weight="bold" size={24} aria-hidden="true" />
           </button>
 
           <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
@@ -329,15 +329,15 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 -translate-y-1 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-2" weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo ml-0.5 translate-y-0.5 lg:h-14 lg:w-auto" locale={currentLocale} />
+          <Logo className="header-brand-logo ml-0.5 lg:h-14 lg:w-auto" locale={currentLocale} />
         </div>
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}

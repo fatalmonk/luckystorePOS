@@ -34,8 +34,8 @@ def validate(report, run, workflow_id, base_sha, now=None):
         raise ValueError("Invalid audit report object")
     if report.get("schema_version") != 2 or report.get("base_url") != "https://www.luckystore1947.com":
         raise ValueError("Unsupported audit report schema or target")
-    if report.get("status") not in ("passed_sample", "issues_found", "incomplete"):
-        raise ValueError("Audit report is unavailable or execution failed")
+    if report.get("status") not in ("passed_sample", "issues_found"):
+        raise ValueError("Audit must be complete enough for a proposal; incomplete or failed evidence is review-only")
     provenance = report.get("provenance", {})
     if not isinstance(provenance, dict):
         raise ValueError("Invalid audit provenance object")

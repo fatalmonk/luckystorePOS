@@ -20,11 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
     : 'Deal of the Week: Current Store Offers | Lucky Store';
 
   const description = active
-    ? 'Browse this week’s editor-verified promotions at Lucky Store with an extra 5% off at online checkout. Accurate prices and fast home delivery in Chattogram.'
-    : 'Browse current eligible offers across Lucky Store products in Chattogram. Check verified prices, pack sizes, and real inventory before ordering.';
+    ? 'Browse this week’s editor-verified promotions at Lucky Store with an extra 5% off at online checkout. Verified prices and local delivery within 1 km of our Chawkbazar store.'
+    : 'Browse current eligible offers across Lucky Store products in Chattogram. Check verified prices, pack sizes, inventory and local delivery eligibility before ordering.';
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: CANONICAL_URL,

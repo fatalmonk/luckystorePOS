@@ -260,7 +260,7 @@ export function DealOfTheWeekClient({
         <div>
           <h3 className="text-lg font-bold sm:text-xl">Looking for everyday essentials?</h3>
           <p className="mt-1 text-xs text-zinc-300 sm:text-sm">
-            Explore hundreds of fresh grocery, bakery, and household products delivered across Chattogram.
+            Explore groceries, bakery, and household essentials. Local delivery is available within 1 km of our Chawkbazar store.
           </p>
         </div>
         <Link
