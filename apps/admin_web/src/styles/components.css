@@ -1151,8 +1151,8 @@
   }
 }
 
-/* ===== TABLET (768px - 1024px) ===== */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* ===== TABLET (769px - 1024px) ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
