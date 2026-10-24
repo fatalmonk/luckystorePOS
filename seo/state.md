@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-17
-last_pr:        #497 (merged)
-open_prs:       none
-next_run:       2026-10-18
+last_run:       2026-10-24 (partial: artifact storage quota blocks evidence upload)
+last_pr:        #497 (merged); 2026-10-24 review PR pending
+open_prs:       2026-10-24 footer-clarity review PR pending
+next_run:       2026-10-25
 ```
 
 ---
@@ -116,7 +116,7 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ```yaml
 technical_seo:
-  sitemap_url_count: null         # 2026-10-15 live XML inaccessible; 902 is the historical 2026-10-14 recorded baseline only
+  sitemap_url_count: 916          # 2026-10-23 GitHub audit summary: complete sitemap count; 15 pages sampled, not a full crawl
   robots_ai_bots_pass: null       # 2026-10-15 live robots.txt inaccessible; not a confirmed failure
   canonical_errors: null          # no full crawl evidenced; unknown until measured
   broken_links: null              # no full crawl evidenced; unknown until measured
@@ -161,6 +161,17 @@ competitor_signals:
 
 ---
 
+## 2026-10-24 evidence and verification status
+
+- **Verified buyer-facing issue:** The public homepage footer claimed delivery `across Chattogram` despite the same live page and current `DELIVERY_POLICY` publishing a 1 km Chawkbazar delivery area. Proposed bilingual clarification directs customers to check eligibility; this does **not** verify or change backend geofencing. Operational delivery-zone settings require reconciliation.
+- **Measured technical SEO:** 2026-10-23 technical monitor run [39912732784](https://github.com/fatalmonk/luckystorePOS/actions/runs/39912732784) printed 916 discovered sitemap URLs, 15/15 sampled pages fetched, 0 sampled issues, 1 warning and 0 verification limitations. Its artifact upload failed, so the full JSON report was not available. This is not a 916-page crawl.
+- **Confirmed CI/deployment blocker:** GitHub Actions artifact storage quota hit. 2026-10-24 [Hostinger CI/CD run 40028053592](https://github.com/fatalmonk/luckystorePOS/actions/runs/40028053592) packaged a 45.81 MB build but failed to upload it; staging/production deployment skipped. SEO monitor/report uploads also failed. Restore artifact storage without bypassing verification gates.
+- **Public checks:** Apex homepage redirected to `www`; `/robots.txt`, `/sitemap.xml`, and rendered `/delivery` schema/hreflang were not independently inspectable via available public fetch. English `/delivery` already calls `getDeliveryFaqSchema()` in current source.
+- **Analytics/AI:** Connected Ryze workspace returned HTTP 403; no fresh Search Console, GA4, verified completed-order, indexing, or AI-answer citation results. Competitor public scan yielded no verified new Chawkbazar-specific launches.
+- **Review:** Bilingual footer copy, regression tests, and `seo/reports/2026-10-24.md` proposed in a draft PR; no automatic merge/deployment.
+
+---
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -172,4 +183,5 @@ competitor_signals:
 | 2026-10-15 | manual review | #480 (merged) | Added 4 visible Bengali buyer FAQs; English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
 | 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
 | 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
+| 2026-10-24 | autopilot | pending review | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
 
