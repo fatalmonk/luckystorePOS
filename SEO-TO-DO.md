@@ -252,6 +252,17 @@ Append one row per wake, including `no-op` and failures. Use ISO 8601 timestamps
 | Run ID | Start | End | Task ID / no-op | Result | Evidence links/paths | Changed paths | Sol model and verdict | Blocker | Next action |
 |---|---|---|---|---|---|---|---|---|---|
 | runbook-setup-review-20261024T055835+0600-sol-checkpoint-01 | 2026-10-24T05:58:35+06:00 | 2026-10-24T05:59:45+06:00 | runbook-setup/review | verified | `.superpowers/sdd/2026-10-24-seo-todo-autonomous-runbook/task-1-report.md` (Sol fix round and final scoped re-review); `.superpowers/sdd/2026-10-24-seo-todo-autonomous-runbook/review-fee7d014..84ff16ee.diff`; `.superpowers/sdd/2026-10-24-seo-todo-autonomous-runbook/review-84ff16ee..f882bb10.diff` | `SEO-TO-DO.md` | `gpt-6.1-sol`: first review requested changes on two Important findings; bounded fix round addressed both, the ordinal issue was corrected, and scoped re-review approved all findings | none | No blocker remains; no later wake is scheduled. |
+| runbook-setup-review-correction-20261024T060134+0600-sol-01 | 2026-10-24T06:01:34+06:00 | 2026-10-24T06:02:19+06:00 | runbook-setup/review correction | verified | `SEO-TO-DO.md#sol-rereview-checkpoint-runbook-setup-review-correction-01` (durable record; corrects the evidence pointers in the preceding row) | `SEO-TO-DO.md` | `gpt-6.1-sol`: APPROVE; full scoped disposition is recorded at the linked anchor | none | No blocker remains. |
+
+### <a id="sol-rereview-checkpoint-runbook-setup-review-correction-01"></a>Durable Sol re-review checkpoint
+
+- Reviewer/model: Sol, `gpt-6.1-sol`.
+- Reviewed scope: `SEO-TO-DO.md` fix diff commit `84ff16ee..f882bb10`.
+- Finding 1: addressed; supporting evidence is recorded at lines 15, 193, 235, 237, and 238.
+- Finding 2: addressed; supporting evidence is recorded at lines 15, 201, and 219.
+- Minor source-ordinal issue: addressed at line 193.
+- Re-review found no new breakage and no out-of-scope observations.
+- Final verdict: **APPROVE**.
 
 ## Guardrails
 
