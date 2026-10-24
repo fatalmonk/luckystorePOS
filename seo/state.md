@@ -13,8 +13,8 @@
 ```
 phase:          baseline-established
 last_run:       2026-10-24 (partial: artifact storage quota blocks evidence upload)
-last_pr:        #497 (merged); 2026-10-24 review PR pending
-open_prs:       2026-10-24 footer-clarity review PR pending
+last_pr:        #543 (draft; pending review)
+open_prs:       #543 (draft)
 next_run:       2026-10-25
 ```
 
@@ -168,7 +168,7 @@ competitor_signals:
 - **Confirmed CI/deployment blocker:** GitHub Actions artifact storage quota hit. 2026-10-24 [Hostinger CI/CD run 40028053592](https://github.com/fatalmonk/luckystorePOS/actions/runs/40028053592) packaged a 45.81 MB build but failed to upload it; staging/production deployment skipped. SEO monitor/report uploads also failed. Restore artifact storage without bypassing verification gates.
 - **Public checks:** Apex homepage redirected to `www`; `/robots.txt`, `/sitemap.xml`, and rendered `/delivery` schema/hreflang were not independently inspectable via available public fetch. English `/delivery` already calls `getDeliveryFaqSchema()` in current source.
 - **Analytics/AI:** Connected Ryze workspace returned HTTP 403; no fresh Search Console, GA4, verified completed-order, indexing, or AI-answer citation results. Competitor public scan yielded no verified new Chawkbazar-specific launches.
-- **Review:** Bilingual footer copy, regression tests, and `seo/reports/2026-10-24.md` proposed in a draft PR; no automatic merge/deployment.
+- **Review:** Bilingual footer copy, regression tests, and `seo/reports/2026-10-24.md` proposed in draft PR #543; no automatic merge/deployment.
 
 ---
 
@@ -183,5 +183,5 @@ competitor_signals:
 | 2026-10-15 | manual review | #480 (merged) | Added 4 visible Bengali buyer FAQs; English `/delivery` unchanged. Sitemap/robots live checks blocked, GSC/GA access unavailable. |
 | 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
 | 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
-| 2026-10-24 | autopilot | pending review | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
+| 2026-10-24 | autopilot | #543 (draft) | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
 
