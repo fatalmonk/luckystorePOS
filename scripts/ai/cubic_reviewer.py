@@ -124,13 +124,14 @@ class StaticAnalyzer:
             # 2. Secret exposure check
             for pattern, desc in cls.credential_signatures:
                 if pattern.search(line_content):
+                    redacted_snippet = pattern.sub("[REDACTED_SECRET]", line_content.strip()[:120])
                     findings.append(Finding(
                         severity=Severity.P0_BLOCKER,
                         file=diff.filename,
                         line=line_no,
                         rule="security-secret-leak",
                         message=desc,
-                        snippet=line_content.strip()[:80],
+                        snippet=redacted_snippet,
                         suggestion="Remove raw token and read from process.env or .env.local",
                     ))
 
@@ -320,8 +321,11 @@ Format your output strictly as a JSON object:
 
     @classmethod
     def _query_gemini(cls, api_key: str, diff_text: str) -> dict[str, Any] | None:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-        headers = {"Content-Type": "application/json"}
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key,
+        }
         prompt = f"{cls.SYSTEM_PROMPT}\n\nReview this git diff:\n\n```diff\n{diff_text}\n```"
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
