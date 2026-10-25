@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { supabase as defaultSupabase } from '../supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '../products/types';
@@ -27,13 +28,55 @@ export interface SearchProductsResponse {
 }
 
 const DEFAULT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+const DEFAULT_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+  || process.env.SUPABASE_URL
+  || 'supabase-url-not-configured';
+
+interface CachedSearchOptions {
+  query: string;
+  storeId: string;
+  categoryId: string | null;
+  categoryIds?: string[];
+  limit: number;
+  offset: number;
+}
+
+// Keep the existing 60-second search freshness window, but share results in
+// Next's Data Cache so repeated searches across separate Vercel instances do
+// not each repeat the same PostgREST/RPC reads.
+const searchDefaultStorefrontProducts = unstable_cache(
+  async (options: CachedSearchOptions) =>
+    searchStorefrontProductsUncached({ ...options, supabaseClient: defaultSupabase }),
+  ['storefront-catalog-search-v1', DEFAULT_SUPABASE_URL],
+  { revalidate: 60, tags: ['storefront-catalog-search'] }
+);
 
 function sanitizePostgrestSearchTerm(input: string): string {
   // Strip PostgREST syntax characters and wildcards to prevent filter injection
   return input.replace(/[(),.*%\\":{}'"[\]]/g, ' ').trim().replace(/\s+/g, ' ');
 }
 
-export async function searchStorefrontProducts({
+export async function searchStorefrontProducts(options: SearchOptions = {}): Promise<SearchProductsResponse> {
+  const limit = options.limit ?? 50;
+  const cacheOptions: CachedSearchOptions = {
+    query: options.query ?? '',
+    storeId: options.storeId ?? DEFAULT_STORE_ID,
+    categoryId: options.categoryId ?? null,
+    categoryIds: options.categoryIds,
+    limit,
+    offset: options.offset !== undefined ? options.offset : (options.page ?? 0) * limit,
+  };
+
+  // Test and custom callers may provide a distinct client; keep those isolated
+  // from the shared production catalog cache.
+  if (options.supabaseClient && options.supabaseClient !== defaultSupabase) {
+    return searchStorefrontProductsUncached({ ...cacheOptions, supabaseClient: options.supabaseClient });
+  }
+
+  return searchDefaultStorefrontProducts(cacheOptions);
+}
+
+async function searchStorefrontProductsUncached({
   query = '',
   storeId = DEFAULT_STORE_ID,
   categoryId = null,
