@@ -369,7 +369,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     netQuantity: '0.75 g',
     category: 'Tea & Coffee',
     summary:
-      'AMA Classic coffee sachet, net weight 0.75 g, sold individually for ৳5 per piece.',
+      'AMA Classic coffee sachet, net weight 0.75 g, sold individually for ৳5 at Lucky Store in Chawkbazar, Chattogram.',
     specifications: [
       { label: 'Brand', value: 'AMA', evidenceRefs: ['PACK_FRONT'] },
       { label: 'Net Weight', value: '0.75 g', evidenceRefs: ['PACK_FRONT'] },
@@ -384,7 +384,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       {
         question: 'Can I purchase AMA Classic coffee by the piece?',
         answer:
-          'Yes. Lucky Store sells this item individually for ৳5 per piece.',
+          'Yes. Lucky Store sells this item individually for ৳5 per piece in Chawkbazar, Chattogram.',
         evidenceRefs: ['CATALOG_RECORD'],
       },
     ],

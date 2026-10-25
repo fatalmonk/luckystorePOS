@@ -79,10 +79,14 @@ def _records(snapshot: Any, source: str) -> list[dict[str, Any]]:
         if not isinstance(rows_value, list):
             raise ValueError(f"{source} snapshot must be a row array or contain a 'values'/'rows' array")
         rows = []
-        for row in rows_value:
+        for row_number, row in enumerate(rows_value, start=2):
             if not isinstance(row, dict):
                 raise ValueError(f"{source} snapshot rows must be JSON objects")
-            rows.append({_canonical_field(key): value for key, value in row.items()})
+            canonical_row = {_canonical_field(key): value for key, value in row.items()}
+            missing_fields = REQUIRED_FIELDS[source] - set(canonical_row.keys())
+            if missing_fields:
+                raise ValueError(f"{source} snapshot row {row_number} is missing required columns: {', '.join(sorted(missing_fields))}")
+            rows.append(canonical_row)
 
     records = []
     for row_number, row in enumerate(rows, start=2):

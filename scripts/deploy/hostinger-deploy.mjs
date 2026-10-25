@@ -77,6 +77,11 @@ function apiRequest(method, endpoint, body = null, headers = {}) {
       });
     });
 
+    req.setTimeout(30_000, () => {
+      const err = new Error('Hostinger API request timed out after 30s');
+      err.code = 'ETIMEDOUT';
+      req.destroy(err);
+    });
     req.on('error', reject);
     if (body) {
       req.write(typeof body === 'string' ? body : JSON.stringify(body));
@@ -178,12 +183,22 @@ function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
         }
       });
 
+      patchReq.setTimeout(180_000, () => {
+        const err = new Error('TUS PATCH upload stream timed out after 180s');
+        err.code = 'ETIMEDOUT';
+        patchReq.destroy(err);
+      });
       patchReq.on('error', reject);
       const archiveStream = fs.createReadStream(filePath, { highWaterMark: 1024 * 1024 });
       archiveStream.on('error', reject);
       archiveStream.pipe(patchReq);
     });
 
+    postReq.setTimeout(30_000, () => {
+      const err = new Error('TUS creation request timed out after 30s');
+      err.code = 'ETIMEDOUT';
+      postReq.destroy(err);
+    });
     postReq.on('error', reject);
     postReq.end();
   });

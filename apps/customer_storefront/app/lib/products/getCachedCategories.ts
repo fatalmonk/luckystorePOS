@@ -3,6 +3,10 @@ import { unstable_cache } from 'next/cache';
 import { supabase } from '../supabase';
 import { createProductRepository } from './index';
 
+const DEFAULT_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+  || process.env.SUPABASE_URL
+  || 'supabase-url-not-configured';
+
 // React cache only deduplicates within one render/request. Keep this public,
 // slow-changing catalogue data in Next's shared Data Cache as well so separate
 // Vercel function instances do not each repeat the same PostgREST read.
@@ -11,8 +15,8 @@ const getCategoriesFromDataCache = unstable_cache(
     const { repo } = createProductRepository(supabase);
     return repo.getCategories();
   },
-  ['storefront-categories-v1'],
-  { revalidate: 600, tags: ['storefront-categories'] }
+  ['storefront-categories-v1', DEFAULT_SUPABASE_URL],
+  { revalidate: 300, tags: ['storefront-categories'] }
 );
 
 // API routes use this strict variant to preserve their error response when the

@@ -95,6 +95,11 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing required columns"):
             reconcile({"values": [["wrong", "headers"]]}, self.copy, self.database)
 
+    def test_object_snapshot_missing_required_fields_fails(self):
+        invalid_database = [{"id": "item-1", "sku": "SP-RAD-CUM-050G"}]
+        with self.assertRaisesRegex(ValueError, "missing required columns"):
+            reconcile(self.master, self.copy, invalid_database)
+
     def test_load_snapshot_rejects_malformed_json(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "broken.json"

@@ -320,4 +320,34 @@ describe('searchStorefrontProducts', () => {
     expect(products.length).toBe(1);
     expect(products[0].id).toBe('item-dairy-1');
   });
+
+  it('returns base search results gracefully when translation lookup fails', async () => {
+    const mockSupabase = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        or: vi.fn().mockResolvedValue({ data: null, error: new Error('PostgREST translation lookup failed') }),
+      })),
+      rpc: vi.fn(() => Promise.resolve({
+        data: [{
+          item_id: 'item-1',
+          name: 'Classic Tea',
+          price: 50,
+          qty_on_hand: 5,
+          sellable_qty: 5,
+        }],
+        error: null,
+      })),
+    };
+
+    const { products } = await searchStorefrontProducts({
+      query: 'tea',
+      supabaseClient: mockSupabase as any,
+    });
+
+    expect(products).toHaveLength(1);
+    expect(products[0].id).toBe('item-1');
+    expect(products[0].bengaliName).toBeUndefined();
+  });
 });
