@@ -1,9 +1,36 @@
 import { cache } from 'react';
 import { supabase } from '../supabase';
 import { createProductRepository } from './index';
+import { filterRadhuniPackVariants, getRadhuniSpiceFamily } from './radhuniPackVariants';
 import type { Product } from './types';
 
 const MAX_CROSS_SELL = 8;
+
+/** Resolve same-family Radhuni pack links from the live, stock-aware storefront catalogue. */
+export const getCachedRadhuniPackVariants = cache(async (currentProduct: Product): Promise<Product[]> => {
+  const family = getRadhuniSpiceFamily(currentProduct.name);
+  const categoryId = currentProduct.categoryId || currentProduct.category_id;
+  if (!family || !categoryId) return [];
+
+  const { repo } = createProductRepository(supabase);
+  const pageSize = 500;
+  const candidates: Product[] = [];
+  let offset = 0;
+
+  try {
+    while (true) {
+      const page = await repo.search({ query: 'Radhuni', categoryId, limit: pageSize, offset });
+      candidates.push(...page.products);
+      if (!page.hasMore || page.products.length === 0) break;
+      offset += page.products.length;
+    }
+  } catch {
+    // Keep this optional navigation enhancement from failing the product page.
+    return [];
+  }
+
+  return filterRadhuniPackVariants(currentProduct, candidates);
+});
 
 /**
  * Cached cross-sell lookup for a product page.

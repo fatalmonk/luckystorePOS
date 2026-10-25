@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getCachedProductBySlug } from '../../../../lib/products/getCachedProduct';
+import { getCachedRadhuniPackVariants } from '../../../../lib/products/getCachedCrossSell';
 import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
@@ -116,6 +117,10 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
 
   const canonicalSlug = toProductSlug(localized.sourceName, localized.product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
+  const radhuniPackVariants = await getCachedRadhuniPackVariants({
+    ...localized.product,
+    name: localized.sourceName,
+  });
 
   const rawEnrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
   const enrichment = rawEnrichment && localized.translated
@@ -148,6 +153,7 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
       <ProductClient
         product={localized.product}
         crossSell={[]}
+        radhuniPackVariants={radhuniPackVariants}
         locale="bn"
         productUrlName={localized.sourceName}
         productCanonicalUrl={canonicalUrl}

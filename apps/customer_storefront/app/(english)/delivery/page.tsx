@@ -72,24 +72,24 @@ export default function DeliveryHubPage() {
             className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
           >
             <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">Coverage Boundary</p>
-              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">{DELIVERY_POLICY.radiusKm} km Radius</p>
-              <p className="text-xs text-warm-muted mt-0.5">Authoritative GeoCircle</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">Where do we deliver?</p>
+              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">Within {DELIVERY_POLICY.radiusKm} km of our store</p>
+              <p className="text-xs text-warm-muted mt-0.5">{DELIVERY_POLICY.hubAddress}</p>
             </div>
             <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">Free Delivery</p>
-              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}+ Orders</p>
-              <p className="text-xs text-warm-muted mt-0.5">৳{DELIVERY_POLICY.standardDeliveryFeeBdt} for smaller orders</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">How much is delivery?</p>
+              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">Free on orders ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}+</p>
+              <p className="text-xs text-warm-muted mt-0.5">৳{DELIVERY_POLICY.standardDeliveryFeeBdt} below ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}</p>
             </div>
             <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">Delivery Hours</p>
-              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">09:00 AM–12:30 AM</p>
-              <p className="text-xs text-warm-muted mt-0.5">Daily dispatch window</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">When do we deliver?</p>
+              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">{DELIVERY_POLICY.deliveryHours.display}</p>
+              <p className="text-xs text-warm-muted mt-0.5">{DELIVERY_POLICY.deliveryHours.daysDisplay}</p>
             </div>
             <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">Payment &amp; Check</p>
-              <p className="mt-1 text-lg sm:text-xl font-black text-warm-fg">COD &amp; bKash</p>
-              <p className="text-xs text-warm-muted mt-0.5">Doorstep inspection</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-warm-muted">How can I pay?</p>
+              <p className="mt-1 text-sm sm:text-base font-black text-warm-fg">{DELIVERY_POLICY.paymentMethods.cod}</p>
+              <p className="text-xs text-warm-muted mt-0.5">{DELIVERY_POLICY.paymentMethods.bkash}</p>
             </div>
           </section>
 

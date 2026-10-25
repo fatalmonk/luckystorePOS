@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getCachedProductBySlug } from '../../../lib/products/getCachedProduct';
 import {
   getCachedCrossSellProducts,
+  getCachedRadhuniPackVariants,
   prepareCrossSell,
 } from '../../../lib/products/getCachedCrossSell';
 import { toProductSlug } from '../../../lib/products/slugify';
@@ -80,6 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     product.id
   );
   const crossSellProducts = prepareCrossSell(crossSell);
+  const radhuniPackVariants = await getCachedRadhuniPackVariants(product);
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
   const galleryImages = enrichment?.galleryImages?.length
     ? enrichment.galleryImages
@@ -106,6 +108,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <ProductClient
         product={product}
         crossSell={crossSellProducts}
+        radhuniPackVariants={radhuniPackVariants}
         enrichment={enrichment}
         galleryImages={galleryImages}
       />

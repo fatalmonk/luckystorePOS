@@ -86,7 +86,7 @@ function mdBusinessContext(): string {
   let md = `## About This Store\n\n`;
 
   md += `**Lucky Store** is a neighborhood grocery store in Chittagong, Bangladesh — `;
-  md += `operating since 1947. Fresh products, fair prices, same-day delivery.\n\n`;
+  md += `operating since 1947. Fresh products, fair prices, and local delivery from our Chawkbazar hub.\n\n`;
 
   md += `### 📍 Location & Contact\n\n`;
   md += `- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong 4203, Bangladesh\n`;
@@ -419,7 +419,7 @@ export async function GET(req: NextRequest) {
 
       markdown = mdHeader(
         'Lucky Store — Your Neighborhood Grocery',
-        'Fresh products, fair prices, same-day delivery in Chittagong, Bangladesh.'
+        'Fresh products, fair prices, and local delivery from our Chawkbazar hub in Chattogram, Bangladesh.'
       );
 
       markdown += mdBusinessContext();
