@@ -39,7 +39,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
     });
 
     it('extracts Ama brand from instant coffee', () => {
-      expect(brandParser.parse('Ama Classic Instant Coffee Sachet 1g')).toBe('Ama');
+      expect(brandParser.parse('AMA Classic Coffee Sachet 0.75 g')).toBe('Ama');
       expect(brandParser.parse('ama classic coffee')).toBe('Ama');
     });
 
@@ -58,7 +58,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       const titles = [
         formatProductMetaTitle('Fortune Kachi Ghani Mustard Oil 5L', 1150),
         formatProductMetaTitle('Radhuni Turmeric 100g', 65),
-        formatProductMetaTitle('Ama Classic Instant Coffee Sachet 1g', 10),
+        formatProductMetaTitle('AMA Classic Coffee Sachet 0.75 g', 10),
         formatProductMetaTitle('A Very Long Name For A Premium Imported Organic Sunflower Oil 5000ml Bottle', 1800),
       ];
 

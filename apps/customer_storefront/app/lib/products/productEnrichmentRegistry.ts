@@ -361,57 +361,47 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     },
   },
 
-  // 5. Ama Classic Instant Coffee Sachet 1g
+  // 5. AMA Classic Coffee Sachet 0.75 g
   '3448ed8a': {
     slugPrefix: '3448ed8a',
-    exactName: 'Ama Classic Instant Coffee Sachet 1g',
+    exactName: 'AMA Classic Coffee Sachet 0.75 g',
     brand: 'Ama',
-    netQuantity: '1g',
+    netQuantity: '0.75 g',
     category: 'Tea & Coffee',
     summary:
-      'Ama Classic Instant Coffee in a single-serve 1g sachet. Soluble coffee powder for preparation with hot water or milk. Available for purchase from Lucky Store in Chawkbazar, Chattogram, with cash or bKash on delivery and 100% doorstep inspection.',
+      'AMA Classic coffee sachet, net weight 0.75 g, sold by the piece at Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection.',
     specifications: [
-      { label: 'Brand', value: 'Ama', evidenceRefs: ['PACK_FRONT'] },
-      { label: 'Net Weight', value: '1g', evidenceRefs: ['PACK_FRONT'] },
-      { label: 'Product Type', value: 'Instant Coffee Powder', evidenceRefs: ['PACK_FRONT'] },
-      { label: 'Serving Format', value: '1 Sachet (1g) per cup', evidenceRefs: ['PACK_SERVING'] },
-      { label: 'Packaging Type', value: 'Individual Sachet', evidenceRefs: ['PACK_FRONT'] },
+      { label: 'Brand', value: 'AMA', evidenceRefs: ['PACK_FRONT'] },
+      { label: 'Net Weight', value: '0.75 g', evidenceRefs: ['PACK_FRONT'] },
+      { label: 'Product Type', value: 'Soluble Coffee Powder', evidenceRefs: ['PACK_FRONT'] },
+      { label: 'Packaging Type', value: 'Mini pack', evidenceRefs: ['PACK_FRONT'] },
     ],
     highlights: [
-      'Single-serve 1g sachet',
-      'Dissolves in hot water or warm milk',
+      'Classic coffee',
+      'Sold individually',
     ],
-    usageDirections:
-      'Empty one sachet into a cup, add 100–120ml hot water or warm milk, and stir.',
     faqs: [
       {
-        question: 'Can I purchase single Ama coffee sachets?',
+        question: 'Can I purchase AMA Classic coffee by the piece?',
         answer:
-          'Yes. Lucky Store offers individual sachet purchase with doorstep inspection upon delivery in Chawkbazar.',
-        evidenceRefs: ['STORE_INSPECTION_POLICY'],
+          'Yes. Lucky Store sells this item individually, with doorstep inspection upon delivery in Chawkbazar.',
+        evidenceRefs: ['CATALOG_RECORD', 'STORE_INSPECTION_POLICY'],
       },
     ],
     evidenceManifest: {
       PACK_FRONT: {
         source: 'PACKAGING',
-        evidenceRef: 'Ama 1g sachet label: Ama Classic Instant Coffee, 1g',
-        sourceTitle: 'Ama 1g Sachet Front',
+        evidenceRef: 'Owner-provided AMA package photo: front reads AMA, Classic, soluble coffee powder, and Bengali net weight 0.75 g; Bengali label also says 6 mini packs.',
+        sourceTitle: 'Owner-provided AMA Classic package front',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
-        verifiedAt: '2026-09-16',
-      },
-      PACK_SERVING: {
-        source: 'PACKAGING',
-        evidenceRef: 'Ama 1g sachet text: Single serve sachet for one cup',
-        sourceTitle: 'Ama 1g Sachet Serving Direction',
-        skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
-        verifiedAt: '2026-09-16',
+        verifiedAt: '2026-10-25',
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: 'items.id: 3448ed8a-9c0b-49ab-b249-f096fbc210c7, category: Tea & Coffee',
-        sourceTitle: 'Lucky Store Production Catalog',
+        evidenceRef: 'items.id: 3448ed8a-9c0b-49ab-b249-f096fbc210c7; SKU DE-AMA-GEN-1G; owner-confirmed per-piece sale at ৳5.',
+        sourceTitle: 'Lucky Store Production Catalog and owner confirmation',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
-        verifiedAt: '2026-09-16',
+        verifiedAt: '2026-10-25',
       },
       STORE_INSPECTION_POLICY: PILOT_STORE_INSPECTION_POLICY,
     },
@@ -421,8 +411,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       netQuantity: ['PACK_FRONT'],
       category: ['CATALOG_RECORD'],
       summary: ['PACK_FRONT', 'STORE_INSPECTION_POLICY'],
-      highlights: [['PACK_FRONT'], ['PACK_FRONT']],
-      usageDirections: ['PACK_SERVING'],
+      highlights: [['PACK_FRONT'], ['CATALOG_RECORD']],
     },
   },
 
