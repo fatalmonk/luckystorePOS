@@ -391,14 +391,14 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       PACK_FRONT: {
         source: 'PACKAGING',
-        evidenceRef: 'Owner-provided AMA package image, archived at social-media/catalogue-images/TC-AMA-CLS-075G.png (SHA-256 8c45d1250a5df3ee445563ce42d338086d4f78e0ee43a37b047384dca3a823da): package reads AMA, Classic, soluble coffee powder, net weight 0.75 g, and 6 mini packs.',
+        evidenceRef: 'Owner-provided AMA Classic package image shared in the 2026-10-25 catalog review: package reads AMA, Classic, soluble coffee powder, net weight 0.75 g, and 6 mini packs.',
         sourceTitle: 'Owner-provided AMA Classic package front',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
         verifiedAt: '2026-10-26',
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: 'Production catalog row read-only checked 2026-10-26: SKU TC-AMA-CLS-075G, name AMA Classic Coffee Sachet 0.75 g, category Tea & Coffee, price ৳5. image_key remains products/00000000-0000-0000-0000-000000000001/DE-AMA-GEN-1G-47305f69-54a3-461c-a5d2-0276075003e9.webp; the live image was visually compared with the archived owner-provided package image. Production image_checksum is null.',
+        evidenceRef: 'Production catalog row read-only checked 2026-10-26: SKU TC-AMA-CLS-075G, name AMA Classic Coffee Sachet 0.75 g, category Tea & Coffee, price ৳5. image_key remains products/00000000-0000-0000-0000-000000000001/DE-AMA-GEN-1G-47305f69-54a3-461c-a5d2-0276075003e9.webp; the live image was visually compared with the owner-provided package image. Production image_checksum is null.',
         sourceTitle: 'Lucky Store production catalog row (read-only)',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
         verifiedAt: '2026-10-26',
