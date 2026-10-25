@@ -190,7 +190,18 @@ function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
 }
 
 
-async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 3) {
+function describeUploadFailure(err) {
+  const nestedErrors = Array.isArray(err?.errors) ? err.errors : [];
+  const nestedSummary = nestedErrors
+    .map((cause) => [cause?.code, cause?.syscall].filter(Boolean).join(' '))
+    .filter(Boolean)
+    .join(', ');
+  const reason = err?.code || err?.statusCode || err?.message || 'unknown error';
+
+  return nestedSummary ? `${reason} (${nestedSummary})` : reason;
+}
+
+async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 5) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize);
@@ -199,8 +210,8 @@ async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRe
       if (attempt === maxRetries || !isTransientUploadFailure(err)) {
         throw err;
       }
-      const backoffSec = attempt * 2;
-      const failureReason = err.code || err.statusCode || err.message || 'unknown error';
+      const backoffSec = Math.min(5 * (2 ** (attempt - 1)), 30);
+      const failureReason = describeUploadFailure(err);
       console.warn(`⚠️  TUS upload attempt ${attempt}/${maxRetries} failed (${failureReason}). Retrying in ${backoffSec}s...`);
       await new Promise(r => setTimeout(r, backoffSec * 1000));
     }
