@@ -77,6 +77,11 @@ function apiRequest(method, endpoint, body = null, headers = {}) {
       });
     });
 
+    req.setTimeout(30_000, () => {
+      const err = new Error('Hostinger API request timed out after 30s');
+      err.code = 'ETIMEDOUT';
+      req.destroy(err);
+    });
     req.on('error', reject);
     if (body) {
       req.write(typeof body === 'string' ? body : JSON.stringify(body));
@@ -178,19 +183,40 @@ function uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize) {
         }
       });
 
+      patchReq.setTimeout(180_000, () => {
+        const err = new Error('TUS PATCH upload stream timed out after 180s');
+        err.code = 'ETIMEDOUT';
+        patchReq.destroy(err);
+      });
       patchReq.on('error', reject);
       const archiveStream = fs.createReadStream(filePath, { highWaterMark: 1024 * 1024 });
       archiveStream.on('error', reject);
       archiveStream.pipe(patchReq);
     });
 
+    postReq.setTimeout(30_000, () => {
+      const err = new Error('TUS creation request timed out after 30s');
+      err.code = 'ETIMEDOUT';
+      postReq.destroy(err);
+    });
     postReq.on('error', reject);
     postReq.end();
   });
 }
 
 
-async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 3) {
+function describeUploadFailure(err) {
+  const nestedErrors = Array.isArray(err?.errors) ? err.errors : [];
+  const nestedSummary = nestedErrors
+    .map((cause) => [cause?.code, cause?.syscall].filter(Boolean).join(' '))
+    .filter(Boolean)
+    .join(', ');
+  const reason = err?.code || err?.statusCode || err?.message || 'unknown error';
+
+  return nestedSummary ? `${reason} (${nestedSummary})` : reason;
+}
+
+async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRetries = 5) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await uploadTusOnce(uploadUrl, authKey, restAuth, filePath, fileSize);
@@ -199,8 +225,8 @@ async function uploadTus(uploadUrl, authKey, restAuth, filePath, fileSize, maxRe
       if (attempt === maxRetries || !isTransientUploadFailure(err)) {
         throw err;
       }
-      const backoffSec = attempt * 2;
-      const failureReason = err.code || err.statusCode || err.message || 'unknown error';
+      const backoffSec = Math.min(5 * (2 ** (attempt - 1)), 30);
+      const failureReason = describeUploadFailure(err);
       console.warn(`⚠️  TUS upload attempt ${attempt}/${maxRetries} failed (${failureReason}). Retrying in ${backoffSec}s...`);
       await new Promise(r => setTimeout(r, backoffSec * 1000));
     }

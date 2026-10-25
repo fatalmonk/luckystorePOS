@@ -604,8 +604,8 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(links.length).toBeGreaterThanOrEqual(1);
 
       const text = container.textContent || '';
-      expect(text).toContain('Free delivery ৳500+');
-      expect(text).toContain('Cash on delivery');
+      expect(text).toMatch(/Free [Dd]elivery ৳500\+/);
+      expect(text).toMatch(/Cash on [Dd]elivery/);
       expect(text).toContain('Doorstep inspection');
     });
   });

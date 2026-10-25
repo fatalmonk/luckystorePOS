@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { supabase as defaultSupabase } from '../supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '../products/types';
@@ -27,13 +28,79 @@ export interface SearchProductsResponse {
 }
 
 const DEFAULT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+const DEFAULT_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+  || process.env.SUPABASE_URL
+  || 'supabase-url-not-configured';
+
+interface CachedSearchOptions {
+  query: string;
+  storeId: string;
+  categoryId: string | null;
+  categoryIds?: string[];
+  limit: number;
+  offset: number;
+}
+
+class DegradedSearchError extends Error {
+  response: SearchProductsResponse;
+  constructor(response: SearchProductsResponse) {
+    super('Search results degraded due to translation lookup failure');
+    this.name = 'DegradedSearchError';
+    this.response = response;
+  }
+}
+
+// Keep the existing 60-second search freshness window, but share results in
+// Next's Data Cache so repeated searches across separate Vercel instances do
+// not each repeat the same PostgREST/RPC reads.
+const searchDefaultStorefrontProducts = unstable_cache(
+  async (options: CachedSearchOptions) =>
+    searchStorefrontProductsUncached({ ...options, supabaseClient: defaultSupabase }),
+  ['storefront-catalog-search-v1', DEFAULT_SUPABASE_URL],
+  { revalidate: 60, tags: ['storefront-catalog-search'] }
+);
 
 function sanitizePostgrestSearchTerm(input: string): string {
   // Strip PostgREST syntax characters and wildcards to prevent filter injection
   return input.replace(/[(),.*%\\":{}'"[\]]/g, ' ').trim().replace(/\s+/g, ' ');
 }
 
-export async function searchStorefrontProducts({
+export async function searchStorefrontProducts(options: SearchOptions = {}): Promise<SearchProductsResponse> {
+  const limit = options.limit ?? 50;
+  const normalizedQuery = (options.query ?? '').trim().toLowerCase();
+  const cacheOptions: CachedSearchOptions = {
+    query: normalizedQuery,
+    storeId: options.storeId ?? DEFAULT_STORE_ID,
+    categoryId: options.categoryId ?? null,
+    categoryIds: options.categoryIds,
+    limit,
+    offset: options.offset !== undefined ? options.offset : (options.page ?? 0) * limit,
+  };
+
+  // Test and custom callers may provide a distinct client; keep those isolated
+  // from the shared production catalog cache.
+  if (options.supabaseClient && options.supabaseClient !== defaultSupabase) {
+    try {
+      return await searchStorefrontProductsUncached({ ...cacheOptions, supabaseClient: options.supabaseClient });
+    } catch (err) {
+      if (err instanceof DegradedSearchError) {
+        return err.response;
+      }
+      throw err;
+    }
+  }
+
+  try {
+    return await searchDefaultStorefrontProducts(cacheOptions);
+  } catch (err) {
+    if (err instanceof DegradedSearchError) {
+      return err.response;
+    }
+    throw err;
+  }
+}
+
+async function searchStorefrontProductsUncached({
   query = '',
   storeId = DEFAULT_STORE_ID,
   categoryId = null,
@@ -51,6 +118,7 @@ export async function searchStorefrontProducts({
   const safeQuery = sanitizePostgrestSearchTerm(cleanQuery);
 
   let translationMatchedItemIds: string[] = [];
+  let translationDegraded = false;
 
   // 1. If searching with a text query, match published Bengali translations before pagination using sanitized predicate
   if (safeQuery.length > 0) {
@@ -66,6 +134,7 @@ export async function searchStorefrontProducts({
       if (transError) {
         if (!isMissingItemTranslationsTableError(transError)) {
           console.error('Failed to match item translations for search:', transError);
+          translationDegraded = true;
         }
       } else if (transMatches) {
         translationMatchedItemIds = transMatches
@@ -74,6 +143,7 @@ export async function searchStorefrontProducts({
       }
     } catch (err) {
       console.error('Unexpected error matching translations:', err);
+      translationDegraded = true;
     }
   }
 
@@ -184,6 +254,7 @@ export async function searchStorefrontProducts({
       if (batchError) {
         if (!isMissingItemTranslationsTableError(batchError)) {
           console.error('Failed to query item translations for search overlay:', batchError);
+          translationDegraded = true;
         }
       } else if (allTranslations.length > 0) {
         const translationMap = new Map<string, any>();
@@ -202,11 +273,18 @@ export async function searchStorefrontProducts({
       }
     } catch (err) {
       console.error('Unexpected error fetching translation overlays:', err);
+      translationDegraded = true;
     }
   }
 
-  return {
+  const response: SearchProductsResponse = {
     products: items,
     hasMore,
   };
+
+  if (translationDegraded) {
+    throw new DegradedSearchError(response);
+  }
+
+  return response;
 }
