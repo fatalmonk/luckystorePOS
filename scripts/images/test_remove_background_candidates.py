@@ -1,7 +1,9 @@
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
 from remove_background_candidates import collect_inputs, destination_for, ensure_separate_roots
 
 

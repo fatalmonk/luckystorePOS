@@ -566,6 +566,9 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
         '5830390b', 'e8771528', 'fc6d963a', '4ca03fce', '2e948079',
         '8f7ce150', '54a7520e', 'c1895793', 'b77e2fe6', 'f2d567f0',
         'bc7de70f', 'd132ec9d', 'fe31ca90', '2233c416', 'be49558d',
+        'd6b58fa7', 'cd267d71', 'eae60c9b', 'f6d581d5', '0fa0e76e',
+        '0aa0a385', '46bd4ccc', 'c00f9f4b', '0611e651', '38befb1a',
+        '93930edd',
       ];
       for (const id of polarManufacturerMatches) {
         const item = getEnrichedProductData(id);
