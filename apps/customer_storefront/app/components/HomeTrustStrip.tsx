@@ -19,7 +19,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
     {
       icon: Gift,
       title: bn ? 'ডেলিভারি চার্জ' : 'Delivery fees',
-      detail: bn ? `৳${threshold}+ অর্ডারে ফ্রি ডেলিভারি` : `Free on ৳${threshold}+ orders`,
+      detail: bn ? `৳${threshold}+ অর্ডারে ফ্রি ডেলিভারি` : `Free Delivery on ৳${threshold}+ orders`,
       href: '/delivery',
     },
     {
