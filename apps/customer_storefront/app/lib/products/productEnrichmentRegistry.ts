@@ -369,7 +369,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     netQuantity: '0.75 g',
     category: 'Tea & Coffee',
     summary:
-      'AMA Classic coffee sachet, net weight 0.75 g, sold by the piece at Lucky Store in Chawkbazar, Chattogram, with 100% doorstep inspection.',
+      'AMA Classic coffee sachet, net weight 0.75 g, sold individually for ৳5 per piece.',
     specifications: [
       { label: 'Brand', value: 'AMA', evidenceRefs: ['PACK_FRONT'] },
       { label: 'Net Weight', value: '0.75 g', evidenceRefs: ['PACK_FRONT'] },
@@ -378,30 +378,30 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     ],
     highlights: [
       'Classic coffee',
-      'Sold individually',
+      'Sold individually for ৳5',
     ],
     faqs: [
       {
         question: 'Can I purchase AMA Classic coffee by the piece?',
         answer:
-          'Yes. Lucky Store sells this item individually, with doorstep inspection upon delivery in Chawkbazar.',
-        evidenceRefs: ['CATALOG_RECORD', 'STORE_INSPECTION_POLICY'],
+          'Yes. Lucky Store sells this item individually for ৳5 per piece.',
+        evidenceRefs: ['CATALOG_RECORD'],
       },
     ],
     evidenceManifest: {
       PACK_FRONT: {
         source: 'PACKAGING',
-        evidenceRef: 'Owner-provided AMA package photo: front reads AMA, Classic, soluble coffee powder, and Bengali net weight 0.75 g; Bengali label also says 6 mini packs.',
+        evidenceRef: 'Owner-provided AMA package image, archived at social-media/catalogue-images/TC-AMA-CLS-075G.png (SHA-256 8c45d1250a5df3ee445563ce42d338086d4f78e0ee43a37b047384dca3a823da): package reads AMA, Classic, soluble coffee powder, net weight 0.75 g, and 6 mini packs.',
         sourceTitle: 'Owner-provided AMA Classic package front',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
-        verifiedAt: '2026-10-25',
+        verifiedAt: '2026-10-26',
       },
       CATALOG_RECORD: {
         source: 'LUCKY_STORE_CATALOG',
-        evidenceRef: 'items.id: 3448ed8a-9c0b-49ab-b249-f096fbc210c7; SKU DE-AMA-GEN-1G; owner-confirmed per-piece sale at ৳5.',
-        sourceTitle: 'Lucky Store Production Catalog and owner confirmation',
+        evidenceRef: 'Production catalog row read-only checked 2026-10-26: SKU TC-AMA-CLS-075G, name AMA Classic Coffee Sachet 0.75 g, category Tea & Coffee, price ৳5. image_key remains products/00000000-0000-0000-0000-000000000001/DE-AMA-GEN-1G-47305f69-54a3-461c-a5d2-0276075003e9.webp; the live image was visually compared with the archived owner-provided package image. Production image_checksum is null.',
+        sourceTitle: 'Lucky Store production catalog row (read-only)',
         skuScope: '3448ed8a-9c0b-49ab-b249-f096fbc210c7',
-        verifiedAt: '2026-10-25',
+        verifiedAt: '2026-10-26',
       },
       STORE_INSPECTION_POLICY: PILOT_STORE_INSPECTION_POLICY,
     },
@@ -410,7 +410,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       brand: ['PACK_FRONT'],
       netQuantity: ['PACK_FRONT'],
       category: ['CATALOG_RECORD'],
-      summary: ['PACK_FRONT', 'STORE_INSPECTION_POLICY'],
+      summary: ['PACK_FRONT', 'CATALOG_RECORD'],
       highlights: [['PACK_FRONT'], ['CATALOG_RECORD']],
     },
   },

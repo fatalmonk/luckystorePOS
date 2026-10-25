@@ -58,7 +58,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       const titles = [
         formatProductMetaTitle('Fortune Kachi Ghani Mustard Oil 5L', 1150),
         formatProductMetaTitle('Radhuni Turmeric 100g', 65),
-        formatProductMetaTitle('AMA Classic Coffee Sachet 0.75 g', 10),
+        formatProductMetaTitle('AMA Classic Coffee Sachet 0.75 g', 5),
         formatProductMetaTitle('A Very Long Name For A Premium Imported Organic Sunflower Oil 5000ml Bottle', 1800),
       ];
 
@@ -72,7 +72,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       const descriptions = [
         formatProductMetaDescription('Fortune Kachi Ghani Mustard Oil 5L', 1150),
         formatProductMetaDescription('Radhuni Holud Gura 100g', 65),
-        formatProductMetaDescription('Ama Classic Coffee 1g', 10),
+        formatProductMetaDescription('AMA Classic Coffee Sachet 0.75 g', 5),
         formatProductMetaDescription('Aril Assorted Lollipops', 10),
         formatProductMetaDescription('A Very Long Product Name Exceeding Standard Single Line Constraints In Full Display', 250),
       ];
