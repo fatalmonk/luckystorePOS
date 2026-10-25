@@ -100,6 +100,32 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing required columns"):
             reconcile(self.master, self.copy, invalid_database)
 
+    def test_object_snapshot_duplicate_canonical_keys_fails(self):
+        duplicate_obj = [
+            {
+                "id": "item-1",
+                "sku": "SP-RAD-CUM-050G",
+                "item code": "SP-RAD-CUM-050G",
+                "name": "Radhuni Cumin Powder 50 g",
+                "brand": "Radhuni",
+                "category": "Cooking",
+                "price": 5,
+            }
+        ]
+        with self.assertRaisesRegex(ValueError, "duplicate columns"):
+            reconcile(self.master, self.copy, duplicate_obj)
+
+    def test_same_active_recognizes_numeric_zero_as_false(self):
+        inactive_db = [dict(self.database[0], is_active=False)]
+        copy_with_zero = sheet_snapshot(
+            ["id", "sku", "name", "brand", "price", "is_active", "category_id"],
+            [["item-1", "SP-RAD-CUM-050G", "Radhuni Cumin Powder 50 g", "Radhuni", "5.00", 0, "cat-cook"]],
+        )
+        report = reconcile(self.master, copy_with_zero, inactive_db)
+        match = report["comparisons"]["copy"]["matches"][0]
+        self.assertEqual(report["comparisons"]["copy"]["field_counts"]["is_active"]["matched"], 1)
+        self.assertNotIn("is_active", match["field_differences"])
+
     def test_load_snapshot_rejects_malformed_json(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "broken.json"

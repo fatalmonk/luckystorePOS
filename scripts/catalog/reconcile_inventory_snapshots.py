@@ -82,7 +82,11 @@ def _records(snapshot: Any, source: str) -> list[dict[str, Any]]:
         for row_number, row in enumerate(rows_value, start=2):
             if not isinstance(row, dict):
                 raise ValueError(f"{source} snapshot rows must be JSON objects")
-            canonical_row = {_canonical_field(key): value for key, value in row.items()}
+            canonical_keys = [_canonical_field(key) for key in row.keys()]
+            duplicate_keys = sorted({key for key, count in Counter(canonical_keys).items() if count > 1 and key})
+            if duplicate_keys:
+                raise ValueError(f"{source} snapshot row {row_number} has duplicate columns: {', '.join(duplicate_keys)}")
+            canonical_row = dict(zip(canonical_keys, row.values()))
             missing_fields = REQUIRED_FIELDS[source] - set(canonical_row.keys())
             if missing_fields:
                 raise ValueError(f"{source} snapshot row {row_number} is missing required columns: {', '.join(sorted(missing_fields))}")
@@ -110,7 +114,9 @@ def load_snapshot(path: str | Path) -> Any:
 
 
 def _normal(value: Any) -> str:
-    return " ".join(str(value or "").casefold().split())
+    if value is None:
+        return ""
+    return " ".join(str(value).casefold().split())
 
 
 def _same_price(left: Any, right: Any) -> bool | None:
