@@ -20,4 +20,18 @@ describe('Footer', () => {
       'noopener noreferrer',
     );
   });
+
+  it('limits English footer delivery claims to the published Chawkbazar area', () => {
+    render(<Footer locale="en" />);
+
+    expect(screen.getByText(/Delivery is limited to our published 1 km Chawkbazar area/)).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).not.toHaveTextContent('delivered with care across Chattogram');
+  });
+
+  it('gives Bengali shoppers the same delivery-coverage qualification', () => {
+    render(<Footer locale="bn" />);
+
+    expect(screen.getByText(/প্রকাশিত ডেলিভারি এলাকা চকবাজার থেকে ১ কিমির মধ্যে/)).toBeInTheDocument();
+    expect(screen.getByText(/অর্ডারের আগে আপনার ঠিকানা আওতাভুক্ত কি না দেখে নিন/)).toBeInTheDocument();
+  });
 });

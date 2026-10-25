@@ -131,7 +131,7 @@ export const dictionaries = {
       cta: 'Shop groceries',
     },
     footer: {
-      story: 'Provisions for the Bengali hearth — pantry staples, fragrant tea, and daily comforts delivered with care across Chattogram since 1947.',
+      story: 'Shop pantry staples, tea and daily essentials from Lucky Store, serving Chattogram since 1947. Delivery is limited to our published 1 km Chawkbazar area; check coverage before ordering.',
       shopTitle: 'Shop',
       helpTitle: 'Help & Support',
       legalTitle: 'Legal & Policy',
@@ -418,7 +418,7 @@ export const dictionaries = {
       cta: 'বাজার করুন',
     },
     footer: {
-      story: 'বাঙালির হেঁশেলের খাঁটি উপাদান—রান্নার চাল-ডাল, সুগন্ধি চা ও নিত্যপ্রয়োজনীয় বাজার ১৯৪৭ সাল থেকে পৌঁছে দিচ্ছি পরম যত্নে।',
+      story: 'লাকি স্টোর ১৯৪৭ সাল থেকে চট্টগ্রামের পরিবারের নিত্যপ্রয়োজনীয় বাজারের সঙ্গী। প্রকাশিত ডেলিভারি এলাকা চকবাজার থেকে ১ কিমির মধ্যে; অর্ডারের আগে আপনার ঠিকানা আওতাভুক্ত কি না দেখে নিন।',
       shopTitle: 'কেনাকাটা',
       helpTitle: 'সহায়তা',
       legalTitle: 'নিয়মাবলী',
