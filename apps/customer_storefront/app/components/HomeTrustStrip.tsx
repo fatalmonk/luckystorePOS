@@ -12,14 +12,14 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
   const facts = [
     {
       icon: Bicycle,
-      title: bn ? 'স্থানীয় ডেলিভারি' : 'Local delivery',
+      title: bn ? 'ডেলিভারি এলাকা' : 'Delivery coverage',
       detail: bn ? `চকবাজার থেকে ${radius} কিমির মধ্যে` : `Within ${radius} km of Chawkbazar`,
       href: '/delivery',
     },
     {
       icon: Gift,
-      title: bn ? 'ফ্রি ডেলিভারি' : 'Free delivery',
-      detail: bn ? `৳${threshold}+ অর্ডারে` : `On ৳${threshold}+ orders`,
+      title: bn ? 'ডেলিভারি চার্জ' : 'Delivery fees',
+      detail: bn ? `৳${threshold}+ অর্ডারে ফ্রি ডেলিভারি` : `Free Delivery on ৳${threshold}+ orders`,
       href: '/delivery',
     },
     {

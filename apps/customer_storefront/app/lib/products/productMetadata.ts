@@ -14,12 +14,14 @@ export interface ProductMetadataInput {
 }
 
 export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {
+  const productType = category?.trim().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').toLocaleLowerCase();
+
   return [...new Set([
     name,
-    brand && `${brand} ice cream`,
+    brand && productType ? `${brand} ${productType}` : brand,
     category,
     `${name} Chattogram`,
-    'ice cream Chattogram',
+    productType && `${productType} Chattogram`,
     'Lucky Store',
   ].filter((value): value is string => Boolean(value)))];
 }

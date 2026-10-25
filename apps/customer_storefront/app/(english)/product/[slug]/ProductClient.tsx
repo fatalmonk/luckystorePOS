@@ -27,6 +27,7 @@ import { getDisplayProductUnit } from '../../../lib/products/displayProductUnit'
 interface ProductClientProps {
   product: Product;
   crossSell: Product[];
+  radhuniPackVariants?: Product[];
   locale?: Locale;
   productUrlName?: string;
   productCanonicalUrl?: string;
@@ -39,7 +40,7 @@ export function getCategoryBreadcrumbHref(category: string, locale: Locale): str
   return withLocale(`/category/${canonical}`, locale);
 }
 
-function ProductContent({ product, crossSell, locale = 'en', productUrlName, productCanonicalUrl, enrichment, galleryImages: providedGalleryImages }: ProductClientProps) {
+function ProductContent({ product, crossSell, radhuniPackVariants = [], locale = 'en', productUrlName, productCanonicalUrl, enrichment, galleryImages: providedGalleryImages }: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
@@ -407,6 +408,28 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
             </section>
           )}
 
+          {radhuniPackVariants.length > 0 && (
+            <section className="border-t border-warm-border px-4 py-5 sm:px-6 lg:px-8">
+              <h2 id="radhuni-pack-options" className="text-sm font-bold text-warm-fg mb-3">
+                {locale === 'bn' ? 'একই মসলার অন্যান্য প্যাক' : 'Other available pack sizes'}
+              </h2>
+              <nav aria-labelledby="radhuni-pack-options">
+                <ul className="flex flex-wrap gap-2">
+                  {radhuniPackVariants.map((variant) => (
+                    <li key={variant.id}>
+                      <Link
+                        href={withLocale(`/product/${toProductSlug(variant.name, variant.id)}`, locale)}
+                        className="inline-flex rounded-full border border-warm-border px-3 py-2 text-sm text-warm-fg underline underline-offset-2 hover:border-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                      >
+                        {locale === 'bn' ? variant.bengaliName || variant.name : variant.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </section>
+          )}
+
           {/* Section 6: Cross-Sell Carousel */}
           <ProductCarousel title="More to explore" products={crossSell} />
         </div>
@@ -459,11 +482,12 @@ function ProductContent({ product, crossSell, locale = 'en', productUrlName, pro
   );
 }
 
-export default function ProductClient({ product, crossSell, locale, productUrlName, productCanonicalUrl, enrichment, galleryImages }: ProductClientProps) {
+export default function ProductClient({ product, crossSell, radhuniPackVariants, locale, productUrlName, productCanonicalUrl, enrichment, galleryImages }: ProductClientProps) {
   return (
     <ProductContent
       product={product}
       crossSell={crossSell}
+      radhuniPackVariants={radhuniPackVariants}
       locale={locale}
       productUrlName={productUrlName}
       productCanonicalUrl={productCanonicalUrl}

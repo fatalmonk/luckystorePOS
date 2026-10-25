@@ -6,12 +6,12 @@ import { createProductId } from '../../../lib/products/types';
 import { getEnrichedProductData } from '../../../lib/products/productEnrichment';
 import { toProductSlug } from '../../../lib/products/slugify';
 import { getCachedProductBySlug } from '../../../lib/products/getCachedProduct';
-import { getCachedCrossSellProducts, prepareCrossSell } from '../../../lib/products/getCachedCrossSell';
+import { getCachedCrossSellProducts, getCachedRadhuniPackVariants, prepareCrossSell } from '../../../lib/products/getCachedCrossSell';
 import ProductPage, { generateMetadata } from './page';
 
 vi.mock('../../../lib/products/getCachedProduct', () => ({ getCachedProductBySlug: vi.fn() }));
 vi.mock('../../../lib/products/getCachedCrossSell', () => ({
-  getCachedCrossSellProducts: vi.fn(), prepareCrossSell: vi.fn(),
+  getCachedCrossSellProducts: vi.fn(), getCachedRadhuniPackVariants: vi.fn(), prepareCrossSell: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -22,6 +22,14 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('../../../components/updated/Header', () => ({
   Header: () => <div data-testid="header" />,
+}));
+
+vi.mock('../../../components/product/ProductCarousel', () => ({
+  ProductCarousel: () => null,
+}));
+
+vi.mock('../../../components/product/ProductImageGallery', () => ({
+  ProductImageGallery: () => null,
 }));
 
 vi.mock('../../../components/BottomNav', () => ({
@@ -68,6 +76,7 @@ describe('ProductClient Brand Linking', () => {
       const product = { ...mockProduct, id: createProductId(id), name: enrichment.exactName, brand: enrichment.brand, price, unit: 'pc' };
       vi.mocked(getCachedProductBySlug).mockResolvedValue(product);
       vi.mocked(getCachedCrossSellProducts).mockResolvedValue([]);
+      vi.mocked(getCachedRadhuniPackVariants).mockResolvedValue([]);
       vi.mocked(prepareCrossSell).mockReturnValue([]);
       const metadata = await generateMetadata({ params: Promise.resolve({ slug: toProductSlug(product.name, product.id) }) });
       expect(metadata.title).toEqual({ absolute: expect.stringContaining(`৳${price}`) });
@@ -94,6 +103,48 @@ describe('ProductClient Brand Linking', () => {
     for (const link of brandLinks) {
       expect(link).toHaveAttribute('href', '/brand/ispahani');
     }
+  });
+
+  it.each([
+    ['en', 'Dhoniya', 'ধনিয়া', '6797819a'],
+    ['en', 'Holud', 'হলুদ', 'd8b54177'],
+    ['en', 'Jira', 'জিরা', 'e0f3835d'],
+    ['en', 'Morich', 'মরিচ', '15b0ac41'],
+    ['bn', 'Dhoniya', 'ধনিয়া', '6797819a'],
+    ['bn', 'Holud', 'হলুদ', 'd8b54177'],
+    ['bn', 'Jira', 'জিরা', 'e0f3835d'],
+    ['bn', 'Morich', 'মরিচ', '15b0ac41'],
+  ] as const)('renders accessible %s same-family pack links for %s', (locale, family, bnFamily, idPrefix) => {
+    const heading = locale === 'bn' ? 'একই মসলার অন্যান্য প্যাক' : 'Other available pack sizes';
+    const linkName = locale === 'bn'
+      ? `রাঁধুনী ${bnFamily} গুঁড়া ৫০ গ্রাম`
+      : `Radhuni ${family} Gura 50 g`;
+    const englishName = `Radhuni ${family} Gura 50 g`;
+    const href = `${locale === 'bn' ? '/bn' : ''}/product/${toProductSlug(englishName, `${idPrefix}-0000-0000-0000-000000000000`)}`;
+    const variant = {
+      ...mockProduct,
+      id: createProductId(`${idPrefix}-0000-0000-0000-000000000000`),
+      name: englishName,
+      bengaliName: `রাঁধুনী ${bnFamily} গুঁড়া ৫০ গ্রাম`,
+      stock: 8,
+    };
+
+    render(
+      <ProductClient
+        product={{ ...mockProduct, name: `Radhuni ${family} Gura 15 g` }}
+        crossSell={[]}
+        radhuniPackVariants={[variant]}
+        locale={locale}
+      />,
+    );
+
+    const headingElement = screen.getByRole('heading', { name: heading });
+    const navigation = screen.getByRole('navigation', { name: heading });
+    const link = screen.getByRole('link', { name: linkName });
+
+    expect(headingElement).toBeTruthy();
+    expect(navigation.contains(link)).toBe(true);
+    expect(link.getAttribute('href')).toBe(href);
   });
 
   it('renders manufacturer nutrition with the source measurement basis', () => {

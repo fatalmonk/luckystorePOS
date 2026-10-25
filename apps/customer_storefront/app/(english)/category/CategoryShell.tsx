@@ -177,6 +177,14 @@ export function CategoryShell({
       {itemListSchema && <JsonLd data={itemListSchema} />}
       <Header />
       <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-2 sm:pt-4' : ''}`}>
+        <div className="mx-auto w-full max-w-7xl px-4 pt-3">
+          <Link
+            href={withLocale('/delivery', locale)}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-warm-fg underline decoration-warm-accent underline-offset-4 hover:text-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            {isBn ? 'চট্টগ্রামে ডেলিভারি এলাকা, সময় ও চার্জ জানুন' : 'See delivery coverage, hours, and fees in Chattogram'}
+          </Link>
+        </div>
         {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
           <Suspense fallback={<CategoryGridSkeleton />}>
             <CategoryGrid searchParams={searchParams} locale={locale} />

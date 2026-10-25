@@ -58,10 +58,11 @@ export default function BengaliDeliveryPage() {
           <h1 className="mt-3 text-3xl font-black sm:text-5xl">চট্টগ্রামে অনলাইন grocery delivery</h1>
           <p className="mt-5 text-lg leading-8 text-warm-muted">চকবাজারের Lucky Store থেকে আমাদের যাচাইকৃত ১ কিমি ডেলিভারি জোনের মধ্যে দৈনন্দিন বাজার পৌঁছে দিই।</p>
         </header>
-        <section className="mt-10 grid gap-4 sm:grid-cols-3" aria-label="ডেলিভারি সারাংশ">
-          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি জোন</p><p className="mt-2 text-2xl font-black">{DELIVERY_POLICY.radiusKm} কিমি</p><p className="mt-1 text-sm text-warm-muted">চকবাজার থেকে</p></div>
-          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">ডেলিভারি ফি</p><p className="mt-2 text-2xl font-black">৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}+ ফ্রি</p><p className="mt-1 text-sm text-warm-muted">এর নিচে ফ্ল্যাট ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}</p></div>
-          <div className="rounded-2xl border border-warm-border bg-warm-surface p-5"><p className="text-sm text-warm-muted">পেমেন্ট</p><p className="mt-2 text-2xl font-black">COD ও bKash</p><p className="mt-1 text-sm text-warm-muted">পেমেন্টের আগে পণ্য দেখুন</p></div>
+        <section className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4" aria-label="দ্রুত ডেলিভারি তথ্য">
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 sm:p-5"><p className="text-xs text-warm-muted">কোথায় ডেলিভারি দেন?</p><p className="mt-2 text-lg sm:text-2xl font-black">{DELIVERY_POLICY.radiusKm} কিমির মধ্যে</p><p className="mt-1 text-xs text-warm-muted">চকবাজারের স্টোর থেকে</p></div>
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 sm:p-5"><p className="text-xs text-warm-muted">ডেলিভারি চার্জ কত?</p><p className="mt-2 text-lg sm:text-2xl font-black">৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}+ অর্ডারে ফ্রি</p><p className="mt-1 text-xs text-warm-muted">এর কমে ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}</p></div>
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 sm:p-5"><p className="text-xs text-warm-muted">কখন ডেলিভারি দেন?</p><p className="mt-2 text-lg sm:text-2xl font-black">{DELIVERY_POLICY.deliveryHours.display}</p><p className="mt-1 text-xs text-warm-muted">প্রতিদিন</p></div>
+          <div className="rounded-2xl border border-warm-border bg-warm-surface p-4 sm:p-5"><p className="text-xs text-warm-muted">কীভাবে পেমেন্ট করব?</p><p className="mt-2 text-sm sm:text-base font-black">{DELIVERY_POLICY.paymentMethods.cod}</p><p className="mt-1 text-xs text-warm-muted">{DELIVERY_POLICY.paymentMethods.bkash}</p></div>
         </section>
         <section className="mt-12" aria-labelledby="areas-heading">
           <h2 id="areas-heading" className="text-2xl font-black">যেসব এলাকার কাছাকাছি অংশে ডেলিভারি</h2>
