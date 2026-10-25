@@ -103,7 +103,8 @@ describe('Deal of the Week page', () => {
 
   it('generates correct SEO metadata and canonical URL', async () => {
     const metadata = await generateMetadata();
-    expect(metadata.title).toContain('Deal of the Week');
+    const title = typeof metadata.title === 'string' ? metadata.title : metadata.title?.absolute || '';
+    expect(title).toContain('Deal of the Week');
     expect(metadata.alternates?.canonical).toBe('https://www.luckystore1947.com/best/dealoftheweek');
     expect(metadata.openGraph?.siteName).toBe('Lucky Store');
   });

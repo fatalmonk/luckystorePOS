@@ -88,7 +88,7 @@ describe('DesktopQuickRail', () => {
     ensureAuth.mockRejectedValue(new Error('auth unavailable'));
     render(<DesktopQuickRail />);
 
-    fireEvent.click(screen.getByRole('link', { name: 'Account' }));
+    fireEvent.click(screen.getByRole('link', { name: /Account|অ্যাকাউন্ট/i }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/bn/profile'));
   });
 

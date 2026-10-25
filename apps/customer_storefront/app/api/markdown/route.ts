@@ -367,7 +367,7 @@ function mdDeliveryPage(): string {
   md += `${DELIVERY_POLICY.storeName} provides local grocery delivery strictly within a verified **${DELIVERY_POLICY.radiusLabel}** (${DELIVERY_POLICY.radiusMeters} m GeoCircle) centered at our store:\n\n`;
   md += `- **Central Hub:** ${DELIVERY_POLICY.hubAddress}\n`;
   md += `- **GPS Coordinates:** ${DELIVERY_POLICY.hubCoordinates.display}\n`;
-  md += `- **Areas & Nearby Parts Served Within 1 km:** Nearby parts of Chawkbazar, Parade Ground, Chittagong College area, Government Mohsin College area, Siraj-ud-Daula Road, Chandanpura, Gani Bakery circle, DC Hill periphery, and Subash Bose Road / Emdad Park.\n\n`;
+  md += `- **Areas & Nearby Parts Served Within 1 km:** Nearby parts of Chawkbazar, Parade Ground, Chittagong College area, Government Mohsin College area, Siraj-ud-Daula Road, Chandanpura, Gani Bakery circle, Jamal Khan (accessible north parts), and Subash Bose Road / Emdad Park.\n\n`;
   md += `*Note: Coverage is strictly defined by the ${DELIVERY_POLICY.radiusLabel} GeoCircle; portions outside 1 km are not covered. Fulfillment is handled directly by in-store staff to guarantee freshness and intact seals.*\n\n`;
 
   md += `## 💰 Delivery Fees & Thresholds\n\n`;

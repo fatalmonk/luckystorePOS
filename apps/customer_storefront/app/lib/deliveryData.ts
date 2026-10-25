@@ -62,7 +62,7 @@ export const COVERED_AREAS: CoveredAreaItem[] = [
   { name: 'Siraj-ud-Daula Road (accessible sections)', desc: 'Road corridor sections within 1 km radius' },
   { name: 'Chandanpura (nearby parts)', desc: 'Nearby neighborhood areas within 1 km radius' },
   { name: 'Gani Bakery Circle (nearby parts)', desc: 'Adjoining lanes within 1 km radius' },
-  { name: 'DC Hill Periphery (nearby parts)', desc: 'Perimeter sections within 1 km radius' },
+  { name: 'Jamal Khan (accessible north parts)', desc: 'Northward residential lanes within 1 km radius' },
   { name: 'Subash Bose Road & Emdad Park (immediate vicinity)', desc: 'Immediate vicinity of storefront hub' },
 ];
 
