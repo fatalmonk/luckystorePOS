@@ -46,12 +46,12 @@ describe('Product metadata identity', () => {
     expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Energy', value: '326.34 kcal per 100g' }));
   });
 
-  it('uses the confirmed half-liter quantity and a storefront badge over the original 1 L artwork', () => {
+  it('uses the confirmed half-liter quantity and a storefront badge with authentic 500ml packshot', () => {
     const item = getEnrichedProductData('eca88367')!;
     expect(item.netQuantity).toBe('500 ml');
     expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Net Quantity', value: '500 ml (1/2 L)' }));
-    expect(item.galleryImages?.[0]).toMatchObject({ badge: '1/2 L', alt: 'Polar Vanilla 1 Liter tub artwork' });
-    expect(item.galleryImages?.[0]?.url).toContain('IC-POL-VA1.webp');
+    expect(item.galleryImages?.[0]).toMatchObject({ badge: '1/2 L', alt: 'Polar Vanilla 1/2 Liter tub packaging' });
+    expect(item.galleryImages?.[0]?.url).toContain('IC-POL-VAN-500.png');
     expect(item.highlights?.join(' ')).not.toContain('2 L consumer packaging');
   });
 

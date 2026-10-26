@@ -60,4 +60,17 @@ describe('product gallery registry', () => {
       },
     ]);
   });
+
+  it('maps Vanilla 1/2L and Royal Sundae Cup curated packshots', () => {
+    expect(getProductGalleryImages('eca88367-4d03-4562-b7e8-88ef2eea38c7')).toEqual([
+      {
+        url: `${R2_BASE}/IC-POL-VAN-500.png`,
+        alt: 'Polar Tub Regular Vanilla ice cream tub, 1/2 liter (500 ml)',
+        badge: '1/2 L',
+      },
+    ]);
+    expect(getProductGalleryImages('d132ec9d-3175-440b-b1ac-d4cbfea8e55b')).toHaveLength(4);
+    expect(getProductGalleryImages('d132ec9d-3175-440b-b1ac-d4cbfea8e55b')?.[0]?.url)
+      .toBe(`${R2_BASE}/IC-POL-ROY-front.webp`);
+  });
 });

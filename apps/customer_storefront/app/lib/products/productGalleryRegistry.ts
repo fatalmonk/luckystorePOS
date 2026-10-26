@@ -82,10 +82,23 @@ const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
   '236b5858': [
     { url: `${R2_POLAR_BASE}/mango-cup.webp`, alt: 'Polar Mango Cup ice cream' },
   ],
-  f6d581d5: [
+  'f6d581d5': [
     { url: `${R2_POLAR_BASE}/chocolate-cup-front.webp`, alt: 'Polar Chocolate Cup ice cream, 100 ml package' },
     { url: `${R2_POLAR_BASE}/chocolate-cup-back.webp`, alt: 'Polar Chocolate Cup ingredients and product information' },
     { url: `${R2_POLAR_BASE}/chocolate-cup-side.webp`, alt: 'Polar Chocolate Cup packaging side view' },
+  ],
+  'eca88367': [
+    {
+      url: `${R2_POLAR_BASE}/IC-POL-VAN-500.png`,
+      alt: 'Polar Tub Regular Vanilla ice cream tub, 1/2 liter (500 ml)',
+      badge: '1/2 L',
+    },
+  ],
+  'd132ec9d': [
+    { url: `${R2_POLAR_BASE}/IC-POL-ROY-front.webp`, alt: 'Polar Royal Sundae Cup ice cream, 100 ml front packaging' },
+    { url: `${R2_POLAR_BASE}/IC-POL-ROY-INGREDIENTS.webp`, alt: 'Polar Royal Sundae Cup ingredients' },
+    { url: `${R2_POLAR_BASE}/IC-POL-ROY-NUTRITION.webp`, alt: 'Polar Royal Sundae Cup nutrition facts' },
+    { url: `${R2_POLAR_BASE}/IC-POL-ROY-BARCODE.webp`, alt: 'Polar Royal Sundae Cup barcode' },
   ],
 };
 
