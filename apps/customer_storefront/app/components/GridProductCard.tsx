@@ -37,7 +37,6 @@ export function formatLocalizedBdt(value: number | null | undefined, locale: Loc
 
 export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
   const dict = getDictionary(locale);
-  const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(product);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
   const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id)}`, locale);
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
@@ -45,7 +44,11 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   const stockLow = product.stock === 1;
   const outOfStock = product.stock <= 0;
   const localGalleryImage = getProductGalleryImages(product.id)?.[0];
-  const productImageSrc = product.image_url || localGalleryImage?.url;
+  const productImageSrc = localGalleryImage?.url || product.image_url;
+  const cartProduct = localGalleryImage?.url && localGalleryImage.url !== product.image_url
+    ? { ...product, image_url: localGalleryImage.url }
+    : product;
+  const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(cartProduct);
   const badgeLabel = outOfStock
     ? dict.productCard.outOfStock
     : stockLow
