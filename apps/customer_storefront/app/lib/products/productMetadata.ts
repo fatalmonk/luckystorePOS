@@ -63,7 +63,8 @@ export function buildProductMetadata(input: ProductMetadataInput): Metadata {
 }
 
 /**
- * Formats a clean, high-intent product title within Google SERP display limits (<= 60 chars).
+ * Formats a clean, high-intent product title within Google SERP display bounds (up to 68 chars
+ * to retain brand suffix, falling back to 60 chars if truncation is required).
  * Includes brand inline because product pages set `title.absolute`, which bypasses the
  * root layout `%s | Lucky Store` template.
  */
