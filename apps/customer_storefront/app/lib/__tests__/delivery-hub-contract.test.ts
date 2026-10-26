@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { readFileSync } from 'node:fs';
 import { NextRequest } from 'next/server';
 import { metadata } from '../../(english)/delivery/page';
 import { JsonLd } from '../../components/seo/JsonLd';
@@ -74,6 +75,17 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   });
 
   describe('Operational Policy & Time Language Precision', () => {
+    it('keeps checkout free-delivery eligibility copy aligned with the central policy', () => {
+      const checkoutSource = readFileSync(
+        new URL('../../(english)/checkout/page.tsx', import.meta.url),
+        'utf8',
+      );
+      expect(checkoutSource).toContain('DELIVERY_POLICY.freeDeliveryThresholdBdt');
+      expect(checkoutSource).toContain('DELIVERY_POLICY.radiusKm');
+      expect(checkoutSource).toContain('or more within');
+      expect(checkoutSource).not.toContain('Free delivery on orders over ৳500.');
+    });
+
     it('explicitly specifies delivery hours as 09:00 AM–12:30 AM daily without misleading (Midnight) wording', () => {
       expect(DELIVERY_POLICY.deliveryHours.display).toBe('09:00 AM–12:30 AM daily');
       expect(DELIVERY_POLICY.deliveryHours.start).toBe('09:00 AM');
