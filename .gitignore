@@ -334,5 +334,5 @@ lucky-store-brand-guidelines/social-media-post/gemini-reference-assets/video.mp4
 lucky-store-brand-guidelines/social-media-post/gemini-reference-assets/READ-ME-FIRST.md
 lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.md
 
-# Polar Kheer overlay is served from Cloudflare R2, not the storefront bundle.
-/apps/customer_storefront/public/products/polar/kheer-500ml-1-2l.png
+# Polar catalogue images are served from Cloudflare R2, not the storefront bundle.
+/apps/customer_storefront/public/products/polar/

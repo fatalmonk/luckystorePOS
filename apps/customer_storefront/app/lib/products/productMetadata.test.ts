@@ -15,6 +15,17 @@ describe('Product metadata identity', () => {
     ['eca88367', 'Polar Tub Regular Vanilla 1/2 Liter'],
     ['236b5858', 'Polar Mango Cup'],
     ['39d85f5f', 'Polar Chocolate Premium Cup'],
+    ['d6b58fa7', 'Polar 2 in 1 Vanilla-Chocolate 1 Liter'],
+    ['cd267d71', 'Polar 2 in 1 Vanilla-Mango 1 Liter'],
+    ['eae60c9b', 'Polar Choco Bar Chocolate'],
+    ['f6d581d5', 'Polar Chocolate Cup'],
+    ['0fa0e76e', 'Polar Essora Banana'],
+    ['0aa0a385', 'Polar Essora Mixed Berry'],
+    ['46bd4ccc', 'Polar Ice Lolly Orange 62ml'],
+    ['c00f9f4b', 'Polar Robusto Chocolate 92ml'],
+    ['0611e651', 'Polar Robusto Vanilla 92ml'],
+    ['38befb1a', 'Polar Tornado Green Apple 55ml'],
+    ['93930edd', 'Polar Tornado Mango 55ml'],
   ])('uses the approved identity for Polar record %s', (id, expectedName) => {
     expect(getEnrichedProductData(id)?.exactName).toBe(expectedName);
   });

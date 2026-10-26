@@ -1,77 +1,91 @@
 import type { ProductGalleryImage } from './productEnrichmentTypes';
 
-/** Verified catalogue images for Polar products with curated gallery assets. */
+const R2_POLAR_BASE = 'https://images.luckystore1947.com/products/polar';
+
+/** Verified catalogue images for Polar products with curated gallery assets hosted in Cloudflare R2. */
 const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
   // Double Sundae remains unresolved; Kheer 500 ml uses the verified 1/2L overlay below.
   '70a322a1': [],
   '79e0ece1': [
     {
-      url: 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp',
+      url: `${R2_POLAR_BASE}/kheer-500ml-1-2l.webp`,
       alt: 'Polar Kheer ice cream tub with a 1/2L size label',
     },
   ],
+  'd6b58fa7': [
+    {
+      url: `${R2_POLAR_BASE}/2-in-1-vanilla-chocolate-tub.webp`,
+      alt: 'Polar 2 in 1 Vanilla-Chocolate ice cream tub, 1 liter',
+    },
+  ],
+  'cd267d71': [
+    {
+      url: `${R2_POLAR_BASE}/2-in-1-vanilla-mango-tub.webp`,
+      alt: 'Polar 2 in 1 Vanilla-Mango ice cream tub, 1 liter',
+    },
+  ],
   '5830390b': [
-    { url: '/products/polar/carnival-butterscotch.webp', alt: 'Polar Carnival Butterscotch cone ice cream' },
+    { url: `${R2_POLAR_BASE}/carnival-butterscotch.webp`, alt: 'Polar Carnival Butterscotch cone ice cream' },
   ],
   '1ba3a780': [
-    { url: '/products/polar/carnival-hazelnut.webp', alt: 'Polar Carnival Hazelnut cone ice cream' },
-    { url: '/products/polar/carnival-hazelnut-product.webp', alt: 'Polar Carnival Hazelnut cone with hazelnut ice cream' },
+    { url: `${R2_POLAR_BASE}/carnival-hazelnut.webp`, alt: 'Polar Carnival Hazelnut cone ice cream' },
+    { url: `${R2_POLAR_BASE}/carnival-hazelnut-product.webp`, alt: 'Polar Carnival Hazelnut cone with hazelnut ice cream' },
   ],
   'e8771528': [
-    { url: '/products/polar/carnival-vanilla.webp', alt: 'Polar Carnival Vanilla cone ice cream' },
+    { url: `${R2_POLAR_BASE}/carnival-vanilla.webp`, alt: 'Polar Carnival Vanilla cone ice cream' },
   ],
   '6df59696': [
-    { url: '/products/polar/carnival-strawberry.webp', alt: 'Polar Carnival Strawberry cone ice cream' },
+    { url: `${R2_POLAR_BASE}/carnival-strawberry.webp`, alt: 'Polar Carnival Strawberry cone ice cream' },
   ],
   '2e948079': [
-    { url: '/products/polar/coffee-tub.webp', alt: 'Polar Coffee ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/coffee-tub.webp`, alt: 'Polar Coffee ice cream tub, 1 liter' },
   ],
   '8f7ce150': [
-    { url: '/products/polar/crunchy-stick.webp', alt: 'Polar Crunchy ice cream stick' },
+    { url: `${R2_POLAR_BASE}/crunchy-stick.webp`, alt: 'Polar Crunchy ice cream stick' },
   ],
   '54a7520e': [
-    { url: '/products/polar/doi-tub.webp', alt: 'Polar Doi ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/doi-tub.webp`, alt: 'Polar Doi ice cream tub, 1 liter' },
   ],
   '604e6bb0': [
-    { url: '/products/polar/ice-lolly-lemon.webp', alt: 'Polar Lemon Ice Lolly' },
+    { url: `${R2_POLAR_BASE}/ice-lolly-lemon.webp`, alt: 'Polar Lemon Ice Lolly' },
   ],
   'c1895793': [
-    { url: '/products/polar/kheer-tub.webp', alt: 'Polar Kheer ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/kheer-tub.webp`, alt: 'Polar Kheer ice cream tub, 1 liter' },
   ],
   'b77e2fe6': [
-    { url: '/products/polar/malai-stick.webp', alt: 'Polar Malai ice cream stick' },
+    { url: `${R2_POLAR_BASE}/malai-stick.webp`, alt: 'Polar Malai ice cream stick' },
   ],
   'f2d567f0': [
-    { url: '/products/polar/mango-tub.webp', alt: 'Polar Mango ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/mango-tub.webp`, alt: 'Polar Mango ice cream tub, 1 liter' },
   ],
   'bc7de70f': [
-    { url: '/products/polar/red-velvet-tub.webp', alt: 'Polar Red Velvet ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/red-velvet-tub.webp`, alt: 'Polar Red Velvet ice cream tub, 1 liter' },
   ],
   '2c367e44': [
-    { url: '/products/polar/robusto-salted-caramel.webp', alt: 'Polar Robusto Salted Caramel ice cream bar' },
+    { url: `${R2_POLAR_BASE}/robusto-salted-caramel.webp`, alt: 'Polar Robusto Salted Caramel ice cream bar' },
   ],
   'fe31ca90': [
-    { url: '/products/polar/cool-shell-n-core.webp', alt: 'Polar Cool Shell N Core ice cream stick' },
+    { url: `${R2_POLAR_BASE}/cool-shell-n-core.webp`, alt: 'Polar Cool Shell N Core ice cream stick' },
   ],
   '2233c416': [
-    { url: '/products/polar/shor-malai.webp', alt: 'Polar Shor Malai ice cream stick' },
+    { url: `${R2_POLAR_BASE}/shor-malai.webp`, alt: 'Polar Shor Malai ice cream stick' },
   ],
   'fcefa591': [
-    { url: '/products/polar/tornado-strawberry.webp', alt: 'Polar Tornado Strawberry ice cream stick' },
+    { url: `${R2_POLAR_BASE}/tornado-strawberry.webp`, alt: 'Polar Tornado Strawberry ice cream stick' },
   ],
   'be49558d': [
-    { url: '/products/polar/zafran-malai-tub.webp', alt: 'Polar Zafran Malai ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/zafran-malai-tub.webp`, alt: 'Polar Zafran Malai ice cream tub, 1 liter' },
   ],
   '4ca03fce': [
-    { url: '/products/polar/chocodelight-cone.webp', alt: 'Polar Chocodelight cone ice cream' },
+    { url: `${R2_POLAR_BASE}/chocodelight-cone.webp`, alt: 'Polar Chocodelight cone ice cream' },
   ],
   '236b5858': [
-    { url: '/products/polar/mango-cup.webp', alt: 'Polar Mango Cup ice cream' },
+    { url: `${R2_POLAR_BASE}/mango-cup.webp`, alt: 'Polar Mango Cup ice cream' },
   ],
   f6d581d5: [
-    { url: '/products/polar/chocolate-cup-front.webp', alt: 'Polar Chocolate Cup ice cream, 100 ml package' },
-    { url: '/products/polar/chocolate-cup-back.webp', alt: 'Polar Chocolate Cup ingredients and product information' },
-    { url: '/products/polar/chocolate-cup-side.webp', alt: 'Polar Chocolate Cup packaging side view' },
+    { url: `${R2_POLAR_BASE}/chocolate-cup-front.webp`, alt: 'Polar Chocolate Cup ice cream, 100 ml package' },
+    { url: `${R2_POLAR_BASE}/chocolate-cup-back.webp`, alt: 'Polar Chocolate Cup ingredients and product information' },
+    { url: `${R2_POLAR_BASE}/chocolate-cup-side.webp`, alt: 'Polar Chocolate Cup packaging side view' },
   ],
 };
 
