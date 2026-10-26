@@ -43,6 +43,7 @@ node_modules/
 aiREADME.md
 audit_reports/
 scripts/seo/*_discrepancies.json
+scripts/seo/audit_polar_storefront.mjs
 scripts/ops/extract-*.mjs
 scripts/ops/generate-*-audit-report.mjs
 scripts/ops/scan-receipts-dryrun.mjs
