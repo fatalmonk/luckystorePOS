@@ -21,6 +21,30 @@ const nextConfig = {
     optimizePackageImports: ['@supabase/supabase-js'],
     inlineCss: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/product/radhuni-biriyani-masala-40-g--cbbc35e5',
+        destination: '/product/radhuni-biryani-masala-40g--35fdd44a',
+        permanent: true,
+      },
+      {
+        source: '/bn/product/radhuni-biriyani-masala-40-g--cbbc35e5',
+        destination: '/bn/product/radhuni-biryani-masala-40g--35fdd44a',
+        permanent: true,
+      },
+      {
+        source: '/product/radhuni-roast-masala-40g--4ef25400',
+        destination: '/product/radhuni-roast-masala-35-g--602a8c45',
+        permanent: true,
+      },
+      {
+        source: '/bn/product/radhuni-roast-masala-40g--4ef25400',
+        destination: '/bn/product/radhuni-roast-masala-35-g--602a8c45',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

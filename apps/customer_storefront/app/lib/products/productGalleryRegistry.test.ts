@@ -99,4 +99,56 @@ describe('product gallery registry', () => {
     expect(getProductGalleryImages('d132ec9d-3175-440b-b1ac-d4cbfea8e55b')?.[0]?.url)
       .toBe(`${R2_BASE}/IC-POL-ROY-front.webp`);
   });
+
+  it('maps authentic Square Food & Beverage Radhuni packshots', () => {
+    const radhuniBase = 'https://images.luckystore1947.com/products/radhuni';
+    expect(getProductGalleryImages('218e328e-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-kacchi-biriyani-masala-40g.webp`,
+        alt: 'Radhuni Kacchi Biriyani Masala 40g',
+      },
+    ]);
+    expect(getProductGalleryImages('f083e180-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-tehari-masala-40g.webp`,
+        alt: 'Radhuni Tehari Masala 40g',
+      },
+    ]);
+    expect(getProductGalleryImages('bb9416cd-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-korma-masala-30g.webp`,
+        alt: 'Radhuni Korma Masala 30g',
+      },
+    ]);
+    expect(getProductGalleryImages('3a451e3b-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-bbq-masala-50g.webp`,
+        alt: 'Radhuni BBQ Masala 50g',
+      },
+    ]);
+    expect(getProductGalleryImages('e621afcc-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-premium-ghee-200g.webp`,
+        alt: 'Radhuni Premium Ghee 200g',
+      },
+    ]);
+    expect(getProductGalleryImages('811c65a2-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-shorisha-oil-1l.webp`,
+        alt: 'Radhuni Pure Mustard Oil 1L',
+      },
+    ]);
+    expect(getProductGalleryImages('82ed979d-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-vinegar-280ml.webp`,
+        alt: 'Radhuni White Vinegar 280ml',
+      },
+    ]);
+    expect(getProductGalleryImages('045df58d-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${radhuniBase}/radhuni-jira-gura-100g.webp`,
+        alt: 'Radhuni Jira Gura 100g',
+      },
+    ]);
+  });
 });
