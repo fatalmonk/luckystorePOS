@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-24 (partial: artifact storage quota blocks evidence upload)
-last_pr:        #543 (draft; pending review)
-open_prs:       #543 (draft)
-next_run:       2026-10-25
+last_run:       2026-10-26 (source + read-only production audit; live HTML partially accessible)
+last_pr:        pending (2026-10-26 checkout delivery threshold clarification)
+open_prs:       pending review PR for checkout copy (no other open PRs at preflight)
+next_run:       2026-10-27
 ```
 
 ---
@@ -116,7 +116,7 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ```yaml
 technical_seo:
-  sitemap_url_count: 916          # 2026-10-23 GitHub audit summary: complete sitemap count; 15 pages sampled, not a full crawl
+  sitemap_url_count: 915          # 2026-10-25 GitHub monitor log: complete sitemap count; 15 pages sampled, not a full crawl
   robots_ai_bots_pass: null       # 2026-10-15 live robots.txt inaccessible; not a confirmed failure
   canonical_errors: null          # no full crawl evidenced; unknown until measured
   broken_links: null              # no full crawl evidenced; unknown until measured
@@ -172,6 +172,19 @@ competitor_signals:
 
 ---
 
+## 2026-10-26 evidence and verification status
+
+- **Canonical state:** Existing `seo/state.md` and PR #458 implementation retained; no duplicate setup or alternate state created. Current-main starting SHA `f23adb026effae10f95e98646805750213f2a8c2`.
+- **Live public checks (partial):** Apex homepage redirected to `www`; public homepage showed 1 km Chawkbazar coverage and free delivery on ৳500+. Public web extractor could not independently retrieve robots.txt/sitemap XML or full delivery-page HTML; no full crawl, rendered FAQ verification or indexing conclusion. The homepage/footer and Deal of the Week extractor still showed older copy, but their current-main source already contains fixes; production revision and cache state require independent verification.
+- **Measured technical monitor:** [2026-10-25 run 40171277725](https://github.com/fatalmonk/luckystorePOS/actions/runs/40171277725) printed **915 complete sitemap URLs, 15/15 sampled pages fetched, 0 sampled issues, 1 warning, 0 reported limitations**. Artifact upload failed due quota, so no full JSON artifact was available. This is not a 915-page crawl. Dependent [Autopilot run 40171332786](https://github.com/fatalmonk/luckystorePOS/actions/runs/40171332786) skipped proposal and verification.
+- **Partial infrastructure recovery:** [2026-10-26 Hostinger run 40257484453](https://github.com/fatalmonk/luckystorePOS/actions/runs/40257484453) passed build, staging validation and production deployment. SEO monitor artifact recovery still requires a new current-main run; [issue #544](https://github.com/fatalmonk/luckystorePOS/issues/544) remains open.
+- **Read-only operational mismatch:** `public.delivery_zones` for MAIN is active with 5 km radius and coordinates 22.3569, 91.7832; storefront policy states 1 km centered at 22.3550, 91.8363. Checkout accepts free-text addresses with no route-level geographic validation. No production data or policy changed. Tracked in [issue #551](https://github.com/fatalmonk/luckystorePOS/issues/551). Validate physical hub and backend function before geofencing.
+- **Orders:** For MAIN, 28 days ending 2026-10-26 08:00 Asia/Dhaka: `orders` 5 cancelled / 0 delivered; `online_orders` 0 records. Prior 28 days: 7 cancelled / 0 delivered in `orders`. These are database status counts, not proof of zero actual fulfilled orders. GA4 `purchase` event reconciliation remains unavailable.
+- **Verified code-copy defect:** Checkout sidebar said “Free delivery on orders over ৳500”, contradicting the inclusive `>= 500` threshold in `app/api/checkout/route.ts` and `DELIVERY_POLICY`. Review PR updates only buyer-facing copy using central constants; no checkout price, order, payment or geofencing logic changed.
+- **Schema:** English `/delivery` already emits `getDeliveryFaqSchema()` in source and visible FAQs; no duplicate markup added. Live rendered schema still unverified.
+- **Search Console / GA4 / AI visibility:** Ryze workspace connector returned HTTP 403; no fresh analytics, indexing, rankings, AI citations or conversion attribution measured. Competitor public scan confirmed existing Chattogram service/fees, not a new launch.
+- **Review:** Existing PR #543 and #549 are merged; no automatic merge or deployment for this review proposal.
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -184,4 +197,5 @@ competitor_signals:
 | 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
 | 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
 | 2026-10-24 | autopilot | #543 (draft) | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
+| 2026-10-26 | autopilot | pending | Correct checkout free-delivery threshold wording to inclusive ৳500+ and explicitly scope 1 km; production delivery-zone mismatch tracked separately as #551. |
 
