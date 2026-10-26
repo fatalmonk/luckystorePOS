@@ -46,12 +46,12 @@ describe('Product metadata identity', () => {
     expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Energy', value: '326.34 kcal per 100g' }));
   });
 
-  it('uses the confirmed half-liter quantity and a storefront badge over the original 1 L artwork', () => {
+  it('uses the confirmed half-liter quantity and a storefront badge with authentic 500ml packshot', () => {
     const item = getEnrichedProductData('eca88367')!;
     expect(item.netQuantity).toBe('500 ml');
     expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Net Quantity', value: '500 ml (1/2 L)' }));
-    expect(item.galleryImages?.[0]).toMatchObject({ badge: '1/2 L', alt: 'Polar Vanilla 1 Liter tub artwork' });
-    expect(item.galleryImages?.[0]?.url).toContain('IC-POL-VA1.webp');
+    expect(item.galleryImages?.[0]).toMatchObject({ badge: '1/2 L', alt: 'Polar Vanilla 1/2 Liter tub packaging' });
+    expect(item.galleryImages?.[0]?.url).toContain('IC-POL-VAN-500.png');
     expect(item.highlights?.join(' ')).not.toContain('2 L consumer packaging');
   });
 
@@ -126,4 +126,33 @@ describe('Product metadata identity', () => {
     expect(description).toContain('৳83');
     expect(description).toContain('…');
   });
+
+  it.each([
+    ['5830390b', 'Polar Carnival Butterscotch Cone Ice Cream 120ml', 33],
+    ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml', 56],
+    ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml', 56],
+  ])('retains Lucky Store brand suffix for Polar Carnival title %s', (id, name, price) => {
+    const title = formatProductMetaTitle(name, price);
+    expect(title).toContain('| Lucky Store');
+    expect(title).toContain(name);
+    expect(title.length).toBeLessThanOrEqual(68);
+  });
+
+  it('augments short excerpt descriptions from long enrichments with Lucky Store delivery policy', () => {
+    const item = getEnrichedProductData('8f7ce150')!; // Polar Crunchy (Sentence 1 is only 45 chars)
+    const description = formatProductMetaDescription(item.exactName, 45, 'pc', item.summary);
+    expect(description).toContain('Polar Crunchy');
+    expect(description).toContain('Free delivery on ৳500+');
+    expect(description.length).toBeGreaterThanOrEqual(110);
+    expect(description.length).toBeLessThanOrEqual(160);
+  });
+
+  it('strictly bounds titles to <= 60 characters when long price and unit leaves little room', () => {
+    // Suffix: "… – ৳150,000/24x1000ml bulk case | Lucky Store" -> leaves < 5 chars for name
+    const longName = 'Radhuni Pure Premium Spice Blend Extra Hot';
+    const title = formatProductMetaTitle(longName, 150000, '24x1000ml bulk case');
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
 });
+
+

@@ -71,12 +71,17 @@ export function formatProductMetaTitle(name: string, price: number, unit?: strin
   const priceStr = formatBdt(price);
   const unitSuffix = unit && unit !== 'pc' ? `/${unit}` : '';
   const candidate = `${name} – ${priceStr}${unitSuffix} | Lucky Store`;
-  if (candidate.length <= 60) return candidate;
+  if (candidate.length <= 68) return candidate;
+  const suffixWithBrand = `… – ${priceStr}${unitSuffix} | Lucky Store`;
+  const maxNameLenWithBrand = 60 - suffixWithBrand.length;
+  if (maxNameLenWithBrand >= 5) {
+    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+  }
   const noBrand = `${name} – ${priceStr}${unitSuffix}`;
   if (noBrand.length <= 60) return noBrand;
   const suffix = `… – ${priceStr}${unitSuffix}`;
-  const maxNameLen = 60 - suffix.length;
-  return `${name.slice(0, Math.max(5, maxNameLen)).trim()}${suffix}`;
+  const maxNameLen = Math.max(0, 60 - suffix.length);
+  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
 }
 
 /**
@@ -103,7 +108,16 @@ export function formatProductMetaDescription(
         excerpt = candidate;
       }
       const excerptWords = new Set(excerpt.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu));
-      if (identityWords.every((word) => excerptWords.has(word))) return excerpt;
+      if (identityWords.every((word) => excerptWords.has(word))) {
+        if (excerpt.length < 110) {
+          let augmented = excerpt;
+          for (const detail of [' Free delivery on ৳500+ within 1 km.', ' Cash on Delivery.', ' Doorstep inspection.']) {
+            if (augmented.length + detail.length <= 160) augmented += detail;
+          }
+          return augmented;
+        }
+        return excerpt;
+      }
     }
   }
   const priceStr = formatBdt(price);

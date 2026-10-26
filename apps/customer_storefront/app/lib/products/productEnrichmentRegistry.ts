@@ -53573,8 +53573,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     netQuantity: "500 ml",
     galleryImages: [
       {
-        url: "https://images.luckystore1947.com/products/polar/IC-POL-VA1.webp",
-        alt: "Polar Vanilla 1 Liter tub artwork",
+        url: "https://images.luckystore1947.com/products/polar/IC-POL-VAN-500.png",
+        alt: "Polar Vanilla 1/2 Liter tub packaging",
         badge: "1/2 L",
       },
     ],
