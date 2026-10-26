@@ -146,5 +146,13 @@ describe('Product metadata identity', () => {
     expect(description.length).toBeGreaterThanOrEqual(110);
     expect(description.length).toBeLessThanOrEqual(160);
   });
+
+  it('strictly bounds titles to <= 60 characters when long price and unit leaves little room', () => {
+    // Suffix: "… – ৳150,000/24x1000ml bulk case | Lucky Store" -> leaves < 5 chars for name
+    const longName = 'Radhuni Pure Premium Spice Blend Extra Hot';
+    const title = formatProductMetaTitle(longName, 150000, '24x1000ml bulk case');
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
 });
+
 

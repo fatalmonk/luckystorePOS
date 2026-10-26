@@ -73,15 +73,15 @@ export function formatProductMetaTitle(name: string, price: number, unit?: strin
   const candidate = `${name} – ${priceStr}${unitSuffix} | Lucky Store`;
   if (candidate.length <= 68) return candidate;
   const suffixWithBrand = `… – ${priceStr}${unitSuffix} | Lucky Store`;
-  if (suffixWithBrand.length <= 60) {
-    const maxNameLen = 60 - suffixWithBrand.length;
-    return `${name.slice(0, Math.max(5, maxNameLen)).trim()}${suffixWithBrand}`;
+  const maxNameLenWithBrand = 60 - suffixWithBrand.length;
+  if (maxNameLenWithBrand >= 5) {
+    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
   }
   const noBrand = `${name} – ${priceStr}${unitSuffix}`;
   if (noBrand.length <= 60) return noBrand;
   const suffix = `… – ${priceStr}${unitSuffix}`;
-  const maxNameLen = 60 - suffix.length;
-  return `${name.slice(0, Math.max(5, maxNameLen)).trim()}${suffix}`;
+  const maxNameLen = Math.max(0, 60 - suffix.length);
+  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
 }
 
 /**
