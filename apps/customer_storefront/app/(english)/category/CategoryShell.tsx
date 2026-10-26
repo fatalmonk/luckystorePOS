@@ -15,6 +15,7 @@ import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../components/seo/JsonLd';
 import { toProductSlug } from '../../lib/products/slugify';
+import { getProductGalleryImages } from '../../lib/products/productGalleryRegistry';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 
@@ -152,6 +153,8 @@ export function CategoryShell({
         itemListElement: products.slice(0, 30).map((p, index) => {
           const productSlug = toProductSlug((p as any).originalName || p.name, p.id);
           const productUrl = `${BASE_URL}${withLocale(`/product/${productSlug}`, locale)}`;
+          const galleryImage = getProductGalleryImages(p.id)?.[0]?.url;
+          const image = galleryImage || p.image_url;
           return {
             '@type': 'ListItem',
             position: index + 1,
@@ -159,7 +162,7 @@ export function CategoryShell({
               '@type': 'Product',
               name: p.name,
               url: productUrl,
-              ...(p.image_url ? { image: p.image_url } : {}),
+              ...(image ? { image } : {}),
               offers: {
                 '@type': 'Offer',
                 price: p.price,

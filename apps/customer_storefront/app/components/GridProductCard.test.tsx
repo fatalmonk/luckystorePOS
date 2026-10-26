@@ -102,6 +102,17 @@ describe('GridProductCard', () => {
       .toHaveAttribute('data-src', 'https://images.luckystore1947.com/products/polar/kheer-500ml-1-2l.webp');
   });
 
+  it('prioritizes curated gallery packshots over legacy or uncurated catalog image_url', () => {
+    renderCard({
+      id: 'd6b58fa7-85ae-4934-8c81-4235c369fc63',
+      name: 'Polar 2 in 1 Vanilla-Chocolate 1 Liter',
+      image_url: 'https://polarbd.com/wp-content/webp-express/webp-images/uploads/2025/03/2in1-Vanilla_Chocolate-05-1024x1024.jpg.webp',
+    });
+
+    expect(screen.getByRole('img', { name: 'Polar 2 in 1 Vanilla-Chocolate ice cream tub, 1 liter' }))
+      .toHaveAttribute('data-src', 'https://images.luckystore1947.com/products/polar/2-in-1-vanilla-chocolate-tub.webp');
+  });
+
   it('keeps add, increment, and decrement actions inside buttons', () => {
     const { rerender } = render(<GridProductCard product={product} />);
 

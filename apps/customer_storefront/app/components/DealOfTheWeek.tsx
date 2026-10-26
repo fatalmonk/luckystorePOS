@@ -9,6 +9,7 @@ import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
+import { getProductGalleryImages } from '../lib/products/productGalleryRegistry';
 import { DealCountdown } from './DealCountdown';
 import { GridProductCard } from './GridProductCard';
 import { MarketPanel } from './ui/MarketSurface';
@@ -175,8 +176,8 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
             </Badge>
             <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
-                src={leadProduct.image_url}
-                alt={leadProduct.name}
+                src={getProductGalleryImages(leadProduct.id)?.[0]?.url || leadProduct.image_url}
+                alt={getProductGalleryImages(leadProduct.id)?.[0]?.alt || leadProduct.name}
                 category={leadProduct.category}
                 sizes="(max-width: 640px) calc(100vw - 72px), (max-width: 1024px) calc(100vw - 112px), 500px"
                 imageClassName="object-contain"
