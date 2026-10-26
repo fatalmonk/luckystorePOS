@@ -21,6 +21,7 @@ import {
 } from '../../lib/analytics';
 import { getLocaleFromPathname, withLocale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 
 interface FormErrors {
   name?: string;
@@ -529,7 +530,9 @@ function CheckoutContent() {
                     <div className="flex justify-between text-warm-muted"><span>Delivery</span><span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span></div>
                     <div className="flex justify-between border-t border-warm-border-light pt-3 text-lg font-extrabold text-warm-fg"><span>Total</span><span>{formatBdt(total)}</span></div>
                   </div>
-                  <p className="mt-4 text-xs leading-5 text-warm-muted">Free delivery on orders over ৳500.</p>
+                  <p className="mt-4 text-xs leading-5 text-warm-muted">
+                      Free delivery on orders of ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} or more within {DELIVERY_POLICY.radiusKm} km of our Chawkbazar store.
+                    </p>
                 </div>
               </aside>
               </div>
