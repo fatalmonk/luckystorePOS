@@ -1,6 +1,7 @@
 import type { ProductGalleryImage } from './productEnrichmentTypes';
 
 const R2_POLAR_BASE = 'https://images.luckystore1947.com/products/polar';
+const R2_RADHUNI_BASE = 'https://images.luckystore1947.com/products/radhuni';
 
 /** Verified catalogue images for Polar products with curated gallery assets hosted in Cloudflare R2. */
 const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
@@ -110,6 +111,51 @@ const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
     { url: `${R2_POLAR_BASE}/IC-POL-ROY-NUTRITION.webp`, alt: 'Polar Royal Sundae Cup nutrition facts' },
     { url: `${R2_POLAR_BASE}/IC-POL-ROY-BARCODE.webp`, alt: 'Polar Royal Sundae Cup barcode' },
   ],
+  // Radhuni authentic packshots (Square Food & Beverage Ltd)
+  '218e328e': [{ url: `${R2_RADHUNI_BASE}/radhuni-kacchi-biriyani-masala-40g.webp`, alt: 'Radhuni Kacchi Biriyani Masala 40g' }],
+  'f083e180': [{ url: `${R2_RADHUNI_BASE}/radhuni-tehari-masala-40g.webp`, alt: 'Radhuni Tehari Masala 40g' }],
+  'bb9416cd': [{ url: `${R2_RADHUNI_BASE}/radhuni-korma-masala-30g.webp`, alt: 'Radhuni Korma Masala 30g' }],
+  '62b95597': [{ url: `${R2_RADHUNI_BASE}/radhuni-macher-masala-20g.webp`, alt: 'Radhuni Macher Masala 20g' }],
+  '4228211b': [{ url: `${R2_RADHUNI_BASE}/radhuni-mezbani-gorur-masala-68g.webp`, alt: 'Radhuni Mezbani Gorur Masala 68g' }],
+  'cbbc35e5': [{ url: `${R2_RADHUNI_BASE}/radhuni-biriyani-masala-40g.webp`, alt: 'Radhuni Biriyani Masala 40g' }],
+  '35fdd44a': [{ url: `${R2_RADHUNI_BASE}/radhuni-biryani-masala-40g-pouch.webp`, alt: 'Radhuni Biryani Masala 40g' }],
+  'c5dc41e8': [{ url: `${R2_RADHUNI_BASE}/radhuni-gorur-mangsho-masala-100g.webp`, alt: 'Radhuni Gorur Mangsho Masala 100g' }],
+  '88fbb380': [{ url: `${R2_RADHUNI_BASE}/radhuni-mangsho-masala-100g.webp`, alt: 'Radhuni Mangsho Masala 100g' }],
+  '4ef25400': [{ url: `${R2_RADHUNI_BASE}/radhuni-roast-masala-40g.webp`, alt: 'Radhuni Roast Masala 40g' }],
+  'dffbe716': [{ url: `${R2_RADHUNI_BASE}/radhuni-fried-chicken-mix-75g.webp`, alt: 'Radhuni Fried Chicken Mix 75g' }],
+  'a6b3e87a': [{ url: `${R2_RADHUNI_BASE}/radhuni-fried-rice-mix-8g.webp`, alt: 'Radhuni Fried Rice Mix 8g' }],
+  'de116e79': [{ url: `${R2_RADHUNI_BASE}/radhuni-hasher-mangsho-33g.webp`, alt: 'Radhuni Hasher Mangsho 33g' }],
+  '87d9bc54': [{ url: `${R2_RADHUNI_BASE}/radhuni-kasundi-285ml.webp`, alt: 'Radhuni Kasundi 285ml' }],
+  '15b0ac41': [{ url: `${R2_RADHUNI_BASE}/radhuni-dhoniya-gura-100g.webp`, alt: 'Radhuni Dhoniya Gura 100g' }],
+  '2c8787a2': [{ url: `${R2_RADHUNI_BASE}/radhuni-dhoniya-gura-15g.webp`, alt: 'Radhuni Dhoniya Gura 15g' }],
+  '6797819a': [{ url: `${R2_RADHUNI_BASE}/radhuni-dhoniya-gura-200g.webp`, alt: 'Radhuni Dhoniya Gura 200g' }],
+  '4ab28db1': [{ url: `${R2_RADHUNI_BASE}/radhuni-shorisha-oil-80ml.webp`, alt: 'Radhuni Shorisha Oil 80ml' }],
+  '91416875': [{ url: `${R2_RADHUNI_BASE}/radhuni-chui-jhal-mangsho-masala-38g.webp`, alt: 'Radhuni Chui Jhal Mangsho Masala 38g' }],
+  '3a451e3b': [{ url: `${R2_RADHUNI_BASE}/radhuni-bbq-masala-50g.webp`, alt: 'Radhuni BBQ Masala 50g' }],
+  'a3ef36f3': [{ url: `${R2_RADHUNI_BASE}/radhuni-borhani-masala-50g.webp`, alt: 'Radhuni Borhani Masala 50g' }],
+  'f08fb3f6': [{ url: `${R2_RADHUNI_BASE}/radhuni-chicken-tandoori-50g.webp`, alt: 'Radhuni Chicken Tandoori Masala 50g' }],
+  'c0170ff3': [{ url: `${R2_RADHUNI_BASE}/radhuni-chotpoti-masala-50g.webp`, alt: 'Radhuni Chotpoti Masala 50g' }],
+  'f1e2e59c': [{ url: `${R2_RADHUNI_BASE}/radhuni-gorur-masala-25g.webp`, alt: 'Radhuni Gorur Masala 25g' }],
+  'eef17d71': [{ url: `${R2_RADHUNI_BASE}/radhuni-holud-gura-500g.webp`, alt: 'Radhuni Holud Gura 500g' }],
+  '045df58d': [{ url: `${R2_RADHUNI_BASE}/radhuni-jira-gura-100g.webp`, alt: 'Radhuni Jira Gura 100g' }],
+  '06613f3a': [{ url: `${R2_RADHUNI_BASE}/radhuni-jira-gura-15g.webp`, alt: 'Radhuni Jira Gura 15g' }],
+  'bf72c058': [{ url: `${R2_RADHUNI_BASE}/radhuni-jira-gura-200g.webp`, alt: 'Radhuni Jira Gura 200g' }],
+  'bdcf65f2': [{ url: `${R2_RADHUNI_BASE}/radhuni-jira-gura-50g.webp`, alt: 'Radhuni Jira Gura 50g' }],
+  '3682155c': [{ url: `${R2_RADHUNI_BASE}/radhuni-kabab-masala-50g.webp`, alt: 'Radhuni Kabab Masala 50g' }],
+  '9c7880a6': [{ url: `${R2_RADHUNI_BASE}/radhuni-kala-bhuna-80g.webp`, alt: 'Radhuni Kala Bhuna Masala 80g' }],
+  'c0fe29c0': [{ url: `${R2_RADHUNI_BASE}/radhuni-morich-gura-100g.webp`, alt: 'Radhuni Morich Gura 100g' }],
+  'e6b407a7': [{ url: `${R2_RADHUNI_BASE}/radhuni-morich-gura-200g.webp`, alt: 'Radhuni Morich Gura 200g' }],
+  '70562c12': [{ url: `${R2_RADHUNI_BASE}/radhuni-morich-gura-25g.webp`, alt: 'Radhuni Morich Gura 25g' }],
+  '44bfa194': [{ url: `${R2_RADHUNI_BASE}/radhuni-morich-gura-500g.webp`, alt: 'Radhuni Morich Gura 500g' }],
+  '404d9aa4': [{ url: `${R2_RADHUNI_BASE}/radhuni-murgi-mangsho-20g.webp`, alt: 'Radhuni Murgi Mangsho 20g' }],
+  'e621afcc': [{ url: `${R2_RADHUNI_BASE}/radhuni-premium-ghee-200g.webp`, alt: 'Radhuni Premium Ghee 200g' }],
+  '602a8c45': [{ url: `${R2_RADHUNI_BASE}/radhuni-roast-masala-35g.webp`, alt: 'Radhuni Roast Masala 35g' }],
+  '811c65a2': [{ url: `${R2_RADHUNI_BASE}/radhuni-shorisha-oil-1l.webp`, alt: 'Radhuni Pure Mustard Oil 1L' }],
+  'c9a869d2': [{ url: `${R2_RADHUNI_BASE}/radhuni-shorisha-oil-250ml.webp`, alt: 'Radhuni Shorisha Oil 250ml' }],
+  '38ee3e1a': [{ url: `${R2_RADHUNI_BASE}/radhuni-shorisha-oil-500ml.webp`, alt: 'Radhuni Pure Mustard Oil 500ml' }],
+  'df37b129': [{ url: `${R2_RADHUNI_BASE}/radhuni-sunflower-oil-1l.webp`, alt: 'Radhuni Sunflower Oil 1L' }],
+  '82ed979d': [{ url: `${R2_RADHUNI_BASE}/radhuni-vinegar-280ml.webp`, alt: 'Radhuni White Vinegar 280ml' }],
+  '20aa95b4': [{ url: `${R2_RADHUNI_BASE}/radhuni-vinegar-540ml.webp`, alt: 'Radhuni White Vinegar 540ml' }],
 };
 
 export function getProductGalleryImages(productId: string): ProductGalleryImage[] | undefined {
