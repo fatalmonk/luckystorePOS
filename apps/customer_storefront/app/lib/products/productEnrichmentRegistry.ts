@@ -4284,7 +4284,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     faqs: [
       {
         question: "Does Polar Ice Lolly Orange contain dairy or milk?",
-        answer: "No. The official manufacturer formulation is water-based with fruit flavor and stabilizer, free of dairy ingredients.",
+        answer: "The published ingredients list water, sugar, citric acid, stabilizer, and permitted flavour and colour, with no milk or dairy ingredients declared. Customers with severe dairy allergies should check the physical package or contact the manufacturer for allergen advice.",
         evidenceRefs: ["MFR_PRODUCT_PAGE"],
       },
       {
