@@ -13,8 +13,8 @@
 ```
 phase:          baseline-established
 last_run:       2026-10-26 (source + read-only production audit; live HTML partially accessible)
-last_pr:        pending (2026-10-26 checkout delivery threshold clarification)
-open_prs:       pending review PR for checkout copy (no other open PRs at preflight)
+last_pr:        #552 (draft; pending review)
+open_prs:       #552 (draft; no other open PRs at preflight)
 next_run:       2026-10-27
 ```
 
@@ -197,5 +197,5 @@ competitor_signals:
 | 2026-10-15 | autopilot | #481 (merged) | Removes the Bengali FAQPage JSON-LD from the pre-#480 route; current `main` already has visible Bengali FAQs and no Bengali FAQPage JSON-LD. Production verification pending. |
 | 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
 | 2026-10-24 | autopilot | #543 (draft) | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
-| 2026-10-26 | autopilot | pending | Correct checkout free-delivery threshold wording to inclusive ৳500+ and explicitly scope 1 km; production delivery-zone mismatch tracked separately as #551. |
+| 2026-10-26 | autopilot | #552 (draft) | Correct checkout free-delivery threshold wording to inclusive ৳500+ and explicitly scope 1 km; production delivery-zone mismatch tracked separately as #551. |
 
