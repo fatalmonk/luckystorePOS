@@ -4,8 +4,12 @@ import { getProductGalleryImages } from './productGalleryRegistry';
 const R2_BASE = 'https://images.luckystore1947.com/products/polar';
 
 describe('product gallery registry', () => {
-  it('uses the verified local Chocolate Cup image hosted in R2', () => {
+  it('uses the verified studio and package views for Chocolate Cup hosted in R2', () => {
     expect(getProductGalleryImages('f6d581d5-0000-0000-0000-000000000000')).toEqual([
+      {
+        url: `${R2_BASE}/chocolate-cup.webp`,
+        alt: 'Polar Chocolate Cup ice cream, 100 ml cup',
+      },
       {
         url: `${R2_BASE}/chocolate-cup-front.webp`,
         alt: 'Polar Chocolate Cup ice cream, 100 ml package',
@@ -19,6 +23,10 @@ describe('product gallery registry', () => {
         alt: 'Polar Chocolate Cup packaging side view',
       },
     ]);
+  });
+
+  it('keeps Chocolate Cup studio and package views in one gallery', () => {
+    expect(getProductGalleryImages('f6d581d5-0000-0000-0000-000000000000')).toHaveLength(4);
   });
 
   it('uses the 1/2L overlay image for Kheer and keeps Double Sundae unresolved', () => {
@@ -42,8 +50,26 @@ describe('product gallery registry', () => {
     expect(getProductGalleryImages('aaaaaaaa-0000-0000-0000-000000000000')).toBeUndefined();
   });
 
-  it('keeps Chocolate Cup package views in one gallery', () => {
-    expect(getProductGalleryImages('f6d581d5-0000-0000-0000-000000000000')).toHaveLength(3);
+  it('maps authentic front packshots and multi-view sets for Polar products', () => {
+    // Mango Cup has authentic studio front packshot
+    expect(getProductGalleryImages('236b5858-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/mango-cup-front.webp`);
+    // Coffee 1L has hero front packshot
+    expect(getProductGalleryImages('2e948079-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/coffee-tub-front.webp`);
+    // Red Velvet 1L has hero front packshot
+    expect(getProductGalleryImages('bc7de70f-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/red-velvet-tub-front.webp`);
+    // Shell N Core, Shor Malai, Tornado Strawberry have 3-view sets (front, stick, duo)
+    expect(getProductGalleryImages('fe31ca90-0000-0000-0000-000000000000')).toHaveLength(3);
+    expect(getProductGalleryImages('fe31ca90-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/cool-shell-n-core-front.webp`);
+    expect(getProductGalleryImages('2233c416-0000-0000-0000-000000000000')).toHaveLength(3);
+    expect(getProductGalleryImages('2233c416-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/shor-malai-front.webp`);
+    expect(getProductGalleryImages('fcefa591-0000-0000-0000-000000000000')).toHaveLength(3);
+    expect(getProductGalleryImages('fcefa591-0000-0000-0000-000000000000')?.[0]?.url)
+      .toBe(`${R2_BASE}/tornado-strawberry-front.webp`);
   });
 
   it('uses clean transparent tub images for 2 in 1 products', () => {

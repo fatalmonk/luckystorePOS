@@ -38,7 +38,8 @@ const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
     { url: `${R2_POLAR_BASE}/carnival-strawberry.webp`, alt: 'Polar Carnival Strawberry cone ice cream' },
   ],
   '2e948079': [
-    { url: `${R2_POLAR_BASE}/coffee-tub.webp`, alt: 'Polar Coffee ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/coffee-tub-front.webp`, alt: 'Polar Coffee ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/coffee-tub.webp`, alt: 'Polar Coffee ice cream tub packaging angle' },
   ],
   '8f7ce150': [
     { url: `${R2_POLAR_BASE}/crunchy-stick.webp`, alt: 'Polar Crunchy ice cream stick' },
@@ -59,19 +60,26 @@ const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
     { url: `${R2_POLAR_BASE}/mango-tub.webp`, alt: 'Polar Mango ice cream tub, 1 liter' },
   ],
   'bc7de70f': [
-    { url: `${R2_POLAR_BASE}/red-velvet-tub.webp`, alt: 'Polar Red Velvet ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/red-velvet-tub-front.webp`, alt: 'Polar Red Velvet ice cream tub, 1 liter' },
+    { url: `${R2_POLAR_BASE}/red-velvet-tub.webp`, alt: 'Polar Red Velvet ice cream tub packaging angle' },
   ],
   '2c367e44': [
     { url: `${R2_POLAR_BASE}/robusto-salted-caramel.webp`, alt: 'Polar Robusto Salted Caramel ice cream bar' },
   ],
   'fe31ca90': [
-    { url: `${R2_POLAR_BASE}/cool-shell-n-core.webp`, alt: 'Polar Cool Shell N Core ice cream stick' },
+    { url: `${R2_POLAR_BASE}/cool-shell-n-core-front.webp`, alt: 'Polar Cool Shell N Core ice cream stick' },
+    { url: `${R2_POLAR_BASE}/cool-shell-n-core-stick.webp`, alt: 'Polar Cool Shell N Core unwrapped ice cream bar' },
+    { url: `${R2_POLAR_BASE}/cool-shell-n-core-duo.webp`, alt: 'Polar Cool Shell N Core package and ice cream bar' },
   ],
   '2233c416': [
-    { url: `${R2_POLAR_BASE}/shor-malai.webp`, alt: 'Polar Shor Malai ice cream stick' },
+    { url: `${R2_POLAR_BASE}/shor-malai-front.webp`, alt: 'Polar Shor Malai ice cream stick' },
+    { url: `${R2_POLAR_BASE}/shor-malai-stick.webp`, alt: 'Polar Shor Malai unwrapped ice cream bar' },
+    { url: `${R2_POLAR_BASE}/shor-malai-duo.webp`, alt: 'Polar Shor Malai package and ice cream bar' },
   ],
   'fcefa591': [
-    { url: `${R2_POLAR_BASE}/tornado-strawberry.webp`, alt: 'Polar Tornado Strawberry ice cream stick' },
+    { url: `${R2_POLAR_BASE}/tornado-strawberry-front.webp`, alt: 'Polar Tornado Strawberry ice cream stick' },
+    { url: `${R2_POLAR_BASE}/tornado-strawberry-stick.webp`, alt: 'Polar Tornado Strawberry unwrapped ice cream bar' },
+    { url: `${R2_POLAR_BASE}/tornado-strawberry-duo.webp`, alt: 'Polar Tornado Strawberry package and ice cream bar' },
   ],
   'be49558d': [
     { url: `${R2_POLAR_BASE}/zafran-malai-tub.webp`, alt: 'Polar Zafran Malai ice cream tub, 1 liter' },
@@ -80,9 +88,11 @@ const PRODUCT_GALLERY_IMAGES: Record<string, ProductGalleryImage[]> = {
     { url: `${R2_POLAR_BASE}/chocodelight-cone.webp`, alt: 'Polar Chocodelight cone ice cream' },
   ],
   '236b5858': [
+    { url: `${R2_POLAR_BASE}/mango-cup-front.webp`, alt: 'Polar Mango Cup ice cream, 100 ml cup' },
     { url: `${R2_POLAR_BASE}/mango-cup.webp`, alt: 'Polar Mango Cup ice cream' },
   ],
   'f6d581d5': [
+    { url: `${R2_POLAR_BASE}/chocolate-cup.webp`, alt: 'Polar Chocolate Cup ice cream, 100 ml cup' },
     { url: `${R2_POLAR_BASE}/chocolate-cup-front.webp`, alt: 'Polar Chocolate Cup ice cream, 100 ml package' },
     { url: `${R2_POLAR_BASE}/chocolate-cup-back.webp`, alt: 'Polar Chocolate Cup ingredients and product information' },
     { url: `${R2_POLAR_BASE}/chocolate-cup-side.webp`, alt: 'Polar Chocolate Cup packaging side view' },
