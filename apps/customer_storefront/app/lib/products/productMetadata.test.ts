@@ -126,4 +126,25 @@ describe('Product metadata identity', () => {
     expect(description).toContain('৳83');
     expect(description).toContain('…');
   });
+
+  it.each([
+    ['5830390b', 'Polar Carnival Butterscotch Cone Ice Cream 120ml', 33],
+    ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml', 56],
+    ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml', 56],
+  ])('retains Lucky Store brand suffix for Polar Carnival title %s', (id, name, price) => {
+    const title = formatProductMetaTitle(name, price);
+    expect(title).toContain('| Lucky Store');
+    expect(title).toContain(name);
+    expect(title.length).toBeLessThanOrEqual(68);
+  });
+
+  it('augments short excerpt descriptions from long enrichments with Lucky Store delivery policy', () => {
+    const item = getEnrichedProductData('8f7ce150')!; // Polar Crunchy (Sentence 1 is only 45 chars)
+    const description = formatProductMetaDescription(item.exactName, 45, 'pc', item.summary);
+    expect(description).toContain('Polar Crunchy');
+    expect(description).toContain('Free delivery on ৳500+');
+    expect(description.length).toBeGreaterThanOrEqual(110);
+    expect(description.length).toBeLessThanOrEqual(160);
+  });
 });
+
