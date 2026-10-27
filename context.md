@@ -4,9 +4,10 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Addressed all remaining code review comments and accessibility suggestions for PR #555.
+Pushed all review comment fixes and E2E audit repairs to PR #555 branch.
 
 ## Decisions
+- 20261027-46: Pushed all accumulated review fixes and E2E audit repairs to `origin/feat/homepage-motion-nav-refinements` (commit `af81ad2d`).
 - 20261027-45: Verified review comment on `vitest.setup.ts`: confirmed `configurable: true` is already present on `window.matchMedia` property descriptor (added in `fbb16d20`). Verified `ThemeProvider.test.tsx` (3/3 tests) passes cleanly without redefinition errors.
 - 20261027-44: Fixed Playwright E2E `homepage-audit.spec.ts` failure: restored section `aria-label` to `'Why shop with Lucky Store'` / `'কেন লাকি স্টোরে কেনাকাটা করবেন'` and reinstated the 4th trust fact `Trusted since 1947` with `ShieldCheck` in `HomeTrustStrip.tsx`. Verified typecheck and 97/97 test suites pass.
 - 20261027-43: Verified review comment on `ActiveLink.tsx`: confirmed CartBadge is already positioned outside the `aria-hidden` wrapper, exposes count to assistive tech, accepts `badgeLabel`, and `BottomNav` supplies `dict.bottomNav.cartBadge` (already implemented in commit `b6bdf1e6`). Verified 97 test suites (661 tests) and typecheck pass.
@@ -24,4 +25,4 @@ Addressed all remaining code review comments and accessibility suggestions for P
 - 20261027-36: `jev setup-key` saved verified key into OS secret store. Resolved auth_failed by identifying literal unexpanded `TYPESAFE_API_KEY` in environment overriding secret store.
 
 ## Next
-Push latest review comment fixes to PR #555 branch and monitor CI.
+Monitor PR #555 CI checks.
