@@ -81,6 +81,7 @@ function CategoryRailItems({
 export interface HeaderProps {
   className?: string;
   locale?: Locale;
+  hideOnMobile?: boolean;
 }
 
 export interface CategoryOption {
@@ -89,7 +90,7 @@ export interface CategoryOption {
   emoji: string;
 }
 
-export function Header({ className = '', locale }: HeaderProps) {
+export function Header({ className = '', locale, hideOnMobile = false }: HeaderProps) {
   const pathname = usePathname() || '/';
   const localizedPathname = stripLocalePrefix(pathname);
   const isDistractionFreePage = ['/checkout', '/login', '/signup'].some((path) =>
@@ -101,16 +102,16 @@ export function Header({ className = '', locale }: HeaderProps) {
       fallback={(
         <div
           aria-hidden="true"
-          className={isDistractionFreePage ? 'h-14' : 'h-[108px] md:h-[112px]'}
+          className={hideOnMobile ? 'hidden md:block md:h-[112px]' : isDistractionFreePage ? 'h-14' : 'h-[108px] md:h-[112px]'}
         />
       )}
     >
-      <HeaderContent className={className} locale={locale} />
+      <HeaderContent className={className} locale={locale} hideOnMobile={hideOnMobile} />
     </Suspense>
   );
 }
 
-function HeaderContent({ className = '', locale }: HeaderProps) {
+function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -366,7 +367,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
         className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg transition-transform duration-300 ease-in-out motion-reduce:transition-none dark:border-transparent ${
           isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen ? '-translate-y-full' : 'translate-y-0'
-        } ${className}`}
+        } ${hideOnMobile ? 'hidden md:block' : ''} ${className}`}
       >
       {/* Mobile Bar: menu, compact brand, theme toggle, cart */}
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:hidden">
@@ -512,7 +513,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
       {!isDistractionFreePage && (
         <nav
           aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}
-          className="mx-auto flex max-w-7xl items-center px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden"
+          className={`mx-auto ${isFilterPage ? 'hidden md:flex' : 'flex'} max-w-7xl items-center px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden`}
         >
           <div
             ref={mobileCategoriesRef}
@@ -577,11 +578,11 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
       </Suspense>
     )}
     <div
-      className={
-        showDesktopCategories
+      className={hideOnMobile
+        ? 'hidden md:block md:h-[112px]'
+        : showDesktopCategories
           ? 'h-[108px] md:h-[112px]'
-        : 'h-14'
-      }
+          : 'h-14'}
       aria-hidden="true"
     />
     </>

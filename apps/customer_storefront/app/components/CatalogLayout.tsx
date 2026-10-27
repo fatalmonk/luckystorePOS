@@ -321,8 +321,7 @@ export function CatalogLayout({
       <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-2 sm:p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
-          {!hideBreadcrumb && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
+          {!hideBreadcrumb && <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.home}
             </Link>
@@ -353,8 +352,7 @@ export function CatalogLayout({
                 )}
               </>
             )}
-          </div>
-          )}
+          </div>}
 
           <div className="flex items-center gap-2">
             {(() => {
@@ -448,7 +446,10 @@ export function CatalogLayout({
                 {dict.catalog.subCategoryCount.replace('{count}', subCats.length.toLocaleString(effectiveLocale === 'bn' ? 'bn-BD' : 'en'))}
               </span>
             </div>
-            <nav aria-label={dict.catalog.subCategories} className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 md:mx-0 md:grid md:grid-cols-6 md:gap-3 md:overflow-visible md:px-0 md:pb-0">
+            <nav
+              aria-label={dict.catalog.subCategories}
+              className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 md:mx-0 md:grid md:grid-cols-6 md:gap-3 md:overflow-visible md:px-0 md:pb-0"
+            >
               {subCats.map((sub) => {
                 const isActive = categorySlug === sub.slug;
                 const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(sub.slug)] || sub.name) : sub.name;

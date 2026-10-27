@@ -4,10 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
 
 let mockSearchParams = new URLSearchParams();
+let mockPathname = '/category';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/category',
+  usePathname: () => mockPathname,
   useSearchParams: () => mockSearchParams,
 }));
 
@@ -42,6 +43,7 @@ vi.mock('./SearchSuggestions', () => ({
 describe('Header catalog filter strip', () => {
   beforeEach(() => {
     mockSearchParams = new URLSearchParams();
+    mockPathname = '/category';
   });
 
   it('exposes responsive search and cart controls in the header', () => {
@@ -60,6 +62,8 @@ describe('Header catalog filter strip', () => {
   it('exposes the desktop category strip and quick rail on catalog routes', () => {
     render(<Header />);
 
+    const tabletCategories = screen.getByRole('navigation', { name: 'Categories' });
+    expect(tabletCategories).toHaveClass('hidden', 'md:flex', 'lg:hidden');
     const categories = screen.getByRole('navigation', { name: 'Product categories' });
     expect(categories).toBeInTheDocument();
     expect(within(categories).getByRole('link', { name: 'All' })).toBeInTheDocument();
@@ -70,6 +74,28 @@ describe('Header catalog filter strip', () => {
     const menuButtons = screen.getAllByRole('button', { name: 'Open menu' });
     expect(menuButtons).toHaveLength(2);
     menuButtons.forEach((button) => expect(button).toHaveAttribute('aria-haspopup', 'dialog'));
+  });
+
+  it('keeps the localized category rail for tablet widths while hiding it on mobile', () => {
+    mockPathname = '/bn/category/snacks';
+    render(<Header />);
+
+    expect(screen.getByRole('navigation', { name: 'ক্যাটাগরি' })).toHaveClass('hidden', 'md:flex', 'lg:hidden');
+    expect(screen.getByRole('navigation', { name: 'পণ্যের ক্যাটাগরি' })).toBeInTheDocument();
+  });
+
+  it('hides the full header and its layout spacer on mobile when requested', () => {
+    render(<Header hideOnMobile />);
+
+    expect(screen.getByRole('banner')).toHaveClass('hidden', 'md:block');
+    expect(document.querySelector('[aria-hidden="true"].hidden.md\\:block')).toBeInTheDocument();
+  });
+
+  it('keeps the mobile category strip on non-category routes', () => {
+    mockPathname = '/';
+    render(<Header />);
+
+    expect(screen.getByRole('navigation', { name: 'Categories' })).toBeInTheDocument();
   });
 
   it('unsets All when active catalog theme is present', () => {

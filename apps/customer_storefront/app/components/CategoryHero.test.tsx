@@ -33,6 +33,17 @@ describe('CategoryHero', () => {
     expect(screen.getByText('0 products')).toBeInTheDocument();
   });
 
+  it('localizes the product count for Bengali shoppers', () => {
+    render(<CategoryHero name="চা" locale="bn" productCount={12} />);
+    expect(screen.getByText('১২ টি পণ্য')).toBeInTheDocument();
+
+  });
+
+  it('omits the count when the complete result count is unavailable', () => {
+    render(<CategoryHero name="Tea & Coffee" />);
+    expect(screen.queryByText(/product/)).not.toBeInTheDocument();
+  });
+
   it('uses a unique stable heading id for each hero instance', () => {
     const { container } = render(
       <>
@@ -40,17 +51,14 @@ describe('CategoryHero', () => {
         <CategoryHero name="Coffee" />
       </>,
     );
-    const sections = container.querySelectorAll('section');
     const headings = container.querySelectorAll('h1');
     expect(headings).toHaveLength(2);
     expect(headings[0].id).not.toBe(headings[1].id);
-    expect([...sections].map((section) => section.getAttribute('aria-labelledby'))).toEqual(
-      [...headings].map((heading) => heading.id),
-    );
-  });
-
-  it('renders Bengali product counts with Bengali numerals and copy', () => {
-    render(<CategoryHero name="চা" locale="bn" productCount={12} />);
-    expect(screen.getByText('১২ টি পণ্য')).toBeInTheDocument();
+    expect([...headings].map((heading) => heading.id)).toEqual([
+      container.querySelectorAll('section')[0].getAttribute('aria-labelledby'),
+      container.querySelectorAll('section')[1].getAttribute('aria-labelledby'),
+    ]);
+    expect(container.querySelectorAll('section')[0]).toHaveAccessibleName('Tea');
+    expect(container.querySelectorAll('section')[1]).toHaveAccessibleName('Coffee');
   });
 });
