@@ -4,9 +4,10 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Resolved all 7 PR review issues and 3 E2E test assertions; ready to push fixes to PR #555.
+Resolved all Cubic review findings, CodeRabbit major suggestions, and CI visual audit assertions; pushed to PR #555.
 
 ## Decisions
+- 20261027-41: Resolved CodeRabbit major suggestions: (1) Switched Header compact and main bars at `md` instead of `lg` in `Header.tsx` to restore global search on tablets; (2) restored canonical `/search` and `/profile` routes in `BottomNav.tsx` to prevent 404s on non-English locales.
 - 20261027-40: Addressed all 7 review findings and 3 E2E assertions: (1) Added `configurable: true` to `matchMedia` in `vitest.setup.ts`; (2) restored `warm-sheet` in `tailwind.config.js` and defined `--radius-sheet` in `tokens.css`; (3) changed `iconLibrary` to `none` in `components.json`; (4) removed base `will-change: transform` and (5) gated card hover transforms behind `@media (hover: hover) and (pointer: fine)` in `globals.css`; (6) added `[data-bottom-nav-shell]` to reduced motion; (7) narrowed `.gitignore` to `/seo/reports/technical/` and `seo/reports/*.json`; (8) restored `HeritageSection` in `HomeShell.tsx`; (9) updated `text-[11px]` to `text-xs` in `HomeTrustStrip.tsx`; (10) fixed `bg-warm-surface` contrast in `CampaignGrid.tsx`.
 - 20261027-39: Committed `86287b57` to `feat/homepage-motion-nav-refinements`, pushed to origin, and created PR #555 (`feat(storefront): integrate Animate UI, dynamic island navigation, and instant language switching`).
 - 20261027-38: Ran `jev` completion review and PR review gate: (1) Connected via OS secret store (`latency: 509ms`); (2) evaluated 5-gate policy schema: `scope_contained` (p=0.93), `security_safe` (p=0.88), `verification_sound` (p=0.95), `tokens_compliant` (p=0.81), and `ready_to_merge` (p=0.79) — all verified `yes`; (3) PR review gate marked **PASS**.

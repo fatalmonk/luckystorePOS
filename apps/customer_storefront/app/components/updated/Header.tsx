@@ -368,8 +368,8 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
           isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen ? '-translate-y-full' : 'translate-y-0'
         } ${className}`}
       >
-      {/* Mobile and Tablet Bar: menu, compact brand, theme toggle, cart */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:px-4 lg:hidden">
+      {/* Mobile Bar: menu, compact brand, theme toggle, cart */}
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:hidden">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
@@ -405,7 +405,7 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
       </div>
 
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 lg:flex lg:max-w-none lg:px-4">
+      <div className="mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:flex lg:max-w-none lg:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button

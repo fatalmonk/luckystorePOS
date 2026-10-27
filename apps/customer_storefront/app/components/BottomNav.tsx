@@ -63,7 +63,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           hideLabel={isSqueezed}
         />
         <ActiveLink
-          href={withLocale('/search', currentLocale)}
+          href="/search"
           icon={<SearchIcon size={20} />}
           label={dict.bottomNav.search}
           hideLabel={isSqueezed}
@@ -76,7 +76,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           hideLabel={isSqueezed}
         />
         <ActiveLink
-          href={withLocale('/profile', currentLocale)}
+          href="/profile"
           icon={<UserIcon size={20} />}
           label={dict.bottomNav.profile}
           hideLabel={isSqueezed}
