@@ -6,6 +6,7 @@ import { getCachedRadhuniPackVariants } from '../../../../lib/products/getCached
 import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
+import { formatBengaliProductMetaDescription } from '../../../../lib/products/productMetadata';
 import { isMissingItemTranslationsTableError } from '../../../../lib/translationErrors';
 import { getEnrichedProductData } from '../../../../lib/products/productEnrichment';
 import { getProductGalleryImages } from '../../../../lib/products/productGalleryRegistry';
@@ -75,10 +76,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : localized.product.image_url || '/lucky-store-social-share-v2.png';
   const imageAlt = metadataImage?.alt || localized.product.name;
   const title = `${localized.product.name} – ${formatBdt(localized.product.price)}`;
+  const description = localized.product.description?.trim()
+    || formatBengaliProductMetaDescription(localized.product.name, localized.product.price);
 
   return {
     title: { absolute: title },
-    description: localized.product.description,
+    description,
     alternates: {
       canonical: canonicalUrl,
       languages: {
@@ -93,7 +96,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       locale: 'bn_BD',
       url: canonicalUrl,
       title,
-      description: localized.product.description,
+      description,
       images: [
         {
           url: imageUrl,
@@ -104,7 +107,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     twitter: {
       card: 'summary_large_image',
       title,
-      description: localized.product.description,
+      description,
       images: [imageUrl],
     },
   };

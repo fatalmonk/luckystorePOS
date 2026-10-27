@@ -70,6 +70,9 @@ vi.mock('../../../hooks/useProductWishlist', () => ({
 }));
 
 import DealOfTheWeekPage, { generateMetadata } from './page';
+import BengaliDealOfTheWeekPage, {
+  generateMetadata as generateBengaliMetadata,
+} from '../../../(bengali)/bn/best/dealoftheweek/page';
 
 describe('Deal of the Week page', () => {
   beforeEach(() => {
@@ -108,7 +111,21 @@ describe('Deal of the Week page', () => {
       : (metadata.title && 'absolute' in metadata.title ? metadata.title.absolute : '');
     expect(title).toContain('Deal of the Week');
     expect(metadata.alternates?.canonical).toBe('https://www.luckystore1947.com/best/dealoftheweek');
+    expect(metadata.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/best/dealoftheweek');
     expect(metadata.openGraph?.siteName).toBe('Lucky Store');
+  });
+
+  it('serves a localized Bengali weekly-deals route with reciprocal canonical alternates', async () => {
+    const metadata = await generateBengaliMetadata();
+    expect(metadata.alternates?.canonical).toBe('https://www.luckystore1947.com/bn/best/dealoftheweek');
+    expect(metadata.alternates?.languages).toEqual({
+      'bn-BD': 'https://www.luckystore1947.com/bn/best/dealoftheweek',
+      'en-BD': 'https://www.luckystore1947.com/best/dealoftheweek',
+      'x-default': 'https://www.luckystore1947.com/best/dealoftheweek',
+    });
+
+    render(await BengaliDealOfTheWeekPage());
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('সপ্তাহের সেরা অফার');
   });
 
   it('renders the fallback deal grid when no campaign is active with direct Add to Cart buttons', async () => {
