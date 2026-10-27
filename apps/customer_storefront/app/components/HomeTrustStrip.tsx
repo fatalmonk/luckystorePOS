@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bicycle, Gift, HandCoins } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, Bicycle, Gift, HandCoins, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
 import { DELIVERY_POLICY } from '../lib/deliveryData';
 import { withLocale, type Locale } from '../lib/i18n/config';
 
@@ -31,11 +31,18 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
       detail: bn ? 'অর্ডার বুঝে নিন, তারপর পেমেন্ট করুন' : 'Check your order, then pay',
       href: '/delivery#payment-heading',
     },
+    {
+      icon: ShieldCheck,
+      iconClassName: 'bg-warm-image-well text-[#245c3d] dark:text-[#a8d6b7]',
+      title: bn ? '১৯৪৭ সাল থেকে আস্থার সঙ্গী' : 'Trusted since 1947',
+      detail: bn ? 'আপনার পাড়ার বাজারের দোকান' : 'Your neighbourhood grocer',
+      href: '/contact#about',
+    },
   ];
 
   return (
     <section
-      aria-label={bn ? 'আপনার পাড়ার বাজারের দোকান' : 'Your neighbourhood grocery service'}
+      aria-label={bn ? 'কেন লাকি স্টোরে কেনাকাটা করবেন' : 'Why shop with Lucky Store'}
       className="rounded-3xl bg-warm-image-well px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9"
     >
       <div className="relative grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
@@ -60,11 +67,11 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
           <ArrowRight size={17} weight="bold" aria-hidden="true" className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
-      <dl className="relative mt-6 grid grid-cols-1 border-t border-warm-border/70 pt-4 sm:grid-cols-3 sm:divide-x sm:divide-warm-border/70 sm:pt-5">
+      <dl className="relative mt-6 grid grid-cols-1 border-t border-warm-border/70 pt-4 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-warm-border/70 sm:pt-5">
         {facts.map(({ icon: Icon, iconClassName, title, detail, href }) => (
           <div
             key={title}
-            className="relative flex min-h-[3.75rem] items-center gap-3 border-b border-warm-border/70 py-3 last:border-0 sm:border-0 sm:px-4 sm:py-1 sm:first:pl-0"
+            className="relative flex min-h-[3.75rem] items-center gap-3 border-b border-warm-border/70 py-3 last:border-0 sm:border-b-0 sm:py-2 lg:px-4 lg:first:pl-0"
           >
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconClassName}`}>
               <Icon size={19} weight="regular" aria-hidden="true" />
