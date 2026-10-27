@@ -71,6 +71,7 @@ interface CatalogLayoutProps {
   searchParams: Record<string, string | string[] | undefined>;
   locale?: Locale;
   headingLevel?: 'h1' | 'h2' | 'h3';
+  hideBreadcrumb?: boolean;
   brandName?: string;
   brandSlug?: string;
 }
@@ -86,6 +87,7 @@ export function CatalogLayout({
   searchParams,
   locale,
   headingLevel,
+  hideBreadcrumb = false,
   brandName,
   brandSlug,
 }: CatalogLayoutProps) {
@@ -314,11 +316,12 @@ export function CatalogLayout({
   }, [isMobileFilterOpen]);
 
   return (
-    <div className="space-y-5 sm:space-y-6 lg:space-y-8">
+    <div className="space-y-3 sm:space-y-6 lg:space-y-8">
       {/* Top Toolbar */}
-      <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-2 sm:p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
+          {!hideBreadcrumb && (
           <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.home}
@@ -351,6 +354,7 @@ export function CatalogLayout({
               </>
             )}
           </div>
+          )}
 
           <div className="flex items-center gap-2">
             {(() => {
@@ -435,7 +439,7 @@ export function CatalogLayout({
         if (subCats.length === 0) return null;
 
         return (
-          <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-4 shadow-warm-panel space-y-3">
+          <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-2 sm:p-4 shadow-warm-panel space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase tracking-wider text-warm-muted">
                 {dict.catalog.subCategories}
@@ -444,7 +448,7 @@ export function CatalogLayout({
                 {dict.catalog.subCategoryCount.replace('{count}', subCats.length.toLocaleString(effectiveLocale === 'bn' ? 'bn-BD' : 'en'))}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            <nav aria-label={dict.catalog.subCategories} className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 md:mx-0 md:grid md:grid-cols-6 md:gap-3 md:overflow-visible md:px-0 md:pb-0">
               {subCats.map((sub) => {
                 const isActive = categorySlug === sub.slug;
                 const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(sub.slug)] || sub.name) : sub.name;
@@ -452,22 +456,22 @@ export function CatalogLayout({
                   <Link
                     key={sub.id}
                     href={withLocale(`/category/${sub.slug}`, effectiveLocale)}
-                    className={`group relative flex flex-col items-center justify-center gap-2 rounded-warm-card border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent min-h-[90px] ${
+                    className={`group relative flex min-h-[44px] min-w-[7.5rem] snap-start flex-row items-center justify-center gap-2 rounded-warm-card border p-2 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:min-h-[90px] md:min-w-0 md:flex-col md:gap-2 md:p-3 ${
                       isActive
                         ? 'border-warm-accent bg-warm-fg text-warm-accent shadow-warm-sm font-black'
                         : 'border-warm-border/70 bg-warm-bg text-warm-fg hover:border-warm-accent hover:bg-warm-surface'
                     }`}
                   >
-                    <span className="transition-transform group-hover:scale-110" aria-hidden="true">
+                    <span className="transition-transform group-hover:scale-110 [&_svg]:h-5 [&_svg]:w-5 md:[&_svg]:h-7 md:[&_svg]:w-7" aria-hidden="true">
                       {getCategoryIcon(sub.slug || sub.name, 28)}
                     </span>
-                    <span className={`text-xs font-extrabold leading-tight truncate max-w-full ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
+                    <span className={`max-w-full text-xs font-extrabold leading-tight md:truncate ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
                       {subDisplayName}
                     </span>
                   </Link>
                 );
               })}
-            </div>
+            </nav>
           </div>
         );
       })()}

@@ -226,23 +226,23 @@ export function CategoryShell({
                 productCount={productCount}
               />
               {showFortuneCookiesIntentLink && (
-                <section className="rounded-warm-card border border-warm-border bg-warm-surface p-4 shadow-warm-sm sm:flex sm:items-center sm:justify-between sm:gap-4">
-                  <div>
-                    <h2 className="text-base font-black text-warm-fg">
+                <section className="rounded-warm-card border border-warm-border bg-warm-surface p-3 shadow-warm-sm sm:p-4">
+                  <div className="flex items-center justify-between gap-2 sm:gap-4">
+                    <h2 className="text-sm font-black text-warm-fg sm:text-base">
                       {isBn ? 'ফরচুন কুকিজ খুঁজছেন?' : 'Looking for Fortune Cookies?'}
                     </h2>
-                    <p className="mt-1 text-sm leading-6 text-warm-muted">
-                      {isBn
-                        ? 'লাইভ বিস্কুট ও কুকিজ দেখুন, অথবা আজকের ফরচুন কুকিজ পাওয়া যাবে কি না জানতে আমাদের মেসেজ করুন।'
-                        : 'We are tracking local demand. Check the live biscuits catalog or ask the store team about today’s availability.'}
-                    </p>
+                    <Link
+                      href="/fortune-cookies-near-me"
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-bg px-3 text-xs font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:px-4 sm:text-sm"
+                    >
+                      {isBn ? 'পেজটি দেখুন' : 'Check Fortune Cookies'}
+                    </Link>
                   </div>
-                  <Link
-                    href="/fortune-cookies-near-me"
-                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-warm-border bg-warm-bg px-4 text-sm font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:mt-0 sm:shrink-0"
-                  >
-                    {isBn ? 'পেজটি দেখুন' : 'Check Fortune Cookies'}
-                  </Link>
+                  <p className="mt-1 text-xs leading-4 text-warm-muted sm:text-sm sm:leading-6">
+                    {isBn
+                      ? 'লাইভ বিস্কুট ও কুকিজ দেখুন, অথবা আজকের ফরচুন কুকিজ পাওয়া যাবে কি না জানতে আমাদের মেসেজ করুন।'
+                      : 'We are tracking local demand. Check the live biscuits catalog or ask the store team about today’s availability.'}
+                  </p>
                 </section>
               )}
             </div>
@@ -257,6 +257,7 @@ export function CategoryShell({
               sort={sort}
               searchParams={searchParams}
               locale={locale}
+              hideBreadcrumb
             />
           </div>
         )}

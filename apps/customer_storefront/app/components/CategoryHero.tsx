@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- Use the CDN's generated responsive srcset and AVIF sources. */
 
-import React, { type ReactNode } from 'react';
+import React, { useId, type ReactNode } from 'react';
 import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
 import { Button } from './ui/Button';
 
@@ -32,9 +32,13 @@ export function CategoryHero({
   locale = 'en',
   onBack,
 }: CategoryHeroProps) {
+  const headingId = `category-hero-title-${useId()}`;
   return (
-    <section className="relative isolate overflow-hidden rounded-b-warm-card bg-warm-bg text-center text-warm-fg sm:rounded-b-warm-panel">
-      <div className="relative h-40 overflow-hidden bg-warm-fg/10 sm:h-48 lg:h-56">
+    <section
+      aria-labelledby={headingId}
+      className="relative isolate overflow-hidden rounded-b-warm-card bg-warm-bg text-center text-warm-fg sm:rounded-b-warm-panel"
+    >
+      <div className="relative h-48 overflow-hidden bg-warm-fg/10 lg:h-56">
         {imageUrl ? (
           <picture>
             {imageSources.map((source) => (
@@ -86,7 +90,7 @@ export function CategoryHero({
             <span className="text-2xl" aria-hidden="true">🛍️</span>
           )}
         </div>
-        <h1 className="mx-auto max-w-3xl text-xl font-black leading-tight tracking-tight text-warm-fg sm:text-2xl lg:text-3xl">
+        <h1 id={headingId} className="mx-auto max-w-3xl text-xl font-black leading-tight tracking-tight text-warm-fg sm:text-2xl lg:text-3xl">
           {name}
         </h1>
         {description && (
