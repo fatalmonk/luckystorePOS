@@ -257,6 +257,7 @@ export function CategoryShell({
               sort={sort}
               searchParams={searchParams}
               locale={locale}
+              hideBreadcrumb
             />
           </div>
         )}
