@@ -3,7 +3,6 @@ import React from 'react';
 import { Header } from '../../components/updated/Header';
 import { Footer } from '../../components/updated/Footer';
 import { BottomNav } from '../../components/BottomNav';
-import { WhatsAppFloat } from '../../components/WhatsAppFloat';
 
 export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
@@ -14,7 +13,6 @@ export default function BlogLayout({ children }: { children: ReactNode }) {
         <Footer />
       </main>
       <BottomNav />
-      <WhatsAppFloat />
     </>
   );
 }

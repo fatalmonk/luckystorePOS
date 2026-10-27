@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkle, Clock, ShieldCheck, Tag, ArrowRight, ShoppingBag } from '@phosphor-icons/react';
+import { Sparkle, ShieldCheck, Tag, ArrowRight, ShoppingBag } from '@phosphor-icons/react';
 import type { WeeklyDealProduct, WeeklyDealsDegradedReason } from '../../../lib/deals';
 import { GridProductCard } from '../../../components/GridProductCard';
 import { DealCountdown } from '../../../components/DealCountdown';
@@ -73,50 +73,44 @@ export function DealOfTheWeekClient({
           className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[#F0C444]/15 blur-3xl sm:h-96 sm:w-96"
         />
 
-        <div className="relative z-10 max-w-3xl">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#F0C444]/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#F0C444]">
-            <Sparkle size={14} weight="fill" />
-            <span>Lucky Store · {activeEdition ? 'Weekly Value Edition' : 'Verified Store Deals'}</span>
-          </div>
-
-          <h1
-            id="deals-hero-title"
-            className="text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl"
-          >
-            Deal of the <span className="text-[#F0C444]">Week</span>
-          </h1>
-
-          <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:text-base">
-            {activeEdition
-              ? 'A curated shortlist of editor-verified weekly promotions. Enjoy an extra 5% discount automatically applied at online checkout on top of our existing low prices.'
-              : 'Discover current unranked store offers across Lucky Store essentials. Every deal is validated against live inventory and real reference prices.'}
-          </p>
-
-          {/* Campaign details & countdown */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {activeEdition && editionPeriod && (
-              <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold backdrop-blur-sm sm:text-sm">
-                <Tag size={16} className="text-[#F0C444]" />
-                <span>{editionPeriod}</span>
-              </div>
-            )}
-
-            <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold backdrop-blur-sm sm:text-sm">
-              <ShieldCheck size={16} className="text-[#27834a]" />
-              <span>{products.length} {products.length === 1 ? 'deal available' : 'deals available'}</span>
+        <div className="relative z-10 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-10">
+          <div className="max-w-3xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#F0C444]/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#F0C444]">
+              <Sparkle size={14} weight="fill" />
+              <span>Lucky Store · {activeEdition ? 'Weekly Value Edition' : 'Verified Store Deals'}</span>
             </div>
 
-            {/* Countdown timer if campaign is live */}
-            {activeEdition && endsAt && (
-              <div className="mt-2 flex w-full flex-col gap-1 sm:mt-0 sm:w-auto">
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <Clock size={14} />
-                  <span>Offer ends in:</span>
+            <h1
+              id="deals-hero-title"
+              className="text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl"
+            >
+              Deal of the <span className="text-[#F0C444]">Week</span>
+            </h1>
+
+            <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:text-base">
+              {activeEdition
+                ? 'A curated shortlist of editor-verified weekly promotions. Enjoy an extra 5% discount automatically applied at online checkout on top of our existing low prices.'
+                : 'Discover current unranked store offers across Lucky Store essentials. Every deal is validated against live inventory and real reference prices.'}
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {activeEdition && editionPeriod && (
+                <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold backdrop-blur-sm sm:text-sm">
+                  <Tag size={16} className="text-[#F0C444]" />
+                  <span>{editionPeriod}</span>
                 </div>
-                <DealCountdown initialEndTime={endsAt} className="text-white" />
+              )}
+
+              <div className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold backdrop-blur-sm sm:text-sm">
+                <ShieldCheck size={16} className="text-[#27834a]" />
+                <span>{products.length} {products.length === 1 ? 'deal available' : 'deals available'}</span>
               </div>
-            )}
+            </div>
           </div>
+
+          {activeEdition && endsAt && (
+            <DealCountdown initialEndTime={endsAt} className="text-white md:justify-self-end" />
+          )}
         </div>
       </section>
 

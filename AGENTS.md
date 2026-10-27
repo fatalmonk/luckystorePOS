@@ -15,6 +15,33 @@
 4. **Validation:** Run project-specific lint/test commands.
 5. **Report:** Summarize work and command status.
 
+## Project Context Maintenance
+- After every task completion, update the root [`context.md`](context.md), including when a decision is made, a blocker is encountered or resolved, or work switches context. Do not skip the update for read-only or documentation tasks.
+- Keep `context.md` under 50 lines; summarize older history as needed. If it grows beyond 100 lines, replace it with a compact summary. On a major project pivot, archive the prior context as `context-[date].md` before resetting it.
+- Use this structure:
+  ```markdown
+  # [Project Name]
+  ## Stack
+  - [tech]: [version/purpose]
+
+  ## Current Task
+  [One-line active goal]
+
+  ## Decisions
+  - [ID]: [what was decided and why]
+
+  ## Blockers
+  - [ID]: [issue + attempted fix + status]
+
+  ## Resolved
+  - [ID]: [resolved issue + solution]
+
+  ## Next
+  [Immediate next step]
+  ```
+- Maintain one active task in `## Current Task`. Append decisions rather than deleting them unless superseded. Move resolved blockers under `## Resolved`.
+- In the completion response, report: `Context updated: [current task brief]` and `File: context.md ([line count] lines)`.
+
 ## Command Preferences
 - Use `rtk` prefixed commands for optimized output (e.g., `rtk grep`, `rtk read`).
 - Avoid raw commands like `grep`, `cat`, `ls -la` when `rtk` alternatives exist.
@@ -41,6 +68,11 @@
 - **AI/OCR Validation:** AI/OCR-generated data must not directly authorize financial or inventory mutations without deterministic application validation.
 - **Destructive Operations:** Before destructive database operations, verify the target environment and distinguish production from test/development. Stop if ambiguous.
 - **Security Verification:** Do not claim a security defect is fixed merely because code changed. Verify with the strongest relevant tests available.
+
+## Flutter SDK & Mobile App Environment
+- Do not clone or vendor a copy of the Flutter SDK into `apps/mobile_app/flutter` or anywhere in the repository.
+- Use the system-wide Flutter SDK installed at `~/development/flutter` (or available on `PATH`).
+- `apps/mobile_app/build.sh` is configured to dynamically resolve `flutter` from `PATH` or fallback to `~/development/flutter/bin/flutter`.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

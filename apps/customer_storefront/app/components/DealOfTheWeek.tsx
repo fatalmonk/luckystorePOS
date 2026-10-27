@@ -18,25 +18,32 @@ import { Badge } from './ui/Badge';
 
 interface DealOfTheWeekProps {
   products: Product[];
+  discountedProductCount?: number;
   weeklyPicks?: Product[];
   weeklyEditionActive?: boolean;
   weeklyEditionUnavailable?: boolean;
   locale?: Locale;
 }
 
-export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive = false, weeklyEditionUnavailable = false, locale = 'en' }: DealOfTheWeekProps) {
+export function DealOfTheWeek({ products, discountedProductCount: totalDiscountedProductCount, weeklyPicks = [], weeklyEditionActive = false, weeklyEditionUnavailable = false, locale = 'en' }: DealOfTheWeekProps) {
   const dict = getDictionary(locale);
   const localizeNumerals = (value: number | string | null) => {
     if (value == null) return '';
     return locale === 'bn' ? toBengaliNumerals(value) : String(value);
   };
 
-  const selection = useMemo(() => getDealOfTheWeekProducts(products, 8), [products]);
+  const selection = useMemo(() => {
+    if (weeklyEditionActive) {
+      const [leadProduct, ...supportingProducts] = weeklyPicks;
+      return leadProduct ? { leadProduct, supportingProducts } : null;
+    }
+
+    return getDealOfTheWeekProducts(products, 8);
+  }, [products, weeklyEditionActive, weeklyPicks]);
   const supportingProducts = useMemo(() => selection?.supportingProducts ?? [], [selection]);
-  const discountedProductCount = useMemo(
-    () => products.filter((product) => getDiscountBadgePercentage(product) !== null).length,
-    [products],
-  );
+  const discountedProductCount = totalDiscountedProductCount ?? products.filter(
+    (product) => getDiscountBadgePercentage(product) !== null,
+  ).length;
   const dealRailRef = useRef<HTMLDivElement>(null);
   const scrollRafId = useRef<number | null>(null);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
@@ -115,9 +122,9 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
     );
   }
 
-  if (weeklyEditionActive) {
+  if (weeklyEditionActive && weeklyPicks.length === 0) {
     return (
-      <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-5 p-4 sm:p-5">
+      <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-4 p-4 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">{dict.deal.title}</h2>
@@ -127,13 +134,7 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
             {locale === 'bn' ? 'সব সাপ্তাহিক বাছাই →' : 'See weekly picks →'}
           </Link>
         </div>
-        {weeklyPicks.length === 0 ? (
-          <p className="deal-panel-copy text-sm">{locale === 'bn' ? 'এই মুহূর্তে কোনো যাচাইকৃত বাছাই কেনার জন্য উপলভ্য নেই।' : 'No verified picks are available to shop right now.'}</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {weeklyPicks.map((product) => <GridProductCard key={product.id} product={product} locale={locale} />)}
-          </div>
-        )}
+        <p className="deal-panel-copy text-sm">{locale === 'bn' ? 'এই মুহূর্তে কোনো যাচাইকৃত বাছাই কেনার জন্য উপলভ্য নেই।' : 'No verified picks are available to shop right now.'}</p>
       </MarketPanel>
     );
   }
@@ -159,7 +160,9 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
         </div>
         <DealCountdown locale={locale} className="justify-self-start sm:justify-self-end" />
         <p className="deal-panel-copy max-w-2xl text-sm">
-          {dict.deal.subtitle}
+          {weeklyEditionActive
+            ? (locale === 'bn' ? 'এই সপ্তাহের যাচাইকৃত বাছাই—র‍্যাঙ্কবিহীন। অনলাইন চেকআউটে আরও ৫% ছাড় প্রযোজ্য।' : 'This week’s verified unranked picks. Get an extra 5% off the current selling price in online checkout.')
+            : dict.deal.subtitle}
         </p>
       </div>
 
@@ -167,20 +170,25 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
         <article className={`deal-lead-card flex flex-col justify-between gap-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
-            aria-label={locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`}
-            className="deal-product-visual relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
+            aria-label={
+              leadDiscount !== null
+                ? (locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`)
+                : (locale === 'bn' ? `${leadProduct.name} দেখুন` : `View ${leadProduct.name}`)
+            }
+            className="deal-product-visual group/deal relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 transition-all duration-200 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
-
-            <Badge variant="sale" className="deal-discount absolute left-3 top-3 z-10 px-3 py-1 text-xs shadow-md">
-              {localizeNumerals(leadDiscount)}% {dict.deal.off}
-            </Badge>
+            {leadDiscount !== null && (
+              <Badge variant="sale" className="deal-discount absolute left-3 top-3 z-10 px-3 py-1 text-xs shadow-md">
+                {localizeNumerals(leadDiscount)}% {dict.deal.off}
+              </Badge>
+            )}
             <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
                 src={getProductGalleryImages(leadProduct.id)?.[0]?.url || leadProduct.image_url}
                 alt={getProductGalleryImages(leadProduct.id)?.[0]?.alt || leadProduct.name}
                 category={leadProduct.category}
                 sizes="(max-width: 640px) calc(100vw - 72px), (max-width: 1024px) calc(100vw - 112px), 500px"
-                imageClassName="object-contain"
+                imageClassName="object-contain transition-transform duration-300 ease-out group-hover/deal:scale-[1.08] motion-reduce:transition-none"
                 priority
                 iconSize={64}
               />
@@ -215,10 +223,12 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
 
           <div className="flex items-center gap-3 pt-2">
             <Link
-              href={withLocale('/category?theme=deals', locale)}
+              href={withLocale(weeklyEditionActive ? '/best/dealoftheweek' : '/category?theme=deals', locale)}
               className="home-primary-action inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-3 text-center text-xs font-black uppercase tracking-wider"
             >
-              {locale === 'bn' ? 'সব অফার দেখুন →' : 'Shop all deals →'}
+              {weeklyEditionActive
+                ? (locale === 'bn' ? 'সব সাপ্তাহিক বাছাই দেখুন →' : 'See all weekly picks →')
+                : (locale === 'bn' ? 'সব অফার দেখুন →' : 'Shop all deals →')}
             </Link>
           </div>
         </article>
@@ -227,14 +237,18 @@ export function DealOfTheWeek({ products, weeklyPicks = [], weeklyEditionActive 
           <div className="min-w-0 space-y-3 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="deal-panel-title text-sm font-extrabold">
-                {locale === 'bn' ? 'আরও অফার' : 'More deals'}
+                {weeklyEditionActive
+                  ? (locale === 'bn' ? 'আরও সাপ্তাহিক বাছাই' : 'More weekly picks')
+                  : (locale === 'bn' ? 'আরও অফার' : 'More deals')}
               </h3>
               <div className="flex items-center gap-3">
                 <Link
-                  href={withLocale('/category?theme=deals', locale)}
+                  href={withLocale(weeklyEditionActive ? '/best/dealoftheweek' : '/category?theme=deals', locale)}
                   className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
                 >
-                  {locale === 'bn' ? `সবগুলো অফার (${discountedProductCount}) →` : `See all ${discountedProductCount} deals →`}
+                  {weeklyEditionActive
+                    ? (locale === 'bn' ? 'সব সাপ্তাহিক বাছাই →' : 'See all weekly picks →')
+                    : (locale === 'bn' ? `সবগুলো অফার (${discountedProductCount}) →` : `See all ${discountedProductCount} deals →`)}
                 </Link>
                 <div className="flex shrink-0 gap-2" role="group" aria-label="Weekly deal carousel controls">
                   <button

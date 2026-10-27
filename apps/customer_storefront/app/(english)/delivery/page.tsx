@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Header } from '../../components/updated/Header';
 import { Footer } from '../../components/updated/Footer';
 import { BottomNav } from '../../components/BottomNav';
-import { WhatsAppFloat } from '../../components/WhatsAppFloat';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../components/seo/JsonLd';
 import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
@@ -375,7 +374,6 @@ export default function DeliveryHubPage() {
 
       <Footer />
       <BottomNav />
-      <WhatsAppFloat />
     </>
   );
 }

@@ -14,14 +14,17 @@
     "verify:skills": "node scripts/verify-agent-skills.mjs"
   },
   "dependencies": {
+    "@animate-ui/react": "^2.3.0",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.20",
+    "cn": "^0.5.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
+    "motion": "^14.6.0",
     "notfair-nextjs-blog": "https://github.com/nowork-studio/notfair-nextjs-blog/releases/download/v0.4.1/notfair-nextjs-blog-0.4.1.tgz",
     "postcss": "^8.5.23",
     "react": "^19.0.0",

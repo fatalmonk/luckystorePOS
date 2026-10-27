@@ -30,7 +30,11 @@ interface RailLink {
   active: boolean;
 }
 
-export function DesktopQuickRail() {
+export interface DesktopQuickRailProps {
+  hidden?: boolean;
+}
+
+export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {}) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -91,7 +95,12 @@ export function DesktopQuickRail() {
   ];
 
   return (
-    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-[72px] border-r border-transparent bg-warm-bg dark:border-transparent md:flex">
+    <aside
+      data-hidden={hidden ? 'true' : 'false'}
+      className={`fixed bottom-0 left-0 top-14 z-50 hidden w-[72px] border-r border-transparent bg-warm-bg transition-[transform,opacity] duration-300 ease-in-out motion-reduce:transition-none motion-reduce:transform-none dark:border-transparent md:flex ${
+        hidden ? '-translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
+      }`}
+    >
       <nav aria-label={dict.quickRail.label} className="flex w-full flex-col items-center px-1 py-0">
         {links.map(({ href, label, icon: IconComponent, active }) => (
           <Link

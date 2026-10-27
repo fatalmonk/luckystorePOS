@@ -9,6 +9,7 @@ import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
 import { useToast } from '../../../components/Toast';
 import { useCartContext } from '../../../components/CartProvider';
+import { LiquidButton } from '../../../components/animate-ui/buttons/liquid';
 import { QtyNumber } from '../../../components/ui/QtyNumber';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { FaqJsonLd } from '../../../components/seo/FaqJsonLd';
@@ -236,12 +237,15 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                     )}
                   </div>
                 ) : (
-                  <button
+                  <LiquidButton
                     onClick={handleAdd}
-                    className="h-12 px-8 rounded-warm-control bg-warm-accent text-warm-accent-text text-sm font-bold hover:bg-warm-accent-hover active:scale-[0.98] transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                    fillHeight="3px"
+                    delay="0.3s"
+                    tapScale={0.97}
+                    className="h-12 px-8 rounded-warm-control border border-warm-border text-sm font-bold text-warm-fg [--liquid-button-background-color:var(--color-surface)] [--liquid-button-color:var(--color-accent)] hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   >
-                  {dict.productPage.addToCart}
-                  </button>
+                    <span className="relative z-10">{dict.productPage.addToCart}</span>
+                  </LiquidButton>
                 )}
               </div>
             </div>

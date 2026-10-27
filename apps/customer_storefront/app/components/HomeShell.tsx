@@ -15,6 +15,7 @@ import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
+import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 
 export interface CategoryItem {
   id: string;
@@ -59,12 +60,19 @@ export function HomeShell({
   locale = 'en',
 }: HomeShellProps) {
   const dict = getDictionary(locale);
+  const dealSelection = getDealOfTheWeekProducts(inStock, 8);
+  const weeklyDealProducts = dealSelection
+    ? [dealSelection.leadProduct, ...dealSelection.supportingProducts]
+    : [];
+  const discountedProductCount = inStock.filter(
+    (product) => getDiscountBadgePercentage(product) !== null,
+  ).length;
 
   if (inStock.length === 0) {
     return (
       <>
         <Header locale={locale} />
-        <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+        <main id="main-content" className="flex-1 overflow-x-clip pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
           <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-20">
             <h1 className="text-balance text-2xl font-black">{dict.emptyState.title}</h1>
             <p className="mt-2 text-sm text-warm-muted">{dict.emptyState.message}</p>
@@ -88,12 +96,11 @@ export function HomeShell({
     <>
       <Header locale={locale} />
       <CartStorageNotice />
-      <main id="main-content" className="flex-1 overflow-x-hidden pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
-        <div className="mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 sm:pb-20 sm:pt-4 lg:pb-24">
+      <main id="main-content" className="flex-1 overflow-x-clip pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="mx-auto max-w-7xl px-4 pb-4 pt-2 sm:px-6 sm:pb-8 sm:pt-4 lg:pb-10">
           <div className="flex flex-col gap-4 sm:gap-5">
             <CampaignGrid products={campaignProducts} locale={locale} />
 
-            <HomeTrustStrip locale={locale} />
             <HomeTeaBanner locale={locale} />
 
             <CategoryQuickGrid categories={categories} locale={locale} />
@@ -155,7 +162,8 @@ export function HomeShell({
 
             <div className="shelf-container-deferred py-2 sm:py-4">
               <DealOfTheWeek
-                products={inStock}
+                products={weeklyDealProducts}
+                discountedProductCount={discountedProductCount}
                 weeklyPicks={weeklyPicks}
                 weeklyEditionActive={weeklyEditionActive}
                 weeklyEditionUnavailable={weeklyEditionUnavailable}
@@ -194,6 +202,10 @@ export function HomeShell({
 
           <div className="shelf-container-deferred">
             <HeritageSection locale={locale} />
+          </div>
+
+          <div className="shelf-container-deferred mt-6 sm:mt-8">
+            <HomeTrustStrip locale={locale} />
           </div>
         </div>
       </main>

@@ -63,7 +63,7 @@ export function PopularBrandsSection({
             <div key={b.slug} className="grid-slide">
               <Link
                 href={brandHref}
-                className="group relative flex h-full flex-col justify-between rounded-warm-card border border-warm-border bg-warm-surface p-3 sm:p-3.5 transition-all hover:border-warm-accent hover:shadow-warm-sm hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="group relative flex h-full flex-col justify-between rounded-warm-card border border-warm-border bg-warm-surface p-3 sm:p-3.5 transition-[border-color,box-shadow,transform] hover:border-warm-accent hover:shadow-warm-sm motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 <div>
                   <div className="relative mb-2.5 flex h-14 w-full items-center justify-center overflow-hidden rounded-warm-control border border-warm-border/60 bg-warm-image-well transition-colors group-hover:border-warm-accent/50">
@@ -73,7 +73,7 @@ export function PopularBrandsSection({
                         alt={`${primaryName} logo`}
                         fill
                         sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 160px"
-                        className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-105"
+                        className="object-contain p-2.5 transition-transform duration-150 motion-safe:group-hover:scale-105"
                       />
                     ) : (
                       <span className="text-xs font-black uppercase tracking-wider text-warm-muted">

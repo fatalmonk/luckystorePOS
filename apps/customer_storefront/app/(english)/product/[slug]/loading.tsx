@@ -14,7 +14,7 @@ export default function ProductDetailLoading() {
 
           <div className="grid gap-6 py-5 md:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] md:items-start md:gap-8 lg:gap-10">
             <div className="mx-auto w-full max-w-[420px] md:sticky md:top-24 md:max-w-none">
-              <div className="aspect-square animate-pulse rounded-warm-sheet border border-warm-image-well-border bg-warm-image-well" />
+              <div className="aspect-square animate-pulse rounded-warm-gallery border border-warm-image-well-border bg-warm-image-well" />
             </div>
 
             <div className="rounded-warm-panel border border-warm-border bg-warm-bg p-4 shadow-warm-panel sm:p-6 lg:p-7">

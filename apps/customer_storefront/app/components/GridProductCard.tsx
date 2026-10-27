@@ -19,6 +19,7 @@ import { CartAnnouncer } from './ui/CartAnnouncer';
 import { MarketCard } from './ui/MarketSurface';
 import { Badge } from './ui/Badge';
 import { trackSelectItem } from '../lib/analytics';
+import { LiquidButton } from './animate-ui/buttons/liquid';
 
 export interface GridProductCardProps {
   product: Product;
@@ -184,19 +185,22 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
               {dict.productCard.outOfStock}
             </button>
           ) : (
-            <button
+            <LiquidButton
               type="button"
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 add(event.currentTarget);
               }}
-              className="h-12 w-full rounded-warm-control border border-warm-muted bg-warm-surface px-2 text-xs font-black text-warm-fg transition-colors hover:bg-warm-image-well motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed disabled:border disabled:border-warm-border disabled:bg-warm-bg disabled:text-warm-muted sm:px-3"
+              fillHeight="3px"
+              delay="0.3s"
+              tapScale={0.97}
+              className="h-12 w-full rounded-warm-control border border-warm-muted px-2 text-xs font-black text-warm-fg [--liquid-button-background-color:var(--color-surface)] [--liquid-button-color:var(--color-accent)] hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:cursor-not-allowed sm:px-3"
               aria-label={`${dict.productCard.addToCart}: ${product.name}`}
             >
-              <span className="market-card-add-label-full">{dict.productCard.addToCart}</span>
-              <span className="market-card-add-label-short">{locale === 'bn' ? 'যোগ' : 'Add'}</span>
-            </button>
+              <span className="market-card-add-label-full relative z-10">{dict.productCard.addToCart}</span>
+              <span className="market-card-add-label-short relative z-10">{locale === 'bn' ? 'যোগ' : 'Add'}</span>
+            </LiquidButton>
           )}
         </div>
 

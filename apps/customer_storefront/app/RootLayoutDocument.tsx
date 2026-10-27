@@ -10,6 +10,7 @@ import { WebMCPInit } from './components/WebMCPInit';
 import { MetaPixel } from './components/MetaPixel';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { getDeliveryShippingServiceSchema } from './lib/deliveryData';
@@ -148,7 +149,7 @@ export default function RootLayoutDocument({
         <script
           data-cfasync="false"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('lucky-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('lucky-theme');if(t==='dark'){document.documentElement.dataset.theme='dark';document.documentElement.classList.add('dark');}}catch(e){}})();`,
           }}
         />
         <script
@@ -455,6 +456,7 @@ export default function RootLayoutDocument({
 
                     {children}
                   </div>
+                  <WhatsAppFloat />
                 </CartSheetProvider>
               </ToastProvider>
             </CartProvider>
