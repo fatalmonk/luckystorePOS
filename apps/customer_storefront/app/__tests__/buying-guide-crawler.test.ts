@@ -22,6 +22,13 @@ describe('buying-guide crawler content negotiation', () => {
     expect(response.headers.get('x-middleware-rewrite')).toBeNull();
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
+  it('serves the Bengali weekly-deals page instead of rewriting it to generic Markdown', async () => {
+    const response = await middleware(new NextRequest('https://www.luckystore1947.com/bn/best/dealoftheweek', {
+      headers: { accept: 'text/markdown' },
+    }));
+    expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
   it('returns an actual noindex 404 for missing, invalid, review and archived guide URLs', async () => {
     guides.splice(0, guides.length, ...REVIEW_GUIDES);
     for (const slug of ['biscuits-bangladesh', 'missing', 'milk-powder-bangladesh', 'ice-cream-bangladesh', 'bad/slug']) {

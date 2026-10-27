@@ -263,10 +263,14 @@ export async function middleware(request: NextRequest) {
     originalPath === '/llms-full.txt' ||
     originalPath.endsWith('.txt');
 
-  // Buying guides already deliver complete server-rendered HTML. The Markdown endpoint
-  // has no guide renderer; rewriting here would replace the article with generic navigation.
-  const isBuyingGuide = originalPath === '/best' || originalPath.startsWith('/best/');
-  if (wantsMarkdown && !isStaticTextDoc && !isBuyingGuide) {
+  // Best routes already deliver complete server-rendered HTML. The Markdown endpoint
+  // has no best-page renderer; rewriting here would replace the content with generic navigation.
+  const isBestContentPage =
+    originalPath === '/best' ||
+    originalPath.startsWith('/best/') ||
+    originalPath === '/bn/best' ||
+    originalPath.startsWith('/bn/best/');
+  if (wantsMarkdown && !isStaticTextDoc && !isBestContentPage) {
     const search = request.nextUrl.search;
 
     // Rewrite to the markdown API route with original path as query param
