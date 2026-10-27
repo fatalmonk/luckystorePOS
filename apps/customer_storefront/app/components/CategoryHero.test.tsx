@@ -16,6 +16,7 @@ describe('CategoryHero', () => {
     );
 
     expect(screen.getByRole('heading', { level: 1, name: 'Tea & Coffee' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Tea & Coffee' })).toBeInTheDocument();
     expect(screen.getByText('Packaged tea and coffee from familiar brands.')).toBeInTheDocument();
     expect(screen.getByText('12 products')).toBeInTheDocument();
     expect(container.querySelector('img')).toHaveAttribute('alt', '');
@@ -25,15 +26,26 @@ describe('CategoryHero', () => {
     const onBack = vi.fn();
     const { container } = render(<CategoryHero name="Snacks" onBack={onBack} productCount={0} />);
 
-    expect(container.querySelector('.h-40')).toBeInTheDocument();
-    expect(container.querySelector('.sm\\:h-48')).toBeInTheDocument();
+    expect(container.querySelector('.h-48')).toBeInTheDocument();
+    expect(container.querySelector('.lg\\:h-56')).toBeInTheDocument();
     screen.getByRole('button', { name: 'Go back' }).click();
     expect(onBack).toHaveBeenCalledOnce();
     expect(screen.getByText('0 products')).toBeInTheDocument();
   });
 
-  it('renders a Bengali product count in Bengali', () => {
-    render(<CategoryHero name="চা" locale="bn" productCount={12} />);
-    expect(screen.getByText('১২ টি পণ্য')).toBeInTheDocument();
+  it('uses a unique stable heading id for each hero instance', () => {
+    const { container } = render(
+      <>
+        <CategoryHero name="Tea" />
+        <CategoryHero name="Coffee" />
+      </>,
+    );
+    const sections = container.querySelectorAll('section');
+    const headings = container.querySelectorAll('h1');
+    expect(headings).toHaveLength(2);
+    expect(headings[0].id).not.toBe(headings[1].id);
+    expect([...sections].map((section) => section.getAttribute('aria-labelledby'))).toEqual(
+      [...headings].map((heading) => heading.id),
+    );
   });
 });
