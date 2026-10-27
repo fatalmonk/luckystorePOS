@@ -216,6 +216,7 @@ export function CategoryShell({
               )}
               <CategoryHero
                 name={prettyName}
+                locale={locale}
                 description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
                 imageUrl={bannerConfig.bgImage.src}
                 imageSrcSet={bannerConfig.bgImage.srcSet}
