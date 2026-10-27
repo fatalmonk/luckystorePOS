@@ -15,6 +15,7 @@ export interface CategoryHeroProps {
   iconUrl?: string;
   icon?: ReactNode;
   productCount?: number;
+  locale?: 'en' | 'bn';
   onBack?: () => void;
 }
 
@@ -28,6 +29,7 @@ export function CategoryHero({
   iconUrl,
   icon,
   productCount,
+  locale = 'en',
   onBack,
 }: CategoryHeroProps) {
   return (
@@ -94,7 +96,7 @@ export function CategoryHero({
         )}
         {typeof productCount === 'number' && (
           <p className="mt-2 text-xs font-bold text-warm-muted sm:text-sm">
-            {productCount.toLocaleString()} {productCount === 1 ? 'product' : 'products'}
+            {productCount.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US')} {locale === 'bn' ? 'টি পণ্য' : productCount === 1 ? 'product' : 'products'}
           </p>
         )}
       </div>
