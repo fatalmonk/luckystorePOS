@@ -6,9 +6,10 @@ import { BottomNav } from '../../components/BottomNav';
 import { CatalogLayout } from '../../components/CatalogLayout';
 import { CategoryGrid } from '../../components/CategoryGrid';
 import { CategoryGridSkeleton } from '../../components/CategoryGridSkeleton';
-import { HeroBanner } from '../../components/updated/HeroBanner';
+import { CategoryHero } from '../../components/CategoryHero';
 import type { Product, Category, CategoryGroup } from '../../lib/types';
-import { img, srcSet, responsiveHeroBanner } from '../../lib/imageUrl';
+import { responsiveHeroBanner } from '../../lib/imageUrl';
+import { getCategoryIcon } from '../../components/icons/CategoryIcons';
 import type { Locale } from '../../lib/i18n/config';
 import { withLocale } from '../../lib/i18n/config';
 import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
@@ -26,6 +27,7 @@ interface CategoryShellProps {
   parentGroup?: CategoryGroup;
   categories: { id: string; slug: Category; name: string; emoji: string }[];
   products: Product[];
+  productCount?: number;
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
@@ -107,6 +109,7 @@ export function CategoryShell({
   parentGroup,
   categories,
   products,
+  productCount,
   theme,
   sort,
   searchParams,
@@ -211,15 +214,16 @@ export function CategoryShell({
                   ]}
                 />
               )}
-              <HeroBanner
-                slides={[
-                  {
-                    image: bannerConfig.bgImage,
-                    title: isBn ? prettyName : bannerConfig.title,
-                    subtitle: isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle,
-                    badge: isBn ? 'বিশেষ অফার' : bannerConfig.badge,
-                  },
-                ]}
+              <CategoryHero
+                name={prettyName}
+                locale={locale}
+                description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
+                imageUrl={bannerConfig.bgImage.src}
+                imageSrcSet={bannerConfig.bgImage.srcSet}
+                imageSizes={bannerConfig.bgImage.sizes}
+                imageSources={bannerConfig.bgImage.sources}
+                icon={getCategoryIcon(group?.slug || categorySlug, 28)}
+                productCount={productCount}
               />
               {showFortuneCookiesIntentLink && (
                 <section className="rounded-warm-card border border-warm-border bg-warm-surface p-4 shadow-warm-sm sm:flex sm:items-center sm:justify-between sm:gap-4">
