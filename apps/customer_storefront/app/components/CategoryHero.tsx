@@ -31,7 +31,7 @@ export function CategoryHero({
   onBack,
 }: CategoryHeroProps) {
   return (
-    <section className="relative isolate overflow-hidden rounded-b-[2rem] bg-warm-bg text-center text-warm-fg sm:rounded-b-[2.5rem]">
+    <section className="relative isolate overflow-hidden rounded-b-warm-card bg-warm-bg text-center text-warm-fg sm:rounded-b-warm-panel">
       <div className="relative h-40 overflow-hidden bg-warm-fg/10 sm:h-48 lg:h-56">
         {imageUrl ? (
           <picture>
@@ -59,9 +59,9 @@ export function CategoryHero({
             size="sm"
             onClick={onBack}
             aria-label="Go back"
-            className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-10 rounded-full border-white/60 bg-warm-bg/90 shadow-warm-sm backdrop-blur-sm"
+            className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-10 rounded-full"
           >
-            <ArrowLeft weight="bold" size={18} aria-hidden="true" />
+            <ArrowLeft data-icon="inline-start" weight="bold" size={18} aria-hidden="true" />
           </Button>
         )}
         <svg
@@ -75,7 +75,7 @@ export function CategoryHero({
       </div>
 
       <div className="relative px-4 pb-4 pt-4 sm:pb-5">
-        <div className="absolute left-1/2 top-[-2.75rem] flex h-14 w-14 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-warm-bg bg-[#F0C444] text-[#0B0B0D] shadow-warm-md sm:top-[-3rem] sm:h-16 sm:w-16">
+        <div className="absolute left-1/2 top-[-2.75rem] flex size-14 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-warm-bg bg-warm-accent text-warm-accent-text shadow-warm-md sm:top-[-3rem] sm:size-16">
           {iconUrl ? (
             <img src={iconUrl} alt="" aria-hidden="true" className="h-full w-full object-cover" />
           ) : icon ? (
