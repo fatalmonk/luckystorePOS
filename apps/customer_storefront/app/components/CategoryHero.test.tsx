@@ -48,4 +48,9 @@ describe('CategoryHero', () => {
       [...headings].map((heading) => heading.id),
     );
   });
+
+  it('renders Bengali product counts with Bengali numerals and copy', () => {
+    render(<CategoryHero name="চা" locale="bn" productCount={12} />);
+    expect(screen.getByText('১২ টি পণ্য')).toBeInTheDocument();
+  });
 });
