@@ -42,4 +42,21 @@ describe('ActiveLink', () => {
     expect(link).not.toHaveClass('text-[#168f49]');
     expect(contrastRatio('#25D366', '#241e1a')).toBeGreaterThanOrEqual(4.5);
   });
+
+  it('renders cart badge when showBadge is enabled', () => {
+    render(
+      <ActiveLink href="/cart" icon={<span>icon</span>} label="Cart" showBadge />
+    );
+    expect(screen.queryByTestId('cart-badge')).not.toBeInTheDocument();
+  });
+
+  it('hides visible label and renders screen reader text when hideLabel is true', () => {
+    render(
+      <ActiveLink href="/search" icon={<span>icon</span>} label="Search" hideLabel />
+    );
+    const link = screen.getByRole('link', { name: 'Search' });
+    expect(link).toHaveAttribute('aria-label', 'Search');
+    const srSpan = link.querySelector('.sr-only');
+    expect(srSpan).toHaveTextContent('Search');
+  });
 });

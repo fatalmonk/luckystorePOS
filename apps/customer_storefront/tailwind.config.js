@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ['selector', '[data-theme="dark"]'],
+  darkMode: ['selector', '[data-theme="dark"], html.dark, .dark'],
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -45,7 +45,7 @@ module.exports = {
         'warm-control': 'var(--radius-control)',
         'warm-card': 'var(--radius-card)',
         'warm-panel': 'var(--radius-panel)',
-        'warm-sheet': 'var(--radius-sheet)',
+        'warm-gallery': 'var(--radius-gallery)',
       },
       boxShadow: {
         'warm-sm': 'var(--shadow-sm)',

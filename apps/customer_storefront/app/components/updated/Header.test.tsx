@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from './Header';
 
@@ -12,11 +12,13 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('../providers/ThemeProvider', () => ({
-  useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
+  useTheme: () => ({ theme: 'light', resolvedTheme: 'light', setTheme: vi.fn(), toggleTheme: vi.fn() }),
 }));
 
 vi.mock('../DesktopQuickRail', () => ({
-  DesktopQuickRail: () => <aside>Quick rail</aside>,
+  DesktopQuickRail: ({ hidden }: { hidden?: boolean }) => (
+    <aside data-hidden={hidden ? 'true' : 'false'}>Quick rail</aside>
+  ),
 }));
 
 vi.mock('../AppDrawer', () => ({
@@ -46,7 +48,7 @@ describe('Header catalog filter strip', () => {
     render(<Header />);
 
     expect(screen.getAllByText('Lucky Store')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: 'Open search' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Switch to Dark mode' })).toHaveLength(2);
     expect(screen.getByLabelText('Search products')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Submit search' })).toBeInTheDocument();
     const cartButtons = screen.getAllByRole('button', { name: 'Cart' });
@@ -60,7 +62,7 @@ describe('Header catalog filter strip', () => {
 
     const categories = screen.getByRole('navigation', { name: 'Product categories' });
     expect(categories).toBeInTheDocument();
-    expect(within(categories).queryByRole('link', { name: 'All' })).not.toBeInTheDocument();
+    expect(within(categories).getByRole('link', { name: 'All' })).toBeInTheDocument();
     const allLinks = screen.getAllByRole('link', { name: 'All' });
     expect(allLinks).toHaveLength(2);
     allLinks.forEach((link) => expect(link).toBeInTheDocument());
@@ -77,5 +79,43 @@ describe('Header catalog filter strip', () => {
     screen.getAllByRole('link', { name: 'All' }).forEach((link) => {
       expect(link).not.toHaveAttribute('aria-current');
     });
+  });
+
+  it('hides header on scroll down and reveals it on scroll up', () => {
+    let rafCallback: FrameRequestCallback = () => {};
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      rafCallback = cb;
+      return 1;
+    });
+
+    Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
+
+    render(<Header />);
+    const header = screen.getByRole('banner');
+    const quickRail = screen.getByText('Quick rail');
+    expect(header).toHaveClass('translate-y-0');
+    expect(header).not.toHaveClass('-translate-y-full');
+    expect(quickRail).toHaveAttribute('data-hidden', 'false');
+
+    // Simulate scrolling down past threshold
+    act(() => {
+      window.scrollY = 150;
+      window.dispatchEvent(new Event('scroll'));
+      rafCallback(0);
+    });
+
+    expect(header).toHaveClass('-translate-y-full');
+    expect(quickRail).toHaveAttribute('data-hidden', 'true');
+
+    // Simulate scrolling up
+    act(() => {
+      window.scrollY = 80;
+      window.dispatchEvent(new Event('scroll'));
+      rafCallback(0);
+    });
+
+    expect(header).toHaveClass('translate-y-0');
+    expect(header).not.toHaveClass('-translate-y-full');
+    expect(quickRail).toHaveAttribute('data-hidden', 'false');
   });
 });

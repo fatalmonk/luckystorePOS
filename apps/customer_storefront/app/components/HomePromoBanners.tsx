@@ -28,37 +28,44 @@ const collections = [
   },
 ] as const;
 
-export function HomeCategoryBanners({ locale = 'en' }: { locale?: Locale }) {
+// 3 home promo banners stashed from homepage rendering; preserved for future use
+const STASH_HOME_PROMO_BANNERS = true;
+
+export function HomeCategoryBanners({ locale = 'en', visible = false }: { locale?: Locale; visible?: boolean }) {
+  if (STASH_HOME_PROMO_BANNERS && !visible) {
+    return null;
+  }
+
   const lang = locale === 'bn' ? 1 : 0;
 
   return (
     <nav
       aria-label={lang ? 'বাজারের বিভাগগুলো দেখুন' : 'Explore grocery collections'}
-      className="grid gap-3 sm:grid-cols-3"
+      className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3"
     >
       {collections.map((collection) => (
         <Link
           key={collection.id}
           href={withLocale(collection.href, locale)}
-          className="group relative isolate flex min-h-44 overflow-hidden rounded-2xl p-5 text-[#0b2517] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:min-h-48 lg:min-h-52"
+          className="group relative isolate flex min-h-[12rem] overflow-hidden rounded-2xl p-3 text-[#0b2517] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:min-h-48 sm:p-5 lg:min-h-52"
           style={{ backgroundColor: collection.surface }}
         >
-          <div className="absolute inset-y-0 right-0 -z-10 w-[55%]">
+            <div className="absolute inset-y-0 right-0 -z-10 w-[58%] sm:w-[55%]">
             <Image
               src={`/images/category-${collection.id}.webp`}
               alt=""
               fill
               sizes="(max-width: 639px) 55vw, 18vw"
-              className="object-cover object-right transition-transform duration-300 motion-safe:group-hover:scale-105"
+              className="object-cover object-right transition-transform duration-150 motion-safe:group-hover:scale-105"
             />
           </div>
           <div className="absolute inset-0 -z-10" style={{ background: `linear-gradient(90deg, ${collection.surface} 0%, ${collection.surface} 42%, transparent 72%)` }} aria-hidden="true" />
-          <div className="relative flex w-[58%] flex-col items-start">
-            <h2 className="text-balance text-xl font-black leading-[1.08] tracking-tight lg:text-2xl">
+          <div className="relative flex w-[68%] flex-col items-start sm:w-[58%]">
+            <h2 className="text-balance text-base font-black leading-[1.08] tracking-tight sm:text-xl lg:text-2xl">
               {collection.title[lang]}
             </h2>
-            <p className="mt-2 text-xs leading-5 lg:text-sm">{collection.subtitle[lang]}</p>
-            <span className="mt-4 inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full bg-[#003d24] px-3 text-sm font-bold text-white lg:px-4">
+            <p className="mt-1 text-[11px] leading-4 sm:mt-2 sm:text-xs sm:leading-5 lg:text-sm">{collection.subtitle[lang]}</p>
+            <span className="mt-2 inline-flex min-h-9 items-center gap-1 whitespace-nowrap rounded-full bg-[#003d24] px-2.5 text-xs font-bold text-white sm:mt-4 sm:min-h-11 sm:gap-2 sm:px-3 sm:text-sm lg:px-4">
               {lang ? 'বাজার করুন' : 'Shop now'}
               <ArrowRight size={16} aria-hidden="true" />
             </span>

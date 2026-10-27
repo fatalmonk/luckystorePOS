@@ -338,3 +338,10 @@ lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.
 
 # Polar catalogue images are served from Cloudflare R2, not the storefront bundle.
 /apps/customer_storefront/public/products/polar/
+
+# Local untracked artifacts & config
+.prettierrc
+assets/screenshots/
+seo/reports/
+system-docs/agents/image-to-code-short.md
+

@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Header } from '../../components/updated/Header';
 import { Footer } from '../../components/updated/Footer';
 import { BottomNav } from '../../components/BottomNav';
-import { WhatsAppFloat } from '../../components/WhatsAppFloat';
 import { ContactForm } from './ContactForm';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 
@@ -37,7 +36,6 @@ export default function ContactPage() {
         <Footer />
       </main>
       <BottomNav />
-      <WhatsAppFloat />
     </>
   );
 }

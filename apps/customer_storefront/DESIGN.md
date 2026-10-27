@@ -9,6 +9,7 @@ colors:
   saffron-muted: "#FFF8E1"
   saffron-dark: "#d4a820"
   paper: "#FDFBF7"
+  dark-page-background: "#0F0F0F"
   surface: "#ffffff"
   surface-dark: "#121212"
   foreground: "#0B0B0D"
@@ -50,6 +51,7 @@ rounded:
   md: "14px"
   lg: "18px"
   xl: "24px"
+  gallery: "24px"
 spacing:
   xs: "4px"
   sm: "8px"
@@ -95,7 +97,7 @@ The experience is built for thumb-first navigation, persistent but unobtrusive c
 - Mobile-web PWA with native-feeling shell (bottom nav, sheets, floating action)
 - Warm neutral ground with rare saffron accent
 - Rounded, tactile surfaces with soft top-left-light shadows
-- Dark mode preserves accent warmth while flipping the ground to deep night
+- Dark mode preserves accent warmth while flipping the page ground to charcoal (`#0F0F0F`)
 - Bangla-aware font stack for localized moments
 - WhatsApp-forward support surfaced as a human safety net
 
@@ -104,7 +106,7 @@ The experience is built for thumb-first navigation, persistent but unobtrusive c
 The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and Saffron (`#f0c444`). Everything else supports legibility, hierarchy, and a warm neighborhood feeling.
 
 ### Primary
-- **Deep Night** (`#0B0B0D`): Primary text, headings, dark surfaces, campaign overlays, and the dark theme ground. It is the visual anchor.
+- **Deep Night** (`#0B0B0D`): Primary text, headings, and brand-locked dark surfaces such as campaign overlays. It is the visual anchor.
 - **Saffron** (`#f0c444`): The brand accent and primary CTA color. Used sparingly so its presence means action. Appears on primary buttons, active nav states, badges, and highlights.
 
 ### Secondary
@@ -114,8 +116,9 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 
 ### Neutral
 - **Warm Paper** (`#FDFBF7`): Default light-mode page background. Warmer than pure white to reduce glare and reinforce the physical-store metaphor.
+- **Dark Page Ground** (`#0F0F0F`): Default dark-mode page background. Keep it distinct from Deep Night brand surfaces (`#0B0B0D`) and raised dark surfaces (`#121212`).
 - **Surface White** (`#ffffff`): Cards, inputs, modals, and raised containers in light mode.
-- **Image Well** (`#F7F1E8` light / `#2F2923` dark): Product and category image backgrounds. It is warmer than pure white in light mode and visibly lifted from deep-night page ground in dark mode.
+- **Image Well** (`#F7F1E8` light / `#2F2923` dark): Product and category image backgrounds. It is warmer than pure white in light mode and visibly lifted from the dark page ground in dark mode.
 - **Foreground** (`#0B0B0D`): Body text and icons in light mode.
 - **Muted** (`#525252`): Secondary text, placeholders, and subdued labels.
 - **Dim** (`#525252` light / `#8f877d` dark): Tertiary text and non-interactive metadata.
@@ -134,7 +137,7 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 ### Named rules
 **The Saffron Rarity Rule.** Saffron occupies ≤10% of any given screen. Its scarcity is the signal.
 
-**The Warm Ground Rule.** Page backgrounds are warm paper in light mode and deep night in dark mode; avoid pure `#FFFFFF` page fills or `#1A1A1A` dark fills.
+**The Warm Ground Rule.** Page backgrounds are warm paper (`#FDFBF7`) in light mode and charcoal (`#0F0F0F`) in dark mode; avoid pure `#FFFFFF` page fills or `#1A1A1A` dark fills. Reserve Deep Night (`#0B0B0D`) for brand-locked surfaces and campaign treatments.
 
 **The Image Well Rule.** Product photography and fallback art sit on `--color-image-well` with `--color-image-well-border`, not on ad hoc white wells. Dark mode image wells stay warm and distinct from the page ground.
 
@@ -207,6 +210,7 @@ The form language is softly rounded and friendly, matching the neighborhood-stor
 - **Medium corners:** 14px (`--radius-md`) for buttons, inputs, standard cards.
 - **Large corners:** 18px (`--radius-lg`) for product cards, larger containers.
 - **Extra large corners:** 24px (`--radius-xl`) for modals, sheets, market panels, and bottom-sheet tops.
+- **Product image galleries:** 24px (`--radius-gallery`), matching the extra large radius scale.
 - **Borders:** 1px subtle borders are preferred over heavy outlines. Inputs and cards use `var(--color-border)`.
 - **Circular elements:** Avatars, icon buttons, and floating action use full radius where appropriate.
 
@@ -265,7 +269,7 @@ The form language is softly rounded and friendly, matching the neighborhood-stor
 ## Do's and Don'ts
 
 ### Do:
-- **Do** anchor every screen to warm paper (light) or deep night (dark).
+- **Do** anchor every screen to warm paper (light) or charcoal (`#0F0F0F`) (dark); reserve Deep Night (`#0B0B0D`) for branded dark surfaces.
 - **Do** use saffron as the single accent for primary actions and active states.
 - **Do** keep mobile touch targets at 44px or larger.
 - **Do** use wide landscape (16:9/21:9) imagery for hero and promo banners.

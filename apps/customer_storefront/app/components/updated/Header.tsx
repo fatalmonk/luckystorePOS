@@ -3,24 +3,29 @@
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { MagnifyingGlass, Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon, ArrowRight } from '@phosphor-icons/react';
+import { Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon, ArrowRight } from '@phosphor-icons/react';
+import { motion } from 'motion/react';
 import { AppDrawer } from '../AppDrawer';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { SearchSuggestions } from './SearchSuggestions';
 import { Logo } from '../ui/Logo';
 import { CATEGORY_RAIL_ITEMS, BENGALI_CATEGORY_NAMES } from '../../lib/types';
-import { useTheme } from '../providers/ThemeProvider';
 import { getCategoryIcon } from '../icons/CategoryIcons';
 import { getLocaleFromPathname, stripLocalePrefix, withLocale, type Locale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { LiquidButton } from '../animate-ui/buttons/liquid';
+import { ThemeToggler } from '../animate-ui/effects/theme-toggler';
+
+const MotionLink = motion.create(Link);
 
 interface CategoryRailItemsProps {
   currentLocale: Locale;
   selectedCategory: string;
   activeCatalogTheme: string | null;
   itemClassName: string;
+  allLabel?: string;
 }
 
 function CategoryRailItems({
@@ -28,25 +33,43 @@ function CategoryRailItems({
   selectedCategory,
   activeCatalogTheme,
   itemClassName,
+  allLabel,
 }: CategoryRailItemsProps) {
+  const isAllActive = selectedCategory === 'all' && !activeCatalogTheme;
   return (
     <>
+      {allLabel && (
+        <LiquidButton asChild fillHeight="3px" delay="0.3s" tapScale={0.97}>
+          <MotionLink
+            href={withLocale('/category', currentLocale)}
+            aria-current={isAllActive ? 'page' : undefined}
+            className={`${itemClassName} ${
+              isAllActive
+                ? 'bg-warm-fg text-warm-bg font-bold shadow-sm'
+                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70 [--liquid-button-background-color:var(--color-surface)] [--liquid-button-color:var(--color-accent)] hover:text-warm-accent-text'
+            }`}
+          >
+            {allLabel}
+          </MotionLink>
+        </LiquidButton>
+      )}
       {CATEGORY_RAIL_ITEMS.map((item) => {
         const isActive = !activeCatalogTheme && selectedCategory === item.slug;
         const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[item.slug] || item.label) : item.label;
         return (
-          <Link
-            key={item.slug}
-            href={withLocale(`/category/${item.slug}`, currentLocale)}
-            aria-current={isActive ? 'page' : undefined}
-            className={`${itemClassName} ${
-              isActive
-                ? 'bg-warm-fg text-warm-bg'
-                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-            }`}
-          >
-            {label}
-          </Link>
+          <LiquidButton key={item.slug} asChild fillHeight="3px" delay="0.3s" tapScale={0.97}>
+            <MotionLink
+              href={withLocale(`/category/${item.slug}`, currentLocale)}
+              aria-current={isActive ? 'page' : undefined}
+              className={`${itemClassName} ${
+                isActive
+                  ? 'bg-warm-fg text-warm-bg'
+                  : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70 [--liquid-button-background-color:var(--color-surface)] [--liquid-button-color:var(--color-accent)] hover:text-warm-accent-text'
+              }`}
+            >
+              {label}
+            </MotionLink>
+          </LiquidButton>
         );
       })}
     </>
@@ -101,15 +124,62 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
   );
   const showDesktopCategories = !isDistractionFreePage;
   const activeCatalogTheme = isFilterPage ? searchParams.get('theme') : null;
-  const { theme, toggleTheme } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState<boolean>(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const popularSearches = dict.header.popularSearches as unknown as string[];
+
+  useEffect(() => {
+    let lastScrollY = typeof window !== 'undefined' ? (window.scrollY ?? window.pageYOffset ?? 0) : 0;
+    let ticking = false;
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY ?? window.pageYOffset ?? 0;
+          if (currentY <= 20) {
+            setIsHeaderHidden(false);
+          } else if (currentY > lastScrollY + 8 && currentY > 60) {
+            setIsHeaderHidden(true);
+          } else if (currentY < lastScrollY - 8) {
+            setIsHeaderHidden(false);
+          }
+          lastScrollY = Math.max(0, currentY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const isHidden = isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen;
+    if (isHidden) {
+      document.body.setAttribute('data-header-hidden', 'true');
+    } else {
+      document.body.removeAttribute('data-header-hidden');
+    }
+    window.dispatchEvent(
+      new CustomEvent('header-visibility-change', { detail: { hidden: isHidden } }),
+    );
+  }, [isHeaderHidden, isDrawerOpen, isMobileSearchOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.removeAttribute('data-header-hidden');
+      }
+    };
+  }, []);
 
 
   const mobileOverlaySearchRef = useRef<HTMLDivElement>(null);
@@ -294,10 +364,12 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
       <header
         data-desktop-shell={isDistractionFreePage ? 'false' : 'true'}
         data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
-        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg dark:border-transparent ${className}`}
+        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg transition-transform duration-300 ease-in-out motion-reduce:transition-none dark:border-transparent ${
+          isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen ? '-translate-y-full' : 'translate-y-0'
+        } ${className}`}
       >
-      {/* Mobile Bar: menu, compact brand, search, cart */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 md:hidden">
+      {/* Mobile and Tablet Bar: menu, compact brand, theme toggle, cart */}
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:px-4 lg:hidden">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
@@ -314,26 +386,26 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={() => {
-              setIsMobileSearchOpen(true);
-              setShowSuggestions(false);
-            }}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-expanded={isMobileSearchOpen}
-            aria-controls="mobile-search-header"
-            aria-label="Open search"
-          >
-            <MagnifyingGlass weight="bold" size={20} aria-hidden="true" />
-          </button>
           <LanguageSwitcher />
+          {/* Theme Toggle */}
+          <ThemeToggler direction="ltr">
+            {({ resolved, toggleTheme: handleToggle }) => (
+              <button
+                type="button"
+                onClick={() => handleToggle()}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                aria-label={resolved === 'dark' ? dict.header.themeLight : dict.header.themeDark}
+              >
+                {resolved === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
+              </button>
+            )}
+          </ThemeToggler>
           <HeaderCartButton compact iconSize={20} />
         </div>
       </div>
 
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:flex md:max-w-none md:px-4">
+      <div className="mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 lg:flex lg:max-w-none lg:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
@@ -408,14 +480,18 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <LanguageSwitcher />
           {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
-            aria-label={theme === 'dark' ? dict.header.themeLight : dict.header.themeDark}
-          >
-            {theme === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
-          </button>
+          <ThemeToggler direction="ltr">
+            {({ resolved, toggleTheme: handleToggle }) => (
+              <button
+                type="button"
+                onClick={() => handleToggle()}
+                className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+                aria-label={resolved === 'dark' ? dict.header.themeLight : dict.header.themeDark}
+              >
+                {resolved === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
+              </button>
+            )}
+          </ThemeToggler>
 
           {/* Wishlist Link */}
           <Link
@@ -432,31 +508,21 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile category/filter strip — replaced by compact category rail */}
+      {/* Mobile category/filter strip — sliding category rail */}
       {!isDistractionFreePage && (
         <nav
           aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}
-          className="mx-auto flex max-w-7xl items-center gap-1.5 px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden"
+          className="mx-auto flex max-w-7xl items-center px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden"
         >
-          <Link
-            href={withLocale('/category', currentLocale)}
-            aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-            className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-              selectedCategory === 'all' && !activeCatalogTheme
-                ? 'bg-warm-fg text-warm-bg'
-                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-            }`}
-          >
-            {dict.header.allCategories}
-          </Link>
           <div
             ref={mobileCategoriesRef}
-            className="flex h-[44px] min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-hide scroll-fade-x"
+            className="flex h-[44px] min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-hide"
           >
             <CategoryRailItems
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
+              allLabel={dict.header.allCategories}
               itemClassName="flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </div>
@@ -465,26 +531,16 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
 
       {showDesktopCategories && !isDistractionFreePage && (
         <div className="relative hidden h-14 items-center gap-2 border-t border-transparent bg-warm-bg px-6 dark:border-transparent md:ml-[72px] lg:flex">
-          <Link
-            href={withLocale('/category', currentLocale)}
-            aria-current={selectedCategory === 'all' && !activeCatalogTheme ? 'page' : undefined}
-            className={`inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
-              selectedCategory === 'all' && !activeCatalogTheme
-                ? 'bg-warm-fg text-warm-bg'
-                : 'bg-warm-surface text-warm-fg hover:bg-warm-border/70'
-            }`}
-          >
-            {dict.header.allCategories}
-          </Link>
           <nav
             ref={desktopCategoriesRef}
             aria-label={currentLocale === 'bn' ? 'পণ্যের ক্যাটাগরি' : 'Product categories'}
-            className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-x-auto pr-16 scrollbar-hide scroll-fade-x"
+            className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-x-auto pr-16 scrollbar-hide"
           >
             <CategoryRailItems
               currentLocale={currentLocale}
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
+              allLabel={dict.header.allCategories}
               itemClassName="inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
@@ -503,12 +559,6 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         </div>
       )}
 
-      {!isDistractionFreePage && (
-        <Suspense fallback={null}>
-          <DesktopQuickRail />
-        </Suspense>
-      )}
-
       <AppDrawer open={isDrawerOpen} onClose={closeDrawer} />
 
       <style>{`
@@ -520,6 +570,12 @@ function HeaderContent({ className = '', locale }: HeaderProps) {
         }
       `}</style>
     </header>
+
+    {!isDistractionFreePage && (
+      <Suspense fallback={null}>
+        <DesktopQuickRail hidden={isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen} />
+      </Suspense>
+    )}
     <div
       className={
         showDesktopCategories

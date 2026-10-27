@@ -33,7 +33,7 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
 
   if (images.length === 0) {
     return (
-      <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-white">
+      <div className="relative aspect-square overflow-hidden rounded-warm-gallery border border-warm-image-well-border bg-white">
         <ProductImage
           alt={productName}
           category={category}
@@ -56,7 +56,7 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
         <CarouselContent>
           {images.map((image, index) => (
             <CarouselItem key={`${image.url}-${index}`}>
-              <div className="relative aspect-square overflow-hidden rounded-warm-sheet border border-warm-image-well-border bg-white">
+              <div className="relative aspect-square overflow-hidden rounded-warm-gallery border border-warm-image-well-border bg-white">
                 <ProductImage
                   src={image.url}
                   alt={image.alt || `${productName}, image ${index + 1}`}

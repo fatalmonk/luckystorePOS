@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X, House, ShoppingCart, Tag, Fire, Storefront, MapPin, Phone, Heart, Question, Sun, Moon } from '@phosphor-icons/react';
@@ -8,7 +9,7 @@ import { CATEGORY_GROUPS } from '../lib/types';
 import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 import { lockBodyScroll } from '../lib/bodyScrollLock';
 import { Logo } from './ui/Logo';
-import { useTheme } from './providers/ThemeProvider';
+import { ThemeToggler } from './animate-ui/effects/theme-toggler';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import { getLocaleFromPathname, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
@@ -23,10 +24,14 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
   const pathname = usePathname() || '/';
   const effectiveLocale = locale ?? getLocaleFromPathname(pathname);
   const dict = getDictionary(effectiveLocale);
-  const { theme, toggleTheme } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const topLinks = [
     { href: withLocale('/', effectiveLocale), label: dict.appDrawer.home, icon: House },
@@ -76,24 +81,33 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
     };
   }, [open, onClose]);
 
-  // Trap scroll when open
+  // Trap scroll and synchronize push-page body state when open
   useEffect(() => {
     if (!open) return;
-    return lockBodyScroll();
+    document.body.classList.add('app-drawer-open');
+    const unlock = lockBodyScroll();
+    return () => {
+      document.body.classList.remove('app-drawer-open');
+      unlock();
+    };
   }, [open]);
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-[400ms] ease-[cubic-bezier(0.215,0.61,0.355,1)] motion-reduce:transition-none ${
           open ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       />
 
-      {/* Drawer */}
+      {/* Drawer - occupies full vertical viewport and slides in, pushing page */}
       <div
         ref={drawerRef}
         role="dialog"
@@ -101,8 +115,10 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
         aria-labelledby="app-drawer-title"
         aria-hidden={!open}
         inert={!open}
-        className={`fixed left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] bg-warm-surface border-r border-warm-border flex flex-col shadow-2xl transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+        className={`fixed inset-y-0 left-0 top-0 bottom-0 z-50 h-screen h-[100dvh] w-[var(--app-drawer-width,min(300px,85vw))] sm:w-[300px] max-w-[85vw] sm:max-w-none bg-warm-surface border-r border-warm-border flex flex-col shadow-2xl transition-transform motion-reduce:transition-none motion-reduce:transform-none ${
+          open
+            ? 'translate-x-0 duration-[400ms] ease-[cubic-bezier(0.34,1.2,0.64,1)]'
+            : '-translate-x-full duration-[160ms] ease-[cubic-bezier(0.4,0,1,1)] pointer-events-none'
         }`}
       >
         <h2 id="app-drawer-title" className="sr-only">
@@ -198,15 +214,19 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
               {dict.appDrawer.helpCenter}
             </Link>
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-warm-border text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            aria-label={theme === 'dark' ? dict.appDrawer.switchToLight : dict.appDrawer.switchToDark}
-          >
-            {theme === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
-            {theme === 'dark' ? dict.appDrawer.lightMode : dict.appDrawer.darkMode}
-          </button>
+          <ThemeToggler direction="ltr">
+            {({ resolved, toggleTheme: handleToggle }) => (
+              <button
+                type="button"
+                onClick={() => handleToggle()}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-warm-border text-xs font-bold text-warm-fg transition-colors hover:bg-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                aria-label={resolved === 'dark' ? dict.appDrawer.switchToLight : dict.appDrawer.switchToDark}
+              >
+                {resolved === 'dark' ? <Sun weight="bold" size={16} aria-hidden="true" /> : <Moon weight="bold" size={16} aria-hidden="true" />}
+                {resolved === 'dark' ? dict.appDrawer.lightMode : dict.appDrawer.darkMode}
+              </button>
+            )}
+          </ThemeToggler>
           <div className="flex items-center gap-2">
             <Link
               href={withLocale('/wishlist', effectiveLocale)}
@@ -228,6 +248,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

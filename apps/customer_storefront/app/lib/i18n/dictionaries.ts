@@ -159,6 +159,8 @@ export const dictionaries = {
     bottomNav: {
       home: 'Home',
       browse: 'Shop',
+      search: 'Search',
+      cart: 'Cart',
       whatsapp: 'WhatsApp',
       profile: 'Profile',
     },
@@ -446,6 +448,8 @@ export const dictionaries = {
     bottomNav: {
       home: 'হোম',
       browse: 'বাজার করুন',
+      search: 'খুঁজুন',
+      cart: 'ব্যাগ',
       whatsapp: 'হোয়াটসঅ্যাপ',
       profile: 'প্রোফাইল',
     },

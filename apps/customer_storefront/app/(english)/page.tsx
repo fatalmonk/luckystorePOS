@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
-/** Loads English homepage data and renders structured data, the hero preload, and the home shell. */
+/** Loads English homepage data and renders structured data and the home shell. */
 export default async function Home() {
   const data = await getHomePageData('en');
 
@@ -51,7 +51,6 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
       />
-      <link rel="preload" as="image" href="/images/hero-reference.webp" fetchPriority="high" />
       <HomeShell
         {...data}
         locale="en"

@@ -109,4 +109,20 @@ describe('DesktopQuickRail', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('slides out with -translate-x-full when hidden is true', () => {
+    const { container } = render(<DesktopQuickRail hidden />);
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveAttribute('data-hidden', 'true');
+    expect(aside).toHaveClass('-translate-x-full');
+    expect(aside).not.toHaveClass('translate-x-0');
+  });
+
+  it('displays with translate-x-0 when hidden is false', () => {
+    const { container } = render(<DesktopQuickRail hidden={false} />);
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveAttribute('data-hidden', 'false');
+    expect(aside).toHaveClass('translate-x-0');
+    expect(aside).not.toHaveClass('-translate-x-full');
+  });
 });

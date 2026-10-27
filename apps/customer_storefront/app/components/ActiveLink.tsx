@@ -3,33 +3,71 @@
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCartContext } from './CartProvider';
 
 interface ActiveLinkProps {
   href: string;
   icon: ReactNode;
   label: string;
+  hideLabel?: boolean;
+  showBadge?: boolean;
   external?: boolean;
   emphasized?: boolean;
 }
 
-export function ActiveLink({ href, icon, label, external = false, emphasized = false }: ActiveLinkProps) {
+function CartBadge() {
+  const { totalItems } = useCartContext();
+  if (totalItems <= 0) return null;
+  return (
+    <span
+      data-testid="cart-badge"
+      className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warm-accent px-1 text-[10px] font-black leading-none text-warm-accent-text shadow-sm ring-2 ring-warm-surface dark:ring-[#121214]"
+    >
+      {totalItems}
+      <span className="sr-only"> items in cart</span>
+    </span>
+  );
+}
+
+export function ActiveLink({
+  href,
+  icon,
+  label,
+  hideLabel = false,
+  showBadge = false,
+  external = false,
+  emphasized = false,
+}: ActiveLinkProps) {
   const pathname = usePathname();
   const hrefPath = href.split('?')[0];
   const isActive = !external && (pathname === hrefPath || (hrefPath !== '/' && pathname?.startsWith(`${hrefPath}/`)));
-  const className = `relative flex min-h-[44px] min-w-16 flex-col items-center justify-center gap-0.5 px-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
+  const className = `relative flex min-h-[44px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-2 py-1 text-center transition-[color,background-color,transform] duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent ${
     isActive
-      ? emphasized ? 'text-warm-accent-text' : 'text-warm-fg'
+      ? emphasized ? 'text-warm-accent-text font-black' : 'text-warm-fg font-extrabold'
       : external
-        ? 'text-[#0d6f37] hover:text-[#07572a] dark:text-[#25D366] dark:hover:text-[#5BE58B]'
-        : emphasized ? 'text-warm-accent-text hover:text-warm-accent-text' : 'text-warm-muted hover:text-warm-fg'
-  } ${emphasized ? 'rounded-warm-control bg-warm-accent px-4 hover:bg-warm-accent-hover' : ''}`;
+        ? 'text-[#0d6f37] hover:text-[#07572a] dark:text-[#25D366] dark:hover:text-[#5BE58B] font-semibold'
+        : emphasized ? 'text-warm-accent-text hover:text-warm-accent-text font-bold' : 'text-warm-muted hover:text-warm-fg font-semibold'
+  } ${emphasized ? 'rounded-full bg-warm-accent px-3 py-1 shadow-sm hover:bg-warm-accent-hover' : ''}`;
   const content = (
     <>
-      {isActive && (
-        <span className={`absolute -top-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full ${emphasized ? 'bg-warm-fg' : 'bg-warm-accent'}`} />
+      {isActive && !emphasized && (
+        <span
+          className={`absolute left-1/2 -translate-x-1/2 rounded-full bg-warm-accent transition-[bottom,width,height] duration-300 ${
+            hideLabel ? 'bottom-1 h-1 w-1' : 'bottom-1 h-1 w-3'
+          }`}
+        />
       )}
-      <span className="inline-flex items-center justify-center" aria-hidden="true">{icon}</span>
-      <span className="text-xs font-bold">{label}</span>
+      <span className="relative inline-flex items-center justify-center" aria-hidden="true">
+        {icon}
+        {showBadge && <CartBadge />}
+      </span>
+      {hideLabel ? (
+        <span className="sr-only">{label}</span>
+      ) : (
+        <span className="text-[11px] leading-tight font-bold tracking-tight transition-[opacity,transform] duration-200 animate-in fade-in motion-reduce:transition-none">
+          {label}
+        </span>
+      )}
     </>
   );
 
@@ -48,6 +86,7 @@ export function ActiveLink({ href, icon, label, external = false, emphasized = f
       href={href}
       className={className}
       aria-current={isActive ? 'page' : undefined}
+      aria-label={hideLabel ? label : undefined}
     >
       {content}
     </Link>

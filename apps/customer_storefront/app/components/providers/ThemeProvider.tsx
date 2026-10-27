@@ -12,8 +12,9 @@ import React, {
 
 export type Theme = 'light' | 'dark';
 
-interface ThemeContextValue {
+export interface ThemeContextValue {
   theme: Theme;
+  resolvedTheme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
@@ -51,8 +52,10 @@ function applyTheme(theme: Theme, withTransition = false) {
 
   if (theme === 'dark') {
     root.setAttribute('data-theme', 'dark');
+    root.classList.add('dark');
   } else {
     root.removeAttribute('data-theme');
+    root.classList.remove('dark');
   }
 
   root.style.colorScheme = theme;
@@ -97,6 +100,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      const isDark = root.classList.contains('dark');
+      const hasDataTheme = root.getAttribute('data-theme') === 'dark';
+      if (isDark && !hasDataTheme) {
+        root.setAttribute('data-theme', 'dark');
+        root.style.colorScheme = 'dark';
+      } else if (!isDark && hasDataTheme) {
+        root.removeAttribute('data-theme');
+        root.style.colorScheme = 'light';
+      }
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   const setTheme = useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme);
     try {
@@ -121,7 +142,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
+    () => ({ theme, resolvedTheme: theme, setTheme, toggleTheme }),
     [theme, setTheme, toggleTheme]
   );
 

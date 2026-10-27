@@ -62,7 +62,16 @@ function renderWithProviders(ui: React.ReactElement) {
 describe('CampaignGrid', () => {
   beforeEach(() => {
     scrollBy.mockReset();
-    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
     if (typeof Element !== 'undefined') {
       Element.prototype.scrollBy = scrollBy;
     }
@@ -96,7 +105,7 @@ describe('CampaignGrid', () => {
       'href',
       '/delivery',
     );
-    expect(within(hero!).getByText(/Within 1 km of Chawkbazar/)).toBeInTheDocument();
+    expect(within(hero!).queryByText(/Within 1 km of Chawkbazar/)).not.toBeInTheDocument();
     expect(within(hero!).getByText('Everyday')).toBeInTheDocument();
   });
 
@@ -119,5 +128,23 @@ describe('CampaignGrid', () => {
 
     expect(hero).toHaveClass('campaign-hero');
     expect(hero.querySelectorAll('.hero-discovery')).toHaveLength(1);
+  });
+
+  it('renders localized delivery link as inline-flex without hidden class in en and bn', () => {
+    const { unmount } = renderWithProviders(<CampaignGrid products={mockProducts} locale="en" />);
+    const enDelivery = screen.getByRole('link', { name: 'Check delivery area' });
+    expect(enDelivery).toHaveAttribute('href', '/delivery');
+    expect(enDelivery).toHaveAttribute('data-cro', 'hero-delivery-eligibility');
+    expect(enDelivery).toHaveClass('inline-flex');
+    expect(enDelivery).not.toHaveClass('hidden');
+
+    unmount();
+
+    renderWithProviders(<CampaignGrid products={mockProducts} locale="bn" />);
+    const bnDelivery = screen.getByRole('link', { name: /ডেলিভারি/i });
+    expect(bnDelivery).toHaveAttribute('href', '/bn/delivery');
+    expect(bnDelivery).toHaveAttribute('data-cro', 'hero-delivery-eligibility');
+    expect(bnDelivery).toHaveClass('inline-flex');
+    expect(bnDelivery).not.toHaveClass('hidden');
   });
 });
