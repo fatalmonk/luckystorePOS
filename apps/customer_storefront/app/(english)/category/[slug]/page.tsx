@@ -201,6 +201,7 @@ export default async function CategorySlugPage({
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
   let products: Product[] = [];
+  let productCount: number | undefined;
   try {
     const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(canonicalSlug);
     if (isGroupRoot) {
@@ -220,6 +221,7 @@ export default async function CategorySlugPage({
         limit: 500,
       });
       products = result.products as any[];
+      if (!result.hasMore) productCount = result.products.length;
     } else if (currentCatObj?.id) {
       // Visiting a specific subcategory with DB ID (e.g. /category/rice-and-grain)
       const result = await repo.search({
@@ -228,6 +230,7 @@ export default async function CategorySlugPage({
         limit: 200,
       });
       products = result.products as any[];
+      if (!result.hasMore) productCount = result.products.length;
 
       // Fallback: if categoryId search yielded 0 products (e.g. legacy products tagged by name), fallback to name
       if (products.length === 0 && !searchTerm) {
@@ -236,6 +239,7 @@ export default async function CategorySlugPage({
           limit: 200,
         });
         products = fallbackResult.products as any[];
+        productCount = fallbackResult.hasMore ? undefined : fallbackResult.products.length;
       }
     } else {
       // Valid leaf category or subcategory without direct DB category row -> search by keyword
@@ -244,6 +248,7 @@ export default async function CategorySlugPage({
         limit: 200,
       });
       products = result.products as any[];
+      if (!result.hasMore) productCount = result.products.length;
     }
   } catch (err) {
     console.error('Failed to fetch category products:', err);
@@ -257,6 +262,7 @@ export default async function CategorySlugPage({
       parentGroup={parentGroup}
       categories={categories}
       products={products}
+      productCount={productCount}
       theme={theme}
       sort={sort}
       searchParams={resolvedSearch}
