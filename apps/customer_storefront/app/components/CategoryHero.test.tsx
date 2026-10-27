@@ -31,4 +31,9 @@ describe('CategoryHero', () => {
     expect(onBack).toHaveBeenCalledOnce();
     expect(screen.getByText('0 products')).toBeInTheDocument();
   });
+
+  it('renders a Bengali product count in Bengali', () => {
+    render(<CategoryHero name="চা" locale="bn" productCount={12} />);
+    expect(screen.getByText('১২ টি পণ্য')).toBeInTheDocument();
+  });
 });
