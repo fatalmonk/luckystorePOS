@@ -28,6 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical: CANONICAL_URL,
+      languages: {
+        'en-BD': CANONICAL_URL,
+        'bn-BD': `${BASE_URL}/bn/best/dealoftheweek`,
+        'x-default': CANONICAL_URL,
+      },
     },
     openGraph: {
       title,

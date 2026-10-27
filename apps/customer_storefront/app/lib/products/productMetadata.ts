@@ -1,4 +1,5 @@
 import { formatBdt } from '../formatPrice';
+import { toBengaliNumerals } from '../i18n/config';
 import type { Metadata } from 'next';
 
 export interface ProductMetadataInput {
@@ -11,6 +12,10 @@ export interface ProductMetadataInput {
   images?: Array<{ url: string; alt: string }>;
   brand?: string;
   category?: string;
+}
+
+export function formatBengaliProductMetaDescription(name: string, price: number): string {
+  return `${name} – ${toBengaliNumerals(formatBdt(price))} | লাকি স্টোর`;
 }
 
 export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {

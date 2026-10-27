@@ -178,7 +178,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           </div>
 
           <div className="relative hidden min-h-64 xl:col-span-4 xl:block" aria-hidden="true">
-            <Image src="/images/footer-grocery-tote.png" alt="" fill sizes="380px" className="object-contain object-bottom" />
+            <Image src="/images/footer-grocery-tote.webp" alt="" fill sizes="380px" className="object-contain object-bottom" />
           </div>
         </div>
 

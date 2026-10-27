@@ -4,7 +4,7 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Keep the category rail hidden on phones and visible at tablet widths; use desktop category navigation at large breakpoints.
+Verified and fixed site-audit findings: Bengali weekly-deals route, Bengali product metadata fallbacks, and oversized footer artwork; not deployed.
 
 ## Decisions
 - 20261027-65: Category routes render the horizontal category rail from `md` to `lg`; it stays hidden below `md`, and the desktop category nav remains at `lg` and above.
@@ -36,6 +36,8 @@ Keep the category rail hidden on phones and visible at tablet widths; use deskto
 - 20261026-21: Local `next dev` preview emitted repeated `EMFILE` watcher errors and only registered `/_not-found`, so `/` returned 404 (also with Turbopack). A standalone production render returned 200; `next start` warned that standalone output should use its generated server. 20261026-37: CUA's raw CDP adapter rejected animation playback-rate control, so 10% speed motion review remains unverified.
 
 ## Resolved
+- 20261027-66–68: Merged #559/#560 into main after checks and review (remote main `c03f1dd3`; no manual deploy). Browser Harness/CUA connection and auth troubleshooting did not enable current-profile debugging.
+- 20261027-69..20261028: Full public crawl covered 1,270 URLs; robots.txt permits major AI crawlers. Category `&amp;` reports were parser false positives. Sol and live checks confirmed `/bn/best/dealoftheweek` returned 404; added a localized page and reciprocal hreflang/sitemap entries. Seven Bengali PDPs lacked both meta and OG descriptions; added a name/price fallback. Replaced the 960KB decorative tote PNG with transparent WebP (155KB). Forty-eight product images remain low-resolution and need verified replacements; remote assets untouched. TypeSafe image scores remain experimental and require human review.
 - 20261027-63: No React Bits Pro license is available; removed the unused private registry config and proceeded with an original local design implementation.
 - 20261027-59: Merged #557 (`c44350f`) then retargeted #558 to `main`; after verifying its four-file intended diff, mergeability, and successful Vercel checks, merged #558 (`5eb372c`). Automatic production deployment `dpl_ExrEhzTWeMjb489jZSeSSeVMnF2E` is READY for that commit. Live five-route English/Bengali checks at 320/390: one labeled H1, no overflow, hero/product images loaded, navigation/filter/sort present; localized counts 134/16/48/65/28 matched remaining counts. No manual deploy.
 - 20261027-58: Fixed Bengali product-count localization in #557; #558 adds React `useId`, Bengali count/unique-ID/omitted-count tests, complete-result count semantics, and mobile discovery refinements. Storefront regression suite: 98 files/666 tests; typecheck, scoped ESLint, and build pass. Final preview for #558 head 9b3e84c is READY and both Vercel checks pass. Five routes verified at 320/390px in light/dark: one H1 each, no page overflow, header/breadcrumb/category and bottom navigation, filters and sort retained. First-product Y: at 320 snacks 794.5, cold beverages 816.5, biscuits 944.5, ice cream 814.5, rice 836.5; at 390 snacks 794, cold beverages 794, biscuits 912, ice cream 794, rice 816. Four Biscuits screenshots captured. Regression suite 98 files/666 tests; typecheck/build pass with restricted-network data-fetch warnings. No merge/deploy.
@@ -45,4 +47,4 @@ Keep the category rail hidden on phones and visible at tablet widths; use deskto
 - 20261027-36: `jev setup-key` saved verified key into OS secret store. Resolved auth_failed by identifying literal unexpanded `TYPESAFE_API_KEY` in environment overriding secret store.
 
 ## Next
-Resume intro 4K work when requested; production category hero release is verified.
+Review and merge the local audit fixes through the normal release process; resume intro 4K work when requested.

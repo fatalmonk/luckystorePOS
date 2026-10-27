@@ -445,8 +445,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  const weeklyDealsEnUrl = `${BASE_URL}/best/dealoftheweek`;
+  const weeklyDealsBnUrl = `${BASE_URL}/bn/best/dealoftheweek`;
+
   return [
-    { url: `${BASE_URL}/best/dealoftheweek`, changeFrequency: 'weekly', priority: 0.8 },
+    {
+      url: weeklyDealsEnUrl,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: { languages: { 'en-BD': weeklyDealsEnUrl, 'bn-BD': weeklyDealsBnUrl, 'x-default': weeklyDealsEnUrl } },
+    },
+    {
+      url: weeklyDealsBnUrl,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: { languages: { 'en-BD': weeklyDealsEnUrl, 'bn-BD': weeklyDealsBnUrl, 'x-default': weeklyDealsEnUrl } },
+    },
     ...getPublishedGuides().map(guide => ({ url: guideUrl(guide.slug), lastModified: guide.updatedAt! })),
     ...dynamicIndexEntries,
     ...staticEntries,

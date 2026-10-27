@@ -2,12 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   buildProductMetaKeywords,
   buildProductMetadata,
+  formatBengaliProductMetaDescription,
   formatProductMetaDescription,
   formatProductMetaTitle,
 } from './productMetadata';
 import { getEnrichedProductData } from './productEnrichment';
 
 describe('Product metadata identity', () => {
+  it('builds a Bengali product-description fallback with the product name and localized price', () => {
+    expect(formatBengaliProductMetaDescription('Nahar Laban', 45)).toBe('Nahar Laban – ৳৪৫ | লাকি স্টোর');
+  });
+
   it.each([
     ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml'],
     ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml'],
