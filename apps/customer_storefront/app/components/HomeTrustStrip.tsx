@@ -40,7 +40,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
     >
       <div className="relative grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
         <div className="max-w-2xl">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#245c3d] dark:text-[#a8d6b7]">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#245c3d] dark:text-[#a8d6b7]">
             {bn ? `আপনার পাড়ার দোকান · ${DELIVERY_POLICY.establishedYear}` : `Your neighbourhood grocer · Est. ${DELIVERY_POLICY.establishedYear}`}
           </p>
           <h2 className="max-w-xl text-2xl font-extrabold leading-tight tracking-tight text-warm-fg sm:text-3xl lg:text-[2.5rem]">

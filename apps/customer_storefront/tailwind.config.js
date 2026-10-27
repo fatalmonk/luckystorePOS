@@ -45,6 +45,7 @@ module.exports = {
         'warm-control': 'var(--radius-control)',
         'warm-card': 'var(--radius-card)',
         'warm-panel': 'var(--radius-panel)',
+        'warm-sheet': 'var(--radius-sheet)',
         'warm-gallery': 'var(--radius-gallery)',
       },
       boxShadow: {

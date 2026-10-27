@@ -10,6 +10,7 @@ import { HomeTrustStrip } from './HomeTrustStrip';
 import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
 import { PopularBrandsSection } from './PopularBrandsSection';
+import { HeritageSection } from './HeritageSection';
 import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
@@ -197,6 +198,10 @@ export function HomeShell({
             <div className="shelf-container-deferred">
               <PopularBrandsSection locale={locale} />
             </div>
+          </div>
+
+          <div className="shelf-container-deferred">
+            <HeritageSection locale={locale} />
           </div>
 
           <div className="shelf-container-deferred mt-6 sm:mt-8">

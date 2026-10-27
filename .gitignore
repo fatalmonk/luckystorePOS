@@ -342,6 +342,7 @@ lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.
 # Local untracked artifacts & config
 .prettierrc
 assets/screenshots/
-seo/reports/
+/seo/reports/technical/
+seo/reports/*.json
 system-docs/agents/image-to-code-short.md
 

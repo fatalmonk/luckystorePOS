@@ -16,5 +16,5 @@
     "lib": "@/app/lib",
     "hooks": "@/app/hooks"
   },
-  "iconLibrary": "lucide"
+  "iconLibrary": "none"
 }

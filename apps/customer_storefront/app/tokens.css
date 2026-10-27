@@ -64,6 +64,7 @@
   --radius-lg: 18px;
   --radius-xl: 24px;
   --radius-gallery: var(--radius-xl);
+  --radius-sheet: var(--radius-xl);
   --radius-control: 9999px;
   --radius-card: 18px;
   --radius-panel: 24px;
@@ -249,7 +250,8 @@ body.app-drawer-open [data-bottom-nav-shell] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-container {
+  .app-container,
+  [data-bottom-nav-shell] {
     transition: none;
   }
 }
