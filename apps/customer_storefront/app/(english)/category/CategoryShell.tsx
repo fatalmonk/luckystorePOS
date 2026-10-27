@@ -181,70 +181,66 @@ export function CategoryShell({
   return (
     <>
       {itemListSchema && <JsonLd data={itemListSchema} />}
-      <Header />
+      <Header hideOnMobile={!isAllProducts} />
       <main className={`flex-1 overflow-x-clip pb-16 ${isAllProducts ? 'pt-2 sm:pt-4' : ''}`}>
-        <div className="mx-auto w-full max-w-7xl px-4 pt-3">
-          <Link
-            href={withLocale('/delivery', locale)}
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-warm-fg underline decoration-warm-accent underline-offset-4 hover:text-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-          >
-            {isBn ? 'চট্টগ্রামে ডেলিভারি এলাকা, সময় ও চার্জ জানুন' : 'See delivery coverage, hours, and fees in Chattogram'}
-          </Link>
-        </div>
         {isAllProducts && !searchParams.q && !searchParams.theme && !searchParams.search ? (
           <Suspense fallback={<CategoryGridSkeleton />}>
             <CategoryGrid searchParams={searchParams} locale={locale} />
           </Suspense>
         ) : (
-          <div className="p-2 sm:p-4 space-y-5 sm:space-y-5 max-w-7xl mx-auto">
-            <div className="space-y-4">
+          <div className={`${isAllProducts ? 'p-2 sm:p-4' : 'p-0 md:p-4'} space-y-5 sm:space-y-5 max-w-7xl mx-auto`}>
+            <div className={isAllProducts ? 'space-y-4' : 'md:space-y-4'}>
               {!isAllProducts && (
-                <Breadcrumbs
-                  homeHref={withLocale('/', locale)}
-                  homeLabel={isBn ? 'হোম' : 'Home'}
-                  items={[
-                    { label: isBn ? 'ক্যাটাগরি' : 'Categories', href: withLocale('/category', locale) },
-                    ...(parentGroup && !group
-                      ? [{
-                          label: isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label,
-                          href: withLocale(`/category/${parentGroup.slug}`, locale),
-                        }]
-                      : []),
-                    { label: prettyName, href: withLocale(`/category/${categorySlug}`, locale) },
-                  ]}
+                <div className="hidden md:block">
+                  <Breadcrumbs
+                    homeHref={withLocale('/', locale)}
+                    homeLabel={isBn ? 'হোম' : 'Home'}
+                    items={[
+                      { label: isBn ? 'ক্যাটাগরি' : 'Categories', href: withLocale('/category', locale) },
+                      ...(parentGroup && !group
+                        ? [{
+                            label: isBn ? (BENGALI_CATEGORY_NAMES[parentGroup.slug] || parentGroup.label) : parentGroup.label,
+                            href: withLocale(`/category/${parentGroup.slug}`, locale),
+                          }]
+                        : []),
+                      { label: prettyName, href: withLocale(`/category/${categorySlug}`, locale) },
+                    ]}
+                  />
+                </div>
+              )}
+              <div className="space-y-4">
+                <CategoryHero
+                  name={prettyName}
+                  locale={locale}
+                  description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
+                  imageUrl={bannerConfig.bgImage.src}
+                  imageSrcSet={bannerConfig.bgImage.srcSet}
+                  imageSizes={bannerConfig.bgImage.sizes}
+                  imageSources={bannerConfig.bgImage.sources}
+                  icon={getCategoryIcon(group?.slug || categorySlug, 28)}
+                  productCount={productCount}
                 />
-              )}
-              <CategoryHero
-                name={prettyName}
-                locale={locale}
-                description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
-                imageUrl={bannerConfig.bgImage.src}
-                imageSrcSet={bannerConfig.bgImage.srcSet}
-                imageSizes={bannerConfig.bgImage.sizes}
-                imageSources={bannerConfig.bgImage.sources}
-                icon={getCategoryIcon(group?.slug || categorySlug, 28)}
-                productCount={productCount}
-              />
-              {showFortuneCookiesIntentLink && (
-                <section className="rounded-warm-card border border-warm-border bg-warm-surface p-3 shadow-warm-sm sm:p-4">
-                  <div className="flex items-center justify-between gap-2 sm:gap-4">
-                    <h2 className="text-sm font-black text-warm-fg sm:text-base">
-                      {isBn ? 'ফরচুন কুকিজ খুঁজছেন?' : 'Looking for Fortune Cookies?'}
-                    </h2>
-                    <Link
-                      href="/fortune-cookies-near-me"
-                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-bg px-3 text-xs font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:px-4 sm:text-sm"
-                    >
-                      {isBn ? 'পেজটি দেখুন' : 'Check Fortune Cookies'}
-                    </Link>
-                  </div>
-                  <p className="mt-1 text-xs leading-4 text-warm-muted sm:text-sm sm:leading-6">
-                    {isBn
-                      ? 'লাইভ বিস্কুট ও কুকিজ দেখুন, অথবা আজকের ফরচুন কুকিজ পাওয়া যাবে কি না জানতে আমাদের মেসেজ করুন।'
-                      : 'We are tracking local demand. Check the live biscuits catalog or ask the store team about today’s availability.'}
-                  </p>
-                </section>
-              )}
+                {showFortuneCookiesIntentLink && (
+                  <section className="rounded-warm-card border border-warm-border bg-warm-surface p-3 shadow-warm-sm sm:p-4">
+                    <div className="flex items-center justify-between gap-2 sm:gap-4">
+                      <h2 className="text-sm font-black text-warm-fg sm:text-base">
+                        {isBn ? 'ফরচুন কুকিজ খুঁজছেন?' : 'Looking for Fortune Cookies?'}
+                      </h2>
+                      <Link
+                        href="/fortune-cookies-near-me"
+                        className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-bg px-3 text-xs font-black text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent sm:px-4 sm:text-sm"
+                      >
+                        {isBn ? 'পেজটি দেখুন' : 'Check Fortune Cookies'}
+                      </Link>
+                    </div>
+                    <p className="mt-1 text-xs leading-4 text-warm-muted sm:text-sm sm:leading-6">
+                      {isBn
+                        ? 'লাইভ বিস্কুট ও কুকিজ দেখুন, অথবা আজকের ফরচুন কুকিজ পাওয়া যাবে কি না জানতে আমাদের মেসেজ করুন।'
+                        : 'We are tracking local demand. Check the live biscuits catalog or ask the store team about today’s availability.'}
+                    </p>
+                  </section>
+                )}
+              </div>
             </div>
 
             <CatalogLayout
@@ -261,6 +257,14 @@ export function CategoryShell({
             />
           </div>
         )}
+        <div className="mx-auto mt-8 w-full max-w-7xl px-4 pb-4">
+          <Link
+            href={withLocale('/delivery', locale)}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-warm-fg underline decoration-warm-accent underline-offset-4 hover:text-warm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+          >
+            {isBn ? 'চট্টগ্রামে ডেলিভারি এলাকা, সময় ও চার্জ জানুন' : 'See delivery coverage, hours, and fees in Chattogram'}
+          </Link>
+        </div>
         <Footer locale={locale} />
       </main>
       <BottomNav locale={locale} />
