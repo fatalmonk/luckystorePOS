@@ -9,10 +9,8 @@ if command -v flutter >/dev/null 2>&1; then
   FLUTTER_BIN="flutter"
 elif [ -x "$HOME/development/flutter/bin/flutter" ]; then
   FLUTTER_BIN="$HOME/development/flutter/bin/flutter"
-elif [ -x "./flutter/bin/flutter" ]; then
-  FLUTTER_BIN="./flutter/bin/flutter"
 else
-  echo "Error: Flutter SDK not found in PATH, ~/development/flutter, or ./flutter" >&2
+  echo "Error: Flutter SDK not found in PATH or ~/development/flutter" >&2
   exit 1
 fi
 

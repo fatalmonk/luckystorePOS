@@ -111,12 +111,16 @@
     background: var(--color-muted);
   }
 
-  .market-product-card[data-interactive]:hover,
-  .market-product-card[data-interactive]:focus-within,
-  .market-product-card:hover {
+  .market-product-card[data-interactive]:focus-within {
     border-color: var(--color-muted);
     box-shadow: var(--shadow-card-hover);
     z-index: 10;
+  }
+
+  .market-product-card[data-interactive]:hover,
+  .market-product-card:hover {
+    border-color: var(--color-muted);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .market-product-card .product-card-image-well img,
@@ -126,15 +130,13 @@
 
   @media (hover: hover) and (pointer: fine) {
     .market-product-card[data-interactive]:hover,
-    .market-product-card[data-interactive]:focus-within,
     .market-product-card:hover {
-      will-change: transform;
+      z-index: 10;
       transform: translateY(-4px) scale(1.03);
     }
 
     .market-product-card:hover .product-card-image-well img,
     .market-product-card:hover .product-image-on-well {
-      will-change: transform;
       transform: scale(1.08);
     }
   }

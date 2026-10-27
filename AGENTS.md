@@ -33,6 +33,9 @@
   ## Blockers
   - [ID]: [issue + attempted fix + status]
 
+  ## Resolved
+  - [ID]: [resolved issue + solution]
+
   ## Next
   [Immediate next step]
   ```

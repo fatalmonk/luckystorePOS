@@ -72,6 +72,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           href={withLocale('/cart', currentLocale)}
           icon={<CartIcon size={20} />}
           label={dict.bottomNav.cart}
+          badgeLabel={dict.bottomNav.cartBadge}
           showBadge
           hideLabel={isSqueezed}
         />

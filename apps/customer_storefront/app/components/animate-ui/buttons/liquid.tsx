@@ -91,7 +91,9 @@ function LiquidButtonContent({
           backgroundSize:
             '200% var(--liquid-button-fill-height, 0.2em)',
           ...(asChild ? {} : { backgroundColor: 'var(--liquid-button-background-color)' }),
-          transition: `background-size ${delay} var(--liquid-button-delay, 0s), color ${delay} ${delay}, background-position ${delay} calc(${delay} - var(--liquid-button-delay, 0s))`,
+          transition: reduce
+            ? 'none'
+            : `background-size ${delay} var(--liquid-button-delay, 0s), color ${delay} ${delay}, background-position ${delay} calc(${delay} - var(--liquid-button-delay, 0s))`,
           ...style,
         } as React.CSSProperties
       }

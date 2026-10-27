@@ -9,13 +9,14 @@ interface ActiveLinkProps {
   href: string;
   icon: ReactNode;
   label: string;
+  badgeLabel?: string;
   hideLabel?: boolean;
   showBadge?: boolean;
   external?: boolean;
   emphasized?: boolean;
 }
 
-function CartBadge() {
+function CartBadge({ label }: { label?: string }) {
   const { totalItems } = useCartContext();
   if (totalItems <= 0) return null;
   return (
@@ -24,7 +25,7 @@ function CartBadge() {
       className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warm-accent px-1 text-[10px] font-black leading-none text-warm-accent-text shadow-sm ring-2 ring-warm-surface dark:ring-[#121214]"
     >
       {totalItems}
-      <span className="sr-only"> items in cart</span>
+      <span className="sr-only"> {label || 'items in cart'}</span>
     </span>
   );
 }
@@ -33,6 +34,7 @@ export function ActiveLink({
   href,
   icon,
   label,
+  badgeLabel,
   hideLabel = false,
   showBadge = false,
   external = false,
@@ -57,9 +59,11 @@ export function ActiveLink({
           }`}
         />
       )}
-      <span className="relative inline-flex items-center justify-center" aria-hidden="true">
-        {icon}
-        {showBadge && <CartBadge />}
+      <span className="relative inline-flex items-center justify-center">
+        <span className="inline-flex items-center justify-center" aria-hidden="true">
+          {icon}
+        </span>
+        {showBadge && <CartBadge label={badgeLabel} />}
       </span>
       {hideLabel ? (
         <span className="sr-only">{label}</span>

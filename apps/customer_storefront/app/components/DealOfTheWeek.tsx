@@ -170,20 +170,25 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
         <article className={`deal-lead-card flex flex-col justify-between gap-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
-            aria-label={locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`}
+            aria-label={
+              leadDiscount !== null
+                ? (locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`)
+                : (locale === 'bn' ? `${leadProduct.name} দেখুন` : `View ${leadProduct.name}`)
+            }
             className="deal-product-visual group/deal relative flex min-h-[210px] items-center justify-center overflow-hidden rounded-warm-card border p-3 transition-all duration-200 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg sm:min-h-[270px]"
           >
-
-            <Badge variant="sale" className="deal-discount absolute left-3 top-3 z-10 px-3 py-1 text-xs shadow-md">
-              {localizeNumerals(leadDiscount)}% {dict.deal.off}
-            </Badge>
+            {leadDiscount !== null && (
+              <Badge variant="sale" className="deal-discount absolute left-3 top-3 z-10 px-3 py-1 text-xs shadow-md">
+                {localizeNumerals(leadDiscount)}% {dict.deal.off}
+              </Badge>
+            )}
             <div className="relative h-[190px] w-full sm:h-[250px]">
               <ProductImage
                 src={getProductGalleryImages(leadProduct.id)?.[0]?.url || leadProduct.image_url}
                 alt={getProductGalleryImages(leadProduct.id)?.[0]?.alt || leadProduct.name}
                 category={leadProduct.category}
                 sizes="(max-width: 640px) calc(100vw - 72px), (max-width: 1024px) calc(100vw - 112px), 500px"
-                imageClassName="object-contain transition-transform duration-300 ease-out group-hover/deal:scale-108 motion-reduce:transition-none"
+                imageClassName="object-contain transition-transform duration-300 ease-out group-hover/deal:scale-[1.08] motion-reduce:transition-none"
                 priority
                 iconSize={64}
               />

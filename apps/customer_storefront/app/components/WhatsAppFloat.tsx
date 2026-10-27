@@ -3,12 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { getLocaleFromPathname } from '../lib/i18n/config';
+import { getLocaleFromPathname, stripLocalePrefix } from '../lib/i18n/config';
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
+  const normalizedPath = pathname ? stripLocalePrefix(pathname) : '';
   const hideOnPaths = ['/checkout', '/order'];
-  const shouldHide = hideOnPaths.some((path) => pathname?.startsWith(path));
+  const shouldHide = hideOnPaths.some((path) => normalizedPath.startsWith(path));
 
   if (shouldHide) return null;
 

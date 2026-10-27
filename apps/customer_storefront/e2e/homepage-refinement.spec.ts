@@ -84,13 +84,15 @@ test.describe('Homepage refinement regressions (Task 1)', () => {
 
       // Check hover state
       await shortcutLink.hover();
-      const hoverColors = await iconWell.evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        return { color: style.color, bg: style.backgroundColor };
-      });
-
-      const hoverContrast = getContrast(parseRgb(hoverColors.color), parseRgb(hoverColors.bg));
-      expect(hoverContrast, `Hover contrast in ${theme} should be >= 3:1`).toBeGreaterThanOrEqual(3.0);
+      await expect.poll(async () => {
+        const hoverColors = await iconWell.evaluate((el) => {
+          const style = window.getComputedStyle(el);
+          return { color: style.color, bg: style.backgroundColor };
+        });
+        return getContrast(parseRgb(hoverColors.color), parseRgb(hoverColors.bg));
+      }, {
+        message: `Hover contrast in ${theme} should be >= 3:1`,
+      }).toBeGreaterThanOrEqual(3.0);
     }
   });
 
