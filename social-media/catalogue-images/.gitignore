@@ -1,0 +1,9 @@
+# Product packshot binaries belong in the local ignored catalog image library and R2, not Git.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.avif
+*.gif
+*.tif
+*.tiff
