@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-26 (source + read-only production audit; live HTML partially accessible)
+last_run:       2026-10-28 (live pages + latest prior-commit monitor; PR #552 localization follow-up)
 last_pr:        #552 (draft; pending review)
 open_prs:       #552 (draft; no other open PRs at preflight)
-next_run:       2026-10-27
+next_run:       2026-10-29
 ```
 
 ---
@@ -43,7 +43,7 @@ next_run:       2026-10-27
 | Signal | Status | Gap |
 |--------|--------|-----|
 | Definition block on homepage | ⚠️ | No explicit 1-2 sentence entity definition in first 200 words |
-| FAQPage schema — `/delivery` + `/bn/delivery` | 🛠️ | Both routes render visible FAQs in source; only English `/delivery` emits matching FAQPage JSON-LD. Current Bengali route has no FAQPage JSON-LD; PR #481's removal was based on the pre-#480 version. Production verification pending. |
+| FAQPage schema — `/delivery` + `/bn/delivery` | 🛠️ | Both routes render visible FAQs and call their respective FAQPage JSON-LD generators in current main source as checked 2026-10-28. Rendered production JSON-LD was not independently inspected. |
 | Homepage buyer FAQ / clarity | ⚠️ | Evaluate whether shoppers need additional visible guidance; schema absence is not a defect |
 | Fortune-cookie page buyer guidance | ❓ | Review live content and demand; FAQ markup is optional |
 | Blog / content hub | ❓ | Route exists; published post count requires live/CMS verification |
@@ -86,7 +86,7 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ### 🔴 HIGH — Verify buyer-facing homepage and delivery clarity
 - **Outcome sought:** Help eligible Chawkbazar shoppers understand what Lucky Store sells, whether delivery reaches them, and how to complete an order.
-- **Status:** Both delivery routes include visible FAQs. English `/delivery` emits matching JSON-LD; Bengali `/bn/delivery` currently has no FAQPage JSON-LD. PR #481's removal is already reflected in current `main` after PR #480 merged. Production verification remains pending deployment. Missing homepage or fortune-cookie FAQ markup alone is **not** an SEO defect.
+- **Status:** Both delivery routes include visible FAQs and call locale-specific FAQPage generators in current main source as of 2026-10-28. Earlier Bengali schema removal was superseded by subsequent code; rendered JSON-LD verification remains pending. Missing homepage or fortune-cookie FAQ markup alone is **not** an SEO defect.
 - **Pages:** Homepage and `/delivery`; assess `/fortune-cookies-near-me` only when its actual content and search demand justify work.
 - **Action:** Audit rendered copy, checkout flow and current delivery policies; add or clarify **visible** buyer-helpful content only when a specific verified gap exists. Do not add FAQ JSON-LD solely for AI citations or unsupported Google rich-result expectations. Any structured data must reflect visible, accurate content.
 - **Evidence gate:** Record the user question, source of truth, expected conversion benefit and validation method before implementation.
@@ -116,13 +116,13 @@ Detailed competitive teardowns → `system-docs/competitive/` (gitignored)
 
 ```yaml
 technical_seo:
-  sitemap_url_count: 915          # 2026-10-25 GitHub monitor log: complete sitemap count; 15 pages sampled, not a full crawl
+  sitemap_url_count: 917          # 2026-10-27 GitHub monitor log: complete sitemap count; 15 pages sampled, not a full crawl
   robots_ai_bots_pass: null       # 2026-10-15 live robots.txt inaccessible; not a confirmed failure
   canonical_errors: null          # no full crawl evidenced; unknown until measured
   broken_links: null              # no full crawl evidenced; unknown until measured
 
 content:
-  faq_schema_pages: null          # source emits on /delivery only; Bengali route has visible FAQs but no FAQPage JSON-LD; verify live after deployment
+  faq_schema_pages: null          # both locale routes call FAQPage JSON-LD generators in source; live rendered JSON-LD not inspected
   blog_posts_published: null      # not verified; count live published posts before setting
   llms_txt_last_updated: "2026-10-14"
 
@@ -185,6 +185,18 @@ competitor_signals:
 - **Search Console / GA4 / AI visibility:** Ryze workspace connector returned HTTP 403; no fresh analytics, indexing, rankings, AI citations or conversion attribution measured. Competitor public scan confirmed existing Chattogram service/fees, not a new launch.
 - **Review:** Existing PR #543 and #549 are merged; no automatic merge or deployment for this review proposal.
 
+## 2026-10-28 evidence and verification status
+
+- **Main:** `3b10ba9669fd9c4b2bc45985d01167fe10ab8914`; the most recent available technical monitor is from 2026-10-27 on older commit `99888b578e89d2ffb074f98abfbceb3b4fae5757`, not a current-main deployment audit.
+- **Measured prior-commit audit:** [run 40463980596](https://github.com/fatalmonk/luckystorePOS/actions/runs/40463980596): 917 complete sitemap URLs, 15/15 sampled pages fetched, 14 sitemap URLs inspected, 903 skipped, 0 sampled issues, 1 warning, 0 limitations. Report artifact upload succeeded. The [dependent Autopilot](https://github.com/fatalmonk/luckystorePOS/actions/runs/40464118406) intentionally skipped coding because draft SEO PR #552 remains open.
+- **Live public checks:** Homepage and both delivery pages expose published 1 km Chawkbazar boundary and free delivery on ৳500+. Apex homepage redirected to `www`. The public fetch could not read robots.txt, sitemap XML, checkout, or rendered FAQ JSON-LD; these remain unverified. Neither a full crawl nor indexing can be inferred.
+- **FAQ source correction:** Both `/delivery` and `/bn/delivery` now call FAQPage generators in current main, with visible FAQ content; the older current-state claim that Bengali markup is absent is superseded. Do not add duplicate FAQ markup.
+- **PR #552 follow-up:** Correct the already-proposed inclusive-threshold checkout notice for Bengali and English locales, preserving central policy constants and adding source regression assertions. This is a **draft PR update only**; no checkout logic, pricing, geofencing, deployment, or merge.
+- **Business P0:** [issue #551](https://github.com/fatalmonk/luckystorePOS/issues/551) still documents unresolved published 1 km versus active 5 km production zone. No new production order reconciliation was available; completed eligible orders remain unverified.
+- **External access:** Ryze connection discovery required interactive authorization in this unattended run. No fresh GSC, GA4, AI citation, or order metrics were retrieved. Competitor search found no verified new Chawkbazar-specific launch.
+
+---
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -198,4 +210,5 @@ competitor_signals:
 | 2026-10-17 | fix | #497 | Kept Bengali delivery Header, Footer, and BottomNav localized (`locale="bn"`); documented verified Oct 17 findings in `seo/reports/2026-10-17.md`. |
 | 2026-10-24 | autopilot | #543 (draft) | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
 | 2026-10-26 | autopilot | #552 (draft) | Correct checkout free-delivery threshold wording to inclusive ৳500+ and explicitly scope 1 km; production delivery-zone mismatch tracked separately as #551. |
+| 2026-10-28 | follow-up | #552 (draft) | Localized the proposed checkout notice for Bengali and English, added bilingual source assertions, and reconciled FAQ source state; no new PR. |
 
