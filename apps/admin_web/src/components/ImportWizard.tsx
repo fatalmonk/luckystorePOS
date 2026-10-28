@@ -410,7 +410,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                               <input type="checkbox" aria-label={`${field.label} for row ${index + 1}`} checked={Boolean(row[field.key])} onChange={(e) => handleCellChange(index, field.key, e.target.checked)} />
                             ) : field.type === 'select' ? (
                               <select
-                                value={row[field.key] || ''}
+                                value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
                                 className={`w-full bg-white dark:bg-zinc-900 border px-2 py-1.5 rounded-lg focus:ring-1 focus:ring-warm-accent transition ${
                                   cellError ? 'border-red-500 focus:ring-red-500' : 'border-warm-border-warm'
@@ -426,7 +426,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                             ) : (
                               <input
                                 type={field.type === 'number' ? 'number' : 'text'}
-                                value={row[field.key] ?? ''}
+                                value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
                                 className={`w-full bg-white dark:bg-zinc-900 border px-2 py-1.5 rounded-lg focus:ring-1 focus:ring-warm-accent transition ${
                                   cellError ? 'border-red-500 focus:ring-red-500' : 'border-warm-border-warm'
