@@ -531,8 +531,10 @@ function CheckoutContent() {
                     <div className="flex justify-between border-t border-warm-border-light pt-3 text-lg font-extrabold text-warm-fg"><span>Total</span><span>{formatBdt(total)}</span></div>
                   </div>
                   <p className="mt-4 text-xs leading-5 text-warm-muted">
-                      Free delivery on orders of ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} or more within {DELIVERY_POLICY.radiusKm} km of our Chawkbazar store.
-                    </p>
+                    {locale === 'bn'
+                      ? `চকবাজারের দোকান থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমির মধ্যে ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')} বা তার বেশি অর্ডারে ফ্রি ডেলিভারি।`
+                      : `Free delivery on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more within ${DELIVERY_POLICY.radiusKm} km of our Chawkbazar store.`}
+                  </p>
                 </div>
               </aside>
               </div>
