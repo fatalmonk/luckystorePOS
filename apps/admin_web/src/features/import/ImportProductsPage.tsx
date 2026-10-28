@@ -24,8 +24,10 @@ const optionalMoney = z.preprocess(
 
 const productSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  brand: z.string().optional(),
   price: optionalMoney,
   cost: optionalMoney,
+  mrp: optionalMoney,
   sku: z.string().min(1, 'SKU is required'),
   barcode: z.string().optional(),
   category_id: z.string().optional(),
@@ -70,8 +72,10 @@ export const ImportProductsPage: React.FC = () => {
 
   const fieldMeta = [
     { key: 'name', label: 'Product Name', type: 'string' as const, required: true },
+    { key: 'brand', label: 'Brand', type: 'string' as const },
     { key: 'price', label: 'Sales Price (৳)', type: 'number' as const },
     { key: 'cost', label: 'Purchase Price (৳)', type: 'number' as const },
+    { key: 'mrp', label: 'MRP (৳)', type: 'number' as const },
     { key: 'sku', label: 'Item Code (SKU)', type: 'string' as const },
     { key: 'barcode', label: 'Barcode', type: 'string' as const },
     { key: 'image_url', label: 'Image URL', type: 'string' as const },
@@ -87,8 +91,10 @@ export const ImportProductsPage: React.FC = () => {
   const sampleData = [
     {
       'Product Name': 'Dano Daily Pusti 1kg',
+      Brand: 'Dano',
       'Sales Price (৳)': 850,
       'Purchase Price (৳)': 780,
+      'MRP (৳)': 900,
       'Item Code (SKU)': 'DDP-001',
       Barcode: '894000123456',
       'Image URL': '',
@@ -97,8 +103,10 @@ export const ImportProductsPage: React.FC = () => {
     },
     {
       'Product Name': 'Rupchanda Soyabean Oil 5L',
+      Brand: 'Rupchanda',
       'Sales Price (৳)': 910,
       'Purchase Price (৳)': 860,
+      'MRP (৳)': 950,
       'Item Code (SKU)': 'RSO-5L',
       Barcode: '894000654321',
       'Image URL': '',
@@ -130,9 +138,11 @@ export const ImportProductsPage: React.FC = () => {
       product: {
         sku: String(row.sku ?? '').trim(),
         name: String(row.name ?? '').trim(),
+        ...(row.brand ? { brand: String(row.brand).trim() } : {}),
         ...(row.barcode ? { barcode: String(row.barcode).trim() } : {}),
         ...(row.cost !== '' && row.cost !== undefined ? { cost: Number(row.cost) } : {}),
         ...(row.price !== '' && row.price !== undefined ? { price: Number(row.price) } : {}),
+        ...(row.mrp !== '' && row.mrp !== undefined ? { mrp: Number(row.mrp) } : {}),
         is_active: row.is_active === undefined ? true : Boolean(row.is_active),
         ...(row.category_id ? { category: String(row.category_id) } : {}),
       },
