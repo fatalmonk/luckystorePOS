@@ -150,7 +150,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                 const numVal = Number(rawVal);
                 newRow[field.key] = isNaN(numVal) || rawVal === '' ? '' : numVal;
               } else if (field.type === 'boolean') {
-                newRow[field.key] = rawVal === '' ? (field.defaultValue ?? false) : rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active';
+                newRow[field.key] = rawVal === '' ? undefined : rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active';
               } else {
                 newRow[field.key] = rawVal;
               }
@@ -184,9 +184,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   });
 
   // Handle cell edit
-  const handleCellChange = (index: number, key: string, value: ImportCell) => {
+  const handleCellChange = (index: number, key: string, value: ImportCell | undefined) => {
     const updated = [...data];
-    let finalVal: ImportCell = value;
+    let finalVal: ImportCell | undefined = value;
     const field = fieldMeta.find((f) => f.key === key);
     if (field?.type === 'number') {
       const num = Number(value);
@@ -407,7 +407,11 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                         return (
                           <td key={field.key} className="py-2 px-3 relative">
                             {field.type === 'boolean' ? (
-                              <input type="checkbox" aria-label={`${field.label} for row ${index + 1}`} checked={Boolean(row[field.key])} onChange={(e) => handleCellChange(index, field.key, e.target.checked)} />
+                              <select aria-label={`${field.label} for row ${index + 1}`} value={row[field.key] === undefined ? '' : String(row[field.key])} onChange={(e) => handleCellChange(index, field.key, e.target.value === '' ? undefined : e.target.value === 'true')}>
+                                <option value="">Keep current</option>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                              </select>
                             ) : field.type === 'select' ? (
                               <select
                                 value={String(row[field.key] ?? '')}

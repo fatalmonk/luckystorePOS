@@ -32,7 +32,7 @@ const productSchema = z.object({
   barcode: z.string().optional(),
   category_id: z.string().optional(),
   image_url: optionalUrl,
-  is_active: z.boolean(),
+  is_active: z.boolean().optional(),
 });
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -143,7 +143,7 @@ export const ImportProductsPage: React.FC = () => {
         ...(row.cost !== '' && row.cost !== undefined ? { cost: Number(row.cost) } : {}),
         ...(row.price !== '' && row.price !== undefined ? { price: Number(row.price) } : {}),
         ...(row.mrp !== '' && row.mrp !== undefined ? { mrp: Number(row.mrp) } : {}),
-        is_active: row.is_active === undefined ? true : Boolean(row.is_active),
+        ...(row.is_active !== undefined ? { is_active: Boolean(row.is_active) } : {}),
         ...(row.category_id ? { category: String(row.category_id) } : {}),
       },
       stock: { mode: 'none' },

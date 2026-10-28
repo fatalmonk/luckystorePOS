@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ fetch: vi.fn(), notify: vi.fn() }));
+const mocks = vi.hoisted(() => ({ fetch: vi.fn(), notify: vi.fn(), omitActive: false }));
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -26,7 +26,7 @@ vi.mock('papaparse', () => ({
         Barcode: '',
         'Image URL': '',
         Category: '',
-        Active: false,
+        ...(!mocks.omitActive ? { Active: false } : {}),
       }],
       errors: [],
     })),
@@ -43,19 +43,36 @@ function response(data: unknown, ok = true) {
   return { ok, status: ok ? 200 : 400, json: async () => data };
 }
 
-async function loadSampleAndContinue() {
+async function loadSampleAndContinue(withImage = false) {
   render(<ImportProductsPage />);
   const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
   fireEvent.change(fileInput, { target: { files: [new File(['csv'], 'products.csv', { type: 'text/csv' })] } });
   await screen.findByText('1 Records');
+  if (withImage) {
+    const image = new File([imageBytes], 'synthetic-test.webp', { type: 'image/webp' });
+    fireEvent.change(screen.getByLabelText('WebP image for row 1'), { target: { files: [image] } });
+  }
   fireEvent.click(screen.getByRole('button', { name: /Verify & Continue/i }));
   await screen.findByText('Ready to Preview');
 }
 
 describe('ImportProductsPage', () => {
+  afterEach(cleanup);
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.omitActive = false;
     vi.stubGlobal('fetch', mocks.fetch);
+    Object.defineProperty(File.prototype, 'arrayBuffer', {
+      configurable: true,
+      value: function () {
+        return new Promise<ArrayBuffer>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as ArrayBuffer);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsArrayBuffer(this);
+        });
+      },
+    });
   });
 
   it('previews a WebP attachment without uploading or applying until the exact preview is approved', async () => {
@@ -73,12 +90,10 @@ describe('ImportProductsPage', () => {
         rows: [{ source_row: 2, outcome: 'create', field_diffs: {}, warnings: [], errors: [] }],
       }));
 
-    await loadSampleAndContinue();
-    const image = new File([imageBytes], 'synthetic-test.webp', { type: 'image/webp' });
-    fireEvent.change(screen.getByLabelText('WebP image for row 1'), { target: { files: [image] } });
+    await loadSampleAndContinue(true);
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
 
-    await screen.findByText('Batch ID: image-pilot-1');
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: image-pilot-1'));
     expect(screen.getByText(/Target: Supabase project/)).toBeInTheDocument();
     expect(mocks.fetch).toHaveBeenCalledTimes(1);
     const previewRequest = mocks.fetch.mock.calls[0][1] as RequestInit;
@@ -120,7 +135,7 @@ describe('ImportProductsPage', () => {
     await loadSampleAndContinue();
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
 
-    await screen.findByText('Batch ID: image-pilot-invalid');
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: image-pilot-invalid'));
     expect(screen.getByRole('button', { name: /Apply Reviewed Batch/i })).toBeDisabled();
     expect(screen.getByText('Duplicate SKU')).toBeInTheDocument();
   });
@@ -134,11 +149,9 @@ describe('ImportProductsPage', () => {
     });
     mocks.fetch.mockResolvedValueOnce(preview('first-preview')).mockResolvedValueOnce(preview('fresh-preview'));
 
-    await loadSampleAndContinue();
-    const image = new File([imageBytes], 'synthetic-test.webp', { type: 'image/webp' });
-    fireEvent.change(screen.getByLabelText('WebP image for row 1'), { target: { files: [image] } });
+    await loadSampleAndContinue(true);
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
-    await screen.findByText('Batch ID: first-preview');
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: first-preview'));
     fireEvent.click(screen.getByRole('checkbox', { name: /I reviewed this exact preview/i }));
 
     fireEvent.click(screen.getByRole('button', { name: /Adjust Data/i }));
@@ -148,7 +161,7 @@ describe('ImportProductsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Verify & Continue/i }));
     await screen.findByRole('button', { name: /Review Batch/i });
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
-    await screen.findByText('Batch ID: fresh-preview');
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: fresh-preview'));
     expect(mocks.fetch).toHaveBeenCalledTimes(2);
     expect(screen.getByRole('button', { name: /Apply Reviewed Batch/i })).toBeDisabled();
   });
@@ -168,16 +181,31 @@ describe('ImportProductsPage', () => {
         rows: [{ source_row: 2, outcome: 'invalid', field_diffs: {}, warnings: [], errors: ['IMAGE_VERSION_CONFLICT'] }],
       }));
 
-    await loadSampleAndContinue();
-    const image = new File([imageBytes], 'synthetic-test.webp', { type: 'image/webp' });
-    fireEvent.change(screen.getByLabelText('WebP image for row 1'), { target: { files: [image] } });
+    await loadSampleAndContinue(true);
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
-    await screen.findByText('Batch ID: image-pilot-error');
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: image-pilot-error'));
     fireEvent.click(screen.getByRole('checkbox', { name: /I reviewed this exact preview/i }));
     fireEvent.click(screen.getByRole('button', { name: /Apply Reviewed Batch/i }));
 
     await screen.findByText(/row 2: IMAGE_VERSION_CONFLICT/);
     fireEvent.click(screen.getByRole('button', { name: /Adjust Data/i }));
     await waitFor(() => expect(screen.queryByText(/row 2: IMAGE_VERSION_CONFLICT/)).not.toBeInTheDocument());
+  });
+
+  it('preserves an omitted Active column in an older CSV', async () => {
+    mocks.omitActive = true;
+    mocks.fetch.mockResolvedValueOnce(response({
+      batch_id: 'legacy-csv-preview',
+      preview_hash: 'legacy-csv-hash',
+      counts: { create: 0, update: 0, unchanged: 1, ambiguous: 0, invalid: 0 },
+      rows: [{ source_row: 2, outcome: 'unchanged', field_diffs: {}, warnings: [], errors: [] }],
+    }));
+
+    await loadSampleAndContinue();
+    fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
+    await waitFor(() => expect(screen.getByTestId('server-preview')).toHaveTextContent('Batch ID: legacy-csv-preview'));
+    const form = mocks.fetch.mock.calls[0][1].body as FormData;
+    const batch = JSON.parse(String(form.get('batch')));
+    expect(batch.rows[0].product).not.toHaveProperty('is_active');
   });
 });
