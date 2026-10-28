@@ -1,0 +1,3 @@
+# Raw imports, staging exports, and local batch files may contain catalog data or secrets.
+/staging/
+/batches/

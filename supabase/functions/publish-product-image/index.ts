@@ -1,7 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.104.1'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { validateImagePublishRequest, verifyUploadedWebp } from './image_publish_contract.ts'
 
 const allowedRoles = new Set(['owner', 'manager', 'admin', 'stock'])
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const allowedOrigins = [
   'https://admin.luckystore1947.com',
   'https://luckystore1947.com',
@@ -59,14 +61,52 @@ serve(async (req) => {
     const sourceImageKey = body.sourceImageKey === null || typeof body.sourceImageKey === 'string' ? body.sourceImageKey : undefined
     const sourceImageVersion = typeof body.sourceImageVersion === 'number' ? body.sourceImageVersion : NaN
     const newImageUrl = body.newImageUrl === null ? null : typeof body.newImageUrl === 'string' ? body.newImageUrl : ''
-    if (!itemId || storeId !== user.store_id || !Number.isSafeInteger(sourceImageVersion) || sourceImageVersion < 0) return json({ error: 'Invalid image publish request' }, 400)
+    const newImageChecksum = typeof body.newImageChecksum === 'string' ? body.newImageChecksum : null
+    const requestError = validateImagePublishRequest({
+      itemId,
+      tenantId: user.tenant_id,
+      actorStoreId: user.store_id,
+      storeId,
+      sourceImageKey: sourceImageKey ?? null,
+      sourceImageVersion,
+      newImageUrl,
+      newImageChecksum,
+      publicBaseUrl: publicImageUrl,
+    });
+    if (sourceImageKey === undefined || requestError) return json({ error: requestError ?? 'Invalid source image key' }, 400)
+    const { data: store, error: storeError } = await admin.from('stores').select('id')
+      .eq('id', storeId).eq('tenant_id', user.tenant_id).maybeSingle()
+    if (storeError) throw storeError
+    if (!store) return json({ error: 'Store is outside the authenticated tenant' }, 403)
 
     let newImageKey: string | null = null
     if (newImageUrl !== null) {
-      const parsed = new URL(newImageUrl)
-      const base = new URL(publicImageUrl)
-      if (parsed.origin !== base.origin || !parsed.pathname.startsWith(`/products/${user.tenant_id}/`)) return json({ error: 'Image URL is outside the tenant image namespace' }, 400)
-      newImageKey = parsed.pathname.slice(1)
+      newImageKey = new URL(newImageUrl).pathname.slice(1)
+      const uploaded = await fetch(newImageUrl, { redirect: 'error' })
+      if (!uploaded.ok) return json({ error: 'Uploaded image is not available from the configured image host' }, 422)
+      const actualUrl = new URL(uploaded.url || newImageUrl)
+      if (actualUrl.origin !== new URL(publicImageUrl).origin) return json({ error: 'Uploaded image resolved outside the configured image host' }, 422)
+      const declaredLength = Number(uploaded.headers.get('content-length'))
+      if (Number.isFinite(declaredLength) && declaredLength > MAX_IMAGE_BYTES) return json({ error: 'Uploaded image exceeds 10 MiB' }, 422)
+      const reader = uploaded.body?.getReader()
+      if (!reader) return json({ error: 'Uploaded image response had no body' }, 422)
+      const chunks: Uint8Array[] = []
+      let totalBytes = 0
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        totalBytes += value.byteLength
+        if (totalBytes > MAX_IMAGE_BYTES) {
+          await reader.cancel()
+          return json({ error: 'Uploaded image exceeds 10 MiB' }, 422)
+        }
+        chunks.push(value)
+      }
+      const bytes = new Uint8Array(totalBytes)
+      let offset = 0
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
+      const uploadError = await verifyUploadedWebp(uploaded.headers.get('content-type'), bytes, newImageChecksum ?? '')
+      if (uploadError) return json({ error: uploadError }, 422)
     }
 
     const { data: published, error: publishError } = await admin.rpc('publish_item_image_if_current', {
@@ -77,10 +117,18 @@ serve(async (req) => {
       p_source_image_version: sourceImageVersion,
       p_new_image_key: newImageKey,
       p_new_image_url: newImageUrl,
-      p_new_image_checksum: newImageUrl !== null && typeof body.newImageChecksum === 'string' ? body.newImageChecksum : null,
+      p_new_image_checksum: newImageChecksum,
     })
     if (publishError) throw publishError
     if (!published) return json({ error: 'Image changed while upload was in progress', code: 'IMAGE_VERSION_CONFLICT' }, 409)
+    if (newImageKey !== null) {
+      const { data: confirmed, error: confirmError } = await admin.from('items')
+        .select('image_key, image_checksum').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
+      if (confirmError) throw confirmError
+      if (confirmed?.image_key !== newImageKey || confirmed?.image_checksum !== body.newImageChecksum) {
+        return json({ error: 'Published image metadata did not match the requested tenant object' }, 409)
+      }
+    }
     return json({ published: true, imageKey: newImageKey })
   } catch (error) {
     console.error('publish-product-image error', error)

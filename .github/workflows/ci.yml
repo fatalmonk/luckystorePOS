@@ -26,6 +26,20 @@ permissions:
   pull-requests: read
 
 jobs:
+  product_image_guard:
+    name: Product image manifest and Git guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test image library metadata rules
+        run: python3 -m unittest scripts.catalog.test_product_image_library
+      - name: Reject tracked product packshots
+        run: python3 scripts/catalog/check_no_tracked_product_images.py
+
   admin_web_check:
     needs: secret_scan
     if: ${{ always() && needs.secret_scan.outputs.admin_changed == 'true' }}

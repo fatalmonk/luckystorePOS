@@ -5,7 +5,8 @@
  * and updates the items.image_url column to point to R2.
  * 
  * Usage:
- *   node scripts/images/migrate-images-to-r2.mjs              # full migration
+ *   node scripts/images/migrate-images-to-r2.mjs              # read-only dry run
+ *   node scripts/images/migrate-images-to-r2.mjs --execute     # explicit legacy migration
  *   node scripts/images/migrate-images-to-r2.mjs --dry-run     # show what would migrate
  *   node scripts/images/migrate-images-to-r2.mjs --limit=50    # only migrate 50 images
  */
@@ -13,6 +14,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { parseLegacyImageReference } from './legacy-image-reference.mjs';
 
 // Load env
 function loadEnv() {
@@ -36,7 +38,7 @@ function loadEnv() {
 
 async function main() {
   const args = process.argv.slice(2);
-  const dryRun = args.includes('--dry-run');
+  const dryRun = !args.includes('--execute') || args.includes('--dry-run');
   const limitArg = args.find(a => a.startsWith('--limit='));
   const limit = limitArg ? parseInt(limitArg.split('=')[1]) : Infinity;
 
@@ -54,7 +56,11 @@ async function main() {
     console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
     process.exit(1);
   }
-  if (!r2AccountId || !r2AccessKey || !r2SecretKey) {
+  if (!r2PublicUrl) {
+    console.error('❌ Missing R2_PUBLIC_URL');
+    process.exit(1);
+  }
+  if (!dryRun && (!r2AccountId || !r2AccessKey || !r2SecretKey)) {
     console.error('❌ Missing R2 credentials (CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY)');
     process.exit(1);
   }
@@ -80,13 +86,18 @@ async function main() {
   }
 
   if (dryRun) {
-    console.log('\n📋 Dry run — showing first 10 images that would migrate:');
+    console.log('\n📋 Read-only dry run — showing first 10 images and matched parser rules:');
     items.slice(0, 10).forEach(item => {
       const oldUrl = item.image_url;
-      const key = oldUrl.split('/product-images/')[1] || oldUrl.split('/').slice(-2).join('/');
+      const { key, rule } = parseLegacyImageReference(oldUrl);
+      if (!key) {
+        console.log(`  ${item.id}: unresolved image reference`);
+        return;
+      }
       const newUrl = `${r2PublicUrl}/${key}`;
-      console.log(`  ${item.id}: ${oldUrl.slice(-50)} → ${newUrl.slice(-50)}`);
+      console.log(`  ${item.id}: ${rule}: ${oldUrl.slice(-50)} → ${newUrl.slice(-50)}`);
     });
+    if (!args.includes('--execute')) console.log('\nNo writes are possible without the explicit --execute flag.');
     return;
   }
 
@@ -99,14 +110,13 @@ async function main() {
     const oldUrl = item.image_url;
     
     // Extract key from Supabase URL
-    const keyMatch = oldUrl.match(/product-images\/(.+)$/);
-    if (!keyMatch) {
+    const { key } = parseLegacyImageReference(oldUrl);
+    if (!key) {
       console.log(`  ⏭️  ${item.id}: couldn't parse key, skipping`);
       skipped++;
       continue;
     }
     
-    const key = keyMatch[1];
     const newUrl = `${r2PublicUrl}/${key}`;
     
     process.stdout.write(`  ${item.id}: ${key}... `);

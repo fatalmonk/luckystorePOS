@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.104.1'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { validateUploadTicketRequest } from './image_upload_ticket.ts'
 
 const allowedRoles = new Set(['owner', 'manager', 'admin', 'stock'])
 const allowedOrigins = [
@@ -72,9 +73,8 @@ serve(async (req) => {
     const contentType = typeof body.contentType === 'string' ? body.contentType : 'image/webp'
     const maxBytes = typeof body.maxBytes === 'number' ? body.maxBytes : 10 * 1024 * 1024
     const operation = body.operation === 'delete' ? 'delete' : 'upload'
-    if (!/^[-\w./]{1,512}$/.test(key) || !/^image\/(jpeg|png|webp|gif)$/.test(contentType) || maxBytes <= 0 || maxBytes > 10 * 1024 * 1024) {
-      return json({ error: 'Invalid upload capability request' }, 400)
-    }
+    const requestError = validateUploadTicketRequest({ key, itemId, contentType, maxBytes, operation }, String(user.tenant_id), user.store_id)
+    if (requestError) return json({ error: requestError }, 400)
 
     if (operation === 'delete') {
       if (!itemId) return json({ error: 'Item is required for image deletion' }, 400)

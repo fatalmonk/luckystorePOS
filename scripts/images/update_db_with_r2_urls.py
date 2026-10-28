@@ -3,6 +3,12 @@
 Update products table with R2 image URLs via Supabase.
 """
 
+if __name__ == "__main__":
+    raise SystemExit(
+        "Disabled: this updater targets retired public.products and bypasses "
+        "tenant-scoped image CAS. Use the authenticated catalog import workflow."
+    )
+
 import os
 from pathlib import Path
 from supabase import create_client
@@ -15,6 +21,13 @@ SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]  # set in env —
 SOURCE_DIR = "catalog-images/sku-named"
 
 def main():
+    print(
+        "This legacy updater is disabled: it targeted retired public.products "
+        "and bypassed tenant-scoped image CAS. Use the authenticated catalog "
+        "import preview/apply workflow instead."
+    )
+    return 2
+
     # Connect to Supabase
     supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     

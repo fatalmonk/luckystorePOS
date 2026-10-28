@@ -8,7 +8,9 @@ reviews are explicitly opt-in and remain suggestions for a human reviewer.
 from __future__ import annotations
 
 import argparse
+import csv
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -19,6 +21,49 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import unquote, urlsplit, urlunsplit
+
+
+SOURCE_SCOPES = (
+    ("data/inventory", "inventory_source", "Supabase public.items and stock_levels are authoritative; local files are staged snapshots", "unresolved", "Local files are candidate inputs, not a live catalog. Row values are not copied into this metadata manifest."),
+    ("data/catalog/images", "central_image_library", "Cloudflare R2 owns runtime image bytes; this is ignored local preservation/staging", "unresolved", "Keep bytes ignored and verify exact item mappings before any publication or deletion."),
+    ("catalog-images", "image_candidate", "Cloudflare R2 owns runtime image bytes; local files are unverified candidates", "unresolved", "Local files are not verified as packshots or mapped to live items."),
+    ("templates", "import_template", "Import format adapter; not a catalog authority", "adapter", "Preserve existing visible headers until callers are migrated."),
+    ("scripts/catalog", "catalog_tooling", "Repository-owned read-only catalog tooling", "canonical", "Offline tooling does not own live product or stock facts."),
+    ("scripts/images", "image_tooling", "Cloudflare R2 and public.items image metadata own published images", "legacy", "Review each script's callers and write behavior before retirement."),
+    ("scripts/ops", "inventory_tooling", "Supabase public.items and stock_levels own live catalog and stock", "legacy", "Operational helpers have independent inputs and write paths; inspect before reuse."),
+    ("apps/admin_web/src/features/import", "admin_importer", "Supabase public.items; stock_levels are store-scoped", "legacy", "Admin import currently has a separate product write path."),
+    ("supabase/functions/import-inventory", "edge_importer", "Supabase public.items and stock_levels", "legacy", "Review preview side effects and attachment storage before using as a dry-run gate."),
+    ("supabase/functions/issue-image-upload-ticket", "image_upload_authorization", "Authenticated session and scoped Cloudflare Worker ticket", "canonical", "Ticket issuance is the authorized entry to new user-facing image uploads."),
+    ("supabase/functions/publish-product-image", "image_publication", "Supabase public.items image metadata via compare-and-swap", "canonical", "Publication must retain the current server-side CAS check."),
+    ("cloudflare/workers/images", "image_bytes_runtime", "Cloudflare R2 bucket binding", "canonical", "Runtime image bytes are served through the image Worker."),
+)
+CALLER_SCAN_ROOTS = (
+    "apps/admin_web/src",
+    "apps/customer_storefront/src",
+    "apps/mobile_app/lib",
+    "apps/scraper",
+    "scripts",
+    "supabase/functions",
+    "cloudflare/workers/images",
+)
+CALLER_SUFFIXES = {".cjs", ".dart", ".js", ".jsx", ".mjs", ".py", ".sql", ".ts", ".tsx"}
+CALLER_SKIP_PARTS = {".git", "node_modules", "__pycache__", ".next", "dist", "build"}
+IMAGE_CONSUMER_PATTERNS = re.compile(
+    r"image_url|image_key|image_checksum|image_version|item-images|product-images|"
+    r"publish-product-image|issue-image-upload-ticket|import-inventory",
+    re.IGNORECASE,
+)
+SOURCE_CALLER_TOKENS = {
+    "data/inventory": ("data/inventory",),
+    "catalog-images": ("catalog-images",),
+    "templates": ("lucky-store-import-template", "templates/"),
+    "apps/admin_web/src/features/import": ("ImportProductsPage", "features/import/"),
+    "supabase/functions/import-inventory": ("import-inventory",),
+    "supabase/functions/issue-image-upload-ticket": ("issue-image-upload-ticket",),
+    "supabase/functions/publish-product-image": ("publish-product-image",),
+    "cloudflare/workers/images": ("R2Bucket", "IMAGE_BUCKET", "image-worker"),
+}
 
 
 FIELD_ALIASES = {
@@ -117,6 +162,403 @@ def _normal(value: Any) -> str:
     if value is None:
         return ""
     return " ".join(str(value).casefold().split())
+
+
+def reconcile_source_reference(reference: dict[str, Any], catalog_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Resolve a source reference by exact item ID, SKU, or barcode only.
+
+    A tenant scope narrows SKU/barcode matches. Names and other descriptive
+    fields are deliberately ignored so this helper cannot create fuzzy joins.
+    """
+    identity_fields = (("item_id", "id"), ("sku", "sku"), ("barcode", "barcode"))
+    result = {"match_status": "unresolved", "match_method": None, "item_id": None}
+    for reference_field, catalog_field in identity_fields:
+        value = reference.get(reference_field)
+        if value is None or value == "":
+            continue
+        matches = [row for row in catalog_rows if row.get(catalog_field) == value]
+        if reference_field != "item_id" and reference.get("tenant_id") is not None:
+            matches = [row for row in matches if row.get("tenant_id") == reference["tenant_id"]]
+        if len(matches) > 1:
+            result.update(match_status="ambiguous", match_method=reference_field)
+            return result
+        if len(matches) == 1:
+            result.update(match_status="matched", match_method=reference_field, item_id=matches[0].get("id"))
+            return result
+    return result
+
+
+def classify_image_reference(
+    reference: Any,
+    root: str | Path | None = None,
+    known_object_keys: set[str] | None = None,
+) -> dict[str, Any]:
+    """Classify a local path or URL without network access or filesystem writes."""
+    result: dict[str, Any] = {
+        "reference": None,
+        "reference_kind": "missing",
+        "object_key": None,
+        "parser_rule": None,
+        "exists": False,
+        "size_bytes": None,
+        "sha256": None,
+        "status": "unresolved",
+    }
+    if not isinstance(reference, str) or not reference.strip():
+        return result
+
+    reference = reference.strip()
+    result["reference"] = reference
+    parsed = urlsplit(reference)
+    if parsed.scheme.lower() in {"http", "https"} and parsed.hostname:
+        safe_netloc = parsed.hostname
+        if parsed.port:
+            safe_netloc = f"{safe_netloc}:{parsed.port}"
+        safe_url = urlunsplit((parsed.scheme.lower(), safe_netloc, parsed.path, "", ""))
+        result["reference"] = safe_url
+        path_parts = [unquote(part) for part in parsed.path.split("/") if part]
+        key_start = next((i for i, part in enumerate(path_parts) if part in {"item-images", "product-images", "products"}), None)
+        brand_start = next((i for i, part in enumerate(path_parts) if part.casefold() in {"brand", "brands"}), None)
+        if brand_start is not None and len(path_parts) > brand_start + 1 and (key_start is None or brand_start < key_start):
+            key_start = brand_start
+        if key_start is not None:
+            key = "/".join(path_parts[key_start:])
+            rule = {
+                "item-images": "item-images-prefix",
+                "product-images": "product-images-prefix",
+                "products": "products-prefix",
+            }.get(path_parts[key_start], "brand-prefix")
+            exists = key in known_object_keys if known_object_keys is not None else None
+            result.update(
+                reference_kind="legacy_remote",
+                object_key=key,
+                parser_rule=rule,
+                exists=exists,
+                status="legacy" if exists is not False else "unresolved",
+            )
+        else:
+            result.update(reference_kind="external_url")
+        return result
+
+    key_parts = [unquote(part) for part in reference.strip("/").split("/") if part]
+    if key_parts and key_parts[0] in {"item-images", "product-images", "products"}:
+        key = "/".join(key_parts)
+        exists = key in known_object_keys if known_object_keys is not None else None
+        result.update(
+            reference_kind="legacy_object_key",
+            object_key=key,
+            parser_rule=f"{key_parts[0]}-prefix",
+            exists=exists,
+            status="legacy" if exists is not False else "unresolved",
+        )
+        return result
+    if len(key_parts) > 1 and key_parts[0].casefold() in {"brand", "brands"}:
+        key = "/".join(key_parts)
+        exists = key in known_object_keys if known_object_keys is not None else None
+        result.update(
+            reference_kind="legacy_object_key",
+            object_key=key,
+            parser_rule="brand-prefix",
+            exists=exists,
+            status="legacy" if exists is not False else "unresolved",
+        )
+        return result
+
+    result["reference_kind"] = "local_file"
+    path = Path(reference)
+    base = Path(root).resolve() if root is not None else Path.cwd().resolve()
+    candidate = path.resolve() if path.is_absolute() else (base / path).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        result["reference"] = path.as_posix()
+        return result
+    result["reference"] = candidate.relative_to(base).as_posix()
+    if not candidate.is_file():
+        return result
+    digest = hashlib.sha256()
+    size = 0
+    with candidate.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+            size += len(chunk)
+    result.update(exists=True, size_bytes=size, sha256=digest.hexdigest())
+    return result
+
+
+def _walk_files(root: Path, relative_root: str) -> list[Path]:
+    directory = root / relative_root
+    if not directory.is_dir():
+        return []
+    files: list[Path] = []
+    for current, directories, filenames in os.walk(directory, followlinks=False):
+        directories[:] = sorted(name for name in directories if name not in CALLER_SKIP_PARTS and not name.startswith("."))
+        for filename in sorted(filenames):
+            path = Path(current) / filename
+            if filename == ".DS_Store" or path.suffix.lower() in {".pyc", ".pyo"} or path.is_symlink():
+                continue
+            if path.is_file():
+                files.append(path)
+    return files
+
+
+def _read_code_callers(root: Path) -> dict[str, str]:
+    callers: dict[str, str] = {}
+    for relative_root in CALLER_SCAN_ROOTS:
+        for path in _walk_files(root, relative_root):
+            if path.suffix.lower() not in CALLER_SUFFIXES:
+                continue
+            relative = path.relative_to(root).as_posix()
+            lowered = relative.lower()
+            if "/test" in lowered or ".test." in lowered or lowered.endswith("_test.py"):
+                continue
+            try:
+                content = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            callers[relative] = content
+    return callers
+
+
+def _source_scope(relative_path: str) -> tuple[str, str, str, str, str] | None:
+    for scope in SOURCE_SCOPES:
+        if relative_path == scope[0] or relative_path.startswith(scope[0] + "/"):
+            return scope
+    if relative_path.startswith("supabase/migrations/"):
+        name = Path(relative_path).name.lower()
+        if re.search(r"item|inventory|stock|image|sku|barcode|tenant_scoped", name):
+            return (
+                "supabase/migrations",
+                "catalog_schema_migration",
+                "Supabase public.items and stock_levels; migration defines the operational schema",
+                "canonical" if "decommission_legacy" not in name else "legacy",
+                "Selected by catalog, stock, identifier, or image migration filename; verify migration semantics before relying on it.",
+            )
+    return None
+
+
+def _inventory_image_references(path: Path, relative_path: str, project_root: Path) -> list[dict[str, Any]]:
+    """Extract identifiers and image references only; never copy row values."""
+    rows: list[dict[str, Any]] = []
+    try:
+        if path.suffix.lower() == ".csv":
+            with path.open("r", encoding="utf-8-sig", errors="replace", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+        elif path.suffix.lower() == ".json":
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(value, dict):
+                value = value.get("rows", value.get("items", value.get("products")))
+            if isinstance(value, list):
+                rows = [row for row in value if isinstance(row, dict)]
+    except (OSError, ValueError, csv.Error):
+        return []
+
+    aliases = {
+        "id": "item_id", "item id": "item_id", "item_id": "item_id",
+        "sku": "sku", "barcode": "barcode", "tenant id": "tenant_id", "tenant_id": "tenant_id",
+        "image url": "image_url", "image_url": "image_url", "image key": "object_key", "image_key": "object_key",
+        "object key": "object_key", "object_key": "object_key", "r2 key": "object_key", "r2_key": "object_key",
+    }
+    normalized: list[dict[str, Any]] = []
+    all_rows: list[dict[str, Any]] = []
+    for source_row, row in enumerate(rows, start=2):
+        current: dict[str, Any] = {}
+        for key, value in row.items():
+            canonical = aliases.get(_key(key).replace("_", " "), aliases.get(str(key).strip().casefold()))
+            if canonical and value is not None:
+                current[canonical] = value
+        reference = current.get("object_key") or current.get("image_url")
+        current["_source_row"] = source_row
+        all_rows.append(current)
+        if isinstance(reference, str) and reference.strip():
+            normalized.append({**current, "_reference": reference.strip()})
+
+    duplicates: Counter[tuple[str, str, str]] = Counter()
+    for row in all_rows:
+        tenant = row.get("tenant_id")
+        for key in ("sku", "barcode"):
+            value = row.get(key)
+            if isinstance(value, str) and value:
+                duplicates[(str(tenant or ""), key, value)] += 1
+
+    result = []
+    file_size = path.stat().st_size
+    file_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+    for row in normalized:
+        reference_info = classify_image_reference(row["_reference"], root=project_root)
+        item_key_kind = next((key for key in ("item_id", "sku", "barcode") if row.get(key) not in (None, "")), None)
+        item_key = row.get(item_key_kind) if item_key_kind else None
+        tenant = row.get("tenant_id")
+        is_duplicate = any(
+            duplicates[(str(tenant or ""), key, str(row.get(key)))] > 1
+            for key in ("sku", "barcode")
+            if row.get(key) not in (None, "")
+        )
+        notes = "Local source-row reference; no approved canonical catalog snapshot was supplied, so item matching remains unresolved."
+        if is_duplicate:
+            notes += " Duplicate exact SKU/barcode exists in this source scope; human resolution is required."
+        result.append({
+            "source_path": relative_path,
+            "source_row": row["_source_row"],
+            "source_kind": "inventory_image_reference",
+            "owner_authority": "Local import snapshot only; Supabase public.items owns live product fields and image pointers",
+            "format": path.suffix.lower().lstrip("."),
+            "item_key": str(item_key) if item_key is not None else None,
+            "item_key_kind": item_key_kind,
+            "object_key_or_url": reference_info["object_key"] or reference_info["reference"],
+            "size_bytes": file_size,
+            "sha256": file_hash,
+            "current_callers": [],
+            "match_status": "ambiguous" if is_duplicate else "unresolved",
+            "status": reference_info["status"],
+            "migration_notes": notes,
+        })
+    return result
+
+
+def build_source_inventory(project_root: str | Path, r2_snapshot: Any = None) -> dict[str, Any]:
+    """Build a stable, metadata-only inventory of local catalog sources and callers."""
+    root = Path(project_root).resolve()
+    if not root.is_dir():
+        raise ValueError(f"source inventory root is not a directory: {project_root}")
+
+    caller_text = _read_code_callers(root)
+    sources_by_path: dict[str, dict[str, Any]] = {}
+    row_sources: list[dict[str, Any]] = []
+    missing_scopes: list[str] = []
+    scan_scopes = [scope[0] for scope in SOURCE_SCOPES]
+    migrations_dir = root / "supabase/migrations"
+    if migrations_dir.is_dir():
+        scan_scopes.append("supabase/migrations")
+    for scope_path in scan_scopes:
+        if not (root / scope_path).is_dir():
+            missing_scopes.append(scope_path)
+
+    for relative_scope in scan_scopes:
+        for path in _walk_files(root, relative_scope):
+            relative = path.relative_to(root).as_posix()
+            scope = _source_scope(relative)
+            if scope is None:
+                continue
+            scope_path, source_kind, authority, status, note = scope
+            if scope_path == "catalog-images":
+                source_kind = "design_asset_candidate" if "/banners/" in f"/{relative}/" else "image_candidate"
+            if scope_path == "supabase/migrations":
+                note = "Selected schema migration; inspect its contents for exact table/index/image contract."
+            digest = hashlib.sha256()
+            size = 0
+            with path.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                    size += len(chunk)
+            item_key = None
+            if scope_path == "catalog-images" and "/sku-named/" in f"/{relative}/":
+                item_key = path.stem
+                note += " Filename key is a candidate only; no live item mapping is asserted."
+            if scope_path == "supabase/functions/import-inventory":
+                note = "Current importer has a separate write path; preview attachment behavior must be verified before use."
+            tokens = SOURCE_CALLER_TOKENS.get(scope_path, (relative,))
+            matched_callers = sorted(
+                caller_path
+                for caller_path, content in caller_text.items()
+                if caller_path != relative and any(token in content for token in tokens)
+            )
+            if relative in caller_text and IMAGE_CONSUMER_PATTERNS.search(caller_text[relative]):
+                source_kind = "image_reference_consumer" if source_kind not in {"admin_importer", "edge_importer", "image_upload_authorization", "image_publication", "image_bytes_runtime"} else source_kind
+            sources_by_path[relative] = {
+                "source_path": relative,
+                "source_kind": source_kind,
+                "owner_authority": authority,
+                "format": path.suffix.lower().lstrip(".") or "unknown",
+                "item_key": item_key,
+                "object_key_or_url": None,
+                "size_bytes": size,
+                "sha256": digest.hexdigest(),
+                "current_callers": matched_callers,
+                "status": status,
+                "migration_notes": note,
+            }
+            if scope_path == "data/inventory":
+                extracted = _inventory_image_references(path, relative, root)
+                for row in extracted:
+                    row["current_callers"] = matched_callers
+                row_sources.extend(extracted)
+
+    for relative, content in caller_text.items():
+        if relative in sources_by_path or not IMAGE_CONSUMER_PATTERNS.search(content):
+            continue
+        source_scope = _source_scope(relative)
+        if source_scope is not None:
+            continue
+        path = root / relative
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        sources_by_path[relative] = {
+            "source_path": relative,
+            "source_kind": "image_reference_consumer",
+            "owner_authority": "Reads image pointers owned by Supabase public.items; runtime image bytes are served by Cloudflare R2/Worker",
+            "format": path.suffix.lower().lstrip(".") or "unknown",
+            "item_key": None,
+            "object_key_or_url": None,
+            "size_bytes": path.stat().st_size,
+            "sha256": digest,
+            "current_callers": [],
+            "status": "canonical" if relative.startswith("apps/customer_storefront/src/") else "legacy",
+            "migration_notes": "Static reference consumer found by image URL/key or import function search; review for current caller and read/write behavior.",
+        }
+
+    remote_sources: dict[str, Any] = {"r2_listing": "not_supplied; no remote API was called"}
+    if r2_snapshot is not None:
+        if not isinstance(r2_snapshot, dict) or r2_snapshot.get("read_only") is not True or not isinstance(r2_snapshot.get("products"), list):
+            raise ValueError("R2 snapshot must be a read-only object metadata listing with a products array")
+        if not isinstance(r2_snapshot.get("bucket_binding"), str) or not isinstance(r2_snapshot.get("bucket_name"), str):
+            raise ValueError("R2 snapshot must identify its configured bucket binding and name")
+        remote_sources = {
+            "r2_listing": "read-only metadata snapshot supplied",
+            "bucket_binding": r2_snapshot["bucket_binding"],
+            "bucket_name": r2_snapshot["bucket_name"],
+            "total_bucket_objects": int(r2_snapshot.get("total_bucket_objects", 0)),
+            "total_bucket_bytes": int(r2_snapshot.get("total_bucket_bytes", 0)),
+            "product_object_count": len(r2_snapshot["products"]),
+            "classified_prefix_counts": r2_snapshot.get("classified_prefix_counts", {}),
+            "sha256_available": False,
+        }
+        for obj in r2_snapshot["products"]:
+            if not isinstance(obj, dict) or not isinstance(obj.get("key"), str) or not obj["key"].startswith("products/"):
+                raise ValueError("R2 product metadata contains an invalid object key")
+            key = obj["key"]
+            sources_by_path[f"cloudflare-r2/{r2_snapshot['bucket_binding']}/{key}"] = {
+                "source_path": f"cloudflare-r2/{r2_snapshot['bucket_binding']}/{key}",
+                "source_kind": "r2_object",
+                "owner_authority": "Cloudflare R2 object store via the configured image Worker binding",
+                "format": Path(key).suffix.lower().lstrip(".") or "unknown",
+                "item_key": None,
+                "object_key_or_url": key,
+                "size_bytes": int(obj.get("size", 0)),
+                "sha256": None,
+                "etag": obj.get("etag"),
+                "content_type": obj.get("content_type"),
+                "last_modified": obj.get("last_modified"),
+                "current_callers": ["cloudflare/workers/images/src/index.ts"],
+                "match_status": "unresolved",
+                "status": "canonical",
+                "migration_notes": "Read-only object metadata; ETag is not treated as SHA-256 and the object body was not fetched.",
+            }
+    sources = sorted([*sources_by_path.values(), *row_sources], key=lambda row: (row["source_path"], row.get("source_row", 0), row["source_kind"]))
+    counts_by_status = dict(sorted(Counter(row["status"] for row in sources).items()))
+    counts_by_kind = dict(sorted(Counter(row["source_kind"] for row in sources).items()))
+    return {
+        "schema_version": 1,
+        "generated_by": "scripts/catalog/reconcile_inventory_snapshots.py",
+        "read_only": True,
+        "remote_sources": remote_sources,
+        "missing_scopes": sorted(missing_scopes),
+        "summary": {
+            "source_count": len(sources),
+            "counts_by_status": counts_by_status,
+            "counts_by_kind": counts_by_kind,
+        },
+        "sources": sources,
+    }
 
 
 def _same_price(left: Any, right: Any) -> bool | None:
@@ -485,18 +927,47 @@ def _ensure_output_is_separate(output_path: str | Path, input_paths: Iterable[st
             raise ValueError("--output must not overwrite an input snapshot")
 
 
+def _ensure_source_output_outside_scopes(output_path: str | Path, project_root: str | Path) -> None:
+    output = Path(output_path).resolve()
+    root = Path(project_root).resolve()
+    scopes = [scope[0] for scope in SOURCE_SCOPES] + ["supabase/migrations"]
+    for relative_scope in scopes:
+        try:
+            output.relative_to(root / relative_scope)
+        except ValueError:
+            continue
+        raise ValueError(f"source inventory output must be outside scanned source scope: {relative_scope}")
+
+
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--master", required=True, help="JSON snapshot of LS-inventory-01 values")
-    parser.add_argument("--copy", required=True, help="JSON snapshot of Copy of LS-inventory-01 values")
-    parser.add_argument("--supabase", required=True, help="JSON array or {rows: [...]} snapshot of Supabase products")
-    parser.add_argument("--output", required=True, help="Local JSON report path")
+    parser.add_argument("--source-inventory-root", help="Build a metadata-only inventory from this local repository root")
+    parser.add_argument("--source-inventory-output", help="Local JSON destination for --source-inventory-root")
+    parser.add_argument("--r2-snapshot", help="Optional local read-only R2 object metadata snapshot for source inventory mode")
+    parser.add_argument("--master", help="JSON snapshot of LS-inventory-01 values (reconciliation mode)")
+    parser.add_argument("--copy", help="JSON snapshot of Copy of LS-inventory-01 values (reconciliation mode)")
+    parser.add_argument("--supabase", help="JSON array or {rows: [...]} snapshot of Supabase products (reconciliation mode)")
+    parser.add_argument("--output", help="Local JSON report path (reconciliation mode)")
     parser.add_argument("--typesafe-candidates", action="store_true", help="Opt in to sending bounded unmatched product candidates to TypeSafe")
     parser.add_argument("--typesafe-limit", type=int, default=25, help="Maximum candidate pairs sent to TypeSafe (1-50; default 25)")
     parser.add_argument("--typesafe-model", default="jev-latest", help="TypeSafe model alias (default: jev-latest)")
     args = parser.parse_args(argv)
 
     try:
+        if args.source_inventory_root or args.source_inventory_output:
+            if not args.source_inventory_root or not args.source_inventory_output:
+                parser.error("--source-inventory-root and --source-inventory-output must be provided together")
+            if any((args.master, args.copy, args.supabase, args.output, args.typesafe_candidates)):
+                parser.error("source inventory mode cannot be combined with reconciliation or TypeSafe options")
+            _ensure_source_output_outside_scopes(args.source_inventory_output, args.source_inventory_root)
+            if args.r2_snapshot:
+                _ensure_output_is_separate(args.source_inventory_output, (args.r2_snapshot,))
+            manifest = build_source_inventory(args.source_inventory_root, load_snapshot(args.r2_snapshot) if args.r2_snapshot else None)
+            write_report(manifest, args.source_inventory_output)
+            print(f"Wrote read-only source inventory: {args.source_inventory_output}")
+            return 0
+        if not all((args.master, args.copy, args.supabase, args.output)):
+            parser.error("reconciliation mode requires --master, --copy, --supabase, and --output")
         _ensure_output_is_separate(args.output, (args.master, args.copy, args.supabase))
         report = reconcile(load_snapshot(args.master), load_snapshot(args.copy), load_snapshot(args.supabase))
         if args.typesafe_candidates:

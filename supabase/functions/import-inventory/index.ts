@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { runCatalogImportOperation, type CatalogImportOperation } from "./catalog_import_v1.ts";
+import { createSupabaseCatalogRepository } from "./supabase_catalog_repository.ts";
+import { publishCatalogAttachment, validateCatalogImageFile, type CatalogImageAdapter } from "./catalog_image_ingest.ts";
 
 // Simple CSV parser - handles basic CSV with quoted fields
 function parseCSV(text: string): Record<string, string>[] {
@@ -227,29 +230,77 @@ function createEmptySummary(): ImportSummary {
   };
 }
 
-async function uploadImageToStorage(
-  supabaseClient: ReturnType<typeof createClient>,
-  file: File,
-  itemName: string,
-): Promise<string> {
-  const bucket = "item-images";
-  const ext = file.name.split(".").pop() || "jpg";
-  const sanitizedName = itemName
-    .replace(/[^a-zA-Z0-9]/g, "-")
-    .toLowerCase()
-    .substring(0, 50);
-  const storagePath = `items/${sanitizedName}-${crypto.randomUUID()}.${ext}`;
-
-  const { error: uploadError } = await supabaseClient.storage.from(bucket).upload(storagePath, file, {
-    contentType: file.type || `image/${ext}`,
-    upsert: false,
-  });
-  if (uploadError) {
-    throw new Error(`Image upload failed: ${uploadError.message}`);
+function createEdgeCatalogImageAdapter(client: any, userToken: string): CatalogImageAdapter {
+  const publicBaseUrl = Deno.env.get("R2_PUBLIC_BASE_URL") ?? "";
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
+  if (!publicBaseUrl || !supabaseUrl) throw new Error("Catalog image publication is not configured");
+  const publicBase = new URL(publicBaseUrl);
+  const allowedImageHosts = new Set(["images.luckystore1947.com", "lucky-store-images-preview.luckystore-1947.workers.dev"]);
+  if (publicBase.protocol !== "https:" || !allowedImageHosts.has(publicBase.hostname) || publicBase.pathname !== "/" || publicBase.search || publicBase.hash) {
+    throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
   }
-
-  const { data } = supabaseClient.storage.from(bucket).getPublicUrl(storagePath);
-  return data.publicUrl;
+  const functionHeaders = {
+    Authorization: `Bearer ${userToken}`,
+    ...(apiKey ? { apikey: apiKey } : {}),
+    "Content-Type": "application/json",
+  };
+  return {
+    publicBaseUrl,
+    async issueTicket(request) {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/issue-image-upload-ticket`, {
+        method: "POST",
+        headers: functionHeaders,
+        body: JSON.stringify(request),
+      });
+      if (!response.ok) throw new Error("Image upload ticket was rejected");
+      const body = await response.json() as { token?: string };
+      if (!body.token) throw new Error("Image upload ticket response was invalid");
+      return body.token;
+    },
+    async upload(request) {
+      const formData = new FormData();
+      formData.append("file", request.file);
+      formData.append("key", request.key);
+      const response = await fetch(`${publicBaseUrl.replace(/\/$/, "")}/upload`, {
+        method: "POST",
+        headers: { "X-Upload-Token": request.ticket },
+        body: formData,
+      });
+      if (!response.ok) throw new Error(`Image Worker upload failed with status ${response.status}`);
+      return await response.json() as { key: string; url: string };
+    },
+    async publish(request) {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/publish-product-image`, {
+        method: "POST",
+        headers: functionHeaders,
+        body: JSON.stringify({
+          itemId: request.itemId,
+          storeId: request.storeId,
+          sourceImageKey: request.sourceImageKey,
+          sourceImageVersion: request.sourceImageVersion,
+          newImageUrl: request.newImageUrl,
+          newImageChecksum: request.newImageChecksum,
+        }),
+      });
+      if (response.status === 409) throw new Error("IMAGE_VERSION_CONFLICT");
+      if (!response.ok) throw new Error("Image CAS publication failed");
+    },
+    async currentImageState(itemId, tenantId) {
+      const { data, error } = await client.from("items").select("image_key, image_version, image_checksum")
+        .eq("id", itemId).eq("tenant_id", tenantId).maybeSingle();
+      if (error || !data) throw new Error("Unable to recheck current item image state");
+      return { key: data.image_key ?? null, version: data.image_version ?? 0, checksum: data.image_checksum ?? null };
+    },
+    async isReferenced(key, tenantId) {
+      const { data, error } = await client.from("items").select("id").eq("tenant_id", tenantId).eq("image_key", key).limit(1).maybeSingle();
+      if (error) throw new Error("Unable to confirm whether the uploaded object is referenced");
+      return Boolean(data);
+    },
+    async delete() {
+      throw new Error("Image cleanup requires the separately reviewed orphan cleanup path");
+    },
+  };
 }
 
 serve(async (req) => {
@@ -258,6 +309,7 @@ serve(async (req) => {
   }
 
   let importRunId: string | null = null;
+  let isDryRun = false;
   const startTime = Date.now();
   const contentType = req.headers.get("content-type") ?? "";
   const summary: ImportSummary = createEmptySummary();
@@ -270,8 +322,8 @@ serve(async (req) => {
       });
     }
 
-    if (!contentType.includes("multipart/form-data")) {
-      return new Response(JSON.stringify({ error: "Expected multipart/form-data request" }), {
+    if (!contentType.includes("multipart/form-data") && !contentType.includes("application/json")) {
+      return new Response(JSON.stringify({ error: "Expected multipart/form-data or application/json request" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -338,12 +390,50 @@ serve(async (req) => {
       });
     }
 
+    if (contentType.includes("application/json")) {
+      const operation = await req.json() as CatalogImportOperation;
+      const result = await runCatalogImportOperation(
+        operation,
+        { id: actorProfile.id, role: actorProfile.role, tenant_id: actorProfile.tenant_id, store_id: actorProfile.store_id },
+        createSupabaseCatalogRepository(supabaseClient),
+      );
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const form = await req.formData();
     const requestedImportRunId = normalizeText(form.get("import_run_id"));
     const chunkSize = clampChunkSize(form.get("max_rows"));
-    const isDryRun = form.get("dry_run") === "true";
+    isDryRun = form.get("dry_run") === "true";
     const mappingsRaw = normalizeText(form.get("mappings"));
     const mappings = mappingsRaw ? JSON.parse(mappingsRaw) : null;
+
+    if (normalizeText(form.get("operation")) && normalizeText(form.get("batch"))) {
+      const operationName = normalizeText(form.get("operation"));
+      const batch = JSON.parse(String(form.get("batch")));
+      const attachments = [];
+      if (Array.isArray(batch?.rows)) {
+        for (const row of batch.rows) {
+          const file = form.get(`image_${row.source_row}`);
+          if (file instanceof File) {
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            const sha256 = normalizeText(form.get(`image_sha256_${row.source_row}`)) ?? undefined;
+            attachments.push({ source_row: row.source_row, name: file.name, type: file.type, size: file.size, bytes, ...(sha256 ? { sha256 } : {}) });
+          }
+        }
+      }
+      const imageAdapter = operationName === "apply" && attachments.length
+        ? createEdgeCatalogImageAdapter(supabaseClient, token!)
+        : undefined;
+      const result = await runCatalogImportOperation(
+        { operation: operationName, batch, ...(attachments.length ? { attachments } : {}), idempotency_key: normalizeText(form.get("idempotency_key")) ?? undefined, approved_preview_hash: normalizeText(form.get("approved_preview_hash")) ?? undefined } as CatalogImportOperation,
+        { id: actorProfile.id, role: actorProfile.role, tenant_id: actorProfile.tenant_id, store_id: actorProfile.store_id },
+        createSupabaseCatalogRepository(supabaseClient, imageAdapter),
+      );
+      return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const file = form.get("file") as File | null;
     if (!file && !requestedImportRunId) {
@@ -381,7 +471,7 @@ serve(async (req) => {
       summary.errors = Array.isArray(existingRunSummary?.errors) ? existingRunSummary!.errors : [];
       summary.processing_complete = false;
       summary.can_resume = true;
-    } else if (file) {
+    } else if (file && !isDryRun) {
       const { data: importRun, error: importRunError } = await supabaseClient
         .from("import_runs")
         .insert({
@@ -414,6 +504,10 @@ serve(async (req) => {
       if (key.startsWith("image_") && value instanceof File) {
         imageFiles.set(key.replace("image_", ""), value);
       }
+    }
+    const legacyImageAdapter = imageFiles.size && !isDryRun ? createEdgeCatalogImageAdapter(supabaseClient, token!) : undefined;
+    if (imageFiles.size && !isDryRun && !importRunId) {
+      throw new Error("Could not create an idempotent import run for image publication");
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -534,7 +628,7 @@ serve(async (req) => {
 
     summary.rows_valid = parsedRows.length;
     const startRowIndex = resumeStartIndex;
-    const processRows = parsedRows.slice(startRowIndex, startRowIndex + chunkSize);
+    const processRows = parsedRows.slice(startRowIndex, startRowIndex + (isDryRun ? parsedRows.length : chunkSize));
 
     const categoryNames = [...new Set(parsedRows.map((r) => r.categoryName).filter(Boolean) as string[])];
     const storeCodes = [...new Set(parsedRows.map((r) => r.storeCode).filter(Boolean) as string[])];
@@ -568,7 +662,7 @@ serve(async (req) => {
     }
 
     const missingCategoryNames = categoryNames.filter((name) => !categoryMap.has(name));
-    if (missingCategoryNames.length > 0) {
+    if (missingCategoryNames.length > 0 && !isDryRun) {
       const { error } = await supabaseClient.from("categories").upsert(
         missingCategoryNames.map((name) => ({ 
           name, 
@@ -596,13 +690,13 @@ serve(async (req) => {
       }
     }
 
-    const itemByBarcode = new Map<string, { id: string; barcode: string | null; sku: string | null }>();
-    const itemBySku = new Map<string, { id: string; barcode: string | null; sku: string | null }>();
+    const itemByBarcode = new Map<string, { id: string; barcode: string | null; sku: string | null; image_url: string | null; image_key: string | null; image_version: number }>();
+    const itemBySku = new Map<string, { id: string; barcode: string | null; sku: string | null; image_url: string | null; image_key: string | null; image_version: number }>();
 
     for (const chunk of chunkArray(barcodes, 100)) {
       const { data, error } = await supabaseClient
         .from("items")
-        .select("id, barcode, sku")
+        .select("id, barcode, sku, image_url, image_key, image_version")
         .eq("tenant_id", actorProfile.tenant_id)
         .in("barcode", chunk);
       if (error) throw error;
@@ -615,7 +709,7 @@ serve(async (req) => {
     for (const chunk of chunkArray(skus, 100)) {
       const { data, error } = await supabaseClient
         .from("items")
-        .select("id, barcode, sku")
+        .select("id, barcode, sku, image_url, image_key, image_version")
         .eq("tenant_id", actorProfile.tenant_id)
         .in("sku", chunk);
       if (error) throw error;
@@ -642,18 +736,15 @@ serve(async (req) => {
         }
 
         const existingItem = existingByBarcode ?? existingBySku;
-        let imageUrl = row.imageUrl;
-
-        if (imageFiles.has(row.name)) {
-          try {
-            imageUrl = await uploadImageToStorage(supabaseClient, imageFiles.get(row.name)!, row.name);
-            summary.images_uploaded++;
-          } catch (err: unknown) {
-            console.error(`Image upload failed for ${row.name}:`, err);
-          }
+        const imageFile = imageFiles.get(row.name);
+        const imageBytes = imageFile ? new Uint8Array(await imageFile.arrayBuffer()) : null;
+        if (imageFile && imageBytes) {
+          await validateCatalogImageFile({ name: imageFile.name, type: imageFile.type, size: imageFile.size, bytes: imageBytes });
         }
-
+        let imageUrl = row.imageUrl;
         let itemId: string;
+        let sourceImageKey: string | null = existingItem?.image_key ?? null;
+        let sourceImageVersion = existingItem?.image_version ?? 0;
         if (existingItem) {
           itemId = existingItem.id;
           if (!isDryRun) {
@@ -670,13 +761,15 @@ serve(async (req) => {
                 description: row.description,
                 cost: row.cost,
                 price: row.price,
-                image_url: imageUrl,
+                image_url: imageFile ? existingItem.image_url : imageUrl,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", itemId)
-              .select("id, barcode, sku")
+              .select("id, barcode, sku, image_url, image_key, image_version")
               .single();
             if (updateError) throw updateError;
+            sourceImageKey = updatedItem.image_key ?? null;
+            sourceImageVersion = updatedItem.image_version ?? 0;
             if (updatedItem.barcode) itemByBarcode.set(updatedItem.barcode, updatedItem);
             if (updatedItem.sku) itemBySku.set(updatedItem.sku, updatedItem);
           }
@@ -697,12 +790,14 @@ serve(async (req) => {
                 description: row.description,
                 cost: row.cost,
                 price: row.price,
-                image_url: imageUrl,
+                image_url: imageFile ? null : imageUrl,
               })
-              .select("id, barcode, sku")
+              .select("id, barcode, sku, image_url, image_key, image_version")
               .single();
             if (insertError) throw insertError;
             itemId = insertedItem.id;
+            sourceImageKey = insertedItem.image_key ?? null;
+            sourceImageVersion = insertedItem.image_version ?? 0;
             if (insertedItem.barcode) itemByBarcode.set(insertedItem.barcode, insertedItem);
             if (insertedItem.sku) itemBySku.set(insertedItem.sku, insertedItem);
           } else {
@@ -765,6 +860,28 @@ serve(async (req) => {
           summary.stock_movements++;
         }
 
+        if (imageFile && imageBytes && !isDryRun) {
+          const storeId = row.storeCode ? storeMap.get(row.storeCode) ?? null : actorProfile.store_id;
+          if (!storeId || !legacyImageAdapter || !importRunId) throw new Error("Image publication requires a verified store and resumable import run");
+          const publication = await publishCatalogAttachment({
+            batch_id: importRunId,
+            idempotency_key: `legacy-${importRunId}`,
+            source_row: row.rowNumber,
+            actor_id: actorProfile.id,
+            tenant_id: actorProfile.tenant_id,
+            store_id: storeId,
+            item_id: itemId,
+            sku: row.sku ?? row.barcode ?? itemId,
+            source_image_key: sourceImageKey,
+            source_image_version: sourceImageVersion,
+            file: { name: imageFile.name, type: imageFile.type, size: imageFile.size, bytes: imageBytes },
+          }, legacyImageAdapter);
+          if (!publication.published) {
+            throw new Error(`${publication.error}; uploaded image candidate: ${publication.orphaned_key}`);
+          }
+          summary.images_uploaded++;
+        }
+
         summary.rows_succeeded++;
       } catch (err: unknown) {
         summary.errors.push({
@@ -782,7 +899,7 @@ serve(async (req) => {
     summary.can_resume = !finishedAllRows;
     summary.rows_failed = summary.parse_errors + summary.row_errors + summary.system_errors;
 
-    if (importRunId) {
+    if (importRunId && !isDryRun) {
       await supabaseClient
         .from("import_runs")
         .update({
@@ -812,7 +929,7 @@ serve(async (req) => {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
     try {
-      if (importRunId) {
+      if (importRunId && !isDryRun) {
         const supabaseClient = createClient(
           Deno.env.get("SUPABASE_URL") ?? "",
           Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",

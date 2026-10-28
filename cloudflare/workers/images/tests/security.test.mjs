@@ -35,7 +35,7 @@ async function tokenFor({ key, operation = 'upload', expiresAt = Math.floor(Date
   return `${encoded}.${Buffer.from(signature).toString('base64url')}`;
 }
 
-function makeEnv(writes = []) {
+function makeEnv(writes = [], objects = new Map()) {
   const consumed = new Set();
   return {
     ALLOWED_ORIGINS: 'http://localhost:3000',
@@ -52,7 +52,7 @@ function makeEnv(writes = []) {
     },
     IMAGES: {
       put: async (key) => writes.push(key),
-      get: async () => null,
+      get: async (key) => objects.get(key) ?? null,
       delete: async () => undefined,
     },
   };
@@ -127,4 +127,26 @@ test('keeps internal upload separate from browser capabilities', async () => {
 
   assert.equal(unauthorized.status, 401);
   assert.equal(authorized.status, 200);
+});
+
+test('serves legacy and tenant-scoped product image key layouts unchanged', async () => {
+  const keys = [
+    'item-images/legacy/item.webp',
+    'product-images/legacy/item.webp',
+    'products/tenant-a/SKU-1-12345678-1234-5678-9234-123456789abc.webp',
+  ];
+  const objects = new Map(keys.map((key) => [key, {
+    body: new Uint8Array([82, 73, 70, 70]),
+    httpMetadata: { contentType: 'image/webp' },
+    httpEtag: 'test-etag',
+    writeHttpMetadata: () => undefined,
+  }]));
+  for (const key of keys) {
+    const response = await worker.fetch(new Request(`https://images.example/${key}`, {
+      headers: { 'CF-Connecting-IP': '127.0.0.1' },
+    }), makeEnv([], objects));
+    assert.equal(response.status, 200, key);
+    assert.equal(response.headers.get('Content-Type'), 'image/webp', key);
+    assert.equal(response.headers.get('Cache-Control'), 'public, max-age=31536000, immutable', key);
+  }
 });
