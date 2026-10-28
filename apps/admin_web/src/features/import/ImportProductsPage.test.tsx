@@ -18,8 +18,10 @@ vi.mock('papaparse', () => ({
     parse: vi.fn((_file: File, config: { complete: (result: unknown) => void }) => config.complete({
       data: [{
         'Product Name': 'Synthetic Image Pipeline Test Item',
+        Brand: 'Ispahani',
         'Sales Price (৳)': '',
         'Purchase Price (৳)': '',
+        'MRP (৳)': 109.25,
         'Item Code (SKU)': 'CODX-IMG-PILOT-20261029',
         Barcode: '',
         'Image URL': '',
@@ -88,7 +90,7 @@ describe('ImportProductsPage', () => {
     const batch = JSON.parse(String(previewForm.get('batch')));
     expect(batch.rows[0]).toMatchObject({
       source_row: 2,
-      product: { sku: 'CODX-IMG-PILOT-20261029', name: 'Synthetic Image Pipeline Test Item', is_active: false },
+      product: { sku: 'CODX-IMG-PILOT-20261029', name: 'Synthetic Image Pipeline Test Item', brand: 'Ispahani', mrp: 109.25, is_active: false },
       stock: { mode: 'none' },
     });
     expect(batch.rows[0].product).not.toHaveProperty('price');
