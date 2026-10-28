@@ -5,7 +5,13 @@ import {
   type CatalogImageInput,
 } from "./catalog_image_ingest.ts";
 
-const webpBytes = new Uint8Array([82, 73, 70, 70, 4, 0, 0, 0, 87, 69, 66, 80]);
+// Valid 10x10 WebP image (68 bytes)
+const webpBytes = new Uint8Array([
+  82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0,
+  208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1,
+  248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247,
+  255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 0
+]);
 
 function makeInput(overrides: Partial<CatalogImageInput> = {}): CatalogImageInput {
   return {
@@ -52,9 +58,18 @@ Deno.test("catalog image uses a tenant-scoped unique WebP key and ticketed uploa
 
 Deno.test("unsupported MIME, oversized files, and mismatched checksums fail before remote calls", async () => {
   const fake = fakeAdapter();
+  const oversizedBytes = new Uint8Array(10 * 1024 * 1024 + 1);
+  oversizedBytes.set(webpBytes);
+  // Update RIFF size header
+  const riffSize = oversizedBytes.length - 8;
+  oversizedBytes[4] = riffSize & 0xff;
+  oversizedBytes[5] = (riffSize >> 8) & 0xff;
+  oversizedBytes[6] = (riffSize >> 16) & 0xff;
+  oversizedBytes[7] = (riffSize >> 24) & 0xff;
+
   const cases = [
     makeInput({ file: { name: "bad.png", type: "image/png", size: webpBytes.length, bytes: webpBytes } }),
-    makeInput({ file: { name: "large.webp", type: "image/webp", size: 10 * 1024 * 1024 + 1, bytes: webpBytes } }),
+    makeInput({ file: { name: "large.webp", type: "image/webp", size: oversizedBytes.length, bytes: oversizedBytes } }),
     makeInput({ file: { name: "wrong.webp", type: "image/webp", size: webpBytes.length, bytes: webpBytes, sha256: "0".repeat(64) } }),
   ];
   for (const input of cases) {
@@ -66,10 +81,14 @@ Deno.test("unsupported MIME, oversized files, and mismatched checksums fail befo
 });
 
 Deno.test("upload checksum and returned URL/key must match the configured Worker namespace", async () => {
-  const badKey = fakeAdapter({ async upload(request) { return { key: `products/tenant-b/${request.key.split("/").at(-1)}`, url: `${this.publicBaseUrl}/products/tenant-b/wrong.webp` }; } });
-  let rejected = false;
-  try { await publishCatalogAttachment(makeInput(), badKey.adapter); } catch { rejected = true; }
-  if (!rejected || badKey.calls.publish) throw new Error("mismatched Worker result was published");
+  const badKey = fakeAdapter();
+  badKey.adapter.upload = async (request) => {
+    badKey.calls.upload++;
+    badKey.keys.push(request.key);
+    return { key: `products/tenant-b/${request.key.split("/").at(-1)}`, url: `${badKey.adapter.publicBaseUrl}/products/tenant-b/wrong.webp` };
+  };
+  const result = await publishCatalogAttachment(makeInput(), badKey.adapter);
+  if (result.published || badKey.calls.publish || result.orphaned_key !== badKey.keys[0]) throw new Error("mismatched Worker result was published or orphaned key not reported");
 });
 
 Deno.test("CAS conflict reports the new unreferenced key and does not delete it", async () => {

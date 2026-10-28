@@ -21,7 +21,7 @@ def main() -> int:
     if result.returncode:
         print("Unable to enumerate tracked files", file=sys.stderr)
         return result.returncode
-    paths = [path.decode("utf-8", errors="replace") for path in result.stdout.split(b"\0") if path]
+    paths = [path.decode("utf-8", errors="surrogateescape") for path in result.stdout.split(b"\0") if path]
     # `git ls-files` still lists unstaged deletions in a local worktree. Check
     # the checked-out tree so a planned removal is not reported as still present.
     findings = tracked_product_image_paths(path for path in paths if (root / path).is_file())

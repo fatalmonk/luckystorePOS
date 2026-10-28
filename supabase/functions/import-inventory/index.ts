@@ -235,10 +235,17 @@ function createEdgeCatalogImageAdapter(client: any, userToken: string): CatalogI
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
   if (!publicBaseUrl || !supabaseUrl) throw new Error("Catalog image publication is not configured");
+  if (publicBaseUrl.includes("?") || publicBaseUrl.includes("#")) {
+    throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
+  }
   const publicBase = new URL(publicBaseUrl);
   const allowedImageHosts = new Set(["images.luckystore1947.com", "lucky-store-images-preview.luckystore-1947.workers.dev"]);
   if (publicBase.protocol !== "https:" || !allowedImageHosts.has(publicBase.hostname) || publicBase.pathname !== "/" || publicBase.search || publicBase.hash) {
     throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
+  }
+  const parsedSupabaseUrl = new URL(supabaseUrl);
+  if (parsedSupabaseUrl.protocol !== "https:") {
+    throw new Error("SUPABASE_URL must use HTTPS");
   }
   const functionHeaders = {
     Authorization: `Bearer ${userToken}`,
@@ -414,10 +421,26 @@ serve(async (req) => {
       const operationName = normalizeText(form.get("operation"));
       const batch = JSON.parse(String(form.get("batch")));
       const attachments = [];
+      const MAX_SINGLE_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+      const MAX_TOTAL_ATTACHMENT_BYTES = 50 * 1024 * 1024;
+      let totalAttachmentBytes = 0;
       if (Array.isArray(batch?.rows)) {
         for (const row of batch.rows) {
           const file = form.get(`image_${row.source_row}`);
           if (file instanceof File) {
+            if (file.size <= 0 || file.size > MAX_SINGLE_ATTACHMENT_BYTES) {
+              return new Response(JSON.stringify({ error: `Image attachment for row ${row.source_row} exceeds the 10 MiB limit` }), {
+                status: 400,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              });
+            }
+            totalAttachmentBytes += file.size;
+            if (totalAttachmentBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+              return new Response(JSON.stringify({ error: "Total batch image attachments exceed 50 MiB limit" }), {
+                status: 400,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              });
+            }
             const bytes = new Uint8Array(await file.arrayBuffer());
             const sha256 = normalizeText(form.get(`image_sha256_${row.source_row}`)) ?? undefined;
             attachments.push({ source_row: row.source_row, name: file.name, type: file.type, size: file.size, bytes, ...(sha256 ? { sha256 } : {}) });

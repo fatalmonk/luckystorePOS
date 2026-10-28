@@ -257,7 +257,7 @@ BEGIN
     IF v_actor.store_id IS NOT NULL AND v_actor.store_id <> p_store_id THEN
       RAISE EXCEPTION 'Requested store is outside the authenticated user store scope' USING ERRCODE = '42501';
     END IF;
-    IF v_mode NOT IN ('set', 'delta') OR p_stock->>'quantity' IS NULL THEN RAISE EXCEPTION 'Invalid stock intent' USING ERRCODE = '22023'; END IF;
+    IF v_mode IS NULL OR v_mode NOT IN ('set', 'delta') OR p_stock->>'quantity' IS NULL THEN RAISE EXCEPTION 'Invalid stock intent' USING ERRCODE = '22023'; END IF;
     v_quantity := (p_stock->>'quantity')::numeric;
     IF v_quantity <> trunc(v_quantity) THEN RAISE EXCEPTION 'Stock quantity must be an integer' USING ERRCODE = '22023'; END IF;
     PERFORM pg_advisory_xact_lock(hashtext(p_store_id::text), hashtext(v_item_id::text));

@@ -16,7 +16,10 @@ export function parseLegacyImageReference(value) {
   }
   let parts;
   try {
-    parts = path.split('/').filter(Boolean).map((part) => decodeURIComponent(part));
+    parts = path.split('/').filter(Boolean).map((part) => {
+      const decoded = decodeURIComponent(part);
+      return encodeURIComponent(decoded);
+    });
   } catch {
     return { key: null, rule: null };
   }

@@ -20,6 +20,7 @@ new_sqlite_classes = ["UploadTicketNonce"]
 ALLOWED_ORIGINS = "http://localhost:5187,http://127.0.0.1:5187"
 PUBLIC_BASE_URL = "https://lucky-store-images-preview.luckystore-1947.workers.dev"
 
+# Informational only: rate limits are enforced in worker code (src/index.ts)
 [limits]
 uploads_per_minute = 30
 reads_per_minute = 600

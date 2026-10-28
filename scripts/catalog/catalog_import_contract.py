@@ -56,7 +56,7 @@ def _number(value: Any) -> Any:
         number = Decimal(str(value).strip())
     except (InvalidOperation, ValueError):
         return value
-    if not number.is_finite():
+    if not number.is_finite() or abs(number.as_tuple().exponent) > 100:
         return value
     if number == number.to_integral_value():
         return int(number)
@@ -81,11 +81,22 @@ def adapt_legacy_row(source_format: str, source: dict[str, Any], source_row: int
     stock: dict[str, Any] = {"mode": "none"}
     image: dict[str, Any] | None = None
     consumed: set[str] = set()
+    claimed_targets: set[tuple[str, str]] = set()
+
     for column, (field, target) in columns.items():
         if column not in source or column in consumed:
             continue
-        consumed.add(column)
         value = source[column]
+        if _blank(value):
+            consumed.add(column)
+            continue
+        target_key = (target, field)
+        if target_key in claimed_targets:
+            # Conflict: another alias already supplied a non-blank value for this target
+            continue
+        claimed_targets.add(target_key)
+        consumed.add(column)
+
         if target == "product":
             if field in {"cost", "price", "mrp"}:
                 value = _number(value)
@@ -179,21 +190,24 @@ def validate_batch(
         if image and image["kind"] == "asset" and not _validate_asset_path(image["path"]):
             messages.append(f"rows[{index}].image.path: asset must be inside data/catalog/images without traversal")
 
-    if catalog_rows is not None and tenant_id is not None:
-        for index, row in enumerate(batch["rows"]):
-            matches_by_field: dict[str, list[dict[str, Any]]] = {}
-            for field in ("sku", "barcode"):
-                value = row["product"].get(field)
-                if value:
-                    matches_by_field[field] = [
-                        current for current in catalog_rows
-                        if current.get("tenant_id") == tenant_id and current.get(field) == value
-                    ]
-                    if len(matches_by_field[field]) > 1:
-                        messages.append(f"rows[{index}].product.{field}: ambiguous {field} in authenticated tenant")
-            sku_matches = matches_by_field.get("sku", [])
-            barcode_matches = matches_by_field.get("barcode", [])
-            if sku_matches and barcode_matches and sku_matches[0].get("id") != barcode_matches[0].get("id"):
-                messages.append(f"rows[{index}].product: sku and barcode identify different items")
+    if catalog_rows is not None:
+        if tenant_id is None:
+            messages.append("tenant_id is required when checking against catalog_rows")
+        else:
+            for index, row in enumerate(batch["rows"]):
+                matches_by_field: dict[str, list[dict[str, Any]]] = {}
+                for field in ("sku", "barcode"):
+                    value = row["product"].get(field)
+                    if value:
+                        matches_by_field[field] = [
+                            current for current in catalog_rows
+                            if current.get("tenant_id") == tenant_id and current.get(field) == value
+                        ]
+                        if len(matches_by_field[field]) > 1:
+                            messages.append(f"rows[{index}].product.{field}: ambiguous {field} in authenticated tenant")
+                sku_matches = matches_by_field.get("sku", [])
+                barcode_matches = matches_by_field.get("barcode", [])
+                if sku_matches and barcode_matches and sku_matches[0].get("id") != barcode_matches[0].get("id"):
+                    messages.append(f"rows[{index}].product: sku and barcode identify different items")
 
     return sorted(set(messages))

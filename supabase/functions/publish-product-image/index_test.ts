@@ -47,9 +47,12 @@ Deno.test("tenant admin may select an owned store and clear an image without a c
 });
 
 Deno.test("uploaded object verification binds WebP bytes and MIME to the requested checksum", async () => {
-  const bytes = new Uint8Array(16);
-  bytes.set(new TextEncoder().encode("RIFF"), 0);
-  bytes.set(new TextEncoder().encode("WEBP"), 8);
+  const bytes = new Uint8Array([
+    82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0,
+    208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1,
+    248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247,
+    255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 0
+  ]);
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
   const checksum = [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   if (await verifyUploadedWebp("image/webp", bytes, checksum) !== null) throw new Error("matching uploaded WebP was rejected");

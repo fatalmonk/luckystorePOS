@@ -106,10 +106,27 @@ async function main() {
   let failed = 0;
   let skipped = 0;
 
+  const supabaseOrigin = new URL(supabaseUrl).origin;
+
   for (const item of items.slice(0, limit)) {
     const oldUrl = item.image_url;
     
-    // Extract key from Supabase URL
+    // Extract key from Supabase URL and validate origin
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(oldUrl);
+    } catch {
+      console.log(`  ⏭️  ${item.id}: invalid URL, skipping`);
+      skipped++;
+      continue;
+    }
+
+    if (parsedUrl.origin !== supabaseOrigin) {
+      console.log(`  ⏭️  ${item.id}: origin mismatch (${parsedUrl.origin} vs ${supabaseOrigin}), skipping`);
+      skipped++;
+      continue;
+    }
+
     const { key } = parseLegacyImageReference(oldUrl);
     if (!key) {
       console.log(`  ⏭️  ${item.id}: couldn't parse key, skipping`);
@@ -122,8 +139,8 @@ async function main() {
     process.stdout.write(`  ${item.id}: ${key}... `);
 
     try {
-      // Download from Supabase Storage
-      const downloadResponse = await fetch(oldUrl);
+      // Download from Supabase Storage with redirect: 'error' to avoid off-origin redirects
+      const downloadResponse = await fetch(oldUrl, { redirect: 'error' });
       if (!downloadResponse.ok) {
         console.log(`FAIL (download: ${downloadResponse.status})`);
         failed++;

@@ -82,7 +82,7 @@ serve(async (req) => {
     let newImageKey: string | null = null
     if (newImageUrl !== null) {
       newImageKey = new URL(newImageUrl).pathname.slice(1)
-      const uploaded = await fetch(newImageUrl, { redirect: 'error' })
+      const uploaded = await fetch(newImageUrl, { redirect: 'error', signal: AbortSignal.timeout(10000) })
       if (!uploaded.ok) return json({ error: 'Uploaded image is not available from the configured image host' }, 422)
       const actualUrl = new URL(uploaded.url || newImageUrl)
       if (actualUrl.origin !== new URL(publicImageUrl).origin) return json({ error: 'Uploaded image resolved outside the configured image host' }, 422)
@@ -121,14 +121,6 @@ serve(async (req) => {
     })
     if (publishError) throw publishError
     if (!published) return json({ error: 'Image changed while upload was in progress', code: 'IMAGE_VERSION_CONFLICT' }, 409)
-    if (newImageKey !== null) {
-      const { data: confirmed, error: confirmError } = await admin.from('items')
-        .select('image_key, image_checksum').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
-      if (confirmError) throw confirmError
-      if (confirmed?.image_key !== newImageKey || confirmed?.image_checksum !== body.newImageChecksum) {
-        return json({ error: 'Published image metadata did not match the requested tenant object' }, 409)
-      }
-    }
     return json({ published: true, imageKey: newImageKey })
   } catch (error) {
     console.error('publish-product-image error', error)

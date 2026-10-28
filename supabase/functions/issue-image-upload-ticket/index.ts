@@ -74,7 +74,10 @@ serve(async (req) => {
     const maxBytes = typeof body.maxBytes === 'number' ? body.maxBytes : 10 * 1024 * 1024
     const operation = body.operation === 'delete' ? 'delete' : 'upload'
     const requestError = validateUploadTicketRequest({ key, itemId, contentType, maxBytes, operation }, String(user.tenant_id), user.store_id)
-    if (requestError) return json({ error: requestError }, 400)
+    if (requestError) {
+      const isScopeError = requestError.includes('scope mismatch')
+      return json({ error: requestError }, isScopeError ? 403 : 400)
+    }
 
     if (operation === 'delete') {
       if (!itemId) return json({ error: 'Item is required for image deletion' }, 400)

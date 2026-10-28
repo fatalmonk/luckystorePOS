@@ -100,6 +100,7 @@ function exactKeys(value: Record<string, unknown>, allowed: string[]): boolean {
 
 function safeImageUrl(url: string): boolean {
   try {
+    if (url.includes("?") || url.includes("#")) return false;
     const parsed = new URL(url);
     return parsed.protocol === "https:" && parsed.hostname.length > 0 && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
   } catch {
@@ -215,7 +216,7 @@ function rowPreview(batchRow: CatalogBatchRow, snapshot: CatalogSnapshot, storeI
   if (product.category && !category) errors.push("Category does not exist in the authenticated tenant");
   const storeAllowed = storeId === null || snapshot.stores.some((store) => store.id === storeId && store.tenant_id === tenantId);
   if (stock.mode !== "none" && (!storeId || !storeAllowed)) errors.push("Stock intent requires a verified tenant-owned store");
-  if (batchRow.image?.kind === "asset") warnings.push("Local image assets require the image publication step before apply");
+  if (batchRow.image?.kind === "asset") errors.push("Local asset publication is not enabled until the image ingest task");
   const expectedItemSnapshot = item ? {
     id: item.id, sku: item.sku, barcode: item.barcode, name: item.name, brand: item.brand,
     category_id: item.category_id, cost: item.cost, price: item.price, mrp: item.mrp ?? null,
@@ -243,7 +244,7 @@ function rowPreview(batchRow: CatalogBatchRow, snapshot: CatalogSnapshot, storeI
   }
   const stockKey = storeId && item ? snapshot.stock.find((entry) => entry.store_id === storeId && entry.item_id === item.id)?.qty ?? 0 : null;
   if (stock.mode === "set" && stockKey !== null && stock.quantity !== stockKey) fieldDiffs.stock = { before: stockKey, after: stock.quantity };
-  if (stock.mode === "delta" && stock.quantity !== 0) fieldDiffs.stock = { before: stockKey, after: stockKey === null ? null : stockKey + stock.quantity };
+  if (stock.mode === "delta" && stock.quantity !== 0) fieldDiffs.stock = { before: stockKey ?? 0, after: (stockKey ?? 0) + stock.quantity };
   const outcome = !item ? "create" : Object.keys(fieldDiffs).length ? "update" : "unchanged";
   return { source_row: batchRow.source_row, ...(item ? { item_id: item.id, expected_item_snapshot: expectedItemSnapshot, item_version: item.image_version ?? null, item_image_url: item.image_url ?? null } : {}), ...(stock.mode !== "none" ? { expected_stock_qty: stockKey ?? 0 } : {}), outcome, field_diffs: fieldDiffs, warnings, errors };
 }
@@ -265,8 +266,19 @@ export async function runCatalogImportOperation(
 ): Promise<ImportResult> {
   const validationErrors = validateCatalogImportBatch(operation.batch);
   if (validationErrors.length) {
+    const batchLevelErrors = validationErrors.filter((error) => !error.startsWith("rows["));
     const rows = operation.batch && Array.isArray(operation.batch.rows)
-      ? operation.batch.rows.map((row) => ({ source_row: row.source_row, outcome: "invalid" as const, field_diffs: {}, warnings: [], errors: validationErrors.filter((error) => error.startsWith(`rows[${operation.batch.rows.indexOf(row)}]`)) }))
+      ? operation.batch.rows.map((row, index) => {
+          const sourceRow = isRecord(row) && Number.isInteger(row.source_row) ? Number(row.source_row) : index + 1;
+          const rowErrors = validationErrors.filter((error) => error.startsWith(`rows[${index}]`));
+          return {
+            source_row: sourceRow,
+            outcome: "invalid" as const,
+            field_diffs: {},
+            warnings: [],
+            errors: rowErrors.length ? rowErrors : (batchLevelErrors.length ? [...batchLevelErrors] : ["Invalid batch"]),
+          };
+        })
       : [];
     return { batch_id: operation.batch?.batch_id ?? "", preview_hash: "", counts: counts(rows), rows };
   }
@@ -315,11 +327,20 @@ export async function runCatalogImportOperation(
       rows = batch.rows.map((row) => rowPreview(row, snapshot, stockNeeded ? storeId : null, actor.tenant_id));
       if (storeRequired && !snapshot.stores.some((store) => store.id === storeId && store.tenant_id === actor.tenant_id)) {
         for (const row of rows) {
-          const intent = batch.rows.find((candidate) => candidate.source_row === row.source_row)?.stock;
-          if (intent?.mode !== "none") {
+          const batchRow = batch.rows.find((candidate) => candidate.source_row === row.source_row);
+          const intent = batchRow?.stock;
+          const hasAttachment = (operation.attachments ?? []).some((att) => att.source_row === row.source_row);
+          if (intent?.mode !== "none" || hasAttachment) {
             row.outcome = "invalid";
             row.errors.push("Requested store does not belong to the authenticated tenant");
           }
+        }
+      }
+      for (const row of rows) {
+        const attachmentError = attachmentErrors.get(row.source_row);
+        if (attachmentError) {
+          row.outcome = "invalid";
+          row.errors.push(attachmentError);
         }
       }
       previewHash = await hashPreview(batch, rows, operation.attachments);
@@ -330,23 +351,24 @@ export async function runCatalogImportOperation(
     rows = batch.rows.map((row) => rowPreview(row, snapshot, stockNeeded ? storeId : null, actor.tenant_id));
     if (storeRequired && !snapshot.stores.some((store) => store.id === storeId && store.tenant_id === actor.tenant_id)) {
       for (const row of rows) {
-        const intent = batch.rows.find((candidate) => candidate.source_row === row.source_row)?.stock;
-        if (intent?.mode !== "none") {
+        const batchRow = batch.rows.find((candidate) => candidate.source_row === row.source_row);
+        const intent = batchRow?.stock;
+        const hasAttachment = (operation.attachments ?? []).some((att) => att.source_row === row.source_row);
+        if (intent?.mode !== "none" || hasAttachment) {
           row.outcome = "invalid";
           row.errors.push("Requested store does not belong to the authenticated tenant");
         }
       }
     }
+    for (const row of rows) {
+      const attachmentError = attachmentErrors.get(row.source_row);
+      if (attachmentError) {
+        row.outcome = "invalid";
+        row.errors.push(attachmentError);
+      }
+    }
     previewHash = await hashPreview(batch, rows, operation.attachments);
   }
-  for (const row of rows) {
-    const attachmentError = attachmentErrors.get(row.source_row);
-    if (attachmentError) {
-      row.outcome = "invalid";
-      row.errors.push(attachmentError);
-    }
-  }
-  if (attachmentErrors.size) previewHash = await hashPreview(batch, rows, operation.attachments);
   if (operation.operation === "preview") {
     for (const row of rows) {
       if (attachmentRows.has(row.source_row)) {

@@ -209,11 +209,16 @@ def classify_image_reference(
 
     reference = reference.strip()
     result["reference"] = reference
-    parsed = urlsplit(reference)
+    try:
+        parsed = urlsplit(reference)
+        port = parsed.port
+    except (ValueError, Exception):
+        return result
+
     if parsed.scheme.lower() in {"http", "https"} and parsed.hostname:
         safe_netloc = parsed.hostname
-        if parsed.port:
-            safe_netloc = f"{safe_netloc}:{parsed.port}"
+        if port:
+            safe_netloc = f"{safe_netloc}:{port}"
         safe_url = urlunsplit((parsed.scheme.lower(), safe_netloc, parsed.path, "", ""))
         result["reference"] = safe_url
         path_parts = [unquote(part) for part in parsed.path.split("/") if part]
@@ -271,7 +276,7 @@ def classify_image_reference(
     try:
         candidate.relative_to(base)
     except ValueError:
-        result["reference"] = path.as_posix()
+        result["reference"] = "<external_path>"
         return result
     result["reference"] = candidate.relative_to(base).as_posix()
     if not candidate.is_file():
@@ -464,7 +469,7 @@ def build_source_inventory(project_root: str | Path, r2_snapshot: Any = None) ->
                 if caller_path != relative and any(token in content for token in tokens)
             )
             if relative in caller_text and IMAGE_CONSUMER_PATTERNS.search(caller_text[relative]):
-                source_kind = "image_reference_consumer" if source_kind not in {"admin_importer", "edge_importer", "image_upload_authorization", "image_publication", "image_bytes_runtime"} else source_kind
+                source_kind = "image_reference_consumer" if source_kind not in {"admin_importer", "edge_importer", "image_upload_authorization", "image_publication", "image_bytes_runtime", "tooling", "legacy_tooling"} else source_kind
             sources_by_path[relative] = {
                 "source_path": relative,
                 "source_kind": source_kind,

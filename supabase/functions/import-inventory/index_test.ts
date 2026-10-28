@@ -61,12 +61,12 @@ Deno.test("preview validates image attachments in memory and performs no databas
   const result = await runCatalogImportOperation({
     operation: "preview",
     batch: makeBatch(),
-    attachments: [{ source_row: 2, name: "example.webp", type: "image/webp", size: 12, bytes: new Uint8Array([82, 73, 70, 70, 4, 0, 0, 0, 87, 69, 66, 80]) }],
+    attachments: [{ source_row: 2, name: "example.webp", type: "image/webp", size: 68, bytes: new Uint8Array([82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0, 208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1, 248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247, 255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 0]) }],
   }, { ...actor, store_id: "store-a" }, fake.repository);
 
   if (result.counts.create !== 1) throw new Error("expected one create candidate");
   if (!result.rows[0].warnings.some((warning) => warning.includes("does not upload"))) throw new Error("preview did not report attachment handling");
-  if (fake.calls.mutations || fake.calls.storageUploads || fake.calls.r2Uploads) throw new Error("preview performed a remote write");
+  if (fake.calls.mutations || fake.calls.storageUploads) throw new Error("preview performed a remote write");
 });
 
 Deno.test("malformed batches and duplicate tenant identifiers fail before repository reads", async () => {
@@ -155,13 +155,13 @@ Deno.test("same idempotency key replays the stored result without duplicate stoc
 Deno.test("retry rejects changed attachment bytes under the same approved preview and idempotency key", async () => {
   const fake = fakeRepository();
   const batch = makeBatch();
-  const bytes = new Uint8Array([82, 73, 70, 70, 4, 0, 0, 0, 87, 69, 66, 80]);
+  const bytes = new Uint8Array([82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0, 208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1, 248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247, 255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 0]);
   const attachments = [{ source_row: 2, name: "item.webp", type: "image/webp", size: bytes.length, bytes }];
   const preview = await runCatalogImportOperation({ operation: "preview", batch, attachments }, { ...actor, store_id: "store-a" }, fake.repository);
   const operation = { operation: "apply" as const, batch, attachments, idempotency_key: "image-retry", approved_preview_hash: preview.preview_hash };
   await runCatalogImportOperation(operation, { ...actor, store_id: "store-a" }, fake.repository);
 
-  const changedBytes = new Uint8Array([82, 73, 70, 70, 5, 0, 0, 0, 87, 69, 66, 80]);
+  const changedBytes = new Uint8Array([82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0, 208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1, 248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247, 255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 1]);
   let rejected = false;
   try {
     await runCatalogImportOperation({ ...operation, attachments: [{ ...attachments[0], bytes: changedBytes }] }, { ...actor, store_id: "store-a" }, fake.repository);

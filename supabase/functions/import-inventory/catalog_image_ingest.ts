@@ -1,3 +1,9 @@
+import {
+  MAX_IMAGE_BYTES,
+  sha256Hex,
+  validateWebpStructure,
+} from "../_shared/webp.ts";
+
 export type CatalogImageInput = {
   batch_id: string;
   idempotency_key: string;
@@ -34,22 +40,7 @@ export type CatalogImageAdapter = {
 
 export type CatalogImageResult =
   | { published: true; key: string; url: string; checksum: string }
-  | { published: false; key: string; checksum: string; orphaned_key: string; error: string };
-
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-
-async function sha256(bytes: Uint8Array): Promise<string> {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", copy.buffer));
-  return [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
-}
-
-function isWebp(bytes: Uint8Array): boolean {
-  return bytes.length >= 12 &&
-    String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
-    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
-}
+  | { published: false; key: string; checksum: string; orphaned_key: string | null; error: string };
 
 function safeSegment(value: string): string {
   return value.toUpperCase().replace(/[^A-Z0-9-]/g, "_").slice(0, 120) || "ITEM";
@@ -89,18 +80,20 @@ export async function publishCatalogAttachment(input: CatalogImageInput, adapter
     return { published: true, key, url, checksum };
   }
   if (current.key !== input.source_image_key || current.version !== input.source_image_version) {
-    return { published: false, key, checksum, orphaned_key: key, error: "Product image changed after preview; no new upload was attempted" };
+    return { published: false, key, checksum, orphaned_key: null, error: "Product image changed after preview; no new upload was attempted" };
   }
   const ticket = await adapter.issueTicket({ key, itemId: input.item_id, contentType: "image/webp", maxBytes: file.size });
-  const uploaded = await adapter.upload({
-    key,
-    ticket,
-    file: new File([file.bytes.slice().buffer as ArrayBuffer], file.name || `${safeSegment(input.sku)}.webp`, { type: "image/webp" }),
-  });
-  if (uploaded.key !== key) throw new Error("Worker returned a different object key than the scoped upload ticket");
-  const url = checkedObjectUrl(uploaded.url, adapter.publicBaseUrl, key);
 
+  let uploaded: { key: string; url: string };
   try {
+    uploaded = await adapter.upload({
+      key,
+      ticket,
+      file: new File([file.bytes.slice().buffer as ArrayBuffer], file.name || `${safeSegment(input.sku)}.webp`, { type: "image/webp" }),
+    });
+    if (uploaded.key !== key) throw new Error("Worker returned a different object key than the scoped upload ticket");
+    const url = checkedObjectUrl(uploaded.url, adapter.publicBaseUrl, key);
+
     await adapter.publish({
       itemId: input.item_id,
       storeId: input.store_id,
@@ -114,7 +107,7 @@ export async function publishCatalogAttachment(input: CatalogImageInput, adapter
   } catch (error) {
     const stateAfterFailure = await adapter.currentImageState(input.item_id, input.tenant_id).catch(() => null);
     if (stateAfterFailure?.key === key && stateAfterFailure.checksum === checksum) {
-      return { published: true, key, url, checksum };
+      return { published: true, key, url: checkedObjectUrl(`${adapter.publicBaseUrl.replace(/\/$/, "")}/${key}`, adapter.publicBaseUrl, key), checksum };
     }
     // The immutable object is retained and reported. Cleanup requires a separate
     // verified reference check; a CAS conflict never authorizes deletion.
@@ -133,10 +126,14 @@ export async function publishCatalogAttachment(input: CatalogImageInput, adapter
 }
 
 export async function validateCatalogImageFile(file: CatalogImageFile): Promise<string> {
-  if (file.type !== "image/webp" || file.size <= 0 || file.size > MAX_IMAGE_BYTES || file.size !== file.bytes.byteLength || !isWebp(file.bytes)) {
+  if (file.type !== "image/webp" || file.size <= 0 || file.size > MAX_IMAGE_BYTES || file.size !== file.bytes.byteLength) {
     throw new Error("Image attachment must be a valid WebP file no larger than 10 MiB");
   }
-  const checksum = await sha256(file.bytes);
+  const structure = validateWebpStructure(file.bytes);
+  if (!structure.valid) {
+    throw new Error(`Image attachment must be a valid WebP file: ${structure.error}`);
+  }
+  const checksum = await sha256Hex(file.bytes);
   if (file.sha256 && file.sha256 !== checksum) throw new Error("Image attachment SHA-256 does not match the supplied checksum");
   return checksum;
 }

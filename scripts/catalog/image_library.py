@@ -7,7 +7,7 @@ from collections import defaultdict
 from pathlib import PurePosixPath
 from typing import Any, Iterable
 
-IMAGE_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
+IMAGE_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 

@@ -1,3 +1,9 @@
+import {
+  MAX_IMAGE_BYTES,
+  sha256Hex,
+  validateWebpStructure,
+} from "../_shared/webp.ts";
+
 export type ImagePublishRequest = {
   itemId: string;
   tenantId: string;
@@ -36,13 +42,13 @@ export function validateImagePublishRequest(request: ImagePublishRequest): strin
 }
 
 export async function verifyUploadedWebp(contentType: string | null, bytes: Uint8Array, expectedChecksum: string): Promise<string | null> {
-  if (contentType?.split(";")[0].trim().toLowerCase() !== "image/webp" || bytes.length === 0 || bytes.length > 10 * 1024 * 1024) {
+  if (contentType?.split(";")[0].trim().toLowerCase() !== "image/webp" || bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) {
     return "Uploaded object must be a WebP image no larger than 10 MiB";
   }
-  if (String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF" || String.fromCharCode(...bytes.slice(8, 12)) !== "WEBP") return "Uploaded object is not a valid WebP payload";
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", copy.buffer));
-  const checksum = [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const structure = validateWebpStructure(bytes);
+  if (!structure.valid) {
+    return structure.error;
+  }
+  const checksum = await sha256Hex(bytes);
   return checksum === expectedChecksum ? null : "Uploaded object SHA-256 does not match the publish request";
 }

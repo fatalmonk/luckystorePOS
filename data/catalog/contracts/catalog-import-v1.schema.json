@@ -86,7 +86,7 @@
                   "kind": { "const": "asset" },
                   "path": {
                     "type": "string",
-                    "pattern": "^data/catalog/images/(?!.*(?:^|/)\\.\\.?(/|$))[^\\\\?#]+$"
+                    "pattern": "^(?!.*(?:^|/)\\.\\.?(?:/|$))data/catalog/images/[^\\\\?#]+$"
                   },
                   "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
                 }

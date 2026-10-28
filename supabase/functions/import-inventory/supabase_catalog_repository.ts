@@ -66,7 +66,8 @@ export function createSupabaseCatalogRepository(client: SupabaseClientLike, imag
 
       const stock: CatalogSnapshot["stock"] = [];
       const itemIds = [...items.keys()];
-      if (storeId && itemIds.length) {
+      const isStoreVerified = storeId && stores.some((s) => s.id === storeId && s.tenant_id === actor.tenant_id);
+      if (isStoreVerified && itemIds.length) {
         for (const group of chunks(itemIds)) {
           const { data, error } = await client.from("stock_levels")
             .select("store_id, item_id, qty")
@@ -134,55 +135,72 @@ export function createSupabaseCatalogRepository(client: SupabaseClientLike, imag
           continue;
         }
 
-        const { data, error } = await client.rpc("catalog_import_row_apply", {
-          p_batch_row_id: batchRun.id,
-          p_actor_id: actor.id,
-          p_tenant_id: actor.tenant_id,
-          p_store_id: storeId,
-          p_source_row: row.source_row,
-          p_expected_item_id: approved.item_id ?? null,
-          p_expected_image_version: approved.item_version ?? null,
-          p_expected_image_url: approved.item_image_url ?? null,
-          p_expected_item_snapshot: approved.expected_item_snapshot ?? null,
-          p_expected_stock_qty: approved.expected_stock_qty ?? null,
-          p_product: row.product,
-          p_stock: row.stock,
-          p_image_url: row.image?.kind === "url" ? row.image.url : null,
-          p_has_image: row.image?.kind === "url",
-        });
-        if (error) {
-          results.push({ ...approved, outcome: "invalid", errors: ["Row could not be applied; correct the data or preview again"] });
+        const attachment = attachmentsBySourceRow.get(row.source_row);
+        if (attachment && (!imageAdapter || !storeId)) {
+          results.push({ ...approved, outcome: "invalid", errors: ["R2 image publisher or verified store is unavailable"] });
           continue;
         }
-        const applied = typeof data === "string" ? JSON.parse(data) : data;
+
+        let appliedData: any;
+        try {
+          const { data, error } = await client.rpc("catalog_import_row_apply", {
+            p_batch_row_id: batchRun.id,
+            p_actor_id: actor.id,
+            p_tenant_id: actor.tenant_id,
+            p_store_id: storeId,
+            p_source_row: row.source_row,
+            p_expected_item_id: approved.item_id ?? null,
+            p_expected_image_version: approved.item_version ?? null,
+            p_expected_image_url: approved.item_image_url ?? null,
+            p_expected_item_snapshot: approved.expected_item_snapshot ?? null,
+            p_expected_stock_qty: approved.expected_stock_qty ?? null,
+            p_product: row.product,
+            p_stock: row.stock,
+            p_image_url: row.image?.kind === "url" ? row.image.url : null,
+            p_has_image: row.image?.kind === "url",
+          });
+          if (error) {
+            results.push({ ...approved, outcome: "invalid", errors: ["Row could not be applied; correct the data or preview again"] });
+            continue;
+          }
+          appliedData = data;
+        } catch (err) {
+          results.push({ ...approved, outcome: "invalid", errors: [err instanceof Error ? err.message : "Row mutation failed"] });
+          continue;
+        }
+
+        const applied = typeof appliedData === "string" ? JSON.parse(appliedData) : appliedData;
         let result: PreviewRow = { ...approved, item_id: applied.item_id, outcome: applied.outcome, field_diffs: applied.field_diffs ?? approved.field_diffs };
-        const attachment = attachmentsBySourceRow.get(row.source_row);
         if (attachment) {
-          if (!imageAdapter || !storeId) {
-            result = { ...result, outcome: "invalid", errors: ["R2 image publisher or verified store is unavailable"] };
-          } else {
-            const imageState = approved.expected_item_snapshot ?? {};
+          const imageState = approved.expected_item_snapshot ?? {};
+          try {
             const published = await publishCatalogAttachment({
               batch_id: batch.batch_id,
               idempotency_key: idempotencyKey,
               source_row: row.source_row,
               actor_id: actor.id,
               tenant_id: actor.tenant_id,
-              store_id: storeId,
+              store_id: storeId!,
               item_id: applied.item_id,
               sku: row.product.sku,
               source_image_key: typeof imageState.image_key === "string" ? imageState.image_key : null,
               source_image_version: typeof imageState.image_version === "number" ? imageState.image_version : 0,
               file: attachment,
-            }, imageAdapter);
+            }, imageAdapter!);
             if (!published.published) {
+              const warningMsg = published.orphaned_key
+                ? `Uploaded image candidate retained for review: ${published.orphaned_key}`
+                : "Image publication failed before upload; no remote object was retained";
               result = {
                 ...result,
-                outcome: "invalid",
-                errors: [published.error],
-                warnings: [...result.warnings, `Uploaded image candidate retained for review: ${published.orphaned_key}`],
+                warnings: [...result.warnings, warningMsg, `Product was updated but image publication failed: ${published.error}`],
               };
             }
+          } catch (pubErr) {
+            result = {
+              ...result,
+              warnings: [...result.warnings, `Product was updated but image publication threw an exception: ${pubErr instanceof Error ? pubErr.message : "Unknown publication error"}`],
+            };
           }
         }
         results.push(result);
