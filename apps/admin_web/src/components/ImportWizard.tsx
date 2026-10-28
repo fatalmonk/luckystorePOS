@@ -10,18 +10,31 @@ import { z } from 'zod';
 interface FieldMeta {
   key: string;
   label: string;
-  type: 'string' | 'number' | 'select';
+  type: 'string' | 'number' | 'select' | 'boolean';
   options?: string[];
   required?: boolean;
-  defaultValue?: string | number;
+  defaultValue?: string | number | boolean;
+}
+type ImportCell = string | number | boolean;
+
+export interface ImportPreviewResult {
+  batch_id: string;
+  preview_hash: string;
+  counts: { create: number; update: number; unchanged: number; ambiguous: number; invalid: number };
+  rows: Array<{ source_row: number; outcome: string; field_diffs: Record<string, { before: unknown; after: unknown }>; warnings: string[]; errors: string[] }>;
+  images?: Array<{ source_row: number; name: string; size: number; sha256: string }>;
 }
 
 interface ImportWizardProps {
   title: string;
   sampleFileName: string;
-  sampleData: Record<string, string | number>[];
+  sampleData: Record<string, ImportCell>[];
   validationSchema: z.ZodObject<Record<string, z.ZodTypeAny>>;
-  onImportSubmit: (data: Record<string, string | number>[]) => Promise<void>;
+  onImportSubmit: (data: Record<string, ImportCell>[]) => Promise<void>;
+  imageAttachments?: boolean;
+  onPreview?: (data: Record<string, ImportCell>[], attachments: Record<number, File>) => Promise<ImportPreviewResult>;
+  onApply?: (data: Record<string, ImportCell>[], attachments: Record<number, File>, preview: ImportPreviewResult) => Promise<void>;
+  previewTarget?: string;
   fieldMeta: FieldMeta[];
 }
 
@@ -31,14 +44,22 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   sampleData,
   validationSchema,
   onImportSubmit,
+  imageAttachments = false,
+  onPreview,
+  onApply,
+  previewTarget,
   fieldMeta,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [data, setData] = useState<Record<string, string | number>[]>([]);
+  const [data, setData] = useState<Record<string, ImportCell>[]>([]);
   const [errors, setErrors] = useState<Record<number, Record<string, string>>>({});
   const [isImporting, setIsImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<Record<number, File>>({});
+  const [preview, setPreview] = useState<ImportPreviewResult | null>(null);
+  const [reviewed, setReviewed] = useState(false);
+  const twoPhase = Boolean(onPreview && onApply);
 
   // Download Sample CSV
   const handleDownloadSample = () => {
@@ -51,7 +72,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   };
 
   // Run Zod validation on data
-  const validateData = useCallback((rows: Record<string, string | number>[]) => {
+  const validateData = useCallback((rows: Record<string, ImportCell>[]) => {
     const newErrors: Record<number, Record<string, string>> = {};
     rows.forEach((row, index) => {
       const rowErrors: Record<string, string> = {};
@@ -102,7 +123,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
       skipEmptyLines: true,
       complete: (results) => {
         try {
-          const json = results.data as Record<string, string | number>[];
+          const json = results.data as Record<string, ImportCell>[];
 
           if (json.length === 0) {
             setErrorMessage('The uploaded file is empty');
@@ -117,7 +138,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
           // Clean & normalize parsed data keys to match field meta keys
           const normalized = json.map((row) => {
-            const newRow: Record<string, string | number | undefined | null> = {};
+            const newRow: Record<string, ImportCell | undefined | null> = {};
             fieldMeta.forEach((field) => {
               // Match keys case-insensitively or via exact label
               const matchedKey = Object.keys(row).find(
@@ -128,15 +149,20 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
               if (field.type === 'number') {
                 const numVal = Number(rawVal);
                 newRow[field.key] = isNaN(numVal) || rawVal === '' ? '' : numVal;
+              } else if (field.type === 'boolean') {
+                newRow[field.key] = rawVal === '' ? undefined : rawVal === true || String(rawVal).toLowerCase() === 'true' || String(rawVal).toLowerCase() === 'active';
               } else {
                 newRow[field.key] = rawVal;
               }
             });
-            return newRow as Record<string, string | number | undefined | null>;
+            return newRow as Record<string, ImportCell | undefined | null>;
           });
 
-          setData(normalized as Record<string, string | number>[]);
-          validateData(normalized as Record<string, string | number>[]);
+          setData(normalized as Record<string, ImportCell>[]);
+          setAttachments({});
+          setPreview(null);
+          setReviewed(false);
+          validateData(normalized as Record<string, ImportCell>[]);
           setErrorMessage(null);
           setStep(2);
         } catch (err: unknown) {
@@ -158,9 +184,9 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   });
 
   // Handle cell edit
-  const handleCellChange = (index: number, key: string, value: string | number) => {
+  const handleCellChange = (index: number, key: string, value: ImportCell | undefined) => {
     const updated = [...data];
-    let finalVal: string | number = value;
+    let finalVal: ImportCell | undefined = value;
     const field = fieldMeta.find((f) => f.key === key);
     if (field?.type === 'number') {
       const num = Number(value);
@@ -168,17 +194,32 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
     }
     updated[index] = { ...updated[index], [key]: finalVal };
     setData(updated);
+    setPreview(null);
+    setReviewed(false);
     validateData(updated);
+  };
+
+  const handleAttachmentChange = (index: number, file?: File) => {
+    setAttachments((current) => {
+      const next = { ...current };
+      if (file) next[index + 2] = file;
+      else delete next[index + 2];
+      return next;
+    });
+    setPreview(null);
+    setReviewed(false);
   };
 
   // Add empty row
   const handleAddRow = () => {
-    const newRow: Record<string, string | number> = {};
+    const newRow: Record<string, ImportCell> = {};
     fieldMeta.forEach((f) => {
       newRow[f.key] = f.defaultValue !== undefined ? f.defaultValue : '';
     });
     const updated = [...data, newRow];
     setData(updated);
+    setPreview(null);
+    setReviewed(false);
     validateData(updated);
   };
 
@@ -186,6 +227,13 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
   const handleDeleteRow = (index: number) => {
     const updated = data.filter((_, i) => i !== index);
     setData(updated);
+    setAttachments((current) => Object.fromEntries(Object.entries(current).flatMap(([row, file]) => {
+      const rowNumber = Number(row);
+      if (rowNumber === index + 2) return [];
+      return [[String(rowNumber > index + 2 ? rowNumber - 1 : rowNumber), file]];
+    })));
+    setPreview(null);
+    setReviewed(false);
     validateData(updated);
   };
 
@@ -210,8 +258,18 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
     setIsImporting(true);
     setErrorMessage(null);
     try {
-      await onImportSubmit(data);
-      setImportSuccess(true);
+      if (twoPhase) {
+        if (!preview && onPreview) {
+          setPreview(await onPreview(data, attachments));
+          setReviewed(false);
+        } else if (preview && onApply && reviewed) {
+          await onApply(data, attachments, preview);
+          setImportSuccess(true);
+        }
+      } else {
+        await onImportSubmit(data);
+        setImportSuccess(true);
+      }
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Failed to import data');
     } finally {
@@ -334,6 +392,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </th>
                   ))}
+                  {imageAttachments && <th className="py-3 px-4 min-w-[180px]">WebP Attachment</th>}
                   <th className="py-3 px-4 w-12 text-center">Actions</th>
                 </tr>
               </thead>
@@ -347,9 +406,15 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                         const cellError = rowErrors[field.key];
                         return (
                           <td key={field.key} className="py-2 px-3 relative">
-                            {field.type === 'select' ? (
+                            {field.type === 'boolean' ? (
+                              <select aria-label={`${field.label} for row ${index + 1}`} value={row[field.key] === undefined ? '' : String(row[field.key])} onChange={(e) => handleCellChange(index, field.key, e.target.value === '' ? undefined : e.target.value === 'true')}>
+                                <option value="">Keep current</option>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                              </select>
+                            ) : field.type === 'select' ? (
                               <select
-                                value={row[field.key] || ''}
+                                value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
                                 className={`w-full bg-white dark:bg-zinc-900 border px-2 py-1.5 rounded-lg focus:ring-1 focus:ring-warm-accent transition ${
                                   cellError ? 'border-red-500 focus:ring-red-500' : 'border-warm-border-warm'
@@ -365,7 +430,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                             ) : (
                               <input
                                 type={field.type === 'number' ? 'number' : 'text'}
-                                value={row[field.key] ?? ''}
+                                value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
                                 className={`w-full bg-white dark:bg-zinc-900 border px-2 py-1.5 rounded-lg focus:ring-1 focus:ring-warm-accent transition ${
                                   cellError ? 'border-red-500 focus:ring-red-500' : 'border-warm-border-warm'
@@ -383,6 +448,15 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                           </td>
                         );
                       })}
+                      {imageAttachments && (
+                        <td className="py-2 px-3">
+                          <label className="text-[10px] text-warm-muted">
+                            WebP image for row {index + 1}
+                            <input aria-label={`WebP image for row ${index + 1}`} type="file" accept="image/webp,.webp" onChange={(e) => handleAttachmentChange(index, e.target.files?.[0])} className="block w-44 text-[10px]" />
+                          </label>
+                          {attachments[index + 2] && <span className="text-[10px]">{attachments[index + 2].name} ({attachments[index + 2].size} bytes)</span>}
+                        </td>
+                      )}
                       <td className="py-2 px-4 text-center">
                         <button
                           onClick={() => handleDeleteRow(index)}
@@ -427,11 +501,23 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                 <CheckCircle size={36} />
               </div>
               <div className="space-y-2">
-                <h3 className="font-display font-black text-xl text-warm-fg">Ready to Import!</h3>
+                <h3 className="font-display font-black text-xl text-warm-fg">{twoPhase && !preview ? 'Ready to Preview' : twoPhase ? 'Review Exact Preview' : 'Ready to Import!'}</h3>
                 <p className="text-sm text-warm-muted">
                   All {data.length} records have passed frontend validation flawlessly. Ready to update your database.
                 </p>
               </div>
+
+              {preview && (
+                <div className="text-left border border-warm-border-warm rounded-xl p-4 space-y-2 break-all" data-testid="server-preview">
+                  {previewTarget && <p>Target: {previewTarget}</p>}
+                  <p>Batch ID: {preview.batch_id}</p>
+                  <p>Batch hash: {preview.preview_hash}</p>
+                  <p>Changes: {preview.counts.create} create, {preview.counts.update} update, {preview.counts.unchanged} unchanged, {preview.counts.ambiguous} ambiguous, {preview.counts.invalid} invalid</p>
+                  {preview.images?.map((image) => <p key={image.source_row}>Image row {image.source_row}: {image.name}, {image.size} bytes, SHA-256 {image.sha256}</p>)}
+                  {preview.rows.map((row) => <div key={row.source_row}><p>Row {row.source_row}: {row.outcome}</p>{Object.entries(row.field_diffs).map(([key, diff]) => <p key={key}>{key}: {String(diff.before ?? '∅')} → {String(diff.after ?? '∅')}</p>)}{[...row.errors, ...row.warnings].map((message, index) => <p key={index}>{message}</p>)}</div>)}
+                  <label className="flex gap-2 items-start"><input aria-label="I reviewed this exact preview" type="checkbox" checked={reviewed} disabled={preview.counts.invalid > 0 || preview.counts.ambiguous > 0} onChange={(e) => setReviewed(e.target.checked)} />I reviewed this exact preview</label>
+                </div>
+              )}
 
               <div className="border border-warm-border-warm rounded-xl p-4 divide-y divide-warm-border-warm text-sm bg-warm-bg/30">
                 <div className="flex justify-between py-2">
@@ -446,7 +532,14 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
               <div className="flex items-center justify-between gap-4 pt-4">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (twoPhase) {
+                      setPreview(null);
+                      setReviewed(false);
+                      setErrorMessage(null);
+                    }
+                    setStep(2);
+                  }}
                   disabled={isImporting}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-warm-bg hover:bg-warm-border-warm text-warm-fg border border-warm-border-warm font-semibold text-xs rounded-xl transition"
                 >
@@ -455,7 +548,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                 </button>
                 <button
                   onClick={handleImportSubmit}
-                  disabled={isImporting}
+                  disabled={isImporting || (twoPhase && preview !== null && !reviewed)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-warm-accent hover:bg-warm-accent-light text-white font-semibold text-xs rounded-xl shadow-level-2 transition disabled:opacity-50"
                 >
                   {isImporting ? (
@@ -465,7 +558,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                     </>
                   ) : (
                     <>
-                      Confirm &amp; Import
+                      {twoPhase ? (preview ? 'Apply Reviewed Batch' : 'Review Batch') : 'Confirm & Import'}
                       <CheckCircle size={14} />
                     </>
                   )}
