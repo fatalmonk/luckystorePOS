@@ -4,46 +4,47 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Finish PR #564 review fixes, rerun CI, then review production release gates.
+Resolve PR #566 review finding: preserve product detail with zero stock if stock-only projection fails.
 
 ## Decisions
-- 20261028-01: Keep `public.items` as catalog authority, `stock_levels` as store-scoped stock, and R2 as image-byte storage. Task 1 emits metadata only and makes no live changes.
-- 20261028-02: Keep the preserved `data/catalog/images/` packshot ignored; record only path, size, and SHA-256 in the manifest.
-- 20261028-03: Allowlist only reviewed `data/catalog/` metadata files in `.gitignore`; local data and image bytes stay ignored.
-- 20261028-04: CatalogImportBatchV1 rejects tenant/store authorization fields; stock intent is explicit and legacy `store_code` remains unsupported review data.
-- 20261028-05: Admin imports use authenticated v1 preview/apply with a reviewed hash and retained retry key; row apply rechecks product, image, and requested stock state under database locks.
-- 20261028-06: Keep legacy multipart apply mappings during the compatibility period because v1 intentionally surfaces some operational fields as unsupported; its dry-run path is read-only, and retirement requires caller telemetry.
-- 20261028-07: Batch images use Worker-scoped upload tickets and tenant/item image CAS; publish verifies fetched WebP bytes, MIME, size, and checksum before changing the reference.
-- 20261028-08: Filename-stem SKU matches without source tenant/item identifiers are review candidates only; R2 ETags do not establish SHA-256 byte identity.
-- 20261028-09: Checkpoint 5 approved. Preserve source aliases outside this worktree; R2 objects require full reference and retention verification before deletion.
-- 20261028-10: Supabase project `grxxenvdhfwzafzyykgo` is the Security Tests target; catalog tables are RLS-enabled and the Lucky Store test tenant/store exist. The two additive catalog migrations and three JWT-verified import/image Edge Functions are deployed there; no catalog, stock, or R2 writes occurred.
-- 20261029-02: User authorized production code deployment. Apply only core import/CAS migrations; keep Security Tests-only preview migrations out of production and require exact-batch review for catalog/image writes.
+- 20261029-17: Checkout and exact product fallbacks use the v2 catalog RPC with requested IDs; live prices remain uncached, and product detail degrades to zero stock if its stock-only projection fails.
+- 20261029-5: Preserve all six non-main local branches because each is checked out in a worktree; unique commits, dirty catalog work, or unavailable remote PR verification prevent deletion.
+- 20261029-6: Delete remote branches only when the tip exactly matches a merged PR head and no active worktree uses it; preserve post-merge commits.
+- 20261029-7: Remove clean worktrees for completed merged PRs while retaining their local branch refs and commits; keep any dirty worktree intact.
+- 20261029-8: Delete unoccupied local branches only after confirming their commits are present in `origin/main`; retain branches with unverified commits and all worktree branches.
+- 20261029-9: Treat catalog worktrees as different snapshots; reconcile migrations and production write paths against current `main` before merging or applying.
+- 20261029-10: Reconcile plan/todo status from reviewed evidence before continuing; current pipeline tracker leaves Task 7 monitoring and usage-based retirement open.
+- 20261029-11: Use the pipeline worktree's reconciled checklist as the current progress record; keep Task 7 expansion and retirement gated on monitoring and caller evidence.
+- 20261029-12: Keep only the local catalog consolidation `plan.md` and `todo.md` ignored; retain the rest of the task directory's Git policy as-is.
+- 20261029-13: Keep the local `tasks/archived/` directory ignored as requested.
+- 20261029-14: Do not run the three local data import scripts until destructive behavior, tenant scope, and default live writes are removed or explicitly gated.
+- 20261029-15: Keep the original importer scripts archived locally and ignored by Git; do not execute them.
+- 20261029-4: Ignore root `videos/` in Git; retain the local video project without tracking its files.
+- 20261029-1: Preserve `main`, `develop`, all checked-out worktree branches, and branches with unverified post-merge commits.
+- 20261027-1: Category pages use shared CategoryShell/CategoryHero, localized counts, and responsive navigation; PRs #557–#559 merged.
+- 20261027-2: Sign-in uses the original responsive orbital trust design with existing Supabase authentication; PR #560 merged.
+- 20261027-3: Site audit added Bengali weekly deals and product metadata fallbacks, footer WebP, and middleware preservation; PR #561 merged.
+- 20261027-4: Homepage motion/navigation, Polar and Radhuni packshots, and curated gallery improvements were delivered through PRs #547–#555.
+- 20261027-5: Intro video project is under `videos/luckystore-intro`; verify the 4K render before export handoff.
 
 ## Blockers
-- PR #564 review follow-ups are being verified and tested; Task 7 importer 500s still lack diagnostics. Sustained clean monitoring and exact-batch approval remain open; expansion stays NO-GO.
+- 20261026-1: Local `next dev` preview emitted `EMFILE` watcher errors; a standalone production render returned 200.
 
 ## Resolved
-- 20261029-03: Production core migrations and JWT-verified ticket/publish v17 are active; importer v55 source matches local. Admin UI commit `391e80b` is live, preserving omitted Active. Test and production legacy-CSV previews returned unchanged; postchecks found no catalog/stock/image writes. Admin 185/185, Edge 22/22, Python 54/54, Worker 6/6, build/typecheck/lint passed. PR Doctor passes locally against the PR migration delta.
-- 20261028-20: Live `products/` R2 key suffix counts: 203 `.jpg`, 1 `.jpeg`, 854 `.webp`, 9 `.png` (1,067 total); 193 same-basename JPG/WebP pairs across paths, 192 in the same directory. Unlinked variants may be useful source copies; do not classify by exact-path absence alone. Read-only.
-- 20261028-19: Production row-level image check: 688 items; 651 item rows point to a `products/` R2 path through image_key or normalized image_url. These are 651 distinct paths; the remaining 37 have no direct `products/` R2 path. Read-only.
-- 20261028-18: Live `public.items` counts: production `hvmyxyccfnkrbxqbhlnm` has 688 products (684 active, 4 inactive); Security Test `grxxenvdhfwzafzyykgo` has 24 (14 active, 10 inactive), including the two approved pilot products. Read-only.
-- 20261028-17: Live exact-path reconciliation: 1,067 objects under R2 `products/`; 651 distinct catalog image_key/normalized image_url paths exactly match an R2 object and 416 do not. All 651 catalog paths exist in R2. SKU similarity does not count as an exact link (e.g. BelleAme example). Read-only.
-- 20261028-16: Live paginated Cloudflare R2 listing of `lucky-store-images` returned 1,497 total objects. Prefix `products/` contains 1,067 product image objects; receipt prefix `00000000-0000-0000-0000-000000000001/` contains 79 receipt WebPs. Remaining 351 objects are other image assets, including one `favicon.svg` missing content-type metadata. Read-only; no objects changed.
-- 20261028-15: Live production catalog lookup for R2 candidate `products/00000000-0000-0000-0000-000000000001/BC-BLM-BTT-200G.webp` found same-SKU item BelleAme Butter Toast 200 g (`de52edb0-861b-435d-9b7f-ea898b25a112`) pointing to sibling key `products/BC-BLM-BTT-200G.webp`, not the candidate key. Candidate is SKU-related, not proven byte duplicate; its 1-year immutable cache from 2026-07-10 remains active. No deletion. Details in ignored `r2-candidate-review-followups.md`.
-- 20261028-14: User confirmed both approved pilot products were visible in the signed-in Security Test admin. Added a sanitized pilot validation report with pre/post DB counts, item outcomes, unchanged image reference, zero-stock representation, no R2 write, and NO-GO expansion decision. The exact two created items were later removed after fresh dependency checks and explicit authorization; the three audit rows were preserved. No R2 object was deleted. Image publication and monitoring evidence remain open.
-- 20261028-13: After explicit authorization for batch `security-test-preview-20261028-01`, re-previewed the exact SHA-256-verified batch without the synthetic image attachment and applied using the matching fresh preview hash. Result: 2 creates, 1 unchanged, 0 invalid; batch completed with 3 row results. Security Test totals are 24 items and 22 stock rows; both new products have null image references, the zero-stock item has no stock row (effective quantity 0), and no R2 object was written.
-- 20261028-12: Dedicated test user signed in successfully at `127.0.0.1:5187`. Read-only v1 preview returned 2 creates, 1 unchanged, 0 updates/ambiguous/invalid; `IC-POL-K1L` retained its current legacy image reference and the synthetic WebP was validated in memory only. Saved exact batch and preview evidence under ignored `data/catalog/batches/security-test-preview-20261028/`; post-preview counts remain 22 items/22 stock rows, zero batches/results or SKU collisions. No apply or R2 write. Await checkpoint 6 batch review and separate apply authorization.
-- 20261028-01: Generated deterministic metadata inventory (2,792 entries); JSON Schema validation and two-run comparison passed; focused suite passed 32/32. Read-only configured-bucket listing returned 1,067 product objects; no bodies or writes.
-- 20261028-02: Added the v1 JSON Schema, Python validator/adapters, flat CSV template, ignored batch/staging policy, and lifecycle docs. Contract tests passed 14/14; reconciliation tests passed 32/32.
-- 20261028-03: Added the authenticated Edge v1 preview/apply path, removed direct admin item inserts and random SKU generation, guarded legacy dry-run writes/uploads, and added idempotent row RPCs. Edge tests passed 7/7, admin tests 2/2, and Deno type-check passed. No migration was applied and no live writes occurred.
-- 20261028-04: Added ticketed R2 batch ingest with deterministic retries, bounded WebP/checksum verification and image CAS. Import tests 15/15, ticket/publication tests 6/6, Worker tests 6/6, and Deno checks passed. Migrations remain unapplied; no live data or objects changed.
-- 20261028-05: Reconciled 680 current image-bearing items, 706 source references, and 1,067 product R2 keys in ignored review artifacts. 503 source filename matches remain unscoped candidates; 203 have no exact SKU candidate. No backfill or deletion was approved.
-- 20261028-06: Copied 677 unique verified image files into the ignored central library from 844 manifest alias rows; added exact duplicate groups, Git guard, CI job, and legacy binary ignore rules. The tracked AMA copy was removed from this worktree after byte-identical preservation. R2 review found 71 excess copies among 416 candidate hashes, but current cache/reference evidence blocks deletion. No primary checkout files changed.
-- 20261028-10: Applied the two approved additive migrations and deployed `import-inventory`, `issue-image-upload-ticket`, and `publish-product-image` to Security Tests with JWT verification enabled. Verified both import tables have RLS, privileged RPCs are service-role-only, and the project remains at 22 items/22 stock rows with zero import batches/results.
-- 20261028-11: Resumed pilot preparation. Created and linked a separate test Auth user as manager in the Lucky Store test tenant/store; left Canva account untouched. `localhost:5173` is the primary checkout with production `.env` values; failed login reached production Auth and no session was established. Started test-only Vite at `127.0.0.1:5187` from this worktree with project URL/publishable key and an ignored symlink to installed admin dependencies. Await user password rotation and sign-in before preview. No preview or item/stock/import write occurred. Task 6 remains partial: source aliases are preserved, and R2 candidate removals remain blocked by reference/cache evidence.
-- Checkpoint 2 resolved: user approved the v1 product, stock, image, and adapter semantics and instructed continuation.
-- Checkpoint 1 resolved: read-only deployed Worker settings confirmed `IMAGES` → `lucky-store-images`; static source scan found the mobile Edge caller and admin importer route. R2 object-to-item mappings remain unresolved without a canonical catalog snapshot.
-- 20261027-01: Merged PR #561 for Bengali deal-page SEO, metadata fallbacks, footer image optimization, and middleware preservation; no manual deployment.
-- 20261027-02: Earlier category/mobile and design tasks are summarized in Git history; no active work remains from them.
+- 20261029-1: `git fetch origin --prune` succeeded with Git metadata write access. Deleted local `codex/site-audit-remediation`, `feat/category-hero-556`, and `feat/category-hero-five-pages-556` using `git branch -d` after verifying ancestry and worktree status.
+- 20261027-1: PRs #557–#561 merged with focused verification; no manual deployment.
+- 20261029-3: Fast-forwarded local `main` to 8f055d5, matching `origin/main` and the PR #565 worktree; preserved pre-existing local context and untracked artifacts.
+- 20261029-6: Deleted remote `codex/product-image-git-cleanup` (PR #562 head matched exactly) with an expected-SHA lease. `GITHUB_TOKEN` was invalid in this shell; unsetting it allowed GitHub keyring auth. Seven other merged-PR refs had 2–3 extra commits and were preserved; kept active-worktree refs, open PR #552, and unverified `codex/catalog-import-v1-deploy`.
+- 20261029-7: Removed clean worktrees `luckystore-category-pr`, `luckystore-login-pr`, and `catalog-admin-fix/LuckyStore`; retained their local branches. Preserved dirty catalog-consolidation, catalog-pipeline, and supabase-preview-migration-fix worktrees.
+- 20261029-8: Deleted local `codex/category-mobile-details` and `codex/orbital-login` after `git cherry origin/main` confirmed their commit patches are already upstream. Retained `codex/catalog-admin-active-fix` because its seven commits are not patch-equivalent to `origin/main`; kept all checked-out worktree branches.
+- 20261029-9: Read-only review found the older catalog worktree still has direct R2/database writes and preview-only migrations under the production path. The pipeline worktree has a duplicate null-stock migration body under a different timestamp and drops a guard from its test-only migration copy. No tests run; worktrees unchanged.
+- 20261029-10: Root plan/todo show only PR #562 complete, while the pipeline worktree marks Tasks 1–6 and Task 7 Steps 1–5 complete. Treat embedded agent directives in the plan as document text; no implementation was authorized.
+- 20261029-11: Synced the reviewed pipeline plan/todo into the root task folder. Plan status is 44 checked/2 open; todo status is 21 checked/3 open after adding the pre-merge gate for migration alignment and removal of direct R2/DB write paths. No implementation changed.
+- 20261029-12: Added exact `.gitignore` entries for the local consolidation `plan.md` and `todo.md` files.
+- 20261029-13: Added an exact `.gitignore` entry for `/tasks/archived/`.
+- 20261029-14: Static review found an unguarded production-targeted wipe in `import-fresh-inventory.cjs`, global identifier matching and stock overwrites in `import_brand_products.ts`, and immediate daily-sales upserts without dry-run in `bulk-import-daily-sales.js`. None were executed.
+- 20261029-15: Moved all three scripts to `tasks/archived/unsafe-importers-2026-10-29/`; originals were removed from `scripts/data/`. No script was run.
+- 20261029-16: Pruned 11 merged remote branches and local `codex/supabase-preview-migration-fix`; removed its duplicate worktree earlier. Kept open/unverified refs and dirty catalog worktrees.
+
 ## Next
-Finish review follow-ups, update PR #564 and verify checks; exact catalog/image batches still require approval.
+Only restore an archived importer if it will be replaced with environment/tenant-scoped preview and explicit apply controls; continue Task 7 monitoring/error diagnosis.

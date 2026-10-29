@@ -354,6 +354,7 @@ lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.
 /apps/customer_storefront/public/products/polar/
 
 # Local untracked artifacts & config
+videos/
 .prettierrc
 assets/screenshots/
 /seo/reports/technical/
@@ -364,4 +365,9 @@ system-docs/agents/image-to-code-short.md
 !data/catalog/templates/
 data/catalog/templates/*
 !data/catalog/templates/catalog-import-v1.csv
+
+# Keep local consolidation planning documents out of Git.
+/tasks/inventory-catalog-consolidation/plan.md
+/tasks/inventory-catalog-consolidation/todo.md
+/tasks/archived/
 
