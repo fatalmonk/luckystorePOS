@@ -188,17 +188,20 @@ export function createSupabaseCatalogRepository(client: SupabaseClientLike, imag
               file: attachment,
             }, imageAdapter!);
             if (!published.published) {
+              // Distinguish: no upload occurred vs object uploaded but CAS publish failed
               const warningMsg = published.orphaned_key
-                ? `Uploaded image candidate retained for review: ${published.orphaned_key}`
-                : "Image publication failed before upload; no remote object was retained";
+                ? `Image uploaded but CAS publish failed; object ${published.orphaned_key} retained pending verified cleanup`
+                : "Image publication failed before upload; no remote object was created";
               result = {
                 ...result,
+                outcome: "partial_success",
                 warnings: [...result.warnings, warningMsg, `Product was updated but image publication failed: ${published.error}`],
               };
             }
           } catch (pubErr) {
             result = {
               ...result,
+              outcome: "partial_success",
               warnings: [...result.warnings, `Product was updated but image publication threw an exception: ${pubErr instanceof Error ? pubErr.message : "Unknown publication error"}`],
             };
           }
@@ -206,7 +209,10 @@ export function createSupabaseCatalogRepository(client: SupabaseClientLike, imag
         results.push(result);
       }
 
-      const status = results.some((row) => row.errors.length) ? "partial" : "completed";
+      const hasPartialRows = results.some((row) =>
+        row.errors.length > 0 || row.outcome === "partial_success"
+      );
+      const status = hasPartialRows ? "partial" : "completed";
       const { error: finishError } = await client.rpc("catalog_import_batch_finish", {
         p_batch_row_id: batchRun.id,
         p_status: status,

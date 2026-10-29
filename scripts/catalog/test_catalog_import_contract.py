@@ -1,7 +1,12 @@
 import csv
 import unittest
 
-from scripts.catalog.catalog_import_contract import TEMPLATE_PATH, adapt_legacy_row, validate_batch
+from scripts.catalog.catalog_import_contract import (
+    TEMPLATE_PATH,
+    _number,
+    adapt_legacy_row,
+    validate_batch,
+)
 
 
 def batch_for(*rows):
@@ -20,6 +25,11 @@ def batch_for(*rows):
 
 
 class CatalogImportContractTests(unittest.TestCase):
+    def test_extreme_numeric_exponent_is_left_for_schema_rejection(self):
+        value = "1e1000000000"
+
+        self.assertEqual(_number(value), value)
+
     def test_valid_product_only_batch_has_explicit_no_stock_intent(self):
         batch = batch_for()
 

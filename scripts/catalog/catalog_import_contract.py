@@ -56,12 +56,18 @@ def _number(value: Any) -> Any:
         number = Decimal(str(value).strip())
     except (InvalidOperation, ValueError):
         return value
-    if not number.is_finite() or abs(number.as_tuple().exponent) > 100:
+    if not number.is_finite():
         return value
-    if number == number.to_integral_value():
+    # Reject values whose magnitude would overflow float or produce unreasonable catalog prices
+    try:
+        converted = float(number)
+    except (OverflowError, ValueError):
+        return value
+    if not math.isfinite(converted):
+        return value
+    if number == number.to_integral_value() and abs(number) < Decimal("1e15"):
         return int(number)
-    converted = float(number)
-    return converted if math.isfinite(converted) else value
+    return converted
 
 
 def _blank(value: Any) -> bool:

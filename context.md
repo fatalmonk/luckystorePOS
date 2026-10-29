@@ -4,7 +4,7 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Complete production code deployment and repository delivery for the consolidated catalog import and image pipeline.
+PR #564 review fixes implemented and locally validated; no production catalog, stock, or image writes were performed.
 
 ## Decisions
 - 20261028-01: Keep `public.items` as catalog authority, `stock_levels` as store-scoped stock, and R2 as image-byte storage. Task 1 emits metadata only and makes no live changes.
@@ -46,4 +46,4 @@ Complete production code deployment and repository delivery for the consolidated
 - 20261027-01: Merged PR #561 for Bengali deal-page SEO, metadata fallbacks, footer image optimization, and middleware preservation; no manual deployment.
 - 20261027-02: Earlier category/mobile and design tasks are summarized in Git history; no active work remains from them.
 ## Next
-Publish the backend/reconciliation PR, monitor importer errors over meaningful usage, then review an exact production batch before any catalog or R2 apply.
+Refresh PR CI, investigate the Project Doctor false positives, then continue sustained production monitoring; exact catalog/image batches still require approval.

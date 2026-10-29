@@ -521,5 +521,16 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
         self.assertFalse(report["remote_sources"]["sha256_available"])
 
 
+    def test_malformed_url_does_not_preserve_raw_reference_or_query_data(self):
+        malformed = "http://host:notaport/path?token=must-not-leak"
+        result = classify_image_reference(malformed)
+
+        self.assertEqual(result["status"], "malformed_url")
+        self.assertIsNone(result["reference"])
+        self.assertIsNotNone(result["parser_rule"])
+        self.assertIn("parse_error:", result["parser_rule"])
+        self.assertNotIn("must-not-leak", repr(result))
+
+
 if __name__ == "__main__":
     unittest.main()

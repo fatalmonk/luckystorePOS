@@ -63,7 +63,7 @@ export type PreviewRow = {
   item_version?: number | null;
   item_image_url?: string | null;
   expected_stock_qty?: number;
-  outcome: "create" | "update" | "unchanged" | "ambiguous" | "invalid";
+  outcome: "create" | "update" | "unchanged" | "ambiguous" | "invalid" | "partial_success";
   field_diffs: Record<string, { before: unknown; after: unknown }>;
   warnings: string[];
   errors: string[];
@@ -72,7 +72,7 @@ export type PreviewRow = {
 export type ImportResult = {
   batch_id: string;
   preview_hash: string;
-  counts: { create: number; update: number; unchanged: number; ambiguous: number; invalid: number };
+  counts: { create: number; update: number; unchanged: number; ambiguous: number; invalid: number; partial_success: number };
   rows: PreviewRow[];
 };
 
@@ -256,6 +256,7 @@ function counts(rows: PreviewRow[]): ImportResult["counts"] {
     unchanged: rows.filter((row) => row.outcome === "unchanged").length,
     ambiguous: rows.filter((row) => row.outcome === "ambiguous").length,
     invalid: rows.filter((row) => row.outcome === "invalid").length,
+    partial_success: rows.filter((row) => row.outcome === "partial_success").length,
   };
 }
 

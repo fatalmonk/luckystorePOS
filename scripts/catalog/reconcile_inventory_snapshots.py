@@ -212,7 +212,10 @@ def classify_image_reference(
     try:
         parsed = urlsplit(reference)
         port = parsed.port
-    except (ValueError, Exception):
+    except ValueError as parse_error:
+        result["reference"] = None
+        result["status"] = "malformed_url"
+        result["parser_rule"] = f"parse_error:{type(parse_error).__name__}"
         return result
 
     if parsed.scheme.lower() in {"http", "https"} and parsed.hostname:

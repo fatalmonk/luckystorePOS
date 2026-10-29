@@ -152,6 +152,26 @@ Deno.test("same idempotency key replays the stored result without duplicate stoc
   if (fake.calls.mutations !== 1 || fake.calls.stockWrites || fake.calls.storageUploads || fake.calls.r2Uploads || fake.calls.reads !== readsAfterFirstApply) throw new Error("retry duplicated effects or changed stock for a product-only batch");
 });
 
+Deno.test("apply counts image publication failures as partial successes", async () => {
+  const fake = fakeRepository();
+  const batch = makeBatch();
+  const preview = await runCatalogImportOperation({ operation: "preview", batch }, actor, fake.repository);
+  fake.repository.applyBatch = async (_batch, _actor, _storeId, _key, _inputHash, _previewHash, rows) => [
+    { ...rows[0], outcome: "partial_success", warnings: ["Product saved but image publication failed"] },
+  ];
+
+  const result = await runCatalogImportOperation({
+    operation: "apply",
+    batch,
+    idempotency_key: "image-publication-failed",
+    approved_preview_hash: preview.preview_hash,
+  }, actor, fake.repository);
+
+  if (result.counts.partial_success !== 1 || result.counts.invalid !== 0) {
+    throw new Error("partial image publication was not represented in the batch counts");
+  }
+});
+
 Deno.test("retry rejects changed attachment bytes under the same approved preview and idempotency key", async () => {
   const fake = fakeRepository();
   const batch = makeBatch();
