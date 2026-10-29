@@ -89,6 +89,11 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
       expect(eligibilityCopy).toContain('বা তার বেশি অর্ডারে ফ্রি ডেলিভারি');
       expect(eligibilityCopy).toContain('Free delivery on orders of');
       expect(eligibilityCopy).not.toContain('Free delivery on orders over ৳500.');
+      // Keep the GA4 add_shipping_info tier label consistent with the inclusive
+      // checkout threshold, not the old inaccurate "over 500" wording.
+      expect(checkoutSource).toContain('Free delivery on orders of ${DELIVERY_POLICY.freeDeliveryThresholdBdt} BDT or more');
+      expect(checkoutSource).toContain('Local delivery ${DELIVERY_POLICY.standardDeliveryFeeBdt} BDT');
+      expect(checkoutSource).not.toContain('Free delivery over 500 BDT');
     });
 
     it('explicitly specifies delivery hours as 09:00 AM–12:30 AM daily without misleading (Midnight) wording', () => {
