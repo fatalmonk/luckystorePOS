@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import time
@@ -42,8 +43,9 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
 
     migration_files = sorted(migrations_dir.glob("*.sql"))
     if ci:
+        base_branch = os.environ.get("GITHUB_BASE_REF", "main").strip() or "main"
         changed = subprocess.run(
-            ["git", "diff", "--name-only", "origin/main...HEAD", "--", "supabase/migrations/"],
+            ["git", "diff", "--name-only", f"origin/{base_branch}...HEAD", "--", "supabase/migrations/"],
             cwd=repo_root,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
