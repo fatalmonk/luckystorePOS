@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 import unittest
@@ -68,10 +69,14 @@ class SecurityRlsDetectorTests(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("scripts.doctor.checks.security_rls.subprocess.run", return_value=changed):
+            with (
+                patch.dict(os.environ, {"GITHUB_BASE_REF": "develop"}),
+                patch("scripts.doctor.checks.security_rls.subprocess.run", return_value=changed) as run_git,
+            ):
                 result = security_rls.run(root, ci=True)
 
         self.assertEqual([], result.findings)
+        self.assertEqual("origin/develop...HEAD", run_git.call_args.args[0][3])
 
 
 class TestGapPathRecognitionTests(unittest.TestCase):
