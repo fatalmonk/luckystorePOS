@@ -1,26 +1,23 @@
 /**
- * Migrate product images from Supabase Storage → Cloudflare R2.
- * 
- * Downloads each image from Supabase Storage, uploads to R2,
- * and updates the items.image_url column to point to R2.
- * 
+ * Read-only review of legacy Supabase image references and proposed R2 URLs.
+ *
+ * Direct R2 uploads and public.items.image_url changes are disabled here.
+ * Use the authenticated, ticketed image publication pipeline for an approved
+ * batch so object creation and catalog updates follow the same safety checks.
+ *
  * Usage:
- *   node scripts/images/migrate-images-to-r2.mjs              # full migration
- *   node scripts/images/migrate-images-to-r2.mjs --dry-run     # show what would migrate
- *   node scripts/images/migrate-images-to-r2.mjs --limit=50    # only migrate 50 images
+ *   node scripts/images/migrate-images-to-r2.mjs              # read-only report
+ *   node scripts/images/migrate-images-to-r2.mjs --limit=50    # inspect up to 50 rows
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { parseLegacyImageReference } from './legacy-image-reference.mjs';
 
-// Load env
 function loadEnv() {
   const envPath = resolve(process.cwd(), '.env.local');
-  if (!existsSync(envPath)) {
-    console.error('❌ .env.local not found');
-    process.exit(1);
-  }
+  if (!existsSync(envPath)) throw new Error('.env.local not found');
+
   const env = {};
   for (const line of readFileSync(envPath, 'utf-8').split('\n')) {
     const trimmed = line.trim();
@@ -28,149 +25,79 @@ function loadEnv() {
     const eqIdx = trimmed.indexOf('=');
     if (eqIdx === -1) continue;
     const key = trimmed.slice(0, eqIdx);
-    const val = trimmed.slice(eqIdx + 1).trim().replace(/^"|"$/g, '');
-    env[key] = val;
+    const value = trimmed.slice(eqIdx + 1).trim().replace(/^"|"$/g, '');
+    env[key] = value;
   }
   return env;
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const dryRun = args.includes('--dry-run');
-  const limitArg = args.find(a => a.startsWith('--limit='));
-  const limit = limitArg ? parseInt(limitArg.split('=')[1]) : Infinity;
+  if (args.includes('--execute')) {
+    console.error('Direct legacy image migration is disabled. Use the authenticated ticketed image pipeline with a separately approved batch.');
+    process.exitCode = 2;
+    return;
+  }
+
+  const limitArg = args.find((arg) => arg.startsWith('--limit='));
+  const limit = limitArg ? Number.parseInt(limitArg.slice('--limit='.length), 10) : 10;
+  if (!Number.isInteger(limit) || limit < 1) throw new Error('--limit must be a positive integer');
 
   const env = loadEnv();
-  
   const supabaseUrl = env.SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  const r2AccountId = env.CLOUDFLARE_ACCOUNT_ID || env.R2_ACCOUNT_ID;
-  const r2AccessKey = env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-  const r2SecretKey = env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const r2Bucket = env.R2_BUCKET_NAME || 'lucky-store-images';
   const r2PublicUrl = env.R2_PUBLIC_URL;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-    process.exit(1);
-  }
-  if (!r2AccountId || !r2AccessKey || !r2SecretKey) {
-    console.error('❌ Missing R2 credentials (CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY)');
-    process.exit(1);
+  if (!supabaseUrl || !supabaseKey || !r2PublicUrl) {
+    throw new Error('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and R2_PUBLIC_URL are required for a read-only report');
   }
 
+  const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // Get all items with image_url pointing to Supabase Storage
   const { data: items, error } = await supabase
     .from('items')
     .select('id, image_url')
     .not('image_url', 'is', null)
     .like('image_url', '%supabase.co%');
+  if (error) throw new Error(`Failed to fetch legacy image references: ${error.message}`);
 
-  if (error) {
-    console.error('❌ Failed to fetch items:', error.message);
-    process.exit(1);
+  const supabaseOrigin = new URL(supabaseUrl).origin;
+  const r2BaseUrl = new URL(r2PublicUrl);
+  if (r2BaseUrl.protocol !== 'https:' || r2BaseUrl.username || r2BaseUrl.password ||
+    r2BaseUrl.pathname !== '/' || r2BaseUrl.search || r2BaseUrl.hash) {
+    throw new Error('R2_PUBLIC_URL must be a clean HTTPS base URL');
   }
 
-  console.log(`📦 Found ${items.length} images on Supabase Storage`);
-  
-  if (limit !== Infinity) {
-    console.log(`   Limiting to ${limit} images`);
-  }
-
-  if (dryRun) {
-    console.log('\n📋 Dry run — showing first 10 images that would migrate:');
-    items.slice(0, 10).forEach(item => {
-      const oldUrl = item.image_url;
-      const key = oldUrl.split('/product-images/')[1] || oldUrl.split('/').slice(-2).join('/');
-      const newUrl = `${r2PublicUrl}/${key}`;
-      console.log(`  ${item.id}: ${oldUrl.slice(-50)} → ${newUrl.slice(-50)}`);
-    });
-    return;
-  }
-
-  const s3Endpoint = `https://${r2AccountId}.r2.cloudflarestorage.com`;
-  let migrated = 0;
-  let failed = 0;
-  let skipped = 0;
-
-  for (const item of items.slice(0, limit)) {
-    const oldUrl = item.image_url;
-    
-    // Extract key from Supabase URL
-    const keyMatch = oldUrl.match(/product-images\/(.+)$/);
-    if (!keyMatch) {
-      console.log(`  ⏭️  ${item.id}: couldn't parse key, skipping`);
-      skipped++;
+  const candidates = [];
+  for (const item of items ?? []) {
+    let parsed;
+    try {
+      parsed = new URL(item.image_url);
+    } catch {
+      candidates.push({ itemId: item.id, issue: 'invalid URL' });
       continue;
     }
-    
-    const key = keyMatch[1];
-    const newUrl = `${r2PublicUrl}/${key}`;
-    
-    process.stdout.write(`  ${item.id}: ${key}... `);
-
-    try {
-      // Download from Supabase Storage
-      const downloadResponse = await fetch(oldUrl);
-      if (!downloadResponse.ok) {
-        console.log(`FAIL (download: ${downloadResponse.status})`);
-        failed++;
-        continue;
-      }
-
-      const imageBuffer = await downloadResponse.arrayBuffer();
-      const contentType = downloadResponse.headers.get('content-type') || 'image/jpeg';
-
-      // Upload to R2 via S3 API
-      // Minimal S3 PUT — uses AWS Signature V4
-      const { signV4Put } = await import('../lib/_r2-s3.mjs');
-      const signedHeaders = await signV4Put(
-        s3Endpoint, r2Bucket, key, imageBuffer, r2AccessKey, r2SecretKey
-      );
-
-      const uploadResponse = await fetch(`${s3Endpoint}/${r2Bucket}/${key}`, {
-        method: 'PUT',
-        headers: {
-          ...signedHeaders,
-          'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=31536000, immutable',
-        },
-        body: imageBuffer,
-      });
-
-      if (!uploadResponse.ok) {
-        const errText = await uploadResponse.text();
-        console.log(`FAIL (upload: ${uploadResponse.status} ${errText.slice(0, 100)})`);
-        failed++;
-        continue;
-      }
-
-      // Update items.image_url to R2 URL
-      const { error: updateError } = await supabase
-        .from('items')
-        .update({ image_url: newUrl })
-        .eq('id', item.id);
-
-      if (updateError) {
-        console.log(`FAIL (db update: ${updateError.message})`);
-        failed++;
-        continue;
-      }
-
-      console.log('✓');
-      migrated++;
-    } catch (err) {
-      console.log(`FAIL: ${err.message.slice(0, 100)}`);
-      failed++;
+    if (parsed.origin !== supabaseOrigin) {
+      candidates.push({ itemId: item.id, issue: 'origin mismatch' });
+      continue;
     }
+
+    const { key, rule } = parseLegacyImageReference(item.image_url);
+    if (!key) {
+      candidates.push({ itemId: item.id, issue: 'unresolved reference' });
+      continue;
+    }
+    candidates.push({ itemId: item.id, rule, url: `${r2BaseUrl.origin}/${key}` });
   }
 
-  console.log(`\n✅ Migration complete: ${migrated} migrated, ${failed} failed, ${skipped} skipped`);
+  console.log(`Found ${items?.length ?? 0} legacy image references; showing ${Math.min(limit, candidates.length)} read-only candidates.`);
+  for (const candidate of candidates.slice(0, limit)) {
+    if (candidate.issue) console.log(`${candidate.itemId}: ${candidate.issue}`);
+    else console.log(`${candidate.itemId}: ${candidate.rule}: ${candidate.url}`);
+  }
+  console.log('No database or R2 writes are available through this legacy script.');
 }
 
-main().catch(err => {
-  console.error('Fatal:', err);
-  process.exit(1);
+main().catch((error) => {
+  console.error(`Image reference report failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  process.exitCode = 1;
 });

@@ -281,6 +281,20 @@ context.md
 !cloudflare/workers/CONTEXT.md
 data/
 
+# Allow only reviewed catalog metadata; keep local source data and image bytes ignored.
+!data/
+data/*
+!data/catalog/
+data/catalog/*
+!data/catalog/README.md
+!data/catalog/.gitignore
+!data/catalog/source-inventory.schema.json
+!data/catalog/source-inventory.json
+!data/catalog/image-manifest.csv
+!data/catalog/contracts/
+data/catalog/contracts/*
+!data/catalog/contracts/catalog-import-v1.schema.json
+
 # Generated responsive image variants — served from R2 CDN in production
 apps/customer_storefront/public/images/*_400.webp
 apps/customer_storefront/public/images/*_600.webp
@@ -345,4 +359,9 @@ assets/screenshots/
 /seo/reports/technical/
 seo/reports/*.json
 system-docs/agents/image-to-code-short.md
+
+# Keep the reviewed catalog v1 template despite the legacy global templates/ ignore.
+!data/catalog/templates/
+data/catalog/templates/*
+!data/catalog/templates/catalog-import-v1.csv
 

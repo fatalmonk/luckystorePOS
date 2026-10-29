@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 import time
 from pathlib import Path
 
@@ -11,14 +13,18 @@ CREATE_TABLE_RE = re.compile(
     re.IGNORECASE,
 )
 ENABLE_RLS_RE = re.compile(
-    r"\bALTER\s+TABLE\s+(?:(?:ONLY|public)\s+)?([a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
+    r"\bALTER\s+TABLE\s+(?:ONLY\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
     re.IGNORECASE,
 )
 SEC_DEFINER_RE = re.compile(
     r"\bCREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+([a-zA-Z0-9_.]+)[^;]+?SECURITY\s+DEFINER",
     re.IGNORECASE | re.DOTALL,
 )
-SEARCH_PATH_RE = re.compile(r"\bSET\s+search_path\s*=\s*(?:''|public|pg_temp)", re.IGNORECASE)
+SEARCH_PATH_RE = re.compile(
+    r"\bSET\s+search_path\s*(?:=|TO)\s*(?:''|'')\s*(?=\s*(?:AS\b|LANGUAGE\b|STABLE\b|IMMUTABLE\b|VOLATILE\b|PARALLEL\b|COST\b|ROWS\b|SECURITY\b|LEAKPROOF\b|SET\b|;|$))|"
+    r"\bSET\s+search_path\s*(?:=|TO)\s*(?:pg_catalog(?:\s*,\s*public)?|public(?:\s*,\s*(?:extensions\s*,\s*)?pg_temp)?|pg_temp)\s*(?=\s*(?:AS\b|LANGUAGE\b|STABLE\b|IMMUTABLE\b|VOLATILE\b|PARALLEL\b|COST\b|ROWS\b|SECURITY\b|LEAKPROOF\b|SET\b|;|$))",
+    re.IGNORECASE,
+)
 
 
 def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
@@ -35,8 +41,22 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
             duration_ms=(time.time() - start_time) * 1000,
         )
 
-    # In quick/ci mode, focus on recently added or modified migrations if available
     migration_files = sorted(migrations_dir.glob("*.sql"))
+    if ci:
+        base_branch = os.environ.get("GITHUB_BASE_REF", "main").strip() or "main"
+        changed = subprocess.run(
+            ["git", "diff", "--name-only", f"origin/{base_branch}...HEAD", "--", "supabase/migrations/"],
+            cwd=repo_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if changed.returncode == 0:
+            changed_paths = set(changed.stdout.splitlines())
+            migration_files = [
+                path for path in migration_files if str(path.relative_to(repo_root)) in changed_paths
+            ]
 
     for file_path in migration_files:
         try:

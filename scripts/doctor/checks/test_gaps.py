@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+import re
 import subprocess
 import time
 from pathlib import Path
 
 from ..core.models import Finding, ModuleResult, Severity
+
+TEST_PATH_RE = re.compile(
+    r"(?:^|/)(?:[^/]+\.(?:test|spec)\.[^/]+|[^/]+_test\.[^/]+|test_[^/]+|__tests__(?:/|$)|tests?(?:/|$))",
+    re.IGNORECASE,
+)
+
+
+def _is_test_path(path: str) -> bool:
+    return bool(TEST_PATH_RE.search(path))
 
 
 def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
@@ -33,7 +43,7 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
 
     for path in changed:
         if any(path.endswith(ext) for ext in [".ts", ".tsx", ".js", ".jsx", ".dart", ".py"]):
-            if any(part in path for part in [".test.", ".spec.", "__tests__", "test/"]):
+            if _is_test_path(path):
                 test_changes.append(path)
             elif any(part in path for part in ["apps/", "packages/", "supabase/functions/"]):
                 source_changes.append(path)

@@ -2,6 +2,44 @@
 
 This utility compares exported inventory-sheet snapshots with a Supabase catalog snapshot. It is offline by default and read-only: it does not connect to Google Sheets or Supabase and has no remote write path.
 
+## Metadata-only source inventory
+
+To classify configured local source files and static import/image callers, run:
+
+```sh
+PYTHONPATH=. python3 scripts/catalog/reconcile_inventory_snapshots.py \
+  --source-inventory-root "$LUCKYSTORE_SOURCE_ROOT" \
+  --r2-snapshot /path/to/read-only-r2-metadata.json \
+  --source-inventory-output data/catalog/source-inventory.json
+```
+
+The output is deterministic and contains paths, file formats, byte sizes, SHA-256 hashes for local files, static caller paths, authority labels, and migration notes. It does not include inventory row values or image bytes. Use the checkout that contains ignored local staging data as the root. The report makes no remote calls; R2 listing metadata remains `not_supplied` unless a separate read-only snapshot is reviewed and supplied. R2 ETags are recorded separately and are not claimed as SHA-256.
+
+## Catalog import v1 contract
+
+`data/catalog/contracts/catalog-import-v1.schema.json` is the canonical batch schema. Validate a JSON batch and normalize one legacy CSV row offline with:
+
+```python
+from scripts.catalog.catalog_import_contract import adapt_legacy_row, validate_batch
+
+adapted = adapt_legacy_row("admin_template", source_row, source_row=2)
+errors = validate_batch({
+    "contract_version": 1,
+    "batch_id": "reviewed-batch-id",
+    "source": "admin_template",
+    "rows": [adapted["row"]],
+})
+```
+
+Use `"operational"` for the existing `import-inventory` CSV format. Both adapters preserve source row numbers, leave product-only stock at `none`, and return unsupported columns with their original values. `store_code` is never treated as authorization; a caller must supply a separately selected `requested_store_id`, which the server must verify. `validate_batch` is local structural/identifier validation only and does not authorize writes.
+
+Run the contract and reconciliation suites with:
+
+```sh
+python3 -m unittest scripts.catalog.test_catalog_import_contract
+PYTHONPATH=. python3 scripts/catalog/test_reconcile_inventory_snapshots.py
+```
+
 ## Tests
 
 Run the unit tests from the repository root:
@@ -59,3 +97,7 @@ If TypeSafe is unavailable or a request fails, the report records a sanitized st
 ## Report interpretation
 
 Supabase agreement measures consistency with the selected database snapshot, not whether a price, package size, SKU, image, or category is factually correct. Verify disagreements against authoritative product evidence before changing a catalog. A spreadsheet file modification time is not a row-level freshness signal.
+
+## Product image library
+
+The detailed `data/catalog/image-manifest.csv` is a local-only review artifact and is intentionally not required by repository tests. The tests use the small synthetic fixture at `scripts/catalog/fixtures/image-manifest.csv`. Source image bytes stay in ignored local storage; run `python3 -m unittest scripts.catalog.test_product_image_library` and `python3 scripts/catalog/check_no_tracked_product_images.py` to validate filename helpers and reject tracked product images in guarded packshot paths. Application logos and UI images outside those paths remain allowed.

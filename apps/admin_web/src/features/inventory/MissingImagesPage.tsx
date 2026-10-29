@@ -7,7 +7,7 @@ import { PageHeader } from '@/components';
 import { Card } from '@/components';
 import { Button } from '@/components';
 import { Upload, ImageIcon, Check, X, Package, Download } from 'lucide-react';
-import { uploadProcessedImage } from '../../lib/images';
+import { uploadProcessedImageWithMetadata } from '../../lib/images';
 import { downloadCSV } from '@/lib/format';
 import type { InventoryItem } from '@/types/inventory';
 import { ErrorState } from '@/components';
@@ -81,7 +81,7 @@ export function MissingImagesPage() {
     mutationFn: async ({ productId, file }: { productId: string; file: File }) => {
       const prod = productsMissingImages.find(p => p.id === productId);
       const source = await getProductImageSnapshot(productId);
-      const url = await uploadProcessedImage({
+      const uploaded = await uploadProcessedImageWithMetadata({
         file,
         sku: prod?.sku,
         barcode: prod?.barcode,
@@ -89,9 +89,9 @@ export function MissingImagesPage() {
         tenantId,
       });
       
-      await publishProductImage({ itemId: productId, storeId: storeId!, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: url });
+      await publishProductImage({ itemId: productId, storeId: storeId!, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: uploaded.url, newImageChecksum: uploaded.checksum });
       
-      return { productId, url };
+      return { productId, url: uploaded.url };
     },
     onMutate: ({ productId }) => {
       setUploadingProductId(productId);

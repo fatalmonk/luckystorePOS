@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { fetchCompetitorPrices } from '../../lib/api/domains/competitorPrices';
 import { supabase } from "@/lib/supabase";
 import { getProductImageSnapshot, publishProductImage } from '../../lib/r2';
-import { uploadProcessedImage } from '../../lib/images';
+import { uploadProcessedImageWithMetadata } from '../../lib/images';
 import { clsx } from 'clsx';
 import { useNotify } from '@/components';
 import { useAuth } from '../../lib/AuthContext';
@@ -217,7 +217,7 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
       if (!product) throw new Error('No product selected');
       const source = await getProductImageSnapshot(product.id);
       // Process and upload new WebP image
-      const publicUrl = await uploadProcessedImage({
+      const uploaded = await uploadProcessedImageWithMetadata({
         file,
         sku: product.sku,
         barcode: product.barcode,
@@ -225,9 +225,9 @@ export function ProductUpdateDrawer({ product, storeId, onClose, onSuccess }: Pr
         tenantId,
       });
 
-      await publishProductImage({ itemId: product.id, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: publicUrl });
+      await publishProductImage({ itemId: product.id, storeId, sourceImageKey: source.imageKey, sourceImageVersion: source.imageVersion, newImageUrl: uploaded.url, newImageChecksum: uploaded.checksum });
 
-      return { image_url: publicUrl };
+      return { image_url: uploaded.url };
     },
     onSuccess: () => {
       notify('Image updated successfully.', 'success');
