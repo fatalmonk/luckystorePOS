@@ -21,6 +21,7 @@ import {
 } from '../../lib/analytics';
 import { getLocaleFromPathname, withLocale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
+import { DELIVERY_POLICY } from '../../lib/deliveryData';
 
 interface FormErrors {
   name?: string;
@@ -244,7 +245,9 @@ function CheckoutContent() {
       shippingTrackedRef.current = trackAddShippingInfo(
         cart.map((item) => ({ ...item, price: effectivePrice(item) })),
         total,
-        deliveryFee === 0 ? 'Free delivery over 500 BDT' : 'Local delivery 40 BDT',
+        deliveryFee === 0
+          ? `Free delivery on orders of ${DELIVERY_POLICY.freeDeliveryThresholdBdt} BDT or more`
+          : `Local delivery ${DELIVERY_POLICY.standardDeliveryFeeBdt} BDT`,
       );
     }
     setSubmitError(null);
@@ -529,7 +532,11 @@ function CheckoutContent() {
                     <div className="flex justify-between text-warm-muted"><span>Delivery</span><span>{deliveryFee === 0 ? 'FREE' : formatBdt(deliveryFee)}</span></div>
                     <div className="flex justify-between border-t border-warm-border-light pt-3 text-lg font-extrabold text-warm-fg"><span>Total</span><span>{formatBdt(total)}</span></div>
                   </div>
-                  <p className="mt-4 text-xs leading-5 text-warm-muted">Free delivery on orders over ৳500.</p>
+                  <p className="mt-4 text-xs leading-5 text-warm-muted">
+                    {locale === 'bn'
+                      ? `চকবাজারের দোকান থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমির মধ্যে ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')} বা তার বেশি অর্ডারে ফ্রি ডেলিভারি।`
+                      : `Free delivery on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more within ${DELIVERY_POLICY.radiusKm} km of our Chawkbazar store.`}
+                  </p>
                 </div>
               </aside>
               </div>
