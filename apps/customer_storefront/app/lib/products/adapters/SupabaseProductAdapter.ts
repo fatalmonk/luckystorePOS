@@ -168,9 +168,15 @@ export class SupabaseProductAdapter implements ProductDataPort {
         ? Math.max(0, Number(stockData.qty ?? 0) - Number(stockData.reserved ?? 0) - Number(stockData.qty_reserved_online ?? 0))
         : null;
       if (stockError || resolvedStock === null) {
-        const projectedRows = await fetchStorefrontCatalogItemsByIds(this.supabase, this.storeId, [data.id]);
-        const projected = projectedRows.find((row) => (row.id ?? row.item_id) === data.id) as any;
-        resolvedStock = projected?.sellable_qty ?? projected?.stock ?? 0;
+        try {
+          const projectedRows = await fetchStorefrontCatalogItemsByIds(this.supabase, this.storeId, [data.id]);
+          const projected = projectedRows.find((row) => (row.id ?? row.item_id) === data.id) as any;
+          resolvedStock = projected?.sellable_qty ?? projected?.stock ?? 0;
+        } catch {
+          // Stock is supplementary on product detail. Keep the item visible as
+          // unavailable if its live stock projection cannot be fetched.
+          resolvedStock = 0;
+        }
       }
 
       const row = {

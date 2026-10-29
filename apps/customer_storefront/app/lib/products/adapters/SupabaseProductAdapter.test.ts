@@ -24,6 +24,7 @@ function createMockSupabase(overrides?: {
   onlineReserved?: number;
   stockRow?: any;
   v2Rows?: any[];
+  v2Error?: { message: string } | null;
   categories?: any[];
 }) {
   const categories = overrides?.categories ?? [
@@ -84,7 +85,7 @@ function createMockSupabase(overrides?: {
     }),
     rpc: vi.fn((rpcName: string) => {
       if (rpcName === 'search_storefront_catalog_v2') {
-        return Promise.resolve({ data: overrides?.v2Rows ?? [], error: null });
+        return Promise.resolve({ data: overrides?.v2Rows ?? [], error: overrides?.v2Error ?? null });
       }
       if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
         return Promise.resolve({
@@ -204,6 +205,27 @@ describe('SupabaseProductAdapter', () => {
         p_limit: 1,
         p_offset: 0,
       });
+    });
+
+    it('keeps the product available with zero stock when the stock projection RPC fails', async () => {
+      const itemId = '169e4ac0-80cf-4dc7-8266-f8cad832eb9b';
+      const supabase = createMockSupabase({
+        itemsRow: {
+          id: itemId,
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          category_id: 'cat-1',
+          description: null,
+        },
+        stockRow: null,
+        v2Error: { message: 'temporary RPC failure' },
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getById(createProductId(itemId));
+
+      expect(product?.id).toBe(itemId);
+      expect(product?.stock).toBe(0);
     });
 
     it('returns null when product is not found or inactive', async () => {
