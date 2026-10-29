@@ -56,11 +56,14 @@ class ProductImageLibraryTests(unittest.TestCase):
             "social-media/catalogue-images/sku.jpg",
             "data/catalog/images/candidate.png",
             "apps/admin_web/public/products/sku.webp",
+            "catalog-images/legacy.bmp",
+            "social-media/catalogue-images/legacy.tif",
+            "apps/customer_storefront/public/products/legacy.tiff",
             "apps/customer_storefront/public/images/logo.webp",
             "apps/customer_storefront/src/assets/cart.png",
             "data/catalog/image-manifest.csv",
         ]
-        self.assertEqual(tracked_product_image_paths(files), sorted(files[:4]))
+        self.assertEqual(tracked_product_image_paths(files), sorted(files[:7]))
 
     def test_git_guard_is_case_insensitive_for_legacy_directories(self):
         self.assertEqual(
