@@ -12,10 +12,10 @@
 
 ```
 phase:          baseline-established
-last_run:       2026-10-28 (live pages + latest prior-commit monitor; PR #552 localization follow-up)
+last_run:       2026-10-29 (live delivery pages, source audit, PR #552 analytics-label correction; sampled audit artifact not downloaded)
 last_pr:        #552 (draft; pending review)
 open_prs:       #552 (draft; no other open PRs at preflight)
-next_run:       2026-10-29
+next_run:       2026-10-30
 ```
 
 ---
@@ -197,6 +197,17 @@ competitor_signals:
 
 ---
 
+## 2026-10-29 evidence and verification status
+
+- **Current main:** `7cb1e9357699effa9971ce74ef089dd0e4ca4c16` (observed 2026-10-29); PR #552 remains draft and unmerged. The latest `main` checkout still says "Free delivery on orders over ৳500" while its API uses `subtotal >= 500`. The draft corrects the visible English/Bengali copy; this run also corrected its `add_shipping_info` analytics tier label, which still said "over 500 BDT".
+- **Live public evidence:** Apex homepage resolved to `www`; homepage, `/delivery` and `/bn/delivery` rendered visible 1 km Chawkbazar delivery boundary and free delivery on ৳500+ (public web fetch 2026-10-29). Live FAQ text was visible in both delivery locales. Current main source calls `getDeliveryFaqSchema()` and `getBengaliDeliveryFaqSchema()`; rendered JSON-LD was not independently parsed. Do not add duplicate FAQ markup.
+- **Technical monitoring:** 2026-10-28 [technical monitor run 40651223692](https://github.com/fatalmonk/luckystorePOS/actions/runs/40651223692) succeeded and uploaded `seo-technical-report-1` artifact. The artifact JSON could not be downloaded through this connector, so URL count, page-level results, warnings and crawl scope are **unverified for that run**. The dependent [Autopilot run 40651302995](https://github.com/fatalmonk/luckystorePOS/actions/runs/40651302995) skipped proposal, verification and publishing because an SEO draft PR was already open. No new PR was created.
+- **P0 operational blocker:** Existing [issue #551](https://github.com/fatalmonk/luckystorePOS/issues/551) records 1 km public policy versus a previously inspected 5 km database zone and no identified route-level geofencing. Production DB was **not** re-read today. Completed/fulfilled eligible orders remain unverified.
+- **Access:** Search Console/GA4 integration discovery required interactive authorization in the unattended run. No fresh GSC impressions/clicks, GA4 conversions, indexing totals, AI-answer citations, or completed-order attribution were obtained. Public competitor pages were checked; no dated new Chawkbazar-specific change was verified.
+- **Review limitation:** PR #552's diff currently includes unrelated `social-media/catalogue-images/` changes and is behind current main. Remove unrelated files, refresh integration, rerun CI and inspect rendered checkout in both languages before merging.
+
+---
+
 ## Changelog
 
 | Date | Run | PRs | Key Action |
@@ -211,4 +222,5 @@ competitor_signals:
 | 2026-10-24 | autopilot | #543 (draft) | Clarified bilingual footer delivery scope based on public site; documented 916-URL audit sample and GitHub artifact-quota blocker. |
 | 2026-10-26 | autopilot | #552 (draft) | Correct checkout free-delivery threshold wording to inclusive ৳500+ and explicitly scope 1 km; production delivery-zone mismatch tracked separately as #551. |
 | 2026-10-28 | follow-up | #552 (draft) | Localized the proposed checkout notice for Bengali and English, added bilingual source assertions, and reconciled FAQ source state; no new PR. |
+| 2026-10-29 | follow-up | #552 (draft) | Corrected stale GA4 shipping-tier label from exclusive “over 500” to inclusive policy-derived threshold; no new PR, merge or deployment. |
 
