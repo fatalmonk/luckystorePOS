@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 from typing import Any, Iterable
 
 IMAGE_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
+TRACKED_IMAGE_SUFFIXES = IMAGE_SUFFIXES | {".bmp", ".tif", ".tiff"}
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -38,7 +39,7 @@ def tracked_product_image_paths(paths: Iterable[str]) -> list[str]:
     for raw_path in paths:
         path = PurePosixPath(raw_path.replace("\\", "/"))
         parts = tuple(part.lower() for part in path.parts)
-        if path.suffix.lower() not in IMAGE_SUFFIXES:
+        if path.suffix.lower() not in TRACKED_IMAGE_SUFFIXES:
             continue
         if (
             parts[:1] == ("catalog-images",)
