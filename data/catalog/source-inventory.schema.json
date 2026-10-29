@@ -48,6 +48,8 @@
           "item_key": { "type": ["string", "null"] },
           "item_key_kind": { "enum": ["item_id", "sku", "barcode", null] },
           "object_key_or_url": { "type": ["string", "null"] },
+          "reference_kind": { "enum": ["missing", "malformed_url", "legacy_remote", "external_url", "legacy_object_key", "local_file", null] },
+          "parser_rule": { "type": ["string", "null"] },
           "size_bytes": { "type": "integer", "minimum": 0 },
           "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
           "etag": { "type": ["string", "null"] },
