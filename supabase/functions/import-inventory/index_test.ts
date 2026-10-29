@@ -92,6 +92,37 @@ Deno.test("wrong tenant store is rejected and apply is never called", async () =
   if (fake.calls.mutations) throw new Error("invalid store reached apply");
 });
 
+Deno.test("attachment-only rows reject a store outside the tenant in preview and apply", async () => {
+  const fake = fakeRepository(snapshot({ stores: [{ id: "store-other", tenant_id: "tenant-b" }] }));
+  const batch = makeBatch({ requested_store_id: "store-other" });
+  const attachments = [{
+    source_row: 2,
+    name: "example.webp",
+    type: "image/webp",
+    size: 68,
+    bytes: new Uint8Array([82, 73, 70, 70, 60, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 48, 0, 0, 0, 208, 1, 0, 157, 1, 42, 10, 0, 10, 0, 1, 64, 38, 37, 160, 2, 116, 186, 1, 248, 0, 3, 176, 0, 254, 242, 235, 127, 252, 216, 21, 205, 115, 239, 247, 255, 210, 224, 253, 46, 15, 210, 224, 255, 210, 144, 0, 0]),
+  }];
+  const preview = await runCatalogImportOperation({
+    operation: "preview",
+    batch,
+    attachments,
+  }, actor, fake.repository);
+
+  if (preview.counts.invalid !== 1 || !preview.rows[0].errors.some((error) => error.includes("tenant"))) {
+    throw new Error("attachment-only row did not reject the unverified store");
+  }
+  const applied = await runCatalogImportOperation({
+    operation: "apply",
+    batch,
+    attachments,
+    idempotency_key: "attachment-wrong-store",
+    approved_preview_hash: preview.preview_hash,
+  }, actor, fake.repository);
+  if (applied.counts.invalid !== 1 || fake.calls.mutations) {
+    throw new Error("attachment-only row reached apply for an unverified store");
+  }
+});
+
 Deno.test("requested store outside the actor's store scope fails closed", async () => {
   const storeActor = { ...actor, store_id: "store-owned" };
   const fake = fakeRepository(snapshot({ stores: [{ id: "store-other", tenant_id: "tenant-a" }] }));
