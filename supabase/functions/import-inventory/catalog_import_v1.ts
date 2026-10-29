@@ -260,6 +260,24 @@ function counts(rows: PreviewRow[]): ImportResult["counts"] {
   };
 }
 
+function markRowsForUnverifiedStore(
+  rows: PreviewRow[],
+  batch: CatalogImportBatch,
+  storeId: string | null,
+  tenantId: string,
+  stores: CatalogSnapshot["stores"],
+  attachmentRows: Set<number>,
+): void {
+  if (stores.some((store) => store.id === storeId && store.tenant_id === tenantId)) return;
+  for (const row of rows) {
+    const intent = batch.rows.find((candidate) => candidate.source_row === row.source_row)?.stock;
+    if (intent?.mode !== "none" || attachmentRows.has(row.source_row)) {
+      row.outcome = "invalid";
+      row.errors.push("Requested store does not belong to the authenticated tenant");
+    }
+  }
+}
+
 export async function runCatalogImportOperation(
   operation: CatalogImportOperation,
   actor: CatalogActor,
@@ -326,17 +344,7 @@ export async function runCatalogImportOperation(
     } else {
       const snapshot = await repository.readSnapshot(batch, actor, storeRequired ? storeId : null);
       rows = batch.rows.map((row) => rowPreview(row, snapshot, stockNeeded ? storeId : null, actor.tenant_id));
-      if (storeRequired && !snapshot.stores.some((store) => store.id === storeId && store.tenant_id === actor.tenant_id)) {
-        for (const row of rows) {
-          const batchRow = batch.rows.find((candidate) => candidate.source_row === row.source_row);
-          const intent = batchRow?.stock;
-          const hasAttachment = (operation.attachments ?? []).some((att) => att.source_row === row.source_row);
-          if (intent?.mode !== "none" || hasAttachment) {
-            row.outcome = "invalid";
-            row.errors.push("Requested store does not belong to the authenticated tenant");
-          }
-        }
-      }
+      if (storeRequired) markRowsForUnverifiedStore(rows, batch, storeId, actor.tenant_id, snapshot.stores, attachmentRows);
       for (const row of rows) {
         const attachmentError = attachmentErrors.get(row.source_row);
         if (attachmentError) {
@@ -350,17 +358,7 @@ export async function runCatalogImportOperation(
   } else {
     const snapshot = await repository.readSnapshot(batch, actor, storeRequired ? storeId : null);
     rows = batch.rows.map((row) => rowPreview(row, snapshot, stockNeeded ? storeId : null, actor.tenant_id));
-    if (storeRequired && !snapshot.stores.some((store) => store.id === storeId && store.tenant_id === actor.tenant_id)) {
-      for (const row of rows) {
-        const batchRow = batch.rows.find((candidate) => candidate.source_row === row.source_row);
-        const intent = batchRow?.stock;
-        const hasAttachment = (operation.attachments ?? []).some((att) => att.source_row === row.source_row);
-        if (intent?.mode !== "none" || hasAttachment) {
-          row.outcome = "invalid";
-          row.errors.push("Requested store does not belong to the authenticated tenant");
-        }
-      }
-    }
+    if (storeRequired) markRowsForUnverifiedStore(rows, batch, storeId, actor.tenant_id, snapshot.stores, attachmentRows);
     for (const row of rows) {
       const attachmentError = attachmentErrors.get(row.source_row);
       if (attachmentError) {
