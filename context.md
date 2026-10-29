@@ -4,7 +4,7 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-PR #564 review fixes implemented and locally validated; no production catalog, stock, or image writes were performed.
+Fix PR #564 Project Doctor false positives, revalidate CI, then resume gated production rollout.
 
 ## Decisions
 - 20261028-01: Keep `public.items` as catalog authority, `stock_levels` as store-scoped stock, and R2 as image-byte storage. Task 1 emits metadata only and makes no live changes.
@@ -20,10 +20,10 @@ PR #564 review fixes implemented and locally validated; no production catalog, s
 - 20261029-02: User authorized production code deployment. Apply only core import/CAS migrations; keep Security Tests-only preview migrations out of production and require exact-batch review for catalog/image writes.
 
 ## Blockers
-- Task 7: Three Security Tests importer 500s and one earlier production importer 500 lack request bodies/diagnostics. Production lacked the batch-begin RPC at the time, a plausible but unproven cause. Sustained clean monitoring and exact-batch approval remain open; expansion stays NO-GO.
+- PR #564 Doctor false positives fixed; Task 7 importer 500s still lack diagnostics. Sustained clean monitoring and exact-batch approval remain open; expansion stays NO-GO.
 
 ## Resolved
-- 20261029-03: Production core migrations and JWT-verified ticket/publish v17 are active; importer v55 source matches local. Admin UI commit `391e80b` is live, preserving omitted Active. Test and production legacy-CSV previews returned unchanged; postchecks found no catalog/stock/image writes. Admin 185/185, Edge 22/22, Python 54/54, Worker 6/6, build/typecheck/lint passed.
+- 20261029-03: Production core migrations and JWT-verified ticket/publish v17 are active; importer v55 source matches local. Admin UI commit `391e80b` is live, preserving omitted Active. Test and production legacy-CSV previews returned unchanged; postchecks found no catalog/stock/image writes. Admin 185/185, Edge 22/22, Python 54/54, Worker 6/6, build/typecheck/lint passed. PR Doctor is green locally on migration delta.
 - 20261028-20: Live `products/` R2 key suffix counts: 203 `.jpg`, 1 `.jpeg`, 854 `.webp`, 9 `.png` (1,067 total); 193 same-basename JPG/WebP pairs across paths, 192 in the same directory. Unlinked variants may be useful source copies; do not classify by exact-path absence alone. Read-only.
 - 20261028-19: Production row-level image check: 688 items; 651 item rows point to a `products/` R2 path through image_key or normalized image_url. These are 651 distinct paths; the remaining 37 have no direct `products/` R2 path. Read-only.
 - 20261028-18: Live `public.items` counts: production `hvmyxyccfnkrbxqbhlnm` has 688 products (684 active, 4 inactive); Security Test `grxxenvdhfwzafzyykgo` has 24 (14 active, 10 inactive), including the two approved pilot products. Read-only.
@@ -46,4 +46,4 @@ PR #564 review fixes implemented and locally validated; no production catalog, s
 - 20261027-01: Merged PR #561 for Bengali deal-page SEO, metadata fallbacks, footer image optimization, and middleware preservation; no manual deployment.
 - 20261027-02: Earlier category/mobile and design tasks are summarized in Git history; no active work remains from them.
 ## Next
-Refresh PR CI, investigate the Project Doctor false positives, then continue sustained production monitoring; exact catalog/image batches still require approval.
+Push detector fixes, refresh PR checks; exact catalog/image batches still require approval.
