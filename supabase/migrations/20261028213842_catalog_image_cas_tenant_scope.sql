@@ -24,23 +24,14 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Invalid store for tenant';
   END IF;
-  IF p_new_image_key IS NOT NULL THEN
-    IF (
-      p_new_image_key !~ ('^products/' || p_tenant_id::text || '/[-A-Z0-9_]+-[0-9a-f-]{36}\.webp$') OR
-      coalesce(p_new_image_checksum !~ '^[0-9a-f]{64}$', true) OR
-      p_new_image_url IS NULL OR
-      split_part(p_new_image_url, '?', 1) NOT IN (
-        ('https://images.luckystore1947.com/' || p_new_image_key),
-        ('https://lucky-store-images-preview.luckystore-1947.workers.dev/' || p_new_image_key)
-      ) OR
-      position('#' IN p_new_image_url) > 0
-    ) THEN
-      RAISE EXCEPTION 'Invalid tenant image publication metadata';
-    END IF;
-  ELSE
-    IF p_new_image_url IS NOT NULL OR p_new_image_checksum IS NOT NULL THEN
-      RAISE EXCEPTION 'URL and checksum must be NULL when image key is NULL';
-    END IF;
+  IF p_new_image_key IS NOT NULL AND (
+    p_new_image_key !~ ('^products/' || p_tenant_id::text || '/[-A-Z0-9_]+-[0-9a-f-]{36}\.webp$') OR
+    coalesce(p_new_image_checksum !~ '^[0-9a-f]{64}$', true) OR
+    p_new_image_url IS NULL OR
+    split_part(p_new_image_url, '?', 1) <> ('https://images.luckystore1947.com/' || p_new_image_key) OR
+    position('#' IN p_new_image_url) > 0
+  ) THEN
+    RAISE EXCEPTION 'Invalid tenant image publication metadata';
   END IF;
 
   UPDATE public.items
@@ -63,3 +54,5 @@ REVOKE ALL ON FUNCTION public.publish_item_image_if_current(uuid, uuid, uuid, te
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.publish_item_image_if_current(uuid, uuid, uuid, text, bigint, text, text, text)
   TO service_role;
+
+;
