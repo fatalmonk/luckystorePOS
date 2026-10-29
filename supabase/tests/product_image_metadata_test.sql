@@ -16,6 +16,7 @@ end $$;
 do $$
 declare
   t uuid; t2 uuid; st uuid; st2 uuid; st3 uuid; item uuid; ext uuid; au uuid; staff uuid; ok boolean; k text;
+  rejected boolean; error_message text; preview_key text;
 begin
   insert into public.tenants(name) values('Image CAS proof') returning id into t;
   insert into public.tenants(name) values('Other tenant') returning id into t2;
@@ -29,6 +30,21 @@ begin
   insert into public.items(tenant_id,name,image_url,image_version) values(t,'CAS item','https://images.luckystore1947.com/'||k,999) returning id into item;
   insert into public.stock_levels(store_id,item_id,qty) values(st,item,1);
   if (select image_version from public.items where id=item) <> 1 then raise exception '[FAIL] arbitrary INSERT version'; end if;
+  -- A direct service-role RPC cannot persist URL/checksum metadata without a key.
+  rejected := false;
+  begin
+    perform public.publish_item_image_if_current(
+      item, t, st, k, 1, null,
+      'https://images.luckystore1947.com/products/'||t||'/orphan.webp', repeat('a',64)
+    );
+    raise exception 'NULL image key sentinel';
+  exception when others then
+    get stacked diagnostics error_message = message_text;
+    if error_message = 'NULL image key sentinel' then raise; end if;
+    rejected := true;
+  end;
+  if not rejected or (select image_key is distinct from k or image_version<>1 from public.items where id=item) then
+    raise exception '[FAIL] CAS accepted URL/checksum without image key'; end if;
   -- Browser/service direct updates cannot set the version, key or checksum.
   set local role service_role;
   update public.items set image_version=999,image_key='fabricated',image_checksum='fabricated' where id=item;
@@ -62,6 +78,15 @@ begin
   if (select image_key is not null from public.items where id=ext) then raise exception '[FAIL] fabricated external key'; end if;
   update public.items set image_url='https://images.luckystore1947.com/products/../ambiguous.webp' where id=ext;
   if (select image_key is not null from public.items where id=ext) then raise exception '[FAIL] ambiguous URL fabricated a key'; end if;
+  -- The test project's preview URL must round-trip through the items trigger.
+  preview_key := 'products/'||t||'/TEST-'||gen_random_uuid()||'.webp';
+  ok := public.publish_item_image_if_current(
+    item, t, st, null, 4, preview_key,
+    'https://lucky-store-images-preview.luckystore-1947.workers.dev/'||preview_key,
+    repeat('a',64)
+  );
+  if not ok or (select image_key is distinct from preview_key or image_version<>5 from public.items where id=item) then
+    raise exception '[FAIL] preview CAS failed to persist trigger-derived image key'; end if;
   if has_function_privilege('authenticated','public.publish_item_image_if_current(uuid,uuid,uuid,text,bigint,text,text,text)','EXECUTE') then
     raise exception '[FAIL] browser CAS privilege'; end if;
   raise notice '[PASS] image CAS: match, replay, stale key/version, unrelated price/stock/name/description, tenant/store, arbitrary version, checksum and legacy URLs';

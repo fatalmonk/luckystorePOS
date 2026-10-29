@@ -1,7 +1,5 @@
--- Catalog items are tenant-wide; requiring a stock_levels row incorrectly
--- prevented publishing images for valid products that are not stocked yet.
--- The trusted publish Edge Function now verifies the actor's tenant/store, and
--- this CAS continues to require both the tenant-owned store and tenant item.
+-- Restore the database invariant lost when production migration history was
+-- aligned: URL/checksum metadata is invalid without a corresponding image key.
 CREATE OR REPLACE FUNCTION public.publish_item_image_if_current(
   p_item_id uuid,
   p_tenant_id uuid,
@@ -24,23 +22,16 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Invalid store for tenant';
   END IF;
-  IF p_new_image_key IS NOT NULL THEN
-    IF (
-      p_new_image_key !~ ('^products/' || p_tenant_id::text || '/[-A-Z0-9_]+-[0-9a-f-]{36}\.webp$') OR
-      coalesce(p_new_image_checksum !~ '^[0-9a-f]{64}$', true) OR
-      p_new_image_url IS NULL OR
-      split_part(p_new_image_url, '?', 1) NOT IN (
-        ('https://images.luckystore1947.com/' || p_new_image_key),
-        ('https://lucky-store-images-preview.luckystore-1947.workers.dev/' || p_new_image_key)
-      ) OR
-      position('#' IN p_new_image_url) > 0
-    ) THEN
-      RAISE EXCEPTION 'Invalid tenant image publication metadata';
-    END IF;
-  ELSE
-    IF p_new_image_url IS NOT NULL OR p_new_image_checksum IS NOT NULL THEN
-      RAISE EXCEPTION 'URL and checksum must be NULL when image key is NULL';
-    END IF;
+  IF p_new_image_key IS NOT NULL AND (
+    p_new_image_key !~ ('^products/' || p_tenant_id::text || '/[-A-Z0-9_]+-[0-9a-f-]{36}\.webp$') OR
+    coalesce(p_new_image_checksum !~ '^[0-9a-f]{64}$', true) OR
+    p_new_image_url IS NULL OR
+    split_part(p_new_image_url, '?', 1) <> ('https://images.luckystore1947.com/' || p_new_image_key) OR
+    position('#' IN p_new_image_url) > 0
+  ) THEN
+    RAISE EXCEPTION 'Invalid tenant image publication metadata';
+  ELSIF p_new_image_url IS NOT NULL OR p_new_image_checksum IS NOT NULL THEN
+    RAISE EXCEPTION 'URL and checksum must be NULL when image key is NULL';
   END IF;
 
   UPDATE public.items
