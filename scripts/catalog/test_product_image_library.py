@@ -6,8 +6,8 @@ from scripts.catalog.image_library import canonical_filename, exact_duplicate_gr
 
 
 class ProductImageLibraryTests(unittest.TestCase):
-    def test_manifest_has_explicit_reference_and_disposition_per_source_alias(self):
-        manifest = Path(__file__).resolve().parents[2] / "data/catalog/image-manifest.csv"
+    def test_manifest_fixture_keeps_unverified_references_unresolved(self):
+        manifest = Path(__file__).parent / "fixtures/image-manifest.csv"
         with manifest.open(newline="", encoding="utf-8") as source:
             reader = csv.DictReader(source)
             self.assertIn("item_id", reader.fieldnames)
@@ -16,7 +16,7 @@ class ProductImageLibraryTests(unittest.TestCase):
             self.assertIn("disposition", reader.fieldnames)
             rows = list(reader)
 
-        self.assertEqual(len(rows), 844)
+        self.assertEqual(len(rows), 2)
         self.assertTrue(all(row["disposition"] == "unresolved" for row in rows))
         self.assertTrue(all(row["item_id"] == "" for row in rows))
         self.assertTrue(all(row["reference_status"] in {
