@@ -214,6 +214,7 @@ def classify_image_reference(
         port = parsed.port
     except ValueError as parse_error:
         result["reference"] = None
+        result["reference_kind"] = "malformed_url"
         result["status"] = "malformed_url"
         result["parser_rule"] = f"parse_error:{type(parse_error).__name__}"
         return result
@@ -394,8 +395,6 @@ def _inventory_image_references(path: Path, relative_path: str, project_root: Pa
     file_hash = hashlib.sha256(path.read_bytes()).hexdigest()
     for row in normalized:
         reference_info = classify_image_reference(row["_reference"], root=project_root)
-        item_key_kind = next((key for key in ("item_id", "sku", "barcode") if row.get(key) not in (None, "")), None)
-        item_key = row.get(item_key_kind) if item_key_kind else None
         tenant = row.get("tenant_id")
         is_duplicate = any(
             duplicates[(str(tenant or ""), key, str(row.get(key)))] > 1
@@ -411,9 +410,11 @@ def _inventory_image_references(path: Path, relative_path: str, project_root: Pa
             "source_kind": "inventory_image_reference",
             "owner_authority": "Local import snapshot only; Supabase public.items owns live product fields and image pointers",
             "format": path.suffix.lower().lstrip("."),
-            "item_key": str(item_key) if item_key is not None else None,
-            "item_key_kind": item_key_kind,
-            "object_key_or_url": reference_info["object_key"] or reference_info["reference"],
+            "item_key": None,
+            "item_key_kind": None,
+            "object_key_or_url": None,
+            "reference_kind": reference_info["reference_kind"],
+            "parser_rule": reference_info["parser_rule"],
             "size_bytes": file_size,
             "sha256": file_hash,
             "current_callers": [],
