@@ -33,6 +33,8 @@ BEGIN
     position('#' IN p_new_image_url) > 0
   ) THEN
     RAISE EXCEPTION 'Invalid tenant image publication metadata';
+  ELSIF p_new_image_url IS NOT NULL OR p_new_image_checksum IS NOT NULL THEN
+    RAISE EXCEPTION 'URL and checksum must be NULL when image key is NULL';
   END IF;
 
   UPDATE public.items
@@ -48,6 +50,52 @@ BEGIN
 
   GET DIAGNOSTICS v_rows = ROW_COUNT;
   RETURN v_rows = 1;
+END;
+$function$;
+
+-- Keep the test project's image provenance trigger in sync with the preview
+-- Worker host accepted by the CAS function above.
+CREATE OR REPLACE FUNCTION public.sync_item_image_metadata()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $function$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    NEW.image_version := CASE WHEN NEW.image_url IS NULL THEN 0 ELSE 1 END;
+    NEW.image_checksum := NULL;
+  ELSIF current_user = 'postgres' AND NEW.image_version = OLD.image_version + 1 THEN
+    -- Only the security-definer CAS publisher may supply this transition.
+    NULL;
+  ELSIF NEW.image_url IS DISTINCT FROM OLD.image_url THEN
+    NEW.image_version := OLD.image_version + 1;
+    NEW.image_checksum := NULL;
+  ELSE
+    NEW.image_version := OLD.image_version;
+    NEW.image_checksum := OLD.image_checksum;
+  END IF;
+
+  IF NEW.image_url ~ '^https://(images\.luckystore1947\.com|lucky-store-images-preview\.luckystore-1947\.workers\.dev)/(products|categories)/[-A-Za-z0-9_./]+([?][^#]*)?$'
+    AND split_part(
+      split_part(NEW.image_url, '?', 1),
+      CASE WHEN NEW.image_url LIKE 'https://images.luckystore1947.com/%'
+        THEN 'https://images.luckystore1947.com/'
+        ELSE 'https://lucky-store-images-preview.luckystore-1947.workers.dev/'
+      END,
+      2
+    ) !~ '(^|/)[.]{1,2}(/|$)|//|/$' THEN
+    NEW.image_key := split_part(
+      split_part(NEW.image_url, '?', 1),
+      CASE WHEN NEW.image_url LIKE 'https://images.luckystore1947.com/%'
+        THEN 'https://images.luckystore1947.com/'
+        ELSE 'https://lucky-store-images-preview.luckystore-1947.workers.dev/'
+      END,
+      2
+    );
+  ELSE
+    NEW.image_key := NULL;
+  END IF;
+  RETURN NEW;
 END;
 $function$;
 

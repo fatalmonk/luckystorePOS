@@ -57,6 +57,8 @@ insert into image_backfill_fixture select id,image_url from items;
 """
 image_v1 = (ROOT / 'supabase/migrations/20261003010000_add_product_image_metadata.sql').read_text()
 image_v2 = (ROOT / 'supabase/migrations/20261003020000_harden_product_image_cas.sql').read_text()
+catalog_image_guard = (ROOT / 'supabase/migrations/20261029030023_restore_catalog_image_null_key_guard.sql').read_text()
+preview_image_test_override = (ROOT / 'supabase/test-only-migrations/20261028193249_allow_preview_image_host_for_cas.sql').read_text()
 constraint_exists = query_scalar("""
 select exists (
   select 1 from pg_constraint
@@ -69,7 +71,7 @@ if constraint_exists:
         '  alter column image_version set not null,\n  add constraint items_image_version_nonnegative check (image_version >= 0);',
         '  alter column image_version set not null;'
     )
-sql += image_v1 + '\n' + image_v2 + '\n'
+sql += image_v1 + '\n' + image_v2 + '\n' + catalog_image_guard + '\n' + preview_image_test_override + '\n'
 
 canva_v1 = (ROOT / 'supabase/migrations/20261003030000_canva_connect_phase1.sql').read_text()
 canva_tables = query_scalar("""
@@ -120,7 +122,7 @@ do $$ begin
   raise notice '[PASS] migration preserves known/external/null URLs and safely initializes metadata';
 end $$;
 """
-for filename in ['product_image_metadata_test.sql', 'canva_connect_phase1_test.sql']:
+for filename in ['product_image_metadata_test.sql', 'catalog_import_null_stock_mode_test.sql', 'canva_connect_phase1_test.sql']:
     content = (ROOT / 'supabase/tests' / filename).read_text()
     # These proofs can also run standalone; use a single outer transaction here.
     content = re.sub(r'^\s*(begin|rollback);\s*$', '', content, flags=re.M | re.I)
