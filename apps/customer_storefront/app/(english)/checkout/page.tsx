@@ -245,7 +245,9 @@ function CheckoutContent() {
       shippingTrackedRef.current = trackAddShippingInfo(
         cart.map((item) => ({ ...item, price: effectivePrice(item) })),
         total,
-        deliveryFee === 0 ? 'Free delivery over 500 BDT' : 'Local delivery 40 BDT',
+        deliveryFee === 0
+          ? `Free delivery on orders of ${DELIVERY_POLICY.freeDeliveryThresholdBdt} BDT or more`
+          : `Local delivery ${DELIVERY_POLICY.standardDeliveryFeeBdt} BDT`,
       );
     }
     setSubmitError(null);
