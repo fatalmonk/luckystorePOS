@@ -26,6 +26,7 @@ import {
 } from './types';
 
 import { searchStorefrontProducts } from '../../search/searchProducts';
+import { fetchStorefrontCatalogItemsByIds } from '../../storefrontCatalogLookup';
 
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
@@ -167,14 +168,8 @@ export class SupabaseProductAdapter implements ProductDataPort {
         ? Math.max(0, Number(stockData.qty ?? 0) - Number(stockData.reserved ?? 0) - Number(stockData.qty_reserved_online ?? 0))
         : null;
       if (stockError || resolvedStock === null) {
-        const { data: projectedRows } = await this.supabase.rpc('search_storefront_catalog', {
-          p_store_id: this.storeId,
-          p_query: '',
-          p_category_id: null,
-          p_limit: 1000,
-          p_offset: 0,
-        });
-        const projected = (projectedRows ?? []).find((row: any) => (row.id ?? row.item_id) === data.id) as any;
+        const projectedRows = await fetchStorefrontCatalogItemsByIds(this.supabase, this.storeId, [data.id]);
+        const projected = projectedRows.find((row) => (row.id ?? row.item_id) === data.id) as any;
         resolvedStock = projected?.sellable_qty ?? projected?.stock ?? 0;
       }
 
@@ -190,34 +185,11 @@ export class SupabaseProductAdapter implements ProductDataPort {
       return mapRowToProduct(validated, this.brandParser, this.emojiResolver, categoryEmojiMap);
     }
 
-    // Fallback: Paginate RPC until match is found or catalog is exhausted
-    const pageSize = 500;
-    let offset = 0;
-    let match: any = null;
-
-    while (!match) {
-      const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
-        p_store_id: this.storeId,
-        p_query: '',
-        p_category_id: null,
-        p_limit: pageSize,
-        p_offset: offset,
-      });
-
-      if (rpcError) {
-        throw new Error(`RPC getById failed: ${rpcError.message}`);
-      }
-
-      const rows = (rpcData ?? []) as unknown[];
-      if (rows.length === 0) break;
-
-      match = rows.find((row: any) =>
-        (row.id ?? row.item_id) === String(id)
-      );
-
-      if (match || rows.length < pageSize) break;
-      offset += pageSize;
+    // Fallback: retain the exact ID lookup without scanning catalog pages.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId)) {
+      return null;
     }
+    const [match] = await fetchStorefrontCatalogItemsByIds(this.supabase, this.storeId, [cleanId]);
 
     if (!match) return null;
 

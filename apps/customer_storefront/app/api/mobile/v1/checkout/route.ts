@@ -5,6 +5,7 @@ import { supabase } from '../../../../lib/supabase';
 import { createClient as createServerClient } from '../../../../lib/supabase/server';
 import { calculateOrderTotals, generateOrderNumber } from '../../../../lib/mobile/checkout';
 import { getPromotionalPrice, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../../../../lib/storefront-promotions';
+import { fetchStorefrontCatalogItemsByIds } from '../../../../lib/storefrontCatalogLookup';
 
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -99,36 +100,14 @@ async function fetchDbPrices(itemIds: string[]): Promise<{
     // Fall back to bounded RPC pagination if items table is unavailable
   }
 
-  // 2. Bounded RPC pagination (max 3 pages / 1500 rows)
-  const needed = new Set(itemIds);
-  const pageSize = 500;
-  const maxPages = 3;
-  let offset = 0;
-  let pagesRead = 0;
-
-  while (needed.size > priceMap.size && pagesRead < maxPages) {
-    pagesRead++;
-    const { data, error } = await supabase.rpc('search_storefront_catalog', {
-      p_store_id: STORE_ID,
-      p_query: '',
-      p_category_id: null,
-      p_limit: pageSize,
-      p_offset: offset,
-    });
-
-    if (error) throw new Error(`Failed to verify prices: ${error.message}`);
-    const rows = (data ?? []) as any[];
-    if (rows.length === 0) break;
-
-    for (const item of rows) {
-      const id = item.id ?? item.item_id;
-      if (needed.has(id)) {
-        priceMap.set(id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
-      }
+  // 2. Exact-selector RPC fallback avoids scanning the catalog when direct
+  // table access is unavailable to the anonymous storefront client.
+  const rows = await fetchStorefrontCatalogItemsByIds(supabase, STORE_ID, itemIds);
+  for (const item of rows) {
+    const id = item.id ?? item.item_id;
+    if (id && itemIds.includes(id)) {
+      priceMap.set(id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
     }
-
-    if (rows.length < pageSize) break;
-    offset += pageSize;
   }
 
   const promotions = await loadActiveStorefrontPromotions(supabase, itemIds);

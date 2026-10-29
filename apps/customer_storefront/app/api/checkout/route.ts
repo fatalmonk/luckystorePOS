@@ -3,6 +3,7 @@ import { createOrder } from '../../lib/orders';
 import { supabase } from '../../lib/supabase';
 import { createClient as createServerClient } from '../../lib/supabase/server';
 import { getPromotionalPrice, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../../lib/storefront-promotions';
+import { fetchStorefrontCatalogItemsByIds } from '../../lib/storefrontCatalogLookup';
 
 const CHECKOUT_RATE_LIMIT = new Map<string, { count: number; reset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -47,20 +48,12 @@ async function fetchDbPrices(itemIds: string[]): Promise<{
 }> {
   const priceMap = new Map<string, { price: number; name: string; mrp: number }>();
 
-  // Use the search_storefront_catalog RPC (granted to anon) with empty query to get catalog items
-  const { data, error } = await supabase.rpc('search_storefront_catalog', {
-    p_store_id: STORE_ID,
-    p_query: '',
-    p_category_id: null,
-    p_limit: 1000,
-    p_offset: 0,
-  });
+  const requestedItemIds = new Set(itemIds);
+  const items = await fetchStorefrontCatalogItemsByIds(supabase, STORE_ID, itemIds);
 
-  if (error) throw new Error(`Failed to verify prices: ${error.message}`);
-
-  for (const item of (data ?? []) as any[]) {
+  for (const item of items) {
     const id = item.id ?? item.item_id;
-    if (itemIds.includes(id)) {
+    if (id && requestedItemIds.has(id)) {
       priceMap.set(id, { price: Number(item.price), name: item.name, mrp: Number(item.mrp) });
     }
   }

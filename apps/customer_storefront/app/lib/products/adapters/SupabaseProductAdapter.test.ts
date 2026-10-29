@@ -22,6 +22,8 @@ function createMockSupabase(overrides?: {
   stockQty?: number;
   stockReserved?: number;
   onlineReserved?: number;
+  stockRow?: any;
+  v2Rows?: any[];
   categories?: any[];
 }) {
   const categories = overrides?.categories ?? [
@@ -59,7 +61,7 @@ function createMockSupabase(overrides?: {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({
-            data: {
+            data: overrides?.stockRow !== undefined ? overrides.stockRow : {
               qty: overrides?.stockQty ?? 2,
               reserved: overrides?.stockReserved ?? 0,
               qty_reserved_online: overrides?.onlineReserved ?? 0,
@@ -82,7 +84,7 @@ function createMockSupabase(overrides?: {
     }),
     rpc: vi.fn((rpcName: string) => {
       if (rpcName === 'search_storefront_catalog_v2') {
-        return Promise.resolve({ data: [], error: null });
+        return Promise.resolve({ data: overrides?.v2Rows ?? [], error: null });
       }
       if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
         return Promise.resolve({
@@ -174,6 +176,34 @@ describe('SupabaseProductAdapter', () => {
       const product = await adapter.getById(createProductId('169e4ac0-80cf-4dc7-8266-f8cad832eb9b'));
 
       expect(product?.stock).toBe(0);
+    });
+
+    it('uses an exact item selector when the direct stock read has no row', async () => {
+      const itemId = '169e4ac0-80cf-4dc7-8266-f8cad832eb9b';
+      const supabase = createMockSupabase({
+        itemsRow: {
+          id: itemId,
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          category_id: 'cat-1',
+          description: null,
+        },
+        stockRow: null,
+        v2Rows: [{ id: itemId, name: 'Savoy Ekdom Aam', price: 48, mrp: 48, sellable_qty: 4 }],
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getById(createProductId(itemId));
+
+      expect(product?.stock).toBe(4);
+      expect(supabase.rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', {
+        p_store_id: expect.any(String),
+        p_query: '',
+        p_category_id: null,
+        p_item_ids: [itemId],
+        p_limit: 1,
+        p_offset: 0,
+      });
     });
 
     it('returns null when product is not found or inactive', async () => {
