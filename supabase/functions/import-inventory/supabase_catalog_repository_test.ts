@@ -135,7 +135,7 @@ Deno.test("image publication failure returns a partial row and finalizes the bat
   const imageAdapter: CatalogImageAdapter = {
     publicBaseUrl: "https://images.example.test",
     async issueTicket() {
-      throw new Error("ticket must not be issued");
+      throw new Error("image ticket service unavailable");
     },
     async upload() {
       throw new Error("upload must not start");
@@ -144,7 +144,7 @@ Deno.test("image publication failure returns a partial row and finalizes the bat
       throw new Error("publish must not start");
     },
     async currentImageState() {
-      throw new Error("image state temporarily unavailable");
+      return { key: null, version: 0, checksum: null };
     },
     async isReferenced() {
       return false;
@@ -177,7 +177,7 @@ Deno.test("image publication failure returns a partial row and finalizes the bat
   }
   if (
     !rows[0].warnings.some((warning) =>
-      warning.includes("image publication threw an exception")
+      warning.includes("image ticket service unavailable")
     )
   ) {
     throw new Error("image failure detail was not retained in the row result");
