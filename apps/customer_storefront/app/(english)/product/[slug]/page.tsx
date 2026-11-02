@@ -75,13 +75,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     permanentRedirect(`/product/${canonicalSlug}`);
   }
 
-  const crossSell = await getCachedCrossSellProducts(
-    product.category,
-    product.categoryId || product.category_id,
-    product.id
-  );
+  const crossSell = product.availabilityUnknown
+    ? []
+    : await getCachedCrossSellProducts(
+        product.category,
+        product.categoryId || product.category_id,
+        product.id
+      );
   const crossSellProducts = prepareCrossSell(crossSell);
-  const radhuniPackVariants = await getCachedRadhuniPackVariants(product);
+  const radhuniPackVariants = product.availabilityUnknown
+    ? []
+    : await getCachedRadhuniPackVariants(product);
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(product.id);
   const galleryImages = enrichment?.galleryImages?.length
     ? enrichment.galleryImages

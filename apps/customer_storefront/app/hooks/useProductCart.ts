@@ -10,7 +10,7 @@ export function useProductCart(product: Product) {
   const { cart, addToCart, updateQty } = useCartContext();
   const [announcement, setAnnouncement] = useState('');
   const quantity = cart.find((item) => item.id === product.id)?.qty || 0;
-  const canAdd = product.stock > 0 && quantity < product.stock;
+  const canAdd = !product.availabilityUnknown && product.stock > 0 && quantity < product.stock;
 
   const add = useCallback((button?: HTMLButtonElement | null) => {
     if (!canAdd) return;

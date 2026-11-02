@@ -96,10 +96,13 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
       price: product.price,
       priceCurrency: 'BDT',
       itemCondition: 'https://schema.org/NewCondition',
-      availability:
-        product.stock > 0
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+      ...(!product.availabilityUnknown
+        ? {
+            availability: product.stock > 0
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          }
+        : {}),
       url: canonicalUrl,
       seller: {
         '@type': 'Organization',

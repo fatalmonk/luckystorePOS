@@ -6,6 +6,10 @@ import type { CategoryItem } from '../../components/HomeShell';
 import type { Locale } from '../i18n/config';
 import { getActiveWeeklyDealEdition, loadCurrentStorefrontDealCampaign } from '../storefront-promotions';
 
+// Generated from a local catalog export. It is a browse-only continuity snapshot;
+// it contains no stock levels and must never authorize cart or checkout quantities.
+import { EMERGENCY_CATALOG_SNAPSHOT } from './emergencyCatalogSnapshot';
+
 export { BENGALI_CATEGORY_NAMES };
 
 /** Filter in-stock products whose category matches or belongs to subcategories of any of the given group slugs. */
@@ -101,7 +105,24 @@ export const FALLBACK_PRODUCTS: Product[] = [
   },
 ];
 
+export const CATALOG_SNAPSHOT_PRODUCTS: Product[] = EMERGENCY_CATALOG_SNAPSHOT
+  .map((row) => ({
+    id: row.id,
+    name: row.name,
+    emoji: '🛒',
+    price: row.price,
+    unit: '1 item',
+    category: 'Groceries',
+    stock: 0,
+    availabilityUnknown: true,
+    description: '',
+    ...(row.image_url ? { image_url: row.image_url } : {}),
+    ...(row.brand ? { brand: row.brand } : {}),
+  }));
+
 export interface HomePageData {
+  /** True when the dated browse-only snapshot replaced an empty/error live catalog query. */
+  catalogSnapshotFallback?: boolean;
   inStock: Product[];
   weeklyPicks: Product[];
   weeklyEditionActive: boolean;
@@ -205,10 +226,16 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
     ),
   ]);
   rawProducts = prodRes?.products || [];
-  nestleSearchResults = nestleRes?.products || [];
+  const usingCatalogSnapshot = rawProducts.length === 0 && CATALOG_SNAPSHOT_PRODUCTS.length > 0;
+  if (usingCatalogSnapshot) {
+    rawProducts = CATALOG_SNAPSHOT_PRODUCTS;
+  }
+  nestleSearchResults = usingCatalogSnapshot ? [] : nestleRes?.products || [];
   rawCategories = catRes || [];
 
-  let products = rawProducts && rawProducts.length > 0 ? rawProducts : FALLBACK_PRODUCTS;
+  let products = rawProducts && rawProducts.length > 0
+    ? rawProducts
+    : FALLBACK_PRODUCTS;
 
   // If locale is Bengali, overlay published Bengali translations
   if (locale === 'bn') {
@@ -247,7 +274,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
     emoji: cat.emoji,
   }));
 
-  const inStock = products.filter((p) => p.stock > 0);
+  const inStock = products.filter((p) => p.stock > 0 || p.availabilityUnknown);
   let weeklyPicks: Product[] = [];
   let weeklyEditionActive = false;
   let weeklyEditionUnavailable = false;
@@ -341,6 +368,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   ).slice(0, 15);
 
   return {
+    catalogSnapshotFallback: usingCatalogSnapshot,
     inStock,
     weeklyPicks,
     weeklyEditionActive,

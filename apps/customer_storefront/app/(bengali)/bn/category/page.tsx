@@ -7,7 +7,7 @@ import { getCachedCategories } from '../../../lib/products/getCachedCategories';
 import { supabase } from '../../../lib/supabase';
 import { getSingleParam } from '../../../lib/utils';
 import { normalizeCategorySlug } from '../../../lib/types';
-import { BENGALI_CATEGORY_NAMES } from '../../../lib/products/getHomePageData';
+import { BENGALI_CATEGORY_NAMES, CATALOG_SNAPSHOT_PRODUCTS } from '../../../lib/products/getHomePageData';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,20 +96,38 @@ export default async function BengaliCategoryRootPage({
   }));
 
   const { repo } = createProductRepository(supabase);
-  const { products: rawProducts } = await repo.search({ query: searchTerm || undefined });
+  let rawProducts = [] as typeof CATALOG_SNAPSHOT_PRODUCTS;
+  try {
+    const result = await repo.search({ query: searchTerm || undefined });
+    rawProducts = result.products.length > 0
+      ? result.products
+      : searchTerm
+        ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        : CATALOG_SNAPSHOT_PRODUCTS;
+  } catch {
+    rawProducts = searchTerm
+      ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : CATALOG_SNAPSHOT_PRODUCTS;
+  }
 
   // Overlay Bengali translations
   const productIds = (rawProducts ?? []).map((p) => p.id);
-  const { data: translations } = productIds.length
-    ? await (supabase as any)
-        .from('item_translations')
-        .select('item_id, name, description')
-        .in('item_id', productIds)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published')
-    : { data: [] };
+  let translations: any[] = [];
+  try {
+    const { data } = productIds.length
+      ? await (supabase as any)
+          .from('item_translations')
+          .select('item_id, name, description')
+          .in('item_id', productIds)
+          .eq('locale', 'bn')
+          .eq('review_status', 'published')
+      : { data: [] };
+    translations = data ?? [];
+  } catch {
+    // Keep the base-language catalog visible if translations are unavailable.
+  }
 
-  const translationMap = new Map((translations ?? []).map((t: any) => [t.item_id, t]));
+  const translationMap = new Map(translations.map((t: any) => [t.item_id, t]));
   const products = (rawProducts ?? []).map((p) => {
     const trans: any = translationMap.get(p.id);
     return trans

@@ -41,7 +41,8 @@ function productDto(product: Product) {
 }
 
 export function toMobileHome(data: HomePageData, locale: MobileLocale) {
-  const degraded = data.inStock.length > 0 && data.inStock.every((product) => fallbackIds.has(product.id));
+  const degraded = data.catalogSnapshotFallback === true ||
+    (data.inStock.length > 0 && data.inStock.every((product) => fallbackIds.has(product.id)));
   const titles = sectionCopy[locale];
   const sections = degraded ? [] : [
     ['deals', titles.deals, data.dealsProducts],

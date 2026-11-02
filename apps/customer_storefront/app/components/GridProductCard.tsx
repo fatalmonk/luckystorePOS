@@ -44,13 +44,16 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   const discountPercentage = getDiscountBadgePercentage(product);
   const stockLow = product.stock === 1;
   const outOfStock = product.stock <= 0;
+  const availabilityUnknown = product.availabilityUnknown === true;
   const localGalleryImage = getProductGalleryImages(product.id)?.[0];
   const productImageSrc = localGalleryImage?.url || product.image_url;
   const cartProduct = localGalleryImage?.url && localGalleryImage.url !== product.image_url
     ? { ...product, image_url: localGalleryImage.url }
     : product;
   const { quantity, canAdd, add, increment, decrement, announcement } = useProductCart(cartProduct);
-  const badgeLabel = outOfStock
+  const badgeLabel = availabilityUnknown
+    ? (locale === 'bn' ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot · price may be outdated · ordering unavailable')
+    : outOfStock
     ? dict.productCard.outOfStock
     : stockLow
       ? dict.productCard.lastOne
@@ -62,7 +65,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
   return (
     <MarketCard
       interactive
-      stockState={outOfStock ? 'unavailable' : stockLow ? 'limited' : 'available'}
+      stockState={availabilityUnknown ? 'unavailable' : outOfStock ? 'unavailable' : stockLow ? 'limited' : 'available'}
       className="group relative flex h-full w-full flex-col"
       data-testid="grid-product-card"
     >
@@ -71,7 +74,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
       <div className="pointer-events-none absolute left-2.5 right-2.5 top-2.5 z-20 flex items-start justify-between gap-2">
         {badgeLabel ? (
           <Badge
-            variant={outOfStock ? 'neutral' : stockLow ? 'warning' : 'sale'}
+            variant={availabilityUnknown || outOfStock ? 'neutral' : stockLow ? 'warning' : 'sale'}
             className="max-w-[calc(100%-3.5rem)] truncate px-2 py-0.5 text-xs"
           >
             {badgeLabel}
@@ -175,6 +178,15 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
                 +
               </button>
             </div>
+          ) : availabilityUnknown ? (
+            <button
+              type="button"
+              disabled
+              className="h-12 w-full cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-3 text-xs font-bold text-warm-muted"
+              aria-label={`${product.name} availability is unverified`}
+            >
+              {locale === 'bn' ? 'স্টক যাচাই করা যায়নি' : 'Availability unverified'}
+            </button>
           ) : outOfStock ? (
             <button
               type="button"
