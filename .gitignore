@@ -336,6 +336,7 @@ Lucky_Store_E-Trade_License_Notarized_Translation.pdf
 
 # Local Codex audit metadata symlink
 /.codex-audits
+/audit/
 system-docs/competitive/
 lucky-store-brand-guidelines/social-media-post/gemini-reference-assets.zip
 lucky-store-brand-guidelines/social-media-post/logo-reveal.mp4
@@ -368,8 +369,8 @@ data/catalog/templates/*
 # Keep local consolidation planning documents out of Git.
 /tasks/inventory-catalog-consolidation/plan.md
 /tasks/inventory-catalog-consolidation/todo.md
+/tasks/inventory-catalog-consolidation/production-readiness.md
 /tasks/archived/
 
 # Local-only image candidate manifest utility.
 /scripts/catalog/build_catalog_image_candidate_manifest.py
-

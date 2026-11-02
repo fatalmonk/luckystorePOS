@@ -30,13 +30,20 @@ Deno.test("publication contract binds checksum, URL namespace, and source image 
   if (!validateImagePublishRequest(request({ newImageUrl: "https://images.luckystore1947.com/products/tenant-a/a.webp?redirect=https://evil.example" }))) throw new Error("unsupported image URL query was accepted");
 });
 
-Deno.test("preview Worker namespace is accepted when explicitly configured", () => {
+Deno.test("preview Worker namespace is restricted to the Security Tests tenant", () => {
   const base = "https://lucky-store-images-preview.luckystore-1947.workers.dev";
-  const result = validateImagePublishRequest(request({
+  const testTenantId = "00000000-0000-0000-0000-000000000001";
+  const allowed = validateImagePublishRequest(request({
+    tenantId: testTenantId,
+    publicBaseUrl: base,
+    newImageUrl: `${base}/products/${testTenantId}/SKU-1-12345678-1234-5678-9234-123456789abc.webp`,
+  }));
+  if (allowed !== null) throw new Error(`preview image namespace was rejected for Security Tests: ${allowed}`);
+  const otherTenant = validateImagePublishRequest(request({
     publicBaseUrl: base,
     newImageUrl: `${base}/products/tenant-a/SKU-1-12345678-1234-5678-9234-123456789abc.webp`,
   }));
-  if (result !== null) throw new Error(`preview image namespace was rejected: ${result}`);
+  if (!otherTenant) throw new Error("preview image namespace was accepted for a different tenant");
   if (!validateImagePublishRequest(request({ publicBaseUrl: "https://untrusted.example" }))) throw new Error("untrusted image namespace was accepted");
 });
 

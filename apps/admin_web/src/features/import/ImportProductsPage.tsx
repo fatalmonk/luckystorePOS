@@ -48,6 +48,13 @@ async function imageSha256(file: File): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+function appendImageAttachments(form: FormData, attachments: Record<number, File>, checksums: Record<number, string>) {
+  for (const [row, file] of Object.entries(attachments)) {
+    const sourceRow = Number(row);
+    form.append(`image_${sourceRow}`, file, file.name);
+    form.append(`image_sha256_${sourceRow}`, checksums[sourceRow]);
+  }
+}
 export const ImportProductsPage: React.FC = () => {
   const { storeId } = useAuth();
   const { notify } = useNotify();
@@ -163,11 +170,7 @@ export const ImportProductsPage: React.FC = () => {
     const form = new FormData();
     form.append('operation', 'preview');
     form.append('batch', JSON.stringify(batch));
-    for (const [row, file] of Object.entries(attachments)) {
-      const sourceRow = Number(row);
-      form.append(`image_${sourceRow}`, file, file.name);
-      form.append(`image_sha256_${sourceRow}`, checksums[sourceRow]);
-    }
+    appendImageAttachments(form, attachments, checksums);
     const preview = await requestImport(form) as ImportPreviewResult;
     if (!preview?.preview_hash || !preview?.counts || !Array.isArray(preview.rows)) throw new Error('Server returned an incomplete import preview');
     pendingApply.current = { fingerprint, batch, idempotencyKey: crypto.randomUUID(), preview, checksums };
@@ -184,17 +187,21 @@ export const ImportProductsPage: React.FC = () => {
     form.append('batch', JSON.stringify(pending.batch));
     form.append('idempotency_key', pending.idempotencyKey);
     form.append('approved_preview_hash', preview.preview_hash);
-    for (const [row, file] of Object.entries(attachments)) {
-      const sourceRow = Number(row);
-      form.append(`image_${sourceRow}`, file, file.name);
-      form.append(`image_sha256_${sourceRow}`, checksums[sourceRow]);
-    }
+    appendImageAttachments(form, attachments, checksums);
     const applied = await requestImport(form);
     if (applied?.counts?.invalid || applied?.counts?.ambiguous) {
       const rowErrors = (Array.isArray(applied.rows) ? applied.rows : [])
         .filter((row) => row.outcome === 'invalid' || row.outcome === 'ambiguous' || row.errors?.length)
         .map((row) => `row ${row.source_row}: ${(row.errors ?? []).join('; ') || row.outcome}`);
       throw new Error(`Some rows were not applied. Review the server response before retrying.${rowErrors.length ? ` ${rowErrors.join(' | ')}` : ''}`);
+    }
+    const partialRows = (Array.isArray(applied.rows) ? applied.rows : [])
+      .filter((row) => row.outcome === 'partial_success');
+    if (partialRows.length) {
+      pendingApply.current = null;
+      const warnings = partialRows
+        .flatMap((row) => (row.warnings ?? []).map((warning) => `row ${row.source_row}: ${warning}`));
+      throw new Error(`Product data was applied, but image publication was incomplete. Preview the batch again before retrying.${warnings.length ? ` ${warnings.join(' | ')}` : ''}`);
     }
     pendingApply.current = null;
     notify(`Successfully processed ${data.length} products`, 'success');

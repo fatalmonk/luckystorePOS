@@ -4,14 +4,13 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Resolve PR #566 review finding: preserve product detail with zero stock if stock-only projection fails.
+Stage the intended catalog-consolidation files without committing.
 
 ## Decisions
+- 20261103-1: Production origins deployed at Worker version 940; custom domain remains enabled, Worker subdomain previews enabled, custom-domain previews disabled. Keep localhost origins under `[previews.vars]` only. All 18 intended paths are staged, with no remaining unstaged or untracked changes.
 - 20261029-17: Checkout and exact product fallbacks use the v2 catalog RPC with requested IDs; live prices remain uncached, and product detail degrades to zero stock if its stock-only projection fails.
-- 20261029-5: Preserve all six non-main local branches because each is checked out in a worktree; unique commits, dirty catalog work, or unavailable remote PR verification prevent deletion.
-- 20261029-6: Delete remote branches only when the tip exactly matches a merged PR head and no active worktree uses it; preserve post-merge commits.
-- 20261029-7: Remove clean worktrees for completed merged PRs while retaining their local branch refs and commits; keep any dirty worktree intact.
-- 20261029-8: Delete unoccupied local branches only after confirming their commits are present in `origin/main`; retain branches with unverified commits and all worktree branches.
+- 20261029-5/-6: Preserve worktree branches and unverified/unique commits; delete remote refs only when the tip matches a merged PR head and no active worktree uses it.
+- 20261029-7/-8: Remove clean merged-PR worktrees and delete only unoccupied local branches proven patch-equivalent to `origin/main`; keep dirty/worktree branches and unverified commits.
 - 20261029-9: Treat catalog worktrees as different snapshots; reconcile migrations and production write paths against current `main` before merging or applying.
 - 20261029-10: Reconcile plan/todo status from reviewed evidence before continuing; current pipeline tracker leaves Task 7 monitoring and usage-based retirement open.
 - 20261029-11: Use the pipeline worktree's reconciled checklist as the current progress record; keep Task 7 expansion and retirement gated on monitoring and caller evidence.
@@ -28,7 +27,7 @@ Resolve PR #566 review finding: preserve product detail with zero stock if stock
 - 20261027-5: Intro video project is under `videos/luckystore-intro`; verify the 4K render before export handoff.
 
 ## Blockers
-- 20261026-1: Local `next dev` preview emitted `EMFILE` watcher errors; a standalone production render returned 200.
+- 20261103-2: `supabase/.temp/project-ref` is absent; specify `--project-ref` for any Supabase CLI remote operation. 20261026-1: Local `next dev` preview emitted `EMFILE` watcher errors; a standalone production render returned 200.
 
 ## Resolved
 - 20261029-1: `git fetch origin --prune` succeeded with Git metadata write access. Deleted local `codex/site-audit-remediation`, `feat/category-hero-556`, and `feat/category-hero-five-pages-556` using `git branch -d` after verifying ancestry and worktree status.
@@ -47,4 +46,4 @@ Resolve PR #566 review finding: preserve product detail with zero stock if stock
 - 20261029-16: Pruned 11 merged remote branches and local `codex/supabase-preview-migration-fix`; removed its duplicate worktree earlier. Kept open/unverified refs and dirty catalog worktrees.
 
 ## Next
-Only restore an archived importer if it will be replaced with environment/tenant-scoped preview and explicit apply controls; continue Task 7 monitoring/error diagnosis.
+Review the staged diff before any commit.

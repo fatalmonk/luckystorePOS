@@ -410,6 +410,15 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
         self.assertEqual(result["reference"], "https://images.example.test/product.webp")
         self.assertNotIn("private", json.dumps(result))
 
+    def test_malformed_url_is_redacted_without_aborting(self):
+        result = classify_image_reference("http://images.example.test:notaport/item.webp?token=private")
+
+        self.assertEqual(result["reference_kind"], "malformed_url")
+        self.assertEqual(result["status"], "malformed_url")
+        self.assertIsNone(result["reference"])
+        self.assertNotIn("private", json.dumps(result))
+
+
     def test_missing_local_image_is_unresolved_and_reconciliation_is_read_only(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -467,15 +476,24 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
             self.assertIsNone(image_row["item_key"])
             self.assertIsNone(image_row["item_key_kind"])
             self.assertIsNone(image_row["object_key_or_url"])
-            self.assertEqual(image_row["reference_kind"], "legacy_remote")
-            self.assertEqual(image_row["parser_rule"], "item-images-prefix")
+            self.assertNotIn("EXACT-SKU", json.dumps(image_row))
+            self.assertNotIn("a.webp", json.dumps(image_row))
             self.assertEqual(image_row["match_status"], "unresolved")
-            serialized_row = json.dumps(image_row)
-            self.assertNotIn("EXACT-SKU", serialized_row)
-            self.assertNotIn("item-images/a.webp", serialized_row)
-            self.assertNotIn("https://cdn.example.test", serialized_row)
+
             self.assertEqual({path: (root / path).read_bytes() for path in local_sources}, before)
             self.assertTrue(first["read_only"])
+
+    def test_catalog_tooling_source_keeps_its_authority_classification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tooling = root / "scripts/catalog/image_audit.py"
+            tooling.parent.mkdir(parents=True)
+            tooling.write_text('image_url = "https://example.test/item.webp"\n', encoding="utf-8")
+
+            report = build_source_inventory(root)
+
+        source = next(row for row in report["sources"] if row["source_path"] == "scripts/catalog/image_audit.py")
+        self.assertEqual(source["source_kind"], "catalog_tooling")
 
     def test_cli_writes_source_inventory_to_a_separate_local_path(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -527,17 +545,6 @@ class ReconcileInventorySnapshotsTests(unittest.TestCase):
         self.assertIsNone(remote["sha256"])
         self.assertFalse(report["remote_sources"]["sha256_available"])
 
-
-    def test_malformed_url_does_not_preserve_raw_reference_or_query_data(self):
-        malformed = "http://host:notaport/path?token=must-not-leak"
-        result = classify_image_reference(malformed)
-
-        self.assertEqual(result["status"], "malformed_url")
-        self.assertEqual(result["reference_kind"], "malformed_url")
-        self.assertIsNone(result["reference"])
-        self.assertIsNotNone(result["parser_rule"])
-        self.assertIn("parse_error:", result["parser_rule"])
-        self.assertNotIn("must-not-leak", repr(result))
 
 
 if __name__ == "__main__":

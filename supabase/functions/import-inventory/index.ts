@@ -3,9 +3,24 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { runCatalogImportOperation, type CatalogImportOperation } from "./catalog_import_v1.ts";
 import { createSupabaseCatalogRepository } from "./supabase_catalog_repository.ts";
 import { publishCatalogAttachment, validateCatalogImageFile, type CatalogImageAdapter } from "./catalog_image_ingest.ts";
+import { isAllowedCatalogImageBase } from "../_shared/catalog-image-namespace.ts";
+import {
+  ImportRequestLimitError,
+  MAX_IMAGE_ATTACHMENTS,
+  MAX_IMAGE_BYTES,
+  MAX_IMPORT_ROWS,
+  MAX_IMPORT_REQUEST_BYTES,
+  MAX_TOTAL_IMAGE_BYTES,
+  MAX_LEGACY_CSV_BYTES,
+  MAX_LEGACY_CSV_ROWS,
+  assertLegacyCsvLineLimit,
+  readBoundedRequest,
+} from "./request_limits.ts";
+
 
 // Simple CSV parser - handles basic CSV with quoted fields
 function parseCSV(text: string): Record<string, string>[] {
+  assertLegacyCsvLineLimit(text);
   const lines = text.trim().split('\n');
   if (lines.length === 0) return [];
   
@@ -69,6 +84,9 @@ function parseCSV(text: string): Record<string, string>[] {
       row[header] = fields[idx] || '';
     });
     rows.push(row);
+    if (rows.length > MAX_LEGACY_CSV_ROWS) {
+      throw new ImportRequestLimitError(`CSV import exceeds the maximum row count of ${MAX_LEGACY_CSV_ROWS}`);
+    }
   }
   
   return rows;
@@ -230,23 +248,20 @@ function createEmptySummary(): ImportSummary {
   };
 }
 
-function createEdgeCatalogImageAdapter(client: any, userToken: string): CatalogImageAdapter {
+function createEdgeCatalogImageAdapter(client: any, userToken: string, tenantId: string): CatalogImageAdapter {
+
   const publicBaseUrl = Deno.env.get("R2_PUBLIC_BASE_URL") ?? "";
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
   if (!publicBaseUrl || !supabaseUrl) throw new Error("Catalog image publication is not configured");
-  if (publicBaseUrl.includes("?") || publicBaseUrl.includes("#")) {
-    throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
-  }
-  const publicBase = new URL(publicBaseUrl);
-  const allowedImageHosts = new Set(["images.luckystore1947.com", "lucky-store-images-preview.luckystore-1947.workers.dev"]);
-  if (publicBase.protocol !== "https:" || !allowedImageHosts.has(publicBase.hostname) || publicBase.pathname !== "/" || publicBase.search || publicBase.hash) {
+  if (!isAllowedCatalogImageBase(publicBaseUrl, tenantId)) {
     throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
   }
   const parsedSupabaseUrl = new URL(supabaseUrl);
   if (parsedSupabaseUrl.protocol !== "https:") {
     throw new Error("SUPABASE_URL must use HTTPS");
   }
+
   const functionHeaders = {
     Authorization: `Bearer ${userToken}`,
     ...(apiKey ? { apikey: apiKey } : {}),
@@ -397,8 +412,11 @@ serve(async (req) => {
       });
     }
 
+    const boundedRequest = await readBoundedRequest(req, MAX_IMPORT_REQUEST_BYTES);
+
     if (contentType.includes("application/json")) {
-      const operation = await req.json() as CatalogImportOperation;
+      const operation = await boundedRequest.json() as CatalogImportOperation;
+
       const result = await runCatalogImportOperation(
         operation,
         { id: actorProfile.id, role: actorProfile.role, tenant_id: actorProfile.tenant_id, store_id: actorProfile.store_id },
@@ -410,7 +428,19 @@ serve(async (req) => {
       });
     }
 
-    const form = await req.formData();
+    const form = await boundedRequest.formData();
+    let totalImageBytes = 0;
+    let imageAttachmentCount = 0;
+    for (const [key, value] of form.entries()) {
+      if (key.startsWith("image_") && value instanceof File) {
+        imageAttachmentCount++;
+        totalImageBytes += value.size;
+        if (imageAttachmentCount > MAX_IMAGE_ATTACHMENTS || value.size > MAX_IMAGE_BYTES || totalImageBytes > MAX_TOTAL_IMAGE_BYTES) {
+          throw new ImportRequestLimitError("Image attachments exceed the per-file, count, or aggregate size limit");
+        }
+      }
+    }
+
     const requestedImportRunId = normalizeText(form.get("import_run_id"));
     const chunkSize = clampChunkSize(form.get("max_rows"));
     isDryRun = form.get("dry_run") === "true";
@@ -420,27 +450,16 @@ serve(async (req) => {
     if (normalizeText(form.get("operation")) && normalizeText(form.get("batch"))) {
       const operationName = normalizeText(form.get("operation"));
       const batch = JSON.parse(String(form.get("batch")));
+      if (Array.isArray(batch?.rows) && batch.rows.length > MAX_IMPORT_ROWS) {
+        throw new ImportRequestLimitError(`Catalog import exceeds the maximum row count of ${MAX_IMPORT_ROWS}`);
+      }
       const attachments = [];
-      const MAX_SINGLE_ATTACHMENT_BYTES = 10 * 1024 * 1024;
-      const MAX_TOTAL_ATTACHMENT_BYTES = 50 * 1024 * 1024;
-      let totalAttachmentBytes = 0;
+
       if (Array.isArray(batch?.rows)) {
         for (const row of batch.rows) {
           const file = form.get(`image_${row.source_row}`);
           if (file instanceof File) {
-            if (file.size <= 0 || file.size > MAX_SINGLE_ATTACHMENT_BYTES) {
-              return new Response(JSON.stringify({ error: `Image attachment for row ${row.source_row} exceeds the 10 MiB limit` }), {
-                status: 400,
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-              });
-            }
-            totalAttachmentBytes += file.size;
-            if (totalAttachmentBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
-              return new Response(JSON.stringify({ error: "Total batch image attachments exceed 50 MiB limit" }), {
-                status: 400,
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-              });
-            }
+
             const bytes = new Uint8Array(await file.arrayBuffer());
             const sha256 = normalizeText(form.get(`image_sha256_${row.source_row}`)) ?? undefined;
             attachments.push({ source_row: row.source_row, name: file.name, type: file.type, size: file.size, bytes, ...(sha256 ? { sha256 } : {}) });
@@ -448,7 +467,8 @@ serve(async (req) => {
         }
       }
       const imageAdapter = operationName === "apply" && attachments.length
-        ? createEdgeCatalogImageAdapter(supabaseClient, token!)
+        ? createEdgeCatalogImageAdapter(supabaseClient, token!, actorProfile.tenant_id)
+
         : undefined;
       const result = await runCatalogImportOperation(
         { operation: operationName, batch, ...(attachments.length ? { attachments } : {}), idempotency_key: normalizeText(form.get("idempotency_key")) ?? undefined, approved_preview_hash: normalizeText(form.get("approved_preview_hash")) ?? undefined } as CatalogImportOperation,
@@ -520,6 +540,10 @@ serve(async (req) => {
       );
     }
 
+    if (file && file.size > MAX_LEGACY_CSV_BYTES) {
+      throw new ImportRequestLimitError("CSV import file exceeds the maximum allowed size");
+    }
+
     summary.import_file_name = file.name;
 
     const imageFiles = new Map<string, File>();
@@ -528,7 +552,10 @@ serve(async (req) => {
         imageFiles.set(key.replace("image_", ""), value);
       }
     }
-    const legacyImageAdapter = imageFiles.size && !isDryRun ? createEdgeCatalogImageAdapter(supabaseClient, token!) : undefined;
+    const legacyImageAdapter = imageFiles.size && !isDryRun
+      ? createEdgeCatalogImageAdapter(supabaseClient, token!, actorProfile.tenant_id)
+      : undefined;
+
     if (imageFiles.size && !isDryRun && !importRunId) {
       throw new Error("Could not create an idempotent import run for image publication");
     }
@@ -976,7 +1003,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ error: errorMessage, summary }), {
-      status: 500,
+      status: err instanceof ImportRequestLimitError ? 413 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
