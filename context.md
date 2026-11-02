@@ -4,10 +4,10 @@
 - Mobile: Flutter, Expo SDK 57; backend/assets: Supabase, Cloudflare Workers/R2
 
 ## Current Task
-Stage the intended catalog-consolidation files without committing.
+Catalog consolidation PR #574 is open from `codex/catalog-consolidation`.
 
 ## Decisions
-- 20261103-1: Production origins deployed at Worker version 940; custom domain remains enabled, Worker subdomain previews enabled, custom-domain previews disabled. Keep localhost origins under `[previews.vars]` only. All 18 intended paths are staged, with no remaining unstaged or untracked changes.
+- 20261103-1: Commit `62e5e077` is PR #574; production origins were deployed at Worker version 940. Custom domain and Worker subdomain previews remain enabled; custom-domain previews are disabled. Keep localhost origins under `[previews.vars]` only.
 - 20261029-17: Checkout and exact product fallbacks use the v2 catalog RPC with requested IDs; live prices remain uncached, and product detail degrades to zero stock if its stock-only projection fails.
 - 20261029-5/-6: Preserve worktree branches and unverified/unique commits; delete remote refs only when the tip matches a merged PR head and no active worktree uses it.
 - 20261029-7/-8: Remove clean merged-PR worktrees and delete only unoccupied local branches proven patch-equivalent to `origin/main`; keep dirty/worktree branches and unverified commits.
@@ -46,4 +46,4 @@ Stage the intended catalog-consolidation files without committing.
 - 20261029-16: Pruned 11 merged remote branches and local `codex/supabase-preview-migration-fix`; removed its duplicate worktree earlier. Kept open/unverified refs and dirty catalog worktrees.
 
 ## Next
-Review the staged diff before any commit.
+Monitor CI and PR review; keep the test-only migration out of production.
