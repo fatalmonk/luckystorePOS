@@ -19,6 +19,11 @@ on:
         type: choice
         options: [staging, production]
         default: staging
+      allow_catalog_snapshot_fallback:
+        description: 'Allow staging/production smoke checks to accept the explicitly degraded browse-only catalog snapshot'
+        required: true
+        type: boolean
+        default: false
 
 concurrency:
   group: storefront-deploy-${{ github.ref }}
@@ -36,11 +41,13 @@ jobs:
       promote_to: ${{ steps.set-target.outputs.promote_to }}
       staging_domain: ${{ steps.set-target.outputs.staging_domain }}
       production_domain: ${{ steps.set-target.outputs.production_domain }}
+      allow_catalog_snapshot_fallback: ${{ steps.set-target.outputs.allow_catalog_snapshot_fallback }}
     steps:
       - id: set-target
         env:
           EVENT_NAME: ${{ github.event_name }}
           PROMOTE_TO_INPUT: ${{ inputs.promote_to }}
+          ALLOW_SNAPSHOT_INPUT: ${{ inputs.allow_catalog_snapshot_fallback }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             PROMOTE_TO="$PROMOTE_TO_INPUT"
@@ -53,6 +60,11 @@ jobs:
           echo "promote_to=$PROMOTE_TO" >> $GITHUB_OUTPUT
           echo "staging_domain=next.luckystore1947.com" >> $GITHUB_OUTPUT
           echo "production_domain=luckystore1947.com" >> $GITHUB_OUTPUT
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$ALLOW_SNAPSHOT_INPUT" = "true" ]; then
+            echo "allow_catalog_snapshot_fallback=true" >> $GITHUB_OUTPUT
+          else
+            echo "allow_catalog_snapshot_fallback=false" >> $GITHUB_OUTPUT
+          fi
 
   # ── Step 2: Build Once to Immutable Artifact ───────────────
   build-artifact:
@@ -145,9 +157,14 @@ jobs:
 
       - name: Run Staging Smoke Suite (Deep Route & Supabase Validation)
         run: |
+          ALLOW_SNAPSHOT=""
+          if [ "${{ needs.resolve-context.outputs.allow_catalog_snapshot_fallback }}" = "true" ]; then
+            ALLOW_SNAPSHOT="--allow-catalog-snapshot-fallback"
+          fi
           node scripts/ci/smoke-test.mjs \
             --url "https://${{ needs.resolve-context.outputs.staging_domain }}" \
-            --expected-sha ${{ github.sha }}
+            --expected-sha ${{ github.sha }} \
+            $ALLOW_SNAPSHOT
 
   # ── Step 5: Production Deployment Gate ─────────────────────
   deploy-production:
@@ -171,9 +188,15 @@ jobs:
 
       - name: Production Smoke Validation
         run: |
+          ALLOW_SNAPSHOT=""
+          if [ "${{ needs.resolve-context.outputs.allow_catalog_snapshot_fallback }}" = "true" ]; then
+            ALLOW_SNAPSHOT="--allow-catalog-snapshot-fallback"
+          fi
           node scripts/ci/smoke-test.mjs \
             --url "https://${{ needs.resolve-context.outputs.production_domain }}" \
-            --expected-sha ${{ github.sha }}
+            --expected-sha ${{ github.sha }} \
+            $ALLOW_SNAPSHOT
           node scripts/ci/smoke-test.mjs \
             --url "https://www.luckystore1947.com" \
-            --expected-sha ${{ github.sha }}
+            --expected-sha ${{ github.sha }} \
+            $ALLOW_SNAPSHOT

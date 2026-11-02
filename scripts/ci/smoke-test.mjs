@@ -4,7 +4,7 @@
  * Validates Next.js standalone server routes, Supabase DB connectivity, and cache headers.
  * 
  * Usage:
- *   node scripts/ci/smoke-test.mjs --url https://next.luckystore1947.com [--expected-sha <sha>]
+ *   node scripts/ci/smoke-test.mjs --url https://next.luckystore1947.com [--expected-sha <sha>] [--allow-catalog-snapshot-fallback]
  */
 
 import https from 'node:https';
@@ -14,6 +14,7 @@ function parseArgs() {
   const args = process.argv.slice(2);
   let url = 'http://localhost:3000';
   let expectedSha = null;
+  let allowCatalogSnapshotFallback = false;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--url' && args[i + 1]) {
@@ -22,9 +23,11 @@ function parseArgs() {
     } else if (args[i] === '--expected-sha' && args[i + 1]) {
       expectedSha = args[i + 1];
       i++;
+    } else if (args[i] === '--allow-catalog-snapshot-fallback') {
+      allowCatalogSnapshotFallback = true;
     }
   }
-  return { url, expectedSha };
+  return { url, expectedSha, allowCatalogSnapshotFallback };
 }
 
 function request(targetUrl, options = {}, redirectCount = 0) {
@@ -71,7 +74,7 @@ function request(targetUrl, options = {}, redirectCount = 0) {
 }
 
 async function run() {
-  const { url: baseUrl, expectedSha } = parseArgs();
+  const { url: baseUrl, expectedSha, allowCatalogSnapshotFallback } = parseArgs();
   console.log(`\n======================================================`);
   console.log(`🔍 Running Storefront Smoke Tests against: ${baseUrl}`);
   if (expectedSha) console.log(`🎯 Expected Commit SHA: ${expectedSha}`);
@@ -133,7 +136,10 @@ async function run() {
           if (!data.degraded || products.some((product) => product.stock !== 0 || product.availabilityUnknown !== true)) {
             throw new Error('Snapshot fallback must be marked degraded and every product must have unknown availability and zero stock');
           }
-          return `Browse-only snapshot fallback successful (${count} products; inventory unavailable)`;
+          if (!allowCatalogSnapshotFallback) {
+            throw new Error('Live catalog query failed; browse-only snapshot is not allowed without --allow-catalog-snapshot-fallback');
+          }
+          return `Live catalog unavailable; browse-only snapshot explicitly allowed (${count} products; inventory unavailable)`;
         }
         return `Supabase query successful (${count} products returned)`;
       }

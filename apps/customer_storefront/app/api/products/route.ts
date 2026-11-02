@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
       hasMore, offset, limit,
     });
   } catch (e: any) {
+    console.error('GET /api/products: live catalog request failed; using browse-only snapshot when available', e);
     const snapshot = CATALOG_SNAPSHOT_PRODUCTS;
     if (id) {
       const fallback = snapshot.find((product) => product.id.toLowerCase() === id.toLowerCase());
