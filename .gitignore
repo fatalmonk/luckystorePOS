@@ -370,3 +370,6 @@ data/catalog/templates/*
 /tasks/inventory-catalog-consolidation/todo.md
 /tasks/archived/
 
+# Local-only image candidate manifest utility.
+/scripts/catalog/build_catalog_image_candidate_manifest.py
+
