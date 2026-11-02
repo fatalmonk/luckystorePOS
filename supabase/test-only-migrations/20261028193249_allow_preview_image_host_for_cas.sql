@@ -22,6 +22,10 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Invalid store for tenant';
   END IF;
+  IF p_new_image_url LIKE 'https://lucky-store-images-preview.luckystore-1947.workers.dev/%'
+     AND p_tenant_id <> '00000000-0000-0000-0000-000000000001'::uuid THEN
+    RAISE EXCEPTION 'Preview image URLs are restricted to the Security Tests tenant';
+  END IF;
   IF p_new_image_key IS NOT NULL AND (
     p_new_image_key !~ ('^products/' || p_tenant_id::text || '/[-A-Z0-9_]+-[0-9a-f-]{36}\.webp$') OR
     coalesce(p_new_image_checksum !~ '^[0-9a-f]{64}$', true) OR

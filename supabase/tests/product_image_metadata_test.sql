@@ -87,6 +87,27 @@ begin
   );
   if not ok or (select image_key is distinct from preview_key or image_version<>5 from public.items where id=item) then
     raise exception '[FAIL] preview CAS failed to persist trigger-derived image key'; end if;
+  rejected := false;
+  begin
+    perform public.publish_item_image_if_current(
+      item, t, st, preview_key, 5, 'products/'||t2||'/PREVIEW-OTHER.webp',
+      'https://lucky-store-images-preview.luckystore-1947.workers.dev/products/'||t2||'/PREVIEW-OTHER.webp',
+      repeat('b',64)
+    );
+  exception when others then rejected := true;
+  end;
+  if not rejected or (select image_key is distinct from preview_key or image_version<>5 from public.items where id=item) then
+    raise exception '[FAIL] non-test tenant preview CAS was not rolled back';
+  end if;
+  rejected := false;
+  begin
+    insert into public.items(tenant_id,name,image_url) values(
+      '00000000-0000-0000-0000-000000000001'::uuid,'Preview INSERT must reject',
+      'https://lucky-store-images-preview.luckystore-1947.workers.dev/products/00000000-0000-0000-0000-000000000001/INSERT.webp'
+    );
+  exception when others then rejected := true;
+  end;
+  if not rejected then raise exception '[FAIL] preview URL INSERT was accepted'; end if;
   if has_function_privilege('authenticated','public.publish_item_image_if_current(uuid,uuid,uuid,text,bigint,text,text,text)','EXECUTE') then
     raise exception '[FAIL] browser CAS privilege'; end if;
   raise notice '[PASS] image CAS: match, replay, stale key/version, unrelated price/stock/name/description, tenant/store, arbitrary version, checksum and legacy URLs';

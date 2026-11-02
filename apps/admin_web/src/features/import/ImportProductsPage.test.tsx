@@ -124,6 +124,17 @@ describe('ImportProductsPage', () => {
     expect(mocks.notify).toHaveBeenCalledWith(expect.stringContaining('Successfully processed 1'), 'success');
   });
 
+  it('rejects six image attachments before making the preview request', async () => {
+    await loadSampleAndContinue();
+    const input = screen.getByLabelText('WebP image for row 1');
+    const sixImages = Array.from({ length: 6 }, (_, index) =>
+      new File([imageBytes], `image-${index}.webp`, { type: 'image/webp' }));
+    fireEvent.change(input, { target: { files: sixImages } });
+    fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
+    await screen.findByText(/at most 5 image attachments/i);
+    expect(mocks.fetch).not.toHaveBeenCalled();
+  });
+
   it('does not offer Apply when the server preview contains invalid or ambiguous rows', async () => {
     mocks.fetch.mockResolvedValueOnce(response({
       batch_id: 'image-pilot-invalid',

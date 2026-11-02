@@ -36,6 +36,21 @@ const productSchema = z.object({
 });
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_IMAGE_ATTACHMENTS = 5;
+const MAX_TOTAL_IMAGE_BYTES = 16 * 1024 * 1024;
+
+function validateImageAttachments(attachments: Record<number, File>): void {
+  const files = Object.values(attachments);
+  if (files.length > MAX_IMAGE_ATTACHMENTS) {
+    throw new Error(`A product import can include at most ${MAX_IMAGE_ATTACHMENTS} image attachments`);
+  }
+  if (files.some((file) => file.size > MAX_IMAGE_BYTES)) {
+    throw new Error('Each image attachment must be 10 MiB or smaller');
+  }
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_TOTAL_IMAGE_BYTES) {
+    throw new Error('Product image attachments must total 16 MiB or less');
+  }
+}
 
 async function imageSha256(file: File): Promise<string> {
   if (file.size > MAX_IMAGE_BYTES) throw new Error(`${file.name} exceeds the 10 MiB WebP limit`);
@@ -165,6 +180,8 @@ export const ImportProductsPage: React.FC = () => {
   };
 
   const handlePreview = async (data: Record<string, string | number | boolean>[], attachments: Record<number, File>): Promise<ImportPreviewResult> => {
+    if (data.length > 1_000) throw new Error('Product imports can include at most 1,000 rows');
+    validateImageAttachments(attachments);
     const { fingerprint, checksums } = await attachmentFingerprint(data, attachments);
     const batch = buildBatch(data);
     const form = new FormData();
@@ -178,6 +195,8 @@ export const ImportProductsPage: React.FC = () => {
   };
 
   const handleApply = async (data: Record<string, string | number | boolean>[], attachments: Record<number, File>, preview: ImportPreviewResult) => {
+    if (data.length > 1_000) throw new Error('Product imports can include at most 1,000 rows');
+    validateImageAttachments(attachments);
     const pending = pendingApply.current;
     const { fingerprint, checksums } = await attachmentFingerprint(data, attachments);
     if (!pending || pending.fingerprint !== fingerprint || pending.preview.preview_hash !== preview.preview_hash) throw new Error('Batch changed after preview. Review a fresh preview before applying.');

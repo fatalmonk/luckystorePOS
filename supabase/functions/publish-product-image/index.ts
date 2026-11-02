@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.104.1'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { validateImagePublishRequest, verifyUploadedWebp } from './image_publish_contract.ts'
+import { isAllowedCatalogImageBase } from '../_shared/catalog-image-namespace.ts'
 
 const allowedRoles = new Set(['owner', 'manager', 'admin', 'stock'])
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -43,7 +44,9 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const publicImageUrl = Deno.env.get('R2_PUBLIC_BASE_URL') ?? 'https://images.luckystore1947.com'
     if (!url || !serviceRoleKey) return json({ error: 'Image publishing is not configured' }, 500)
-
+    const projectHost = new URL(url).hostname
+    const allowPreviewImageHost = Deno.env.get('ALLOW_PREVIEW_CATALOG_IMAGE_HOST') === 'true' &&
+      projectHost === 'grxxenvdhfwzafzyykgo.supabase.co'
     const admin = createClient(url, serviceRoleKey)
     const { data: auth, error: authError } = await admin.auth.getUser(authorization.slice(7))
     if (authError || !auth.user) return json({ error: 'Invalid authorization' }, 401)
@@ -52,6 +55,9 @@ serve(async (req) => {
       .from('users').select('id, tenant_id, store_id, role').eq('auth_id', auth.user.id).maybeSingle()
     if (userError) throw userError
     if (!user || !allowedRoles.has(String(user.role))) return json({ error: 'Image publish not authorized' }, 403)
+    if (!isAllowedCatalogImageBase(publicImageUrl, String(user.tenant_id), allowPreviewImageHost)) {
+      return json({ error: 'Configured image URL is not allowed for this project and tenant' }, 500)
+    }
 
     const body = await req.json() as {
       itemId?: unknown; storeId?: unknown; sourceImageKey?: unknown; sourceImageVersion?: unknown; newImageUrl?: unknown; newImageChecksum?: unknown
@@ -72,6 +78,7 @@ serve(async (req) => {
       newImageUrl,
       newImageChecksum,
       publicBaseUrl: publicImageUrl,
+      allowPreviewImageHost,
     });
     if (sourceImageKey === undefined || requestError) return json({ error: requestError ?? 'Invalid source image key' }, 400)
     const { data: store, error: storeError } = await admin.from('stores').select('id')
@@ -126,7 +133,11 @@ serve(async (req) => {
         .select('image_key, image_checksum').eq('id', itemId).eq('tenant_id', user.tenant_id).maybeSingle()
       if (confirmError) throw confirmError
       if (confirmed?.image_key !== newImageKey || confirmed?.image_checksum !== body.newImageChecksum) {
-        return json({ error: 'Published image metadata did not match the requested tenant object' }, 409)
+        return json({
+          error: 'Image publish completed, but published image metadata did not match the requested tenant object',
+          published: true,
+          imageKey: newImageKey,
+        }, 500)
       }
     }
     return json({ published: true, imageKey: newImageKey })

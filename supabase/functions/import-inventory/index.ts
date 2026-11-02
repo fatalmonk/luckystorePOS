@@ -254,7 +254,9 @@ function createEdgeCatalogImageAdapter(client: any, userToken: string, tenantId:
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
   if (!publicBaseUrl || !supabaseUrl) throw new Error("Catalog image publication is not configured");
-  if (!isAllowedCatalogImageBase(publicBaseUrl, tenantId)) {
+  const allowPreviewImageHost = Deno.env.get("ALLOW_PREVIEW_CATALOG_IMAGE_HOST") === "true" &&
+    new URL(supabaseUrl).hostname === "grxxenvdhfwzafzyykgo.supabase.co";
+  if (!isAllowedCatalogImageBase(publicBaseUrl, tenantId, allowPreviewImageHost)) {
     throw new Error("R2_PUBLIC_BASE_URL must match the configured product image URL namespace");
   }
   const parsedSupabaseUrl = new URL(supabaseUrl);
@@ -416,6 +418,9 @@ serve(async (req) => {
 
     if (contentType.includes("application/json")) {
       const operation = await boundedRequest.json() as CatalogImportOperation;
+      if (Array.isArray(operation?.batch?.rows) && operation.batch.rows.length > MAX_IMPORT_ROWS) {
+        throw new ImportRequestLimitError(`Catalog import exceeds the maximum row count of ${MAX_IMPORT_ROWS}`);
+      }
 
       const result = await runCatalogImportOperation(
         operation,

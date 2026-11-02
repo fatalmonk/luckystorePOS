@@ -15,13 +15,26 @@ export type ImagePublishRequest = {
   newImageUrl: string | null;
   newImageChecksum: string | null;
   publicBaseUrl: string;
+  allowPreviewImageHost?: boolean;
 };
+
+function previewImageHostEnabled(): boolean {
+  try {
+    return Deno.env.get("ALLOW_PREVIEW_CATALOG_IMAGE_HOST") === "true";
+  } catch {
+    return false;
+  }
+}
 
 export function validateImagePublishRequest(request: ImagePublishRequest): string | null {
   if (!request.itemId || !request.storeId || !Number.isSafeInteger(request.sourceImageVersion) || request.sourceImageVersion < 0) return "Invalid image publish request";
   if (request.actorStoreId && request.storeId !== request.actorStoreId) return "Store is outside the authenticated user's store scope";
   if (request.sourceImageKey !== null && typeof request.sourceImageKey !== "string") return "Invalid source image key";
-  if (!isAllowedCatalogImageBase(request.publicBaseUrl, request.tenantId)) {
+  if (!isAllowedCatalogImageBase(
+    request.publicBaseUrl,
+    request.tenantId,
+    request.allowPreviewImageHost ?? previewImageHostEnabled(),
+  )) {
     return "Image public URL does not match the configured catalog image namespace";
   }
   const base = new URL(request.publicBaseUrl);

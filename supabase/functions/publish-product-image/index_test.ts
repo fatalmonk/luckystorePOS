@@ -36,9 +36,16 @@ Deno.test("preview Worker namespace is restricted to the Security Tests tenant",
   const allowed = validateImagePublishRequest(request({
     tenantId: testTenantId,
     publicBaseUrl: base,
+    allowPreviewImageHost: true,
     newImageUrl: `${base}/products/${testTenantId}/SKU-1-12345678-1234-5678-9234-123456789abc.webp`,
   }));
   if (allowed !== null) throw new Error(`preview image namespace was rejected for Security Tests: ${allowed}`);
+  const productionDefault = validateImagePublishRequest(request({
+    tenantId: testTenantId,
+    publicBaseUrl: base,
+    newImageUrl: `${base}/products/${testTenantId}/SKU-1-12345678-1234-5678-9234-123456789abc.webp`,
+  }));
+  if (!productionDefault) throw new Error("preview image namespace was accepted without the explicit test-project setting");
   const otherTenant = validateImagePublishRequest(request({
     publicBaseUrl: base,
     newImageUrl: `${base}/products/tenant-a/SKU-1-12345678-1234-5678-9234-123456789abc.webp`,

@@ -59,6 +59,7 @@ image_v1 = (ROOT / 'supabase/migrations/20261003010000_add_product_image_metadat
 image_v2 = (ROOT / 'supabase/migrations/20261003020000_harden_product_image_cas.sql').read_text()
 catalog_image_guard = (ROOT / 'supabase/migrations/20261029030023_restore_catalog_image_null_key_guard.sql').read_text()
 preview_image_test_override = (ROOT / 'supabase/test-only-migrations/20261028193249_allow_preview_image_host_for_cas.sql').read_text()
+preview_image_metadata_test_override = (ROOT / 'supabase/test-only-migrations/20261028194416_allow_preview_image_metadata_for_test_tenant.sql').read_text()
 constraint_exists = query_scalar("""
 select exists (
   select 1 from pg_constraint
@@ -71,7 +72,7 @@ if constraint_exists:
         '  alter column image_version set not null,\n  add constraint items_image_version_nonnegative check (image_version >= 0);',
         '  alter column image_version set not null;'
     )
-sql += image_v1 + '\n' + image_v2 + '\n' + catalog_image_guard + '\n' + preview_image_test_override + '\n'
+sql += image_v1 + '\n' + image_v2 + '\n' + catalog_image_guard + '\n' + preview_image_test_override + '\n' + preview_image_metadata_test_override + '\n'
 
 canva_v1 = (ROOT / 'supabase/migrations/20261003030000_canva_connect_phase1.sql').read_text()
 canva_tables = query_scalar("""

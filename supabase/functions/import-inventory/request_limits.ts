@@ -1,8 +1,11 @@
-export const MAX_IMPORT_REQUEST_BYTES = 24 * 1024 * 1024;
+import { MAX_IMAGE_BYTES } from "../_shared/webp.ts";
+
+// Covers the 10 MiB CSV cap, 16 MiB aggregate image cap, plus multipart overhead.
+export const MAX_IMPORT_REQUEST_BYTES = 32 * 1024 * 1024;
 export const MAX_IMPORT_ROWS = 1_000;
 export const MAX_IMAGE_ATTACHMENTS = 5;
 export const MAX_TOTAL_IMAGE_BYTES = 16 * 1024 * 1024;
-export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+export { MAX_IMAGE_BYTES };
 export const MAX_LEGACY_CSV_BYTES = 10 * 1024 * 1024;
 export const MAX_LEGACY_CSV_ROWS = 10_000;
 export const MAX_LEGACY_CSV_LINES = 20_000;

@@ -26,9 +26,11 @@ BEGIN
   ELSIF tg_op = 'UPDATE'
      AND current_user = 'postgres'
      AND NEW.image_version = OLD.image_version + 1
-     AND NEW.tenant_id = '00000000-0000-0000-0000-000000000001'::uuid
      AND NEW.image_url ~ '^https://lucky-store-images-preview\.luckystore-1947\.workers\.dev/(products|categories)/[-A-Za-z0-9_./]+([?][^#]*)?$'
      AND split_part(split_part(NEW.image_url, '?', 1), 'https://lucky-store-images-preview.luckystore-1947.workers.dev/', 2) !~ '(^|/)[.]{1,2}(/|$)|//|/$' THEN
+    IF NEW.tenant_id IS DISTINCT FROM '00000000-0000-0000-0000-000000000001'::uuid THEN
+      RAISE EXCEPTION 'Preview image URLs are restricted to the Security Tests tenant';
+    END IF;
     NEW.image_key := split_part(split_part(NEW.image_url, '?', 1), 'https://lucky-store-images-preview.luckystore-1947.workers.dev/', 2);
   ELSE
     -- External/ambiguous URLs never inherit the previous object's key.
