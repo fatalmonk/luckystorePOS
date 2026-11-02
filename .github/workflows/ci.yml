@@ -26,6 +26,30 @@ permissions:
   pull-requests: read
 
 jobs:
+  catalog_edge_tests:
+    name: Catalog import and image Edge Function tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.9.7
+      - name: Test catalog and image function contracts
+        run: >-
+          deno test --allow-env --allow-net
+          supabase/functions/import-inventory/index_test.ts
+          supabase/functions/import-inventory/request_limits_test.ts
+          supabase/functions/import-inventory/catalog_image_ingest_test.ts
+          supabase/functions/import-inventory/supabase_catalog_repository_test.ts
+          supabase/functions/issue-image-upload-ticket/index_test.ts
+          supabase/functions/publish-product-image/index_test.ts
+      - name: Type-check deployed Edge Function entrypoints
+        run: >-
+          deno check
+          supabase/functions/import-inventory/index.ts
+          supabase/functions/issue-image-upload-ticket/index.ts
+          supabase/functions/publish-product-image/index.ts
+
   product_image_guard:
     name: Product image manifest and Git guard
     runs-on: ubuntu-latest
@@ -37,6 +61,12 @@ jobs:
           python-version: '3.12'
       - name: Test image library metadata rules
         run: python3 -m unittest scripts.catalog.test_product_image_library
+      - name: Test catalog source inventory reconciliation
+        run: PYTHONPATH=. python3 scripts/catalog/test_reconcile_inventory_snapshots.py
+      - name: Install catalog contract schema validator
+        run: python3 -m pip install 'jsonschema==4.26.0'
+      - name: Test catalog import contract
+        run: python3 -m unittest scripts.catalog.test_catalog_import_contract
       - name: Reject tracked product packshots
         run: python3 scripts/catalog/check_no_tracked_product_images.py
 

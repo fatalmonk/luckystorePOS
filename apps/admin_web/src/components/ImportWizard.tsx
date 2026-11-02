@@ -20,7 +20,7 @@ type ImportCell = string | number | boolean;
 export interface ImportPreviewResult {
   batch_id: string;
   preview_hash: string;
-  counts: { create: number; update: number; unchanged: number; ambiguous: number; invalid: number };
+  counts: { create: number; update: number; unchanged: number; ambiguous: number; invalid: number; partial_success?: number };
   rows: Array<{ source_row: number; outcome: string; field_diffs: Record<string, { before: unknown; after: unknown }>; warnings: string[]; errors: string[] }>;
   images?: Array<{ source_row: number; name: string; size: number; sha256: string }>;
 }

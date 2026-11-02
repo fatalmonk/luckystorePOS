@@ -116,10 +116,9 @@ async function verifyUploadToken(token: string, env: Env): Promise<{ op?: string
 
 function corsHeaders(origin: string, allowed: string): Record<string, string> {
   const allowedOrigins = allowed.split(',').map(o => o.trim());
-  const isAllowed =
-    allowedOrigins.includes(origin) || /^https?:\/\/localhost(:\d+)?$/.test(origin);
+  const isAllowed = allowedOrigins.includes(origin);
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0] || '*',
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0] || '',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Upload-Token, X-Delete-Token, X-Internal-Upload-Secret',
     'Access-Control-Max-Age': '86400',

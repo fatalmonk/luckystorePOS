@@ -1,3 +1,4 @@
+import { isAllowedCatalogImageBase } from "../_shared/catalog-image-namespace.ts";
 import {
   MAX_IMAGE_BYTES,
   sha256Hex,
@@ -14,18 +15,29 @@ export type ImagePublishRequest = {
   newImageUrl: string | null;
   newImageChecksum: string | null;
   publicBaseUrl: string;
+  allowPreviewImageHost?: boolean;
 };
+
+function previewImageHostEnabled(): boolean {
+  try {
+    return Deno.env.get("ALLOW_PREVIEW_CATALOG_IMAGE_HOST") === "true";
+  } catch {
+    return false;
+  }
+}
 
 export function validateImagePublishRequest(request: ImagePublishRequest): string | null {
   if (!request.itemId || !request.storeId || !Number.isSafeInteger(request.sourceImageVersion) || request.sourceImageVersion < 0) return "Invalid image publish request";
   if (request.actorStoreId && request.storeId !== request.actorStoreId) return "Store is outside the authenticated user's store scope";
   if (request.sourceImageKey !== null && typeof request.sourceImageKey !== "string") return "Invalid source image key";
-  let base: URL;
-  try { base = new URL(request.publicBaseUrl); } catch { return "Invalid public image URL configuration"; }
-  const allowedHosts = new Set(["images.luckystore1947.com", "lucky-store-images-preview.luckystore-1947.workers.dev"]);
-  if (base.protocol !== "https:" || !allowedHosts.has(base.hostname) || base.pathname !== "/" || base.username || base.password || base.search || base.hash) {
+  if (!isAllowedCatalogImageBase(
+    request.publicBaseUrl,
+    request.tenantId,
+    request.allowPreviewImageHost ?? previewImageHostEnabled(),
+  )) {
     return "Image public URL does not match the configured catalog image namespace";
   }
+  const base = new URL(request.publicBaseUrl);
   if (request.newImageUrl === null) return request.newImageChecksum === null ? null : "Checksum must be null when clearing an image";
   if (!/^[0-9a-f]{64}$/.test(request.newImageChecksum ?? "")) return "Image checksum must be a SHA-256 digest";
   try {

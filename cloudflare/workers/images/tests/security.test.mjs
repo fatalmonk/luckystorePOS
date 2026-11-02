@@ -74,6 +74,21 @@ test('rejects browser uploads without a signed capability', async () => {
   assert.equal(response.status, 401);
 });
 
+test('CORS follows the configured origin list without a localhost bypass', async () => {
+  const env = makeEnv();
+  env.ALLOWED_ORIGINS = 'https://admin.example';
+  const allowed = await worker.fetch(new Request('https://images.example/unknown', {
+    headers: { Origin: 'https://admin.example' },
+  }), env);
+  const localEnv = makeEnv();
+  localEnv.ALLOWED_ORIGINS = 'https://admin.example';
+  const localhost = await worker.fetch(new Request('https://images.example/unknown', {
+    headers: { Origin: 'http://localhost:3000' },
+  }), localEnv);
+  assert.equal(allowed.headers.get('Access-Control-Allow-Origin'), 'https://admin.example');
+  assert.equal(localhost.headers.get('Access-Control-Allow-Origin'), 'https://admin.example');
+});
+
 test('accepts a valid capability only for its exact key', async () => {
   const key = 'products/tenant-a/item.webp';
   const token = await tokenFor({ key });

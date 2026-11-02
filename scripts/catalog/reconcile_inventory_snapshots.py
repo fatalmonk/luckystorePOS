@@ -188,6 +188,34 @@ def reconcile_source_reference(reference: dict[str, Any], catalog_rows: list[dic
     return result
 
 
+def _mark_legacy_image_reference(
+    result: dict[str, Any],
+    reference_kind: str,
+    key: str,
+    parser_rule: str,
+    known_object_keys: set[str] | None,
+) -> None:
+    exists = key in known_object_keys if known_object_keys is not None else None
+    result.update(
+        reference_kind=reference_kind,
+        object_key=key,
+        parser_rule=parser_rule,
+        exists=exists,
+        status="legacy" if exists is not False else "unresolved",
+    )
+
+
+def _file_size_and_sha256(path: Path) -> tuple[int, str]:
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+            size += len(chunk)
+    return size, digest.hexdigest()
+
+
+
 def classify_image_reference(
     reference: Any,
     root: str | Path | None = None,
@@ -237,14 +265,8 @@ def classify_image_reference(
                 "product-images": "product-images-prefix",
                 "products": "products-prefix",
             }.get(path_parts[key_start], "brand-prefix")
-            exists = key in known_object_keys if known_object_keys is not None else None
-            result.update(
-                reference_kind="legacy_remote",
-                object_key=key,
-                parser_rule=rule,
-                exists=exists,
-                status="legacy" if exists is not False else "unresolved",
-            )
+            _mark_legacy_image_reference(result, "legacy_remote", key, rule, known_object_keys)
+
         else:
             result.update(reference_kind="external_url")
         return result
@@ -252,24 +274,24 @@ def classify_image_reference(
     key_parts = [unquote(part) for part in reference.strip("/").split("/") if part]
     if key_parts and key_parts[0] in {"item-images", "product-images", "products"}:
         key = "/".join(key_parts)
-        exists = key in known_object_keys if known_object_keys is not None else None
-        result.update(
-            reference_kind="legacy_object_key",
-            object_key=key,
-            parser_rule=f"{key_parts[0]}-prefix",
-            exists=exists,
-            status="legacy" if exists is not False else "unresolved",
+        _mark_legacy_image_reference(
+            result,
+            "legacy_object_key",
+            key,
+            f"{key_parts[0]}-prefix",
+            known_object_keys,
+
         )
         return result
     if len(key_parts) > 1 and key_parts[0].casefold() in {"brand", "brands"}:
         key = "/".join(key_parts)
-        exists = key in known_object_keys if known_object_keys is not None else None
-        result.update(
-            reference_kind="legacy_object_key",
-            object_key=key,
-            parser_rule="brand-prefix",
-            exists=exists,
-            status="legacy" if exists is not False else "unresolved",
+        _mark_legacy_image_reference(
+            result,
+            "legacy_object_key",
+            key,
+            "brand-prefix",
+            known_object_keys,
+
         )
         return result
 
@@ -285,13 +307,9 @@ def classify_image_reference(
     result["reference"] = candidate.relative_to(base).as_posix()
     if not candidate.is_file():
         return result
-    digest = hashlib.sha256()
-    size = 0
-    with candidate.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-            size += len(chunk)
-    result.update(exists=True, size_bytes=size, sha256=digest.hexdigest())
+    size, sha256 = _file_size_and_sha256(candidate)
+    result.update(exists=True, size_bytes=size, sha256=sha256)
+
     return result
 
 
@@ -454,12 +472,8 @@ def build_source_inventory(project_root: str | Path, r2_snapshot: Any = None) ->
                 source_kind = "design_asset_candidate" if "/banners/" in f"/{relative}/" else "image_candidate"
             if scope_path == "supabase/migrations":
                 note = "Selected schema migration; inspect its contents for exact table/index/image contract."
-            digest = hashlib.sha256()
-            size = 0
-            with path.open("rb") as handle:
-                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                    digest.update(chunk)
-                    size += len(chunk)
+            size, sha256 = _file_size_and_sha256(path)
+
             item_key = None
             if scope_path == "catalog-images" and "/sku-named/" in f"/{relative}/":
                 item_key = path.stem
@@ -473,7 +487,8 @@ def build_source_inventory(project_root: str | Path, r2_snapshot: Any = None) ->
                 if caller_path != relative and any(token in content for token in tokens)
             )
             if relative in caller_text and IMAGE_CONSUMER_PATTERNS.search(caller_text[relative]):
-                source_kind = "image_reference_consumer" if source_kind not in {"admin_importer", "edge_importer", "image_upload_authorization", "image_publication", "image_bytes_runtime", "tooling", "legacy_tooling"} else source_kind
+                source_kind = "image_reference_consumer" if source_kind not in {"admin_importer", "edge_importer", "image_upload_authorization", "image_publication", "image_bytes_runtime", "catalog_tooling", "image_tooling", "inventory_tooling"} else source_kind
+
             sources_by_path[relative] = {
                 "source_path": relative,
                 "source_kind": source_kind,
@@ -482,7 +497,8 @@ def build_source_inventory(project_root: str | Path, r2_snapshot: Any = None) ->
                 "item_key": item_key,
                 "object_key_or_url": None,
                 "size_bytes": size,
-                "sha256": digest.hexdigest(),
+                "sha256": sha256,
+
                 "current_callers": matched_callers,
                 "status": status,
                 "migration_notes": note,
