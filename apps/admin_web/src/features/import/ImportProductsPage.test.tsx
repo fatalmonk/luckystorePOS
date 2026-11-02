@@ -126,10 +126,25 @@ describe('ImportProductsPage', () => {
 
   it('rejects six image attachments before making the preview request', async () => {
     await loadSampleAndContinue();
-    const input = screen.getByLabelText('WebP image for row 1');
-    const sixImages = Array.from({ length: 6 }, (_, index) =>
-      new File([imageBytes], `image-${index}.webp`, { type: 'image/webp' }));
-    fireEvent.change(input, { target: { files: sixImages } });
+    fireEvent.click(screen.getByRole('button', { name: /Adjust Data/i }));
+    for (let index = 0; index < 5; index++) {
+      fireEvent.click(screen.getByRole('button', { name: /Add Row/i }));
+    }
+    for (let index = 0; index < 6; index++) {
+      if (index > 0) {
+        fireEvent.change(screen.getByLabelText(`Product Name for row ${index + 1}`), {
+          target: { value: `Attachment limit test item ${index + 1}` },
+        });
+        fireEvent.change(screen.getByLabelText(`Item Code (SKU) for row ${index + 1}`), {
+          target: { value: `ATTACHMENT-LIMIT-${index + 1}` },
+        });
+      }
+      const input = screen.getByLabelText(`WebP image for row ${index + 1}`);
+      const image = new File([imageBytes], `image-${index}.webp`, { type: 'image/webp' });
+      fireEvent.change(input, { target: { files: [image] } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: /Verify & Continue/i }));
+    await screen.findByText('Ready to Preview');
     fireEvent.click(screen.getByRole('button', { name: /Review Batch/i }));
     await screen.findByText(/at most 5 image attachments/i);
     expect(mocks.fetch).not.toHaveBeenCalled();
