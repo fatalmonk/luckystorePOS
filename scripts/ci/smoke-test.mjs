@@ -128,6 +128,13 @@ async function run() {
           throw new Error(`Expected product array, got: ${typeof data}`);
         }
         const count = Array.isArray(data) ? data.length : (data?.products?.length || data?.items?.length || 0);
+        if (data?.catalogSnapshotFallback) {
+          const products = data.products || data.items || [];
+          if (!data.degraded || products.some((product) => product.stock !== 0 || product.availabilityUnknown !== true)) {
+            throw new Error('Snapshot fallback must be marked degraded and every product must have unknown availability and zero stock');
+          }
+          return `Browse-only snapshot fallback successful (${count} products; inventory unavailable)`;
+        }
         return `Supabase query successful (${count} products returned)`;
       }
     },
