@@ -7,7 +7,7 @@
 Catalog consolidation PR #574 is open from `codex/catalog-consolidation`.
 
 ## Decisions
-- 20261103-1: Commit `62e5e077` is PR #574; production origins were deployed at Worker version 940. Custom domain and Worker subdomain previews remain enabled; custom-domain previews are disabled. Keep localhost origins under `[previews.vars]` only.
+- 20261103-1: PR #574 tracks the non-sensitive metadata-only image manifest for audit/review; it contains relative source paths and hashes, no image bytes, item IDs, or R2 keys. All 844 records remain unresolved. Production origins were deployed at Worker version 940; keep localhost only under `[previews.vars]`.
 - 20261029-17: Checkout and exact product fallbacks use the v2 catalog RPC with requested IDs; live prices remain uncached, and product detail degrades to zero stock if its stock-only projection fails.
 - 20261029-5/-6: Preserve worktree branches and unverified/unique commits; delete remote refs only when the tip matches a merged PR head and no active worktree uses it.
 - 20261029-7/-8: Remove clean merged-PR worktrees and delete only unoccupied local branches proven patch-equivalent to `origin/main`; keep dirty/worktree branches and unverified commits.
