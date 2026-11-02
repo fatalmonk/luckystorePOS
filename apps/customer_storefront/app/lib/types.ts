@@ -11,6 +11,8 @@ export interface Product {
   category: Category;
   category_id?: string;
   stock: number;
+  /** Stock could not be verified from the live inventory source. Such products cannot be purchased. */
+  availabilityUnknown?: boolean;
   description: string;
   nutrition?: string;
   image_url?: string;

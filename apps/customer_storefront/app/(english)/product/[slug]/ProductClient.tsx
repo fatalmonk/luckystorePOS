@@ -59,14 +59,16 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   const dict = getDictionary(locale);
   const displayName = (isBn && product.name) ? product.name : (enrichment?.exactName || product.name);
 
-  const stockStatus =
-    product.stock <= 0
+  const stockStatus = product.availabilityUnknown
+    ? { text: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable', color: 'text-warm-muted', bg: 'bg-warm-image-well', aria: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable' }
+    : product.stock <= 0
       ? { text: dict.productPage.outOfStock, color: 'text-warm-danger', bg: 'bg-warm-danger-bg', aria: dict.productPage.outOfStock }
       : product.stock <= 5
       ? { text: dict.productPage.onlyLeft.replace('{count}', product.stock.toLocaleString(isBn ? 'bn-BD' : 'en')), color: 'text-warm-warning', bg: 'bg-warm-warning-bg', aria: dict.productPage.onlyLeft.replace('{count}', product.stock.toLocaleString(isBn ? 'bn-BD' : 'en')) }
       : { text: dict.productPage.inStock, color: 'text-warm-success', bg: 'bg-warm-success-bg', aria: dict.productPage.inStock };
 
   const handleAdd = () => {
+    if (product.availabilityUnknown) return;
     if (product.stock <= 0) {
       showToast('Sorry, this item is out of stock');
       return;
@@ -129,7 +131,12 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
         homeHref={withLocale('/', locale)}
         homeLabel={locale === 'bn' ? 'হোম' : 'Home'}
         items={[
-                { label: isBn ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(product.category)] || product.category) : product.category, href: getCategoryBreadcrumbHref(product.category, locale) },
+                {
+                  label: product.availabilityUnknown
+                    ? isBn ? 'সব পণ্য' : 'All products'
+                    : isBn ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(product.category)] || product.category) : product.category,
+                  href: product.availabilityUnknown ? withLocale('/category', locale) : getCategoryBreadcrumbHref(product.category, locale),
+                },
                 { label: displayName, href: productUrl },
               ]}
             />
@@ -217,6 +224,15 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                       {formatBdt(product.price * qtyInCart)} total
                     </span>
                   </div>
+                ) : product.availabilityUnknown ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="h-12 flex-1 cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-5 text-sm font-bold text-warm-muted"
+                    aria-label={`${displayName} availability is unverified`}
+                  >
+                    {isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable'}
+                  </button>
                 ) : product.stock <= 0 ? (
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <button
@@ -472,10 +488,10 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           ) : (
             <button
               onClick={handleAdd}
-              disabled={product.stock <= 0}
+              disabled={product.stock <= 0 || product.availabilityUnknown === true}
               className="px-5 py-2.5 h-11 min-h-[44px] rounded-warm-control bg-warm-accent text-warm-accent-text font-extrabold text-xs shadow-warm-card-hover hover:opacity-90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
             >
-              {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+              {product.availabilityUnknown ? (isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable') : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
           )}
         </div>

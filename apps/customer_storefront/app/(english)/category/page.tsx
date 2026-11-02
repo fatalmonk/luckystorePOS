@@ -6,6 +6,8 @@ import { getCachedCategories } from '../../lib/products/getCachedCategories';
 import { supabase } from '../../lib/supabase';
 import { getSingleParam } from '../../lib/utils';
 import { normalizeCategorySlug, type Category } from '../../lib/types';
+import { CATALOG_SNAPSHOT_PRODUCTS } from '../../lib/products/getHomePageData';
+import type { Product } from '../../lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,7 +87,19 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
   const sort = getSingleParam(resolvedParams.sort) || 'best';
   const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  const { products } = await repo.search({ query: searchTerm || undefined });
+  let products: Product[] = [];
+  try {
+    const result = await repo.search({ query: searchTerm || undefined });
+    products = result.products.length > 0
+      ? result.products
+      : searchTerm
+        ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        : CATALOG_SNAPSHOT_PRODUCTS;
+  } catch {
+    products = searchTerm
+      ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : CATALOG_SNAPSHOT_PRODUCTS;
+  }
 
   return (
     <CategoryShell

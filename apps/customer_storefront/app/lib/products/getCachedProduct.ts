@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { supabase } from '../supabase';
 import { createProductRepository, createProductId } from './index';
 import { extractIdFromSlug, isBareUuid, toProductSlug } from './slugify';
-import { FALLBACK_PRODUCTS } from './getHomePageData';
+import { CATALOG_SNAPSHOT_PRODUCTS, FALLBACK_PRODUCTS } from './getHomePageData';
 import type { Product } from './types';
 
 /**
@@ -11,6 +11,7 @@ import type { Product } from './types';
  * during the same request.
  */
 export const getCachedProductBySlug = cache(async (slug: string): Promise<Product | null> => {
+  const prefix = extractIdFromSlug(slug).toLowerCase();
   try {
     const { repo } = createProductRepository(supabase);
 
@@ -18,29 +19,20 @@ export const getCachedProductBySlug = cache(async (slug: string): Promise<Produc
       const prod = await repo.getById(createProductId(slug));
       if (prod) return prod;
     } else {
-      const prefix = extractIdFromSlug(slug);
       const prod = await repo.getByIdPrefix(prefix);
       if (prod) return prod;
     }
-
-    // Fallback lookup from known fixtures if database query fails or is empty
-    const prefix = extractIdFromSlug(slug).toLowerCase();
-    const fallback = FALLBACK_PRODUCTS.find(
-      (p) =>
-        p.id === slug ||
-        p.id.replace(/-/g, '').toLowerCase().startsWith(prefix) ||
-        toProductSlug(p.name, p.id) === slug
-    );
-    if (fallback) {
-      return {
-        ...fallback,
-        id: createProductId(fallback.id),
-      };
-    }
-    return null;
   } catch (err) {
     console.error('getCachedProductBySlug error:', err);
-    return null;
   }
+
+  // Snapshot rows are explicitly marked unavailable for purchase because stock is unknown.
+  const fallback = [...CATALOG_SNAPSHOT_PRODUCTS, ...FALLBACK_PRODUCTS].find(
+    (p) =>
+      p.id === slug ||
+      p.id.replace(/-/g, '').toLowerCase().startsWith(prefix) ||
+      toProductSlug(p.name, p.id) === slug
+  );
+  return fallback ? { ...fallback, id: createProductId(fallback.id) } : null;
 });
 

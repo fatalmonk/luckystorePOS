@@ -41,6 +41,8 @@ export interface Product {
   categoryId?: string;
   category_id?: string;
   stock: number;
+  /** Stock could not be verified from the live inventory source; checkout is disabled. */
+  availabilityUnknown?: boolean;
   description: string;
   nutrition?: string;
   imageUrl?: string;
