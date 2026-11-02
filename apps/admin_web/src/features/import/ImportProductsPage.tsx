@@ -39,7 +39,14 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_IMAGE_ATTACHMENTS = 5;
 const MAX_TOTAL_IMAGE_BYTES = 16 * 1024 * 1024;
 
-function validateImageAttachments(attachments: Record<number, File>): void {
+function validateImportLimits(
+  data: Record<string, string | number | boolean>[],
+  attachments: Record<number, File>,
+): void {
+  if (data.length > 1_000) {
+    throw new Error('Product imports can include at most 1,000 rows');
+  }
+
   const files = Object.values(attachments);
   if (files.length > MAX_IMAGE_ATTACHMENTS) {
     throw new Error(`A product import can include at most ${MAX_IMAGE_ATTACHMENTS} image attachments`);
@@ -180,8 +187,7 @@ export const ImportProductsPage: React.FC = () => {
   };
 
   const handlePreview = async (data: Record<string, string | number | boolean>[], attachments: Record<number, File>): Promise<ImportPreviewResult> => {
-    if (data.length > 1_000) throw new Error('Product imports can include at most 1,000 rows');
-    validateImageAttachments(attachments);
+    validateImportLimits(data, attachments);
     const { fingerprint, checksums } = await attachmentFingerprint(data, attachments);
     const batch = buildBatch(data);
     const form = new FormData();
@@ -195,8 +201,7 @@ export const ImportProductsPage: React.FC = () => {
   };
 
   const handleApply = async (data: Record<string, string | number | boolean>[], attachments: Record<number, File>, preview: ImportPreviewResult) => {
-    if (data.length > 1_000) throw new Error('Product imports can include at most 1,000 rows');
-    validateImageAttachments(attachments);
+    validateImportLimits(data, attachments);
     const pending = pendingApply.current;
     const { fingerprint, checksums } = await attachmentFingerprint(data, attachments);
     if (!pending || pending.fingerprint !== fingerprint || pending.preview.preview_hash !== preview.preview_hash) throw new Error('Batch changed after preview. Review a fresh preview before applying.');

@@ -7,6 +7,7 @@
 Address and resolve PR #574 review findings for catalog image publication, import limits, CORS, and preview test migration.
 
 ## Decisions
+- 20261103-3: Consolidated the import row and attachment checks into one shared validator used by preview and apply; validation behavior is unchanged.
 - 20261103-2: Fixed all ten valid PR #574 findings: report committed publish mismatches without a false 409; enforce JSON/UI row and image limits; align shared image/request caps; close Worker localhost CORS bypass; restrict preview image namespace to the Security Tests project and tenant; reject bare URL delimiters; and include preview migration coverage in the rollback SQL harness. Replied to and resolved all ten review threads.
 - 20261103-1: PR #574 tracks the non-sensitive metadata-only image manifest for audit/review; it contains relative source paths and hashes, no image bytes, item IDs, or R2 keys. All 844 records remain unresolved. Production origins were deployed at Worker version 940; keep localhost only under `[previews.vars]`.
 - 20261029-17: Checkout and exact product fallbacks use the v2 catalog RPC with requested IDs; live prices remain uncached, and product detail degrades to zero stock if its stock-only projection fails.
