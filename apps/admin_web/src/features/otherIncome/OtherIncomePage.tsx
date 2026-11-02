@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Banknote, Calendar, AlertCircle, Trash2, Loader2, Info } from 'lucide-react';
@@ -36,7 +37,7 @@ export const OtherIncomePage: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<IncomeFormValues>({
-    resolver: zodResolver(incomeFormSchema),
+    resolver: (zodResolver as unknown as (schema: typeof incomeFormSchema) => Resolver<IncomeFormValues>)(incomeFormSchema),
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
       amount: 0,
