@@ -27,6 +27,17 @@ image-background-removal = [
     "rembg[cpu]==2.0.86",
 ]
 
+[dependency-groups]
+memory = [
+    "cooksafe>=0.2.0,<0.3.0",
+    "ipython>=9.17.1",
+]
+ocr = [
+    "typesafe-sdk[pil]>=0.7.5",
+    "cooksafe>=0.2.0,<0.3.0",
+    "ipython",
+]
+
 # Dependency-only tooling manifest; scripts run directly from the repository.
 # Do not discover unrelated monorepo directories as Python packages.
 [tool.setuptools]

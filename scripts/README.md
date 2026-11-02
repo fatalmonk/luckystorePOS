@@ -9,6 +9,7 @@ Canonical script groups:
 - `scripts/git/` - git operations (git-sync)
 - `scripts/test/` - test scripts
 - `scripts/ops/` - operational data scripts
+- `scripts/receipts/` - receipt validation and reconciliation; see [receipt tooling memory](receipts/README.md) for the opt-in local TypeSafe memory helper
 - `scripts/db/` - SQL setup/migration snippets (backup, restore, migrate)
 - `scripts/data/` - data preparation helpers
 - `docs/runbooks/` - script/import runbooks (moved from `scripts/docs/`)
