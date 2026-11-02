@@ -88,8 +88,6 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "vitest": "^4.1.11",
     "@vitest/mocker": "^4.1.11",
-    "zod": "^4.6.6",
-    "minimatch": "^11.0.1",
     "vite": "^6.4.5"
   },
   "allowScripts": {
