@@ -121,6 +121,8 @@ export const CATALOG_SNAPSHOT_PRODUCTS: Product[] = EMERGENCY_CATALOG_SNAPSHOT
   }));
 
 export interface HomePageData {
+  /** True when the dated browse-only snapshot replaced an empty/error live catalog query. */
+  catalogSnapshotFallback?: boolean;
   inStock: Product[];
   weeklyPicks: Product[];
   weeklyEditionActive: boolean;
@@ -366,6 +368,7 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   ).slice(0, 15);
 
   return {
+    catalogSnapshotFallback: usingCatalogSnapshot,
     inStock,
     weeklyPicks,
     weeklyEditionActive,

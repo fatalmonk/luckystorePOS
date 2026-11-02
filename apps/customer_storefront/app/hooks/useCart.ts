@@ -5,10 +5,12 @@ import { CartItem, Product } from '../lib/types';
 import { trackAddToCart } from '../lib/analytics';
 import { supabase } from '../lib/supabase';
 import { getPromotionalPrice, getPromotionSavings, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../lib/storefront-promotions';
+import { EMERGENCY_CATALOG_SNAPSHOT_IDS } from '../lib/products/emergencyCatalogSnapshotIds';
 
 const CART_KEY = 'lucky-cart';
 const FREE_DELIVERY_THRESHOLD = 500;
 const FREE_DELIVERY_FEE = 40;
+const EMERGENCY_SNAPSHOT_ID_SET = new Set<string>(EMERGENCY_CATALOG_SNAPSHOT_IDS);
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -25,7 +27,16 @@ export function useCart() {
     try {
       const saved = localStorage.getItem(CART_KEY);
       if (saved) {
-        savedCart = JSON.parse(saved);
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          savedCart = parsed.filter(
+            (item): item is CartItem =>
+              Boolean(item) &&
+              typeof item.id === 'string' &&
+              !EMERGENCY_SNAPSHOT_ID_SET.has(item.id) &&
+              item.availabilityUnknown !== true,
+          );
+        }
       }
     } catch (e) {
       console.error('Failed to load cart:', e);
