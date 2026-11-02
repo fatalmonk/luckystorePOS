@@ -25,7 +25,7 @@ export const buyingGuideSchema = z.object({
   author: z.object({ name: text, kind: z.enum(['Person', 'Organization']), profileUrl: z.string().url().startsWith('https://') }).optional(),
   publishedAt: date.optional(),
   updatedAt: date.optional(),
-  evidence: z.record(source),
+  evidence: z.record(z.string(), source),
   products: z.array(z.object({
     id: z.string().uuid(),
     // Exact name at research time: a changed SKU description requires editorial review.

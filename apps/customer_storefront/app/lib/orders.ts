@@ -41,7 +41,7 @@ export async function createOrder(input: OrderInput, rpcClient = supabase): Prom
     storeId: STORE_ID,
   });
   if (!parsed.success) {
-    throw new Error(parsed.error.errors.map((e) => e.message).join('; '));
+    throw new Error(parsed.error.issues.map((e) => e.message).join('; '));
   }
   const data = parsed.data;
 
