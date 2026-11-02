@@ -414,6 +414,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                               </select>
                             ) : field.type === 'select' ? (
                               <select
+                                aria-label={`${field.label} for row ${index + 1}`}
                                 value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
                                 className={`w-full bg-white dark:bg-zinc-900 border px-2 py-1.5 rounded-lg focus:ring-1 focus:ring-warm-accent transition ${
@@ -429,6 +430,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
                               </select>
                             ) : (
                               <input
+                                aria-label={`${field.label} for row ${index + 1}`}
                                 type={field.type === 'number' ? 'number' : 'text'}
                                 value={String(row[field.key] ?? '')}
                                 onChange={(e) => handleCellChange(index, field.key, e.target.value)}
