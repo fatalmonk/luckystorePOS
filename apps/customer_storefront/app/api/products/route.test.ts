@@ -4,6 +4,17 @@ import { NextRequest } from 'next/server';
 const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   getById: vi.fn(),
+  snapshot: [{
+    id: 'snapshot-product-id',
+    name: 'Snapshot Product',
+    price: 100,
+    unit: '1 item',
+    category: 'Groceries',
+    brand: 'Lucky Store',
+    stock: 0,
+    availabilityUnknown: true,
+    description: '',
+  }],
 }));
 
 vi.mock('../../lib/products/index', () => ({
@@ -11,6 +22,7 @@ vi.mock('../../lib/products/index', () => ({
   createProductId: vi.fn((id: string) => id),
 }));
 vi.mock('../../lib/supabase', () => ({ supabase: {} }));
+vi.mock('../../lib/products/getHomePageData', () => ({ CATALOG_SNAPSHOT_PRODUCTS: mocks.snapshot }));
 vi.mock('../../lib/products/slugify', () => ({
   toProductSlug: vi.fn((name: string, id: string) => `${name.toLowerCase()}--${id.replace(/-/g, '').slice(0, 8)}`),
 }));
@@ -57,5 +69,39 @@ describe('GET /api/products pagination', () => {
     expect(response.status).toBe(200);
     expect(mocks.search).toHaveBeenCalledWith({ query: undefined, page: 2, limit: 100, offset: 200 });
     await expect(response.json()).resolves.toMatchObject({ offset: 200, limit: 100 });
+  });
+
+  it('returns explicitly degraded browse-only products when live search rejects', async () => {
+    mocks.search.mockRejectedValueOnce(new Error('catalog unavailable'));
+
+    const response = await GET(new NextRequest('https://store.test/api/products'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({ degraded: true, catalogSnapshotFallback: true });
+    expect(body.products[0]).toMatchObject({ stock: 0, availabilityUnknown: true });
+  });
+
+  it('returns a degraded snapshot product when its live lookup rejects', async () => {
+    mocks.getById.mockRejectedValueOnce(new Error('catalog unavailable'));
+
+    const response = await GET(new NextRequest('https://store.test/api/products?id=snapshot-product-id'));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      degraded: true,
+      catalogSnapshotFallback: true,
+      stock: 0,
+      availabilityUnknown: true,
+    });
+  });
+
+  it('keeps unknown product IDs unavailable when the live lookup rejects', async () => {
+    mocks.getById.mockRejectedValueOnce(new Error('catalog unavailable'));
+
+    const response = await GET(new NextRequest('https://store.test/api/products?id=not-in-snapshot'));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({ error: 'catalog unavailable' });
   });
 });

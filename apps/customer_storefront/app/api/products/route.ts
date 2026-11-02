@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProductRepository, createProductId } from '../../lib/products/index';
+import { CATALOG_SNAPSHOT_PRODUCTS } from '../../lib/products/getHomePageData';
 import { supabase } from '../../lib/supabase';
 import { toProductSlug } from '../../lib/products/slugify';
 
@@ -51,6 +52,41 @@ export async function GET(req: NextRequest) {
       hasMore, offset, limit,
     });
   } catch (e: any) {
+    console.error('GET /api/products: live catalog request failed; using browse-only snapshot when available', e);
+    const snapshot = CATALOG_SNAPSHOT_PRODUCTS;
+    if (id) {
+      const fallback = snapshot.find((product) => product.id.toLowerCase() === id.toLowerCase());
+      if (fallback) {
+        return NextResponse.json({
+          ...fallback,
+          stock: 0,
+          availabilityUnknown: true,
+          catalogSnapshotFallback: true,
+          degraded: true,
+        });
+      }
+    } else if (snapshot.length > 0) {
+      const normalizedQuery = query?.trim().toLowerCase();
+      const matching = normalizedQuery
+        ? snapshot.filter((product) =>
+          [product.name, product.brand, product.category].some((value) => value?.toLowerCase().includes(normalizedQuery)),
+        )
+        : snapshot;
+      const products = matching.slice(offset, offset + limit).map((product) => ({
+        ...product,
+        stock: 0,
+        availabilityUnknown: true,
+        productPath: `/product/${toProductSlug(product.name, product.id)}`,
+      }));
+      return NextResponse.json({
+        products,
+        hasMore: offset + limit < matching.length,
+        offset,
+        limit,
+        catalogSnapshotFallback: true,
+        degraded: true,
+      });
+    }
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
   }
 }

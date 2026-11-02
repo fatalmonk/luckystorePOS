@@ -35,6 +35,9 @@ interface Product {
   name: string;
   price: number;
   qty: number;
+  stock?: number;
+  availabilityUnknown?: boolean;
+  catalogSnapshotFallback?: boolean;
   unit?: string;
 }
 
@@ -153,6 +156,9 @@ const TOOLS = {
         return { error: `Product not found: ${prodRes.status}` };
       }
       const product = await prodRes.json();
+      if (product.availabilityUnknown === true || product.catalogSnapshotFallback === true) {
+        return { error: 'Product availability cannot be verified right now; it was not added to your cart.' };
+      }
 
       const cart = getCart();
       const existing = cart.items.find((i) => i.id === id);
