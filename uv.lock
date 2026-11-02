@@ -877,11 +877,11 @@ provides-extras = ["dev", "image-background-removal"]
 
 [package.metadata.requires-dev]
 memory = [
-    { name = "cooksafe", specifier = ">=0.2.0,<0.3.0" },
+    { name = "cooksafe", specifier = "==0.2.0" },
     { name = "ipython", specifier = ">=9.17.1" },
 ]
 ocr = [
-    { name = "cooksafe", specifier = ">=0.2.0,<0.3.0" },
+    { name = "cooksafe", specifier = "==0.2.0" },
     { name = "ipython" },
     { name = "typesafe-sdk", extras = ["pil"], specifier = ">=0.7.5" },
 ]
