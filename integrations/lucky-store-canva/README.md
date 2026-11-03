@@ -5,11 +5,11 @@ This app connects Canva to the Lucky Store catalog and Facebook publishing flow.
 The current release enables Design Editor only:
 
 - Design Editor: search live active Lucky Store products and insert product copy into a design.
-- Content Publisher code is retained for a future release, but the intent and backend publishing feature flag remain disabled.
+- The Content Publisher intent and generation scripts are kept local and excluded from the remote repository; this release contains the Design Editor only.
 
 The Supabase Edge Function at `supabase/functions/canva-social` verifies Canva user tokens, resolves the linked Lucky Store staff identity, scopes catalog reads to that staff member's store, and records Facebook publication results in `social_posts`.
 
-Before previewing, configure `CANVA_APP_ID=AAHOGP8N-Fw`, the development URL, the Design Editor intent, the app authentication settings, and the Supabase function secrets. Keep Content Publisher disabled. The Canva token must remain server-side; Facebook credentials are not required for this release.
+Before previewing, configure `CANVA_APP_ID=AAHOGP8N-F`, development URL, Design Editor intent, app authentication settings, and Supabase function secrets. The Canva token must remain server-side; Facebook credentials are not required for this release.
 
 After applying the migration, an authorized Lucky Store administrator must provision the corresponding `(canva_user_id, canva_brand_id, user_id, tenant_id, store_id)` row in `canva_social_identity_links` through a restricted service-role process before catalog reads or publishing are enabled. This repository does not yet include a self-service identity-linking flow; do not enable the app for staff until an approved provisioning path is in place.
 
@@ -57,7 +57,7 @@ To preview an app:
 1. Create an app via the [Developer Portal](https://www.canva.com/developers/apps).
 2. Select **App source > Development URL**.
 3. In the **Development URL** field, enter the URL of the development server.
-4. Configure the **Design Editor** intent under **Inside Canva > Intents**. Leave Content Publisher disabled.
+4. Configure the **Design Editor** intent under **Inside Canva > Intents**. The Content Publisher intent is not included in this repository version.
 5. Click **Preview**. This opens the Canva editor (and the app) in a new tab.
 6. Click **Open**. (This screen only appears when using an app for the first time.)
 
