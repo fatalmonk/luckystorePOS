@@ -370,7 +370,6 @@
   - **Chaldal** — leading online grocery (per-category: biscuits, chocolates, beverages, noodles, etc.)
   - **AamaderBazar** — competitive pricing data
   - **Unilever Bangladesh** — brand-level pricing
-- **AI product mapping** via string-similarity algorithms (`ai-mapper.js`)
 - **Price comparison generation** (`generate-price-mapping.js`)
 - Data stored in Supabase for reporting and competitive analysis
 - Run: `cd apps/scraper && npm run update-prices`
