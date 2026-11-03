@@ -15,9 +15,7 @@
     "start:preview": "npx @canva/cli apps start --preview",
     "test": "node --test scripts/validate-backend.test.mjs && jest --no-cache --passWithNoTests",
     "test:watch": "jest --watchAll",
-    "test:update": "npm run test -- -u",
-    "generate:posts": "tsx ./scripts/generate-posts.ts",
-    "generate:weekly": "tsx ./scripts/generate-weekly-posts.ts"
+    "test:update": "npm run test -- -u"
   },
   "dependencies": {
     "@canva/app-hooks": "^0.0.0-beta.4",

@@ -254,7 +254,6 @@ dist_public/
 !/docs/adr/**
 !/docs/audits/
 /docs/audits/*
-!/docs/audits/competitor-prices-final-review.md
 
 # Neon sync artifacts (contain data, not just schema)
 _plans/neon_data.sql
@@ -374,3 +373,21 @@ data/catalog/templates/*
 
 # Local-only image candidate manifest utility.
 /scripts/catalog/build_catalog_image_candidate_manifest.py
+
+# Keep selected audit and one-off operator files local after untracking them.
+/docs/audit/database-contract-reconciliation.md
+/docs/audit/infrastructure-audit.md
+/docs/audits/competitor-prices-final-review.md
+/docs/archive/2026-04-27/05-frontend-pos/08-REACT-POS-SETUP.md
+/Lucky Store/docs/typesafe-cookbooks.md
+/Lucky Store/docs/typesafe-cookies.md
+/Lucky Store/docs/typesafe-flutter-cookbooks.md
+/references/canva-automation
+/integrations/lucky-store-canva/src/intents/content_publisher/index.tsx
+/integrations/lucky-store-canva/scripts/canva-rest.ts
+/integrations/lucky-store-canva/scripts/generate-posts.ts
+/integrations/lucky-store-canva/scripts/generate-weekly-posts.ts
+/scripts/receipts/reconcile_google_sheet.py
+/scripts/products/sync_expenses_csv.py
+/scripts/products/record_missing_receipts.py
+/apps/customer_storefront/public/images/hero-grocery-tote.webp
