@@ -384,11 +384,31 @@ export default function RootLayoutDocument({
               };
               var showBanner = function () {
                 banner.hidden = false;
-                window.setTimeout(function () { accept.focus(); }, 0);
               };
               var hideBanner = function () {
                 banner.hidden = true;
               };
+              var pendingZarazConsent = null;
+              var syncZarazConsent = function (analyticsStorage) {
+                var consent = window.zaraz && window.zaraz.consent;
+                if (consent && consent.APIReady) {
+                  try {
+                    consent.set({ onAw: analyticsStorage === 'granted' });
+                    pendingZarazConsent = null;
+                    return;
+                  } catch (error) {}
+                }
+                pendingZarazConsent = analyticsStorage;
+              };
+              document.addEventListener('zarazConsentAPIReady', function () {
+                if (pendingZarazConsent === null) return;
+                var consent = window.zaraz && window.zaraz.consent;
+                if (!consent) return;
+                try {
+                  consent.set({ onAw: pendingZarazConsent === 'granted' });
+                  pendingZarazConsent = null;
+                } catch (error) {}
+              });
               var updateConsent = function (analyticsStorage) {
                 window.gtag('consent', 'update', {
                   ad_storage: 'denied',
@@ -396,11 +416,7 @@ export default function RootLayoutDocument({
                   ad_personalization: 'denied',
                   analytics_storage: analyticsStorage
                 });
-                if (window.zaraz && window.zaraz.consent) {
-                  try {
-                    window.zaraz.consent.set({ analytics: analyticsStorage === 'granted' });
-                  } catch (error) {}
-                }
+                syncZarazConsent(analyticsStorage);
               };
               var loadGoogleTagManager = function () {
                 if (window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) return;
@@ -439,6 +455,9 @@ export default function RootLayoutDocument({
               var savedChoice = readChoice();
               if (savedChoice) hideBanner();
               else showBanner();
+              if (savedChoice === 'granted' || savedChoice === 'denied') {
+                updateConsent(savedChoice);
+              }
               if (savedChoice === 'granted') {
                 loadGoogleTagManager();
               }
