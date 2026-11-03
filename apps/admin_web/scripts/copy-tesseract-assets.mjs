@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,14 +9,30 @@ const publicOcr = resolve(appRoot, 'public/ocr');
 const publicCore = resolve(publicOcr, 'core');
 const workerSource = require.resolve('tesseract.js/dist/worker.min.js');
 const coreRoot = dirname(require.resolve('tesseract.js-core'));
-const coreFiles = readdirSync(coreRoot).filter((name) => /^tesseract-core.*\.wasm\.js$/.test(name));
+// Tesseract's worker selects one compatible core after detecting browser SIMD
+// support. Keep the baseline and SIMD variants; LSTM and relaxed-SIMD variants
+// are larger optional builds and are not needed by the worker's default mode.
+const coreFiles = ['tesseract-core.wasm.js', 'tesseract-core-simd.wasm.js'];
+const unusedCoreFiles = [
+  'tesseract-core-lstm.wasm.js',
+  'tesseract-core-simd-lstm.wasm.js',
+  'tesseract-core-relaxedsimd.wasm.js',
+  'tesseract-core-relaxedsimd-lstm.wasm.js',
+];
 
-if (coreFiles.length < 4) {
-  throw new Error(`Expected Tesseract WASM core variants, found ${coreFiles.length}`);
+for (const file of coreFiles) {
+  if (!existsSync(resolve(coreRoot, file))) {
+    throw new Error(`Missing required Tesseract WASM core: ${file}`);
+  }
 }
 
 mkdirSync(publicCore, { recursive: true });
 copyFileSync(workerSource, resolve(publicOcr, 'worker.min.js'));
+
+for (const file of unusedCoreFiles) {
+  const destination = resolve(publicCore, file);
+  if (existsSync(destination)) unlinkSync(destination);
+}
 
 for (const file of coreFiles) {
   copyFileSync(resolve(coreRoot, file), resolve(publicCore, file));
