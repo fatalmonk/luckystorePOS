@@ -391,3 +391,9 @@ data/catalog/templates/*
 /scripts/products/sync_expenses_csv.py
 /scripts/products/record_missing_receipts.py
 /apps/customer_storefront/public/images/hero-grocery-tote.webp
+
+# Keep selected operational and historical records local after untracking.
+/docs/performance/supabase-egress-emergency-2026-10-29.md
+/system-docs/development/supabase-production-migration-repair-runbook.md
+/system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
+/social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
