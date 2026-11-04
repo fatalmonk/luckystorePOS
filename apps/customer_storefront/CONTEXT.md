@@ -15,7 +15,9 @@ experience.
 
 ## Terms and invariants
 
-No context-specific terms or invariants are recorded yet.
+- Public shopping terms describe the Chawkbazar grocery shop, not the POS product.
+- Delivery copy stays inside the published 1 km radius of the Emdad Park shop.
+- Doorstep inspection before payment is the published return window. A longer window needs the owner's confirmation.
 
 ## Decisions
 

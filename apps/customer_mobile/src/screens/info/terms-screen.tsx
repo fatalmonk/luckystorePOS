@@ -39,7 +39,7 @@ export function TermsScreen() {
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>🚚 Delivery & Doorstep Inspection</Text>
         <Text style={styles.bodyText}>
-          Delivery slots are approximate within Chattogram city zones. Customers are encouraged to inspect goods upon delivery before making payment.
+          Our own staff deliver within 1 km of the shop at Emdad Park, Chawkbazar. You can inspect the goods at the door before you pay.
         </Text>
       </View>
 

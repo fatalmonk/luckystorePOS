@@ -62,10 +62,24 @@ const staticRoutes = [
   },
   {
     enPath: '/terms',
-    bnPath: null,
+    bnPath: '/bn/terms',
     priority: 0.3,
     changefreq: 'monthly',
-    lastMod: '2026-06-01T00:00:00Z',
+    lastMod: '2026-11-04T00:00:00Z',
+  },
+  {
+    enPath: '/about',
+    bnPath: '/bn/about',
+    priority: 0.5,
+    changefreq: 'monthly',
+    lastMod: '2026-11-04T00:00:00Z',
+  },
+  {
+    enPath: '/return-policy',
+    bnPath: '/bn/return-policy',
+    priority: 0.4,
+    changefreq: 'monthly',
+    lastMod: '2026-11-04T00:00:00Z',
   },
   {
     enPath: '/security-policy',

@@ -73,7 +73,9 @@ const SITE_MAP = [
   { path: '/delivery', label: 'Delivery Information', desc: 'Coverage areas, fees, hours, and COD policies' },
   { path: '/contact', label: 'Contact Us', desc: 'Address, phone, email, WhatsApp' },
   { path: '/privacy', label: 'Privacy Policy', desc: 'How we handle your data' },
-  { path: '/terms', label: 'Terms of Service', desc: 'Usage terms and conditions' },
+  { path: '/about', label: 'About Lucky Store', desc: 'Grocery shop in Emdad Park, Chawkbazar, since 1947' },
+  { path: '/terms', label: 'Shopping Terms', desc: 'Orders, prices, payment, and the 1 km delivery area' },
+  { path: '/return-policy', label: 'Return Policy', desc: 'Doorstep checks, replacements, and cash or bKash refunds' },
   { path: '/data-deletion', label: 'Data Deletion', desc: 'Request deletion of your data' },
   { path: '/security-policy', label: 'Security Policy', desc: 'Our security practices' },
   { path: '/login', label: 'Login', desc: 'Sign in to your account' },
@@ -229,49 +231,56 @@ function mdPrivacyPage(): string {
 }
 
 function mdTermsPage(): string {
-  let md = mdHeader('Terms of Service', 'Terms and conditions for using Lucky Store.');
-  md += `*Effective date: May 6, 2024*\n\n`;
+  let md = mdHeader('Shopping Terms', 'Terms for ordering groceries from Lucky Store in Chawkbazar.');
+  md += `*Effective date: 4 November 2026*\n\n`;
+  md += `Lucky Store, established in ${DELIVERY_POLICY.establishedYear}, is a grocery and daily bazaar shop at ${DELIVERY_POLICY.hubAddress}.\n\n`;
+  md += `## Orders\n\n`;
+  md += `Orders are packed at the shop and delivered by our own staff. We do not use an outside courier.\n\n`;
+  md += `## Pricing and availability\n\n`;
+  md += `Prices are in taka. An item is packed only when it is in stock. You are not charged for an item you do not receive, and you pay only for items you receive and accept.\n\n`;
+  md += `## Payment\n\n`;
+  md += `Pay at the door after you check the order: cash on delivery, or bKash to ${DELIVERY_POLICY.paymentMethods.bkashNumber}.\n\n`;
+  md += `## Delivery\n\n`;
+  md += `- Only within ${DELIVERY_POLICY.radiusKm} km of the Emdad Park shop\n`;
+  md += `- Free on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more; ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below that\n`;
+  md += `- Open ${DELIVERY_POLICY.deliveryHours.display}, with same-day dispatch\n\n`;
+  md += `## Returns\n\n`;
+  md += `You can check the order before you pay. Damaged items are replaced. See the [return policy](${BASE_URL}/return-policy).\n\n`;
+  md += `## Contact\n\n`;
+  md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+  md += `- **Address:** ${DELIVERY_POLICY.hubAddress}\n`;
+  return md;
+}
 
-  md += `## ✍️ Acceptance of Terms\n\n`;
-  md += `By accessing or using Lucky Store POS, you agree to be bound by these Terms and all applicable `;
-  md += `laws and regulations. If you do not agree with any part of these terms, you may not use our service.\n\n`;
+function mdAboutPage(): string {
+  let md = mdHeader('About Lucky Store', `Grocery and daily bazaar shop in Emdad Park, Chawkbazar, since ${DELIVERY_POLICY.establishedYear}.`);
+  md += `Lucky Store is at ${DELIVERY_POLICY.hubAddress}.\n\n`;
+  md += `The shop has sold daily groceries in Chawkbazar since ${DELIVERY_POLICY.establishedYear}. It sells rice, cooking oil, tea, spices, snacks, and household essentials.\n\n`;
+  md += `Our own staff deliver within ${DELIVERY_POLICY.radiusKm} km. Delivery is free on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more, and ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below that. The shop is open ${DELIVERY_POLICY.deliveryHours.display}, and orders placed in those hours are dispatched the same day.\n\n`;
+  md += `Pay cash on delivery or by bKash at the door after you check the order.\n\n`;
+  md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544)\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+  return md;
+}
 
-  md += `## 🛒 Description of Service\n\n`;
-  md += `Lucky Store POS provides point-of-sale and inventory management tools for retail businesses, `;
-  md += `plus an online storefront for customers to place orders. Features include sales processing, `;
-  md += `inventory tracking, customer management, and reporting.\n\n`;
-
-  md += `## 👤 User Accounts\n\n`;
-  md += `- You must provide accurate and complete information when creating an account\n`;
-  md += `- You are responsible for maintaining the security of your account credentials\n`;
-  md += `- You are responsible for all activities under your account\n`;
-  md += `- Notify us immediately of any unauthorized use\n\n`;
-
-  md += `## 💳 Payment Terms\n\n`;
-  md += `Some features may require payment. You agree to pay all fees associated with your subscription `;
-  md += `plan. All payments are non-refundable unless otherwise stated. Online orders use Cash on Delivery (COD) by default.\n\n`;
-
-  md += `## 📊 Data and Content\n\n`;
-  md += `You retain ownership of your business data. By using our service, you grant us a license to `;
-  md += `store and process your data for the purpose of providing our services.\n\n`;
-
-  md += `## ⚠️ Limitation of Liability\n\n`;
-  md += `Lucky Store shall not be liable for any indirect, incidental, special, consequential, or `;
-  md += `punitive damages resulting from your use of the service.\n\n`;
-
-  md += `## 🚪 Termination\n\n`;
-  md += `We may terminate or suspend your account at any time for violations of these terms. `;
-  md += `You may also terminate your account at any time by contacting us.\n\n`;
-
-  md += `## ⚖️ Governing Law\n\n`;
-  md += `These Terms shall be governed by the laws of Bangladesh.\n\n`;
-
-  md += `## 📞 Contact Information\n\n`;
-  md += `For questions about these Terms:\n`;
-  md += `- **Email:** [luckystore.1947@gmail.com](mailto:luckystore.1947@gmail.com)\n`;
+function mdReturnPolicyPage(): string {
+  let md = mdHeader('Return Policy', 'Check the order at the door before you pay. Damaged items are replaced.');
+  md += `*Effective date: 4 November 2026*\n\n`;
+  md += `## Before you pay\n\n`;
+  md += `The delivery partner waits while you check seals, weights, packaging, and expiry dates. There is no fee for handing an item back at the door.\n\n`;
+  md += `## Damaged, wrong, or missing items\n\n`;
+  md += `Damaged items are replaced. Wrong or missing items can be handed back before you pay, and you are not charged for them. You can refuse one item or the whole order.\n\n`;
+  md += `## Perishables and expiry\n\n`;
+  md += `Check the expiry date at the door. You can refuse food that is expired, damaged, or that you do not want to accept. Perishable food you have checked and paid for is not taken back after the delivery partner leaves.\n\n`;
+  md += `## Timeframe\n\n`;
+  md += `The published window is while the delivery partner is at your door, before you pay. If you notice a problem after they leave, call or WhatsApp straight away.\n\n`;
+  md += `## How to ask\n\n`;
   md += `- **Phone:** [01731944544](tel:+8801731944544)\n`;
-  md += `- **Google Maps:** [View location](https://maps.app.goo.gl/tfiRABoc1WsKEt619)\n`;
-  md += `- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh\n`;
+  md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n\n`;
+  md += `## Refunds\n\n`;
+  md += `- **Cash on delivery:** pay only for the items you keep.\n`;
+  md += `- **bKash:** pay the accepted total to ${DELIVERY_POLICY.paymentMethods.bkashNumber} after inspection. If bKash was sent for an item you hand back, we refund that amount by bKash.\n`;
   return md;
 }
 
@@ -590,8 +599,12 @@ export async function GET(req: NextRequest) {
       markdown = mdContactPage();
     } else if (path === '/privacy') {
       markdown = mdPrivacyPage();
-    } else if (path === '/terms') {
+    } else if (path === '/terms' || path === '/bn/terms') {
       markdown = mdTermsPage();
+    } else if (path === '/about' || path === '/bn/about') {
+      markdown = mdAboutPage();
+    } else if (path === '/return-policy' || path === '/bn/return-policy') {
+      markdown = mdReturnPolicyPage();
     } else if (path === '/data-deletion') {
       markdown = mdDataDeletionPage();
     } else if (path === '/security-policy') {
