@@ -354,6 +354,7 @@ lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.
 
 # Local untracked artifacts & config
 videos/
+/social-media/
 .prettierrc
 assets/screenshots/
 /seo/reports/technical/
@@ -397,3 +398,4 @@ data/catalog/templates/*
 /system-docs/development/supabase-production-migration-repair-runbook.md
 /system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
 /social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
+/googlesearchconsole.txt.rtf

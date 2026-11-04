@@ -18,6 +18,7 @@ import {
   trackAddPaymentInfo,
   trackBeginCheckout,
   trackPurchase,
+  trackMetaEvent,
 } from '../../lib/analytics';
 import { getLocaleFromPathname, withLocale } from '../../lib/i18n/config';
 import { getDictionary } from '../../lib/i18n/dictionaries';
@@ -139,7 +140,9 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!isLoaded || cart.length === 0 || checkoutTrackedRef.current) return;
-    checkoutTrackedRef.current = trackBeginCheckout(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total);
+    const analyticsTracked = trackBeginCheckout(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total);
+    const metaTracked = trackMetaEvent('InitiateCheckout', { content_type: 'product', currency: 'BDT', value: total, num_items: cart.reduce((n, item) => n + item.qty, 0), contents: cart.map(item => ({ id: item.id, quantity: item.qty, item_price: effectivePrice(item) })) });
+    checkoutTrackedRef.current = analyticsTracked || metaTracked;
   }, [cart, effectivePrice, isLoaded, total]);
 
   useEffect(() => {
@@ -261,6 +264,7 @@ function CheckoutContent() {
 
     try {
       trackAddPaymentInfo(cart.map((item) => ({ ...item, price: effectivePrice(item) })), total, formData.paymentMethod);
+      trackMetaEvent('AddPaymentInfo', { content_type: 'product', currency: 'BDT', value: total, num_items: cart.reduce((n, item) => n + item.qty, 0), contents: cart.map(item => ({ id: item.id, quantity: item.qty, item_price: effectivePrice(item) })) });
       const cleanPhone = formData.phone.replace(/[\s-]/g, '');
       const checkoutIdentity = getCheckoutIdentity();
       const res = await fetch('/api/checkout', {
@@ -300,6 +304,7 @@ function CheckoutContent() {
         value: total,
         shipping: deliveryFee,
       });
+      trackMetaEvent('Purchase', { content_type: 'product', currency: 'BDT', value: order.total ?? total, contents: cart.map(item => ({ id: item.id, quantity: item.qty, item_price: effectivePrice(item) })) }, order.order_number);
 
       try {
         if (order.trackingToken) sessionStorage.setItem('lastOrderTrackingToken', order.trackingToken);
