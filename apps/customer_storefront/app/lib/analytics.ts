@@ -40,6 +40,12 @@ declare global {
       track?: (eventName: string, properties?: Record<string, AnalyticsValue>) => void;
       ecommerce?: (eventName: string, properties?: Record<string, ZarazEcommerceValue>) => void;
     };
+    fbq?: ((...args: unknown[]) => void) & {
+      callMethod?: (...args: unknown[]) => void;
+      queue?: unknown[];
+      loaded?: boolean;
+      version?: string;
+    };
   }
 }
 
@@ -383,4 +389,19 @@ export function trackPurchase(input: {
   }
 
   return sent;
+}
+
+export function trackMetaEvent(eventName: 'InitiateCheckout' | 'AddPaymentInfo' | 'Purchase', params: Record<string, unknown>, eventId?: string): boolean {
+  if (!hasAnalyticsConsent() || typeof window === 'undefined' || typeof window.fbq !== 'function') return false;
+  if (eventName === 'Purchase' && eventId) {
+    try {
+      const key = `lucky-meta-purchase:${eventId}`;
+      if (window.localStorage.getItem(key) === 'sent') return false;
+      window.fbq('track', eventName, params, { eventID: eventId });
+      window.localStorage.setItem(key, 'sent');
+      return true;
+    } catch { return false; }
+  }
+  window.fbq('track', eventName, params);
+  return true;
 }

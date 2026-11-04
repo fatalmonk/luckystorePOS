@@ -71,7 +71,7 @@ describe('HeroDiscoveryRail', () => {
     expect(mobileIconWell).not.toHaveClass('text-warm-accent-text');
   });
 
-  it('manages sticky search state on mobile/tablet when scroll reaches search component and header hides', () => {
+  it('manages sticky search state on tablet when scroll reaches search component and header hides', () => {
     let rafCallback: FrameRequestCallback = () => {};
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
       rafCallback = cb;
@@ -80,7 +80,7 @@ describe('HeroDiscoveryRail', () => {
 
     const originalMatchMedia = window.matchMedia;
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(max-width: 1023px)',
+      matches: query === '(min-width: 640px) and (max-width: 1023px)',
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -91,6 +91,7 @@ describe('HeroDiscoveryRail', () => {
     }));
 
     const { container } = render(<HeroDiscoveryRail products={products} />);
+    expect(window.matchMedia).toHaveBeenCalledWith('(min-width: 640px) and (max-width: 1023px)');
     const anchor = container.querySelector('[data-sticky-search-anchor="true"]');
     const searchWrapper = container.querySelector('[data-sticky-search]');
     expect(anchor).toBeInTheDocument();
@@ -123,6 +124,9 @@ describe('HeroDiscoveryRail', () => {
     const stickyWrapper = document.body.querySelector('[data-sticky-search="true"]');
     expect(stickyWrapper).toHaveClass('fixed');
     expect(stickyWrapper).toHaveClass('top-0');
+    expect(stickyWrapper).toHaveClass('hidden');
+    expect(stickyWrapper).toHaveClass('sm:block');
+    expect(stickyWrapper).toHaveClass('lg:hidden');
     expect(stickyWrapper).toHaveClass('translate-y-0');
 
     // When scrolling up, header shows (header-visibility-change { hidden: false })

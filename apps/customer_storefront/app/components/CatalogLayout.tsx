@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag, MagnifyingGlass } from '@phosphor-icons/react';
@@ -71,7 +71,6 @@ interface CatalogLayoutProps {
   searchParams: Record<string, string | string[] | undefined>;
   locale?: Locale;
   headingLevel?: 'h1' | 'h2' | 'h3';
-  hideBreadcrumb?: boolean;
   brandName?: string;
   brandSlug?: string;
 }
@@ -87,7 +86,6 @@ export function CatalogLayout({
   searchParams,
   locale,
   headingLevel,
-  hideBreadcrumb = false,
   brandName,
   brandSlug,
 }: CatalogLayoutProps) {
@@ -321,38 +319,38 @@ export function CatalogLayout({
       <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-2 sm:p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
-          {!hideBreadcrumb && <div className="flex items-center gap-1.5 text-xs font-semibold text-warm-muted flex-wrap">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-warm-muted">
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.home}
             </Link>
             {brandName ? (
               <>
-                <span>/</span>
+                <span aria-hidden="true">/</span>
                 <Link href={withLocale('/brand', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.brands}
                 </Link>
-                <span>/</span>
-                <span className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">
+                <span aria-hidden="true">/</span>
+                <span aria-current="page" className="text-warm-fg font-bold py-1 px-1.5 inline-flex items-center min-h-[44px]">
                   {brandName}
                 </span>
               </>
             ) : (
               <>
-                <span>/</span>
+                <span aria-hidden="true">/</span>
                 <Link href={withLocale('/category', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.shop}
                 </Link>
                 {categorySlug !== 'all' && (
                   <>
-                    <span>/</span>
-                    <span className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page" className="text-warm-fg font-bold capitalize py-1 px-1.5 inline-flex items-center min-h-[44px]">
                       {categoryLabel}
                     </span>
                   </>
                 )}
               </>
             )}
-          </div>}
+          </nav>
 
           <div className="flex items-center gap-2">
             {(() => {

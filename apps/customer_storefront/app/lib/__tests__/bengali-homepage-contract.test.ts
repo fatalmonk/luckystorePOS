@@ -82,7 +82,7 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     expect(bnDict.categoryGrid.dailyCooking).toBe('নিত্য রান্না');
     expect(bnDict.popularBazaar.label).toBe('জনপ্রিয় বাজার:');
     expect(bnDict.reels.popularTitle).toBe('এখন সবচেয়ে জনপ্রিয়');
-    expect(bnDict.deal.title).toBe('সাপ্তাহিক স্পেশাল অফার');
+    expect(bnDict.deal.title).toBe('সপ্তাহের সেরা অফার');
     expect(bnDict.heritage.badge).toBe('ঐতিহ্য ও বিশ্বাস');
     expect(bnDict.footer.story).toContain('১৯৪৭ সাল থেকে');
     expect(bnDict.bottomNav.home).toBe('হোম');
