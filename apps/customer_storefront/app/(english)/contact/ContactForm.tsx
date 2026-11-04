@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
 import { GoogleMapEmbed } from './GoogleMapEmbed';
+import { RETURN_RULES } from '../../lib/deliveryData';
 import { Select } from '../../components/ui/Select';
 
 export function ContactForm() {
@@ -249,7 +250,7 @@ export function ContactForm() {
 
           <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
             <h3 className="text-sm font-bold text-warm-fg">What if an item in my order is damaged or missing?</h3>
-            <p className="text-xs text-warm-muted leading-relaxed">Check the order before you pay. Damaged items are replaced, and you can hand back a wrong or missing item at the door. See the <Link href="/return-policy" className="font-semibold text-warm-accent-dark underline underline-offset-2 hover:no-underline">return policy</Link> for cash and bKash refunds.</p>
+            <p className="text-xs text-warm-muted leading-relaxed">{RETURN_RULES.en.doorstep} {RETURN_RULES.en.defective} See the <Link href="/return-policy" className="font-semibold text-warm-accent-dark underline underline-offset-2 hover:no-underline">return policy</Link>.</p>
           </div>
         </div>
       </div>

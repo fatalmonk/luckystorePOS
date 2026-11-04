@@ -29,6 +29,43 @@ export const DELIVERY_POLICY = {
   canonicalUrl: 'https://www.luckystore1947.com/delivery',
 } as const;
 
+export const RETURN_RULES = {
+  en: {
+    doorstep:
+      'Items are checked at the door on delivery, before payment. Once paid, a product cannot be returned for a change of mind.',
+    defective:
+      'Defective items can be returned within 24 hours of purchase or delivery, with the receipt.',
+  },
+  bn: {
+    doorstep:
+      'ডেলিভারির সময় দরজায় পণ্য দেখে তারপর টাকা দিতে হয়। টাকা দেওয়ার পর মন বদলানোর জন্য পণ্য ফেরত নেওয়া হয় না।',
+    defective:
+      'ত্রুটিপূর্ণ পণ্য কেনা বা ডেলিভারির ২৪ ঘণ্টার মধ্যে রসিদসহ ফেরত দেওয়া যায়।',
+  },
+} as const;
+
+export function getMerchantReturnPolicies() {
+  return [
+    {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'BD',
+      returnPolicyCountry: 'BD',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+      description: RETURN_RULES.en.doorstep,
+    },
+    {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'BD',
+      returnPolicyCountry: 'BD',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 1,
+      returnMethod: 'https://schema.org/ReturnInStore',
+      returnFees: 'https://schema.org/FreeReturn',
+      description: RETURN_RULES.en.defective,
+    },
+  ];
+}
+
 const SHIPPING_SERVICE_ID = `${DELIVERY_POLICY.canonicalUrl}#shipping-service`;
 
 const SHIPPING_DESTINATION = {
@@ -94,7 +131,7 @@ export const DELIVERY_FAQS: DeliveryFaqItem[] = [
   },
   {
     question: 'What if an item is damaged, defective, or incorrect?',
-    answer: `If any item does not meet your complete satisfaction during doorstep inspection, you may hand it back to the delivery agent immediately with zero fee penalty. For support, call or WhatsApp our team at ${DELIVERY_POLICY.supportPhone}.`,
+    answer: `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective} For support, call or WhatsApp our team at ${DELIVERY_POLICY.supportPhone}.`,
   },
 ];
 

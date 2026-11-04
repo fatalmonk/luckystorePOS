@@ -181,14 +181,24 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
         unitCode: 'DAY',
       });
 
-      // Return policy validation
-      expect(offers.hasMerchantReturnPolicy).toBeDefined();
-      expect(offers.hasMerchantReturnPolicy['@type']).toBe('MerchantReturnPolicy');
-      expect(offers.hasMerchantReturnPolicy.applicableCountry).toBe('BD');
-      expect(offers.hasMerchantReturnPolicy.returnPolicyCountry).toBe('BD');
-      expect(offers.hasMerchantReturnPolicy.returnPolicyCategory).toBe('https://schema.org/MerchantReturnNotPermitted');
-      expect(offers.hasMerchantReturnPolicy.description).toContain('doorstep inspection');
-      expect(offers.hasMerchantReturnPolicy.returnFees).toBeUndefined();
+      const policies = offers.hasMerchantReturnPolicy;
+      expect(policies).toHaveLength(2);
+      expect(policies[0]).toMatchObject({
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'BD',
+        returnPolicyCountry: 'BD',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+      });
+      expect(policies[0].description).toContain('before payment');
+      expect(policies[0].description).toContain('change of mind');
+      expect(policies[1]).toMatchObject({
+        '@type': 'MerchantReturnPolicy',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 1,
+        returnFees: 'https://schema.org/FreeReturn',
+      });
+      expect(policies[1].description).toContain('24 hours');
+      expect(policies[1].description).toContain('receipt');
 
       expect(json.aggregateRating).toBeUndefined();
       expect(json.review).toBeUndefined();

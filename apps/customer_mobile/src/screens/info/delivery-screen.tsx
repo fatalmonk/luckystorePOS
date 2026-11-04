@@ -36,7 +36,7 @@ const copy = {
       'Halishahar & Lalkhan Bazar',
     ],
     inspectionTitle: '🛡️ Doorstep Inspection Guarantee',
-    inspectionDesc: 'We believe in 100% transparency. When your rider arrives, inspect all items before paying. If any item does not meet your freshness standard, return it on the spot with zero hassle.',
+    inspectionDesc: 'Items are checked at the door on delivery, before payment. Once paid, a product cannot be returned for a change of mind. Defective items can be returned within 24 hours of purchase or delivery, with the receipt.',
   },
   bn: {
     title: 'ডেলিভারি এলাকা ও নিয়মাবলী',
@@ -62,7 +62,7 @@ const copy = {
       'হালিশহর ও লালখান বাজার',
     ],
     inspectionTitle: '🛡️ দরজায় পণ্য যাচাইয়ের নিশ্চয়তা',
-    inspectionDesc: 'আমরা শতভাগ বিশ্বস্ততায় বিশ্বাস করি। রাইডার পৌঁছালে পণ্য দেখে নিশ্চিত হয়ে টাকা পরিশোধ করুন। কোনো পণ্যে সন্তুষ্ট না হলে সাথে সাথেই ফেরত দিতে পারবেন।',
+    inspectionDesc: 'ডেলিভারির সময় দরজায় পণ্য দেখে তারপর টাকা দিতে হয়। টাকা দেওয়ার পর মন বদলানোর জন্য পণ্য ফেরত নেওয়া হয় না। ত্রুটিপূর্ণ পণ্য কেনা বা ডেলিভারির ২৪ ঘণ্টার মধ্যে রসিদসহ ফেরত দেওয়া যায়।',
   },
 } as const;
 

@@ -3,7 +3,7 @@ import { createProductRepository, createProductId } from '../../lib/products/ind
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
 import { POPULAR_BRANDS, getBrandBySlug, isProductOfBrand } from '../../lib/brandsData';
 
 export const dynamic = 'force-dynamic';
@@ -245,7 +245,7 @@ function mdTermsPage(): string {
   md += `- Free on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more; ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below that\n`;
   md += `- Open ${DELIVERY_POLICY.deliveryHours.display}, with same-day dispatch\n\n`;
   md += `## Returns\n\n`;
-  md += `You can check the order before you pay. Damaged items are replaced. See the [return policy](${BASE_URL}/return-policy).\n\n`;
+  md += `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective} See the [return policy](${BASE_URL}/return-policy).\n\n`;
   md += `## Contact\n\n`;
   md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
   md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
@@ -265,22 +265,20 @@ function mdAboutPage(): string {
 }
 
 function mdReturnPolicyPage(): string {
-  let md = mdHeader('Return Policy', 'Check the order at the door before you pay. Damaged items are replaced.');
+  let md = mdHeader('Return Policy', `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}`);
   md += `*Effective date: 4 November 2026*\n\n`;
-  md += `## Before you pay\n\n`;
-  md += `The delivery partner waits while you check seals, weights, packaging, and expiry dates. There is no fee for handing an item back at the door.\n\n`;
-  md += `## Damaged, wrong, or missing items\n\n`;
-  md += `Damaged items are replaced. Wrong or missing items can be handed back before you pay, and you are not charged for them. You can refuse one item or the whole order.\n\n`;
-  md += `## Perishables and expiry\n\n`;
-  md += `Check the expiry date at the door. You can refuse food that is expired, damaged, or that you do not want to accept. Perishable food you have checked and paid for is not taken back after the delivery partner leaves.\n\n`;
-  md += `## Timeframe\n\n`;
-  md += `The published window is while the delivery partner is at your door, before you pay. If you notice a problem after they leave, call or WhatsApp straight away.\n\n`;
+  md += `## Checked at the door, before payment\n\n`;
+  md += `${RETURN_RULES.en.doorstep} You can refuse a damaged, wrong, or missing item before you pay, and you are not charged for it.\n\n`;
+  md += `## No return for a change of mind\n\n`;
+  md += `Once paid, a product cannot be returned for a change of mind. That includes food you have already checked and accepted.\n\n`;
+  md += `## Defective items within 24 hours\n\n`;
+  md += `${RETURN_RULES.en.defective}\n\n`;
   md += `## How to ask\n\n`;
   md += `- **Phone:** [01731944544](tel:+8801731944544)\n`;
   md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n\n`;
   md += `## Refunds\n\n`;
-  md += `- **Cash on delivery:** pay only for the items you keep.\n`;
-  md += `- **bKash:** pay the accepted total to ${DELIVERY_POLICY.paymentMethods.bkashNumber} after inspection. If bKash was sent for an item you hand back, we refund that amount by bKash.\n`;
+  md += `- **Before payment:** pay only for the items you keep. Cash is paid to the delivery partner. bKash goes to ${DELIVERY_POLICY.paymentMethods.bkashNumber}.\n`;
+  md += `- **After payment:** a change of mind is not refunded. A defective item returned within 24 hours with the receipt is refunded the way you paid, cash or bKash, with no return fee.\n`;
   return md;
 }
 
@@ -393,7 +391,7 @@ function mdDeliveryPage(): string {
   md += `## 💳 Payment Options & Doorstep Inspection\n\n`;
   md += `- **Cash on Delivery (COD):** 100% supported. Pay the delivery partner upon arrival.\n`;
   md += `- **bKash Mobile Payment:** Send money or scan QR upon delivery to \`${DELIVERY_POLICY.paymentMethods.bkashNumber}\`.\n`;
-  md += `- **Doorstep Inspection Guarantee:** Inspect all items, seals, rice varieties, and expiration dates before paying. Decline unsatisfactory items on the spot with zero penalty.\n\n`;
+  md += `- **Doorstep inspection and returns:** ${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}\n\n`;
 
   md += `## ❓ Frequently Asked Questions\n\n`;
   md += `1. **What areas are covered?** Areas and nearby parts of neighborhoods within 1 km of Chawkbazar, Chattogram.\n`;

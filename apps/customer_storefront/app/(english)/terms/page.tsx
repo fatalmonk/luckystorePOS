@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
 
 const CANONICAL = 'https://www.luckystore1947.com/terms';
 
@@ -118,11 +118,10 @@ export default function TermsOfServicePage() {
             </PolicySection>
 
             <PolicySection icon="🔄" title="Checking your order and returns">
+              <p>{RETURN_RULES.en.doorstep}</p>
+              <p>{RETURN_RULES.en.defective}</p>
               <p>
-                You can check the order before you pay. Damaged items are replaced. You may hand a damaged, wrong, or missing item back to our delivery partner before you pay.
-              </p>
-              <p>
-                The time to do that, and how cash and bKash refunds work, is set out in the <Link href="/return-policy" className={linkClass}>return policy</Link>.
+                Cash and bKash refunds are set out in the <Link href="/return-policy" className={linkClass}>return policy</Link>.
               </p>
             </PolicySection>
 

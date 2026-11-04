@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
-import { DELIVERY_POLICY } from '../../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../../lib/deliveryData';
 
 const CANONICAL = 'https://www.luckystore1947.com/bn/return-policy';
 
 export const metadata: Metadata = {
   title: 'ফেরত নীতি',
-  description: `নষ্ট, ভুল বা বাদ পড়া পণ্য কীভাবে সামলানো হয়। টাকা দেওয়ার আগে দরজায় অর্ডার দেখে নিন। ফোন বা WhatsApp: ${DELIVERY_POLICY.paymentMethods.bkashNumber}।`,
+  description: `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective}`,
   robots: {
     index: true,
     follow: true,
@@ -58,65 +58,46 @@ export default function BengaliReturnPolicyPage() {
               ফেরত নীতি
             </h1>
             <p className="text-sm text-warm-muted max-w-md mx-auto leading-relaxed">
-              টাকা দেওয়ার আগে দরজায় অর্ডার দেখে নিন। নষ্ট পণ্য বদলে দেওয়া হয়।
+              {RETURN_RULES.bn.doorstep} {RETURN_RULES.bn.defective}
             </p>
             <p className="text-xs text-warm-muted mt-3">কার্যকর তারিখ: ৪ নভেম্বর ২০২৬</p>
           </div>
 
           <div className="space-y-4 mb-10">
-            <PolicySection icon="🛡️" title="টাকা দেওয়ার আগে অর্ডার দেখুন">
+            <PolicySection icon="🚪" title="দরজায় দেখে, তারপর টাকা">
+              <p>{RETURN_RULES.bn.doorstep}</p>
               <p>
-                অর্ডার দেখে নেওয়ার পর তবেই টাকা দেন। ডেলিভারি কর্মী অপেক্ষা করেন, যাতে আপনি সিল, ওজন, প্যাকেট ও মেয়াদ দেখতে পারেন।
-                দরজায় পণ্য ফেরত দিলে আলাদা কোনো ফি লাগে না।
+                ডেলিভারি কর্মী অপেক্ষা করেন, যাতে আপনি সিল, ওজন, প্যাকেট ও মেয়াদ দেখতে পারেন। নষ্ট, ভুল বা বাদ পড়া পণ্য টাকা দেওয়ার আগে ফেরত দিতে পারেন। সেই পণ্যের জন্য চার্জ হবে না। দরজায় ফেরত দিলে আলাদা ফি লাগে না।
               </p>
             </PolicySection>
 
-            <PolicySection icon="📦" title="নষ্ট, ভুল বা বাদ পড়া পণ্য">
+            <PolicySection icon="🚫" title="মন বদলালে ফেরত নয়">
               <p>
-                পণ্য নষ্ট হলে আমরা সেটি বদলে দিই। ভুল পণ্য এলে বা কোনো পণ্য না এলে, টাকা দেওয়ার আগে ডেলিভারি কর্মীকে বলুন বা ফেরত দিন। সেই পণ্যের জন্য চার্জ হবে না।
-                একটি পণ্য বা পুরো অর্ডার, দুটোই ফেরত দিতে পারেন।
-              </p>
-              <p>
-                বদলে দেওয়া পণ্য রাখলে তবেই তার দাম দিতে হয়। কর্মীর কাছে বদলের পণ্য না থাকলে দোকানে ফোন বা WhatsApp করুন। আমরা ব্যবস্থা করব।
+                টাকা দেওয়ার পর মন বদলানোর জন্য পণ্য ফেরত নেওয়া হয় না। যে খাবার আপনি দেখে রেখেছেন, সেটিও এর মধ্যে পড়ে।
               </p>
             </PolicySection>
 
-            <PolicySection icon="🥬" title="পচনশীল পণ্য ও মেয়াদ">
+            <PolicySection icon="⏱️" title="ত্রুটিপূর্ণ পণ্য, ২৪ ঘণ্টা">
+              <p>{RETURN_RULES.bn.defective}</p>
               <p>
-                ডেলিভারি কর্মী দরজায় থাকতেই খাবারের মেয়াদ ও অবস্থা দেখে নিন। মেয়াদোত্তীর্ণ, নষ্ট, বা আপনি রাখতে চান না এমন পণ্য ফেরত দিতে পারেন।
-              </p>
-              <p>
-                যে পচনশীল খাবার আপনি দেখে টাকা দিয়ে রেখেছেন, ডেলিভারি কর্মী চলে যাওয়ার পর সেটি ফেরত নেওয়া হয় না। ফেরত দেওয়ার সময় হলো টাকা দেওয়ার আগে।
+                এই ২৪ ঘণ্টা কেনা বা ডেলিভারির সময় থেকে গণনা হয়। রসিদ রাখুন। ত্রুটিপূর্ণ পণ্যের মধ্যে নষ্ট বা ক্ষতিগ্রস্ত খাবারও পড়ে, এবং অন্য যেকোনো ত্রুটিপূর্ণ জিনিসও।
               </p>
             </PolicySection>
 
-            <PolicySection icon="⏱️" title="কখন ফেরত দেবেন">
-              <p>
-                প্রকাশিত সময় হলো ডেলিভারি কর্মী আপনার দরজায় আসা পর্যন্ত, টাকা দেওয়ার আগে। এই সময়ে নষ্ট, ভুল, বাদ পড়া বা মেয়াদোত্তীর্ণ পণ্য ফেরত দিতে পারবেন, এবং নষ্ট পণ্য বদলে নেওয়া যায়।
-              </p>
-              <p>
-                কর্মী চলে যাওয়ার পর কোনো সমস্যা দেখলে সাথে সাথে ফোন বা WhatsApp করুন এবং অর্ডারের কথা বলুন। আমরা দেখে নেব। দরজায় দেখে নেওয়ার বাইরে আলাদা কোনো দীর্ঘ ফেরতের সময় এই পাতায় নেই।
-              </p>
-            </PolicySection>
-
-            <PolicySection icon="💬" title="ফেরত বা বদল কীভাবে চাইবেন">
-              <p>দরজায় ডেলিভারি কর্মীকে বলুন, অথবা ফোন বা WhatsApp-এ দোকানে যোগাযোগ করুন:</p>
+            <PolicySection icon="💬" title="কীভাবে জানাবেন">
+              <p>দরজায় থাকতে টাকা দেওয়ার আগে ডেলিভারি কর্মীকে বলুন। টাকা দেওয়ার পর ত্রুটিপূর্ণ পণ্য হলে ২৪ ঘণ্টার মধ্যে ফোন বা WhatsApp করুন এবং রসিদ রাখুন:</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>ফোন: <a href="tel:+8801731944544" className={linkClass}>01731944544</a></li>
                 <li>WhatsApp: <a href={DELIVERY_POLICY.supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>wa.me/8801731944544</a></li>
               </ul>
-              <p>কী নষ্ট, ভুল বা বাদ পড়েছে বলুন। অর্ডার খুঁজে পেতে আপনার নাম, ফোন নম্বর ও অর্ডারের সময় জানান।</p>
             </PolicySection>
 
             <PolicySection icon="💵" title="ক্যাশ ও bKash-এ টাকা ফেরত">
               <p>
-                <strong className="text-warm-fg">ক্যাশ অন ডেলিভারি।</strong> যে পণ্য রাখছেন, শুধু তার জন্য নগদ টাকা দেন। ফেরত দেওয়া পণ্য হিসাবে আসে না। টাকা দেওয়ার আগে পুরো অর্ডার ফেরত দিলে পণ্যের দাম দিতে হয় না।
+                <strong className="text-warm-fg">টাকা দেওয়ার আগে।</strong> যে পণ্য রাখছেন, শুধু তার জন্য টাকা দেন। নগদ টাকা ডেলিভারি কর্মীকে দেন। bKash-এ রাখা পণ্যের মোট টাকা পাঠান, নম্বর {DELIVERY_POLICY.paymentMethods.bkashNumber}। যে পণ্য ফেরত দিচ্ছেন তার জন্য আগেই bKash পাঠিয়ে থাকলে, কর্মী যাওয়ার আগে বলে দিন। সেই টাকা bKash-এ ফেরত দেওয়া হবে।
               </p>
               <p>
-                <strong className="text-warm-fg">bKash।</strong> অর্ডার দেখে নেওয়ার পর রাখা পণ্যের মোট টাকা bKash-এ দিতে পারেন, নম্বর {DELIVERY_POLICY.paymentMethods.bkashNumber}। যে পণ্য পরে ফেরত দিচ্ছেন তার জন্য আগেই bKash পাঠিয়ে থাকলে, কর্মী যাওয়ার আগে বলে দিন। সেই টাকা bKash-এ ফেরত দেওয়া হবে। কর্মী চলে গেলে ফোন বা WhatsApp করুন। আমরা bKash-এ টাকা ফেরতের ব্যবস্থা করব।
-              </p>
-              <p>
-                পণ্য ফেরত দিলে আলাদা ফি লাগে না। ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি, তার কম হলে ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}। বিস্তারিত <Link href="/bn/delivery" className={linkClass}>ডেলিভারি পাতায়</Link>।
+                <strong className="text-warm-fg">টাকা দেওয়ার পর।</strong> মন বদলালে টাকা ফেরত হয় না। ত্রুটিপূর্ণ পণ্য ২৪ ঘণ্টার মধ্যে রসিদসহ ফেরত দিলে, যেভাবে টাকা দিয়েছিলেন সেভাবেই ফেরত পাবেন: নগদ দিলে নগদ, bKash দিলে bKash। ফেরতের আলাদা ফি নেই।
               </p>
             </PolicySection>
           </div>

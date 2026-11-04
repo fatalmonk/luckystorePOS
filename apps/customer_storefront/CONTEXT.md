@@ -17,7 +17,7 @@ experience.
 
 - Public shopping terms describe the Chawkbazar grocery shop, not the POS product.
 - Delivery copy stays inside the published 1 km radius of the Emdad Park shop.
-- Doorstep inspection before payment is the published return window. A longer window needs the owner's confirmation.
+- Two return rules: check at the door before payment, and no change-of-mind return after payment. Defective items can be returned within 24 hours with the receipt.
 
 ## Decisions
 

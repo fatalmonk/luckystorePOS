@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
-import { DELIVERY_POLICY } from '../../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../../lib/deliveryData';
 
 const CANONICAL = 'https://www.luckystore1947.com/bn/terms';
 
@@ -112,11 +112,10 @@ export default function BengaliTermsPage() {
             </PolicySection>
 
             <PolicySection icon="🔄" title="পণ্য দেখে নেওয়া ও ফেরত">
+              <p>{RETURN_RULES.bn.doorstep}</p>
+              <p>{RETURN_RULES.bn.defective}</p>
               <p>
-                টাকা দেওয়ার আগে অর্ডার দেখে নিতে পারবেন। নষ্ট পণ্য বদলে দেওয়া হয়। নষ্ট, ভুল বা বাদ পড়া পণ্য টাকা দেওয়ার আগে ডেলিভারি কর্মীর কাছে ফেরত দিতে পারেন।
-              </p>
-              <p>
-                কখন ফেরত দেবেন, এবং ক্যাশ বা bKash-এ টাকা কীভাবে ফেরে, তা <Link href="/bn/return-policy" className={linkClass}>ফেরত নীতিতে</Link> লেখা আছে।
+                ক্যাশ ও bKash-এ টাকা ফেরতের নিয়ম <Link href="/bn/return-policy" className={linkClass}>ফেরত নীতিতে</Link> লেখা আছে।
               </p>
             </PolicySection>
 
