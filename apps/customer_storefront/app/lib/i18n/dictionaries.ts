@@ -131,7 +131,7 @@ export const dictionaries = {
       cta: 'Shop groceries',
     },
     footer: {
-      story: 'Your Neighborhood Family Grocer picking up quality products, your favorite brands and daily essentials since 1947.',
+      story: 'Your Neighborhood Family Grocer, picking up quality products, your favorite brands and daily essentials since 1947. Delivery is limited to our published 1 km Chawkbazar area; check coverage before ordering.',
       shopTitle: 'Shop',
       helpTitle: 'Help & Support',
       legalTitle: 'Legal & Policy',

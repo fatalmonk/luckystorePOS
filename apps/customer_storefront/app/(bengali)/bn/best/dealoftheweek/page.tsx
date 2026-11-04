@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { loadWeeklyDeals } from '../../../../lib/deals';
+import { loadWeeklyDeals, WEEKLY_DEALS_LIMIT } from '../../../../lib/deals';
 import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { DealOfTheWeekClient } from '../../../../(english)/best/dealoftheweek/DealOfTheWeekClient';
@@ -63,7 +63,7 @@ function toAbsoluteImageUrl(rawUrl?: string | null): string {
 }
 
 export default async function BengaliDealOfTheWeekPage() {
-  const dealsData = await loadWeeklyDeals(supabase, new Date(), 48);
+  const dealsData = await loadWeeklyDeals(supabase, new Date(), WEEKLY_DEALS_LIMIT);
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
