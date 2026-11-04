@@ -108,7 +108,7 @@ export const dictionaries = {
       seeAll: 'See all',
     },
     deal: {
-      title: 'The Weekly Special',
+      title: 'Deal of the Week',
       subtitle: 'A cherished kitchen staple, handpicked for you at an exceptional price.',
       off: 'off',
       endsIn: 'Ends in',
@@ -131,7 +131,7 @@ export const dictionaries = {
       cta: 'Shop groceries',
     },
     footer: {
-      story: 'Shop pantry staples, tea and daily essentials from Lucky Store, serving Chattogram since 1947. Delivery is limited to our published 1 km Chawkbazar area; check coverage before ordering.',
+      story: 'Your Neighborhood Family Grocer picking up quality products, your favorite brands and daily essentials since 1947.',
       shopTitle: 'Shop',
       helpTitle: 'Help & Support',
       legalTitle: 'Legal & Policy',
@@ -398,7 +398,7 @@ export const dictionaries = {
       seeAll: 'সব দেখুন',
     },
     deal: {
-      title: 'সাপ্তাহিক স্পেশাল অফার',
+      title: 'সপ্তাহের সেরা অফার',
       subtitle: 'আপনার রান্নার সেরা পণ্যটি এখন বিশেষ ছাড়ে।',
       off: 'ছাড়',
       endsIn: 'বাকি আছে',

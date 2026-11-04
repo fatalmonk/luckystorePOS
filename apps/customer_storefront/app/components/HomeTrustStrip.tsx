@@ -48,7 +48,7 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
       <div className="relative grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
         <div className="max-w-2xl">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#245c3d] dark:text-[#a8d6b7]">
-            {bn ? `আপনার পাড়ার দোকান · ${DELIVERY_POLICY.establishedYear}` : `Your neighbourhood grocer · Est. ${DELIVERY_POLICY.establishedYear}`}
+            {bn ? `আপনার পাড়ার দোকান · ${DELIVERY_POLICY.establishedYear}` : 'Your Neighborhood Family Grocer'}
           </p>
           <h2 className="max-w-xl text-2xl font-extrabold leading-tight tracking-tight text-warm-fg sm:text-3xl lg:text-[2.5rem]">
             {bn ? 'প্রতিদিনের প্রয়োজন, যত্ন নিয়ে আপনার দরজায়।' : 'Everyday essentials, delivered with care.'}
@@ -67,11 +67,15 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
           <ArrowRight size={17} weight="bold" aria-hidden="true" className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
-      <dl className="relative mt-6 grid grid-cols-1 border-t border-warm-border/70 pt-4 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-warm-border/70 sm:pt-5">
-        {facts.map(({ icon: Icon, iconClassName, title, detail, href }) => (
+      <dl className="relative mt-6 grid grid-cols-2 border-t border-warm-fg/40 pt-4 sm:pt-5 lg:grid-cols-4">
+        {facts.map(({ icon: Icon, iconClassName, title, detail, href }, index) => (
           <div
             key={title}
-            className="relative flex min-h-[3.75rem] items-center gap-3 border-b border-warm-border/70 py-3 last:border-0 sm:border-b-0 sm:py-2 lg:px-4 lg:first:pl-0"
+            className={`relative flex min-h-[5.5rem] items-start gap-2.5 border-warm-fg/40 py-3 sm:min-h-[4.75rem] sm:items-center sm:gap-3 lg:min-h-[3.75rem] lg:border-b-0 lg:px-4 lg:py-2 lg:first:pl-0 ${
+              index < 2 ? 'border-b' : ''
+            } ${index % 2 === 0 ? 'border-r pr-3' : 'pl-3'} ${
+              index < facts.length - 1 ? 'lg:border-r' : 'lg:border-r-0'
+            }`}
           >
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconClassName}`}>
               <Icon size={19} weight="regular" aria-hidden="true" />

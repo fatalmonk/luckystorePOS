@@ -21,11 +21,14 @@ describe('Footer', () => {
     );
   });
 
-  it('limits English footer delivery claims to the published Chawkbazar area', () => {
+  it('uses the approved English neighborhood brand story', () => {
     render(<Footer locale="en" />);
 
-    expect(screen.getByText(/Delivery is limited to our published 1 km Chawkbazar area/)).toBeInTheDocument();
-    expect(screen.getByRole('contentinfo')).not.toHaveTextContent('delivered with care across Chattogram');
+    expect(
+      screen.getByText(
+        'Your Neighborhood Family Grocer picking up quality products, your favorite brands and daily essentials since 1947.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('gives Bengali shoppers the same delivery-coverage qualification', () => {

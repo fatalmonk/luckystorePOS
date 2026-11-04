@@ -752,13 +752,17 @@
   }
 
   .deal-panel {
-    background: var(--color-paper);
+    --deal-panel-surface: var(--color-paper);
+    background:
+      radial-gradient(ellipse 72% 62% at 0% 0%, var(--color-accent-ghost) 0%, transparent 70%),
+      radial-gradient(ellipse 64% 72% at 100% 100%, color-mix(in srgb, var(--color-accent) 6%, transparent) 0%, transparent 72%),
+      var(--deal-panel-surface);
     box-shadow: 0 12px 32px rgba(11, 11, 13, 0.08);
   }
 
   [data-theme="dark"] .deal-panel,
   html.dark .deal-panel {
-    background: #0B0B0D;
+    --deal-panel-surface: #0B0B0D;
     box-shadow: 0 12px 32px rgba(11, 11, 13, 0.16);
   }
 
@@ -949,6 +953,12 @@
   .header-nav-link:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
+  }
+
+  .header-corner-gradient {
+    background-image:
+      radial-gradient(ellipse 34% 140% at 0% 0%, var(--color-accent-ghost) 0%, transparent 72%),
+      radial-gradient(ellipse 34% 140% at 100% 0%, var(--color-accent-ghost) 0%, transparent 72%);
   }
 
   .site-footer-text {

@@ -31,6 +31,24 @@ describe('WhatsAppFloat', () => {
     expect(link).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('হ্যালো লাকি স্টোর')));
   });
 
+  it('clears the mobile purchase bar on localized and English product pages', () => {
+    currentPath = '/product/example-product';
+    const { rerender } = render(<WhatsAppFloat />);
+
+    const englishLink = screen.getByRole('link', { name: /Chat on WhatsApp/i });
+    expect(englishLink).toHaveClass(
+      'bottom-[calc(var(--bottom-nav-height)+5.25rem+env(safe-area-inset-bottom,0px))]',
+      'md:bottom-6',
+    );
+
+    currentPath = '/bn/product/example-product';
+    rerender(<WhatsAppFloat />);
+
+    expect(screen.getByRole('link', { name: /হোয়াটসঅ্যাপে যোগাযোগ করুন/i })).toHaveClass(
+      'bottom-[calc(var(--bottom-nav-height)+5.25rem+env(safe-area-inset-bottom,0px))]',
+    );
+  });
+
   it('hides on /checkout and /order paths', () => {
     currentPath = '/checkout';
     const { container: checkoutContainer } = render(<WhatsAppFloat />);

@@ -15,7 +15,7 @@ import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
-import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
+import { getDealOfTheWeekProducts, getDiscountBadgePercentage, WEEKLY_DEALS_LIMIT } from '../lib/deals';
 
 export interface CategoryItem {
   id: string;
@@ -64,9 +64,10 @@ export function HomeShell({
   const weeklyDealProducts = dealSelection
     ? [dealSelection.leadProduct, ...dealSelection.supportingProducts]
     : [];
-  const discountedProductCount = inStock.filter(
-    (product) => getDiscountBadgePercentage(product) !== null,
-  ).length;
+  const discountedProductCount = Math.min(
+    WEEKLY_DEALS_LIMIT,
+    inStock.filter((product) => getDiscountBadgePercentage(product) !== null).length,
+  );
 
   if (inStock.length === 0) {
     return (

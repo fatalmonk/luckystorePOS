@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DesktopQuickRail } from './DesktopQuickRail';
 
 let mockPathname = '/';
-let mockSearchParams = new URLSearchParams();
 let mockUser: { id: string } | null = null;
 let mockLoading = false;
 const push = vi.fn();
@@ -13,7 +12,6 @@ const ensureAuth = vi.fn().mockResolvedValue(null);
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
   usePathname: () => mockPathname,
-  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock('./providers/AuthProvider', () => ({
@@ -24,7 +22,6 @@ describe('DesktopQuickRail', () => {
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
     mockPathname = '/';
-    mockSearchParams = new URLSearchParams();
     mockUser = null;
     mockLoading = false;
     ensureAuth.mockReset().mockResolvedValue(null);
@@ -40,7 +37,7 @@ describe('DesktopQuickRail', () => {
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/category');
     expect(screen.getByRole('link', { name: 'Sign Up' })).toHaveAttribute('href', '/signup');
-    expect(screen.getByRole('link', { name: 'Deals' })).toHaveAttribute('href', '/category?theme=deals');
+    expect(screen.getByRole('link', { name: 'Deals' })).toHaveAttribute('href', '/best/dealoftheweek');
     expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute(
       'href',
       '/login?next=/profile%23orders',
@@ -57,14 +54,24 @@ describe('DesktopQuickRail', () => {
     expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/profile#orders');
   });
 
-  it('marks Deals active from the catalog theme query', () => {
-    mockPathname = '/category';
-    mockSearchParams = new URLSearchParams('theme=deals');
+  it('marks Deals active on the Weekly Special page', () => {
+    mockPathname = '/best/dealoftheweek';
 
     render(<DesktopQuickRail />);
 
     expect(screen.getByRole('link', { name: 'Deals' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Shop' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('keeps the Bengali prefix for the Weekly Special destination', () => {
+    mockPathname = '/bn';
+
+    render(<DesktopQuickRail />);
+
+    expect(screen.getByRole('link', { name: /Deals|অফার/i })).toHaveAttribute(
+      'href',
+      '/bn/best/dealoftheweek',
+    );
   });
 
   it('does not initialize auth for the hidden mobile rail', () => {

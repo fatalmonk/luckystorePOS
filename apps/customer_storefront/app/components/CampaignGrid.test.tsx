@@ -87,6 +87,8 @@ describe('CampaignGrid', () => {
     const hero = title.closest('section');
     expect(hero).not.toBeNull();
 
+    expect(within(hero!).getByText('Your Neighborhood Family Grocer')).toBeInTheDocument();
+    expect(within(hero!).getByText('Est. 1947')).toBeInTheDocument();
     expect(within(hero!).getByRole('search', { name: 'Search groceries' })).toBeInTheDocument();
     expect(within(hero!).getByRole('searchbox')).toHaveAttribute('name', 'q');
     expect(within(hero!).getByLabelText('A tote of everyday Lucky Store groceries')).toBeInTheDocument();
@@ -106,7 +108,7 @@ describe('CampaignGrid', () => {
       '/delivery',
     );
     expect(within(hero!).queryByText(/Within 1 km of Chawkbazar/)).not.toBeInTheDocument();
-    expect(within(hero!).getByText('Everyday')).toBeInTheDocument();
+    expect(within(hero!).queryByText('Everyday')).not.toBeInTheDocument();
   });
 
   it('does not render the old themed rail controls inside the hero', () => {

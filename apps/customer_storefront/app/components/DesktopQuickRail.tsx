@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Fire,
   House,
@@ -36,7 +36,6 @@ export interface DesktopQuickRailProps {
 
 export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {}) {
   const pathname = usePathname() || '/';
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading, status, ensureAuth } = useAuth();
   const locale = getLocaleFromPathname(pathname);
@@ -68,7 +67,7 @@ export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {})
 
   const accountLabel = unresolved ? dict.quickRail.account : user ? dict.quickRail.profile : dict.quickRail.signUp;
   const AccountIcon = unresolved ? UserCircle : user ? UserCircle : UserPlus;
-  const isDeals = pagePath.startsWith('/category') && searchParams.get('theme') === 'deals';
+  const isDeals = pagePath.startsWith('/best/dealoftheweek');
   const ordersHref = withLocale(unresolved || user ? '/profile#orders' : '/login?next=/profile%23orders', locale);
 
   const links: RailLink[] = [
@@ -86,7 +85,7 @@ export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {})
       active: pagePath.startsWith('/profile') || pagePath.startsWith('/signup'),
     },
     {
-      href: withLocale('/category?theme=deals', locale),
+      href: withLocale('/best/dealoftheweek', locale),
       label: dict.quickRail.deals,
       icon: Fire,
       active: isDeals,

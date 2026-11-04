@@ -98,10 +98,10 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 sm:pt-12 lg:px-12">
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-12 xl:gap-8">
+      <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8 sm:pt-12 lg:px-12">
+        <div className="grid gap-6 sm:gap-8 md:grid-cols-2 xl:grid-cols-12 xl:gap-8">
           <div className="min-w-0 xl:col-span-4">
-            <Logo className="[&_img]:!h-10 sm:[&_img]:!h-12" locale={locale} />
+            <Logo className="[&_img]:!h-10 sm:[&_img]:!h-14" locale={locale} />
 
             <p className="site-footer-muted mt-4 max-w-md text-sm leading-6 sm:mt-6 sm:text-[15px] sm:leading-7">
               {dict.footer.story}
@@ -145,12 +145,12 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 pt-2 sm:pt-0 xl:col-span-4">
+          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-6 sm:border-t-0 sm:pt-0 md:-ml-4 md:grid-cols-[minmax(0,1fr)_auto] xl:col-span-4">
             <nav aria-labelledby="footer-shop-heading">
               <h2 id="footer-shop-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 {dict.footer.shopTitle}
               </h2>
-              <ul className="mt-3 space-y-2.5 sm:mt-5">
+              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
                 {shopLinks.map((link) => (
                   <li key={link.label}>
                     <Link href={link.href} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
@@ -161,11 +161,11 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
               </ul>
             </nav>
 
-            <nav aria-labelledby="footer-help-heading">
+            <nav aria-labelledby="footer-help-heading" className="md:text-right">
               <h2 id="footer-help-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 {dict.footer.helpTitle}
               </h2>
-              <ul className="mt-3 space-y-2.5 sm:mt-5">
+              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
                 {helpLinks.map((link) => (
                   <li key={link.label}>
                     <Link href={link.href} prefetch={link.href === '/wishlist' || link.href === '/bn/wishlist' ? false : undefined} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
@@ -182,9 +182,9 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           </div>
         </div>
 
-        <div className="site-footer-bottom mt-10 border-t pt-5 sm:mt-12 sm:pt-6">
+        <div className="site-footer-bottom mt-8 border-t pt-5 sm:mt-12 sm:pt-6">
           <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
-            <div className="flex items-center justify-between font-medium">
+            <div className="flex flex-col items-start gap-1.5 font-medium sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <p>{locale === 'bn' ? '© লাকি স্টোর। স্থাপিত ১৯৪৭।' : '© Lucky Store. Est. 1947.'}</p>
               <p>{locale === 'bn' ? 'চকবাজার, চট্টগ্রাম, বাংলাদেশ' : 'Chattogram, Bangladesh'}</p>
             </div>

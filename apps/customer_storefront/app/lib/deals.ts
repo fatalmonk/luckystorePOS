@@ -14,6 +14,7 @@ export interface DealOfTheWeekSelection {
 }
 
 export const MIN_DISCOUNT_BADGE_PERCENT = 10;
+export const WEEKLY_DEALS_LIMIT = 48;
 
 /**
  * Calculates discount percentage for a product.
@@ -195,7 +196,7 @@ export function toWeeklyDealProduct(row: CatalogRow): WeeklyDealProduct | null {
 export async function loadWeeklyDeals(
   client: any = supabase,
   now = new Date(),
-  limit = 48,
+  limit = WEEKLY_DEALS_LIMIT,
 ): Promise<WeeklyDealsResult> {
   let degradedReason: WeeklyDealsDegradedReason = 'none';
 

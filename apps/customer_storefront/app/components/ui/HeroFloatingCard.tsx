@@ -44,13 +44,13 @@ export function HeroDiscoveryRail({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const mediaQuery = window.matchMedia('(min-width: 640px) and (max-width: 1023px)');
     let lastScrollY = window.scrollY ?? window.pageYOffset ?? 0;
     let ticking = false;
 
     const checkSticky = () => {
-      const isMobileOrTablet = mediaQuery.matches;
-      if (!isMobileOrTablet) {
+      const isTablet = mediaQuery.matches;
+      if (!isTablet) {
         setIsStuck(false);
         setIsHeaderHidden(false);
         ticking = false;
@@ -74,7 +74,7 @@ export function HeroDiscoveryRail({
       if (anchorRef.current) {
         const rect = anchorRef.current.getBoundingClientRect();
         const reached = currentY > 40 && rect.top <= 0;
-        setIsStuck(reached && isMobileOrTablet);
+        setIsStuck(reached && isTablet);
       }
 
       lastScrollY = Math.max(0, currentY);
@@ -166,7 +166,7 @@ export function HeroDiscoveryRail({
             {createPortal(
               <div
                 data-sticky-search="true"
-                className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-warm-border/60 bg-warm-bg/95 px-3 py-2.5 shadow-warm-md backdrop-blur-md transition-transform duration-300 ease-in-out motion-reduce:transition-none sm:px-6 lg:hidden ${
+                className={`fixed left-0 right-0 top-0 z-50 hidden w-full border-b border-warm-border/60 bg-warm-bg/95 px-6 py-2.5 shadow-warm-md backdrop-blur-md transition-transform duration-300 ease-in-out motion-reduce:transition-none sm:block lg:hidden ${
                   !isHeaderHidden ? '-translate-y-full' : 'translate-y-0'
                 }`}
               >

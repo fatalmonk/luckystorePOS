@@ -10,11 +10,13 @@ import type { Product } from '../lib/types';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import { getProductGalleryImages } from '../lib/products/productGalleryRegistry';
+import { useProductCart } from '../hooks/useProductCart';
 import { DealCountdown } from './DealCountdown';
 import { GridProductCard } from './GridProductCard';
 import { MarketPanel } from './ui/MarketSurface';
 import { ProductImage } from './product/ProductImage';
 import { Badge } from './ui/Badge';
+import { CartAnnouncer } from './ui/CartAnnouncer';
 
 interface DealOfTheWeekProps {
   products: Product[];
@@ -23,6 +25,26 @@ interface DealOfTheWeekProps {
   weeklyEditionActive?: boolean;
   weeklyEditionUnavailable?: boolean;
   locale?: Locale;
+}
+
+function LeadDealCartAction({ product, locale }: { product: Product; locale: Locale }) {
+  const dict = getDictionary(locale);
+  const { canAdd, add, announcement } = useProductCart(product);
+
+  return (
+    <>
+      <CartAnnouncer message={announcement} />
+      <button
+        type="button"
+        onClick={(event) => add(event.currentTarget)}
+        disabled={!canAdd}
+        className="home-primary-action inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-3 text-center text-xs font-black disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label={`${dict.productCard.addToCart}: ${product.name}`}
+      >
+        {dict.productCard.addToCart}
+      </button>
+    </>
+  );
 }
 
 export function DealOfTheWeek({ products, discountedProductCount: totalDiscountedProductCount, weeklyPicks = [], weeklyEditionActive = false, weeklyEditionUnavailable = false, locale = 'en' }: DealOfTheWeekProps) {
@@ -113,7 +135,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
   if (weeklyEditionUnavailable) {
     return (
       <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-4 p-4 sm:p-5">
-        <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black">{dict.deal.title}</h2>
+        <h2 id="weekly-deal-title" className="deal-panel-title text-2xl font-black sm:text-3xl">{dict.deal.title}</h2>
         <p className="deal-panel-copy text-sm">{locale === 'bn' ? 'সাপ্তাহিক বাছাই এখন যাচাই করা যাচ্ছে না।' : 'Weekly picks are temporarily unavailable while we verify current product details.'}</p>
         <Link href={withLocale('/best/dealoftheweek', locale)} className="home-text-link inline-flex min-h-11 items-center text-xs font-bold">
           {locale === 'bn' ? 'সাপ্তাহিক অফার দেখুন →' : 'View weekly deals →'}
@@ -127,7 +149,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
       <MarketPanel aria-labelledby="weekly-deal-title" tone="night" className="deal-panel space-y-4 p-4 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 id="weekly-deal-title" className="deal-panel-title text-xl font-black tracking-tight sm:text-2xl">{dict.deal.title}</h2>
+            <h2 id="weekly-deal-title" className="deal-panel-title text-2xl font-black tracking-tight sm:text-3xl">{dict.deal.title}</h2>
             <p className="deal-panel-copy mt-1 text-sm">{locale === 'bn' ? 'এই সপ্তাহের যাচাইকৃত বাছাই—র‍্যাঙ্কবিহীন। অনলাইন চেকআউটে আরও ৫% ছাড় প্রযোজ্য।' : 'This week’s verified unranked picks. Get an extra 5% off the current selling price in online checkout.'}</p>
           </div>
           <Link href={withLocale('/best/dealoftheweek', locale)} className="home-text-link inline-flex min-h-11 items-center text-xs font-bold">
@@ -154,11 +176,11 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
     >
       <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:gap-y-2">
         <div className="min-w-0">
-          <h2 id="weekly-deal-title" className="deal-panel-title text-balance text-xl font-black tracking-tight sm:text-2xl">
+          <h2 id="weekly-deal-title" className="deal-panel-title text-balance text-2xl font-black tracking-tight sm:text-3xl">
             {dict.deal.title}
           </h2>
         </div>
-        <DealCountdown locale={locale} className="justify-self-start sm:justify-self-end" />
+        <DealCountdown locale={locale} className="justify-self-end" />
         <p className="deal-panel-copy max-w-2xl text-sm">
           {weeklyEditionActive
             ? (locale === 'bn' ? 'এই সপ্তাহের যাচাইকৃত বাছাই—র‍্যাঙ্কবিহীন। অনলাইন চেকআউটে আরও ৫% ছাড় প্রযোজ্য।' : 'This week’s verified unranked picks. Get an extra 5% off the current selling price in online checkout.')
@@ -222,14 +244,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <Link
-              href={withLocale(weeklyEditionActive ? '/best/dealoftheweek' : '/category?theme=deals', locale)}
-              className="home-primary-action inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-3 text-center text-xs font-black uppercase tracking-wider"
-            >
-              {weeklyEditionActive
-                ? (locale === 'bn' ? 'সব সাপ্তাহিক বাছাই দেখুন →' : 'See all weekly picks →')
-                : (locale === 'bn' ? 'সব অফার দেখুন →' : 'Shop all deals →')}
-            </Link>
+            <LeadDealCartAction product={leadProduct} locale={locale} />
           </div>
         </article>
 
@@ -243,7 +258,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
               </h3>
               <div className="flex items-center gap-3">
                 <Link
-                  href={withLocale(weeklyEditionActive ? '/best/dealoftheweek' : '/category?theme=deals', locale)}
+                  href={withLocale('/best/dealoftheweek', locale)}
                   className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
                 >
                   {weeklyEditionActive

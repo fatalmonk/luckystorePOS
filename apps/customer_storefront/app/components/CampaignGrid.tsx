@@ -46,9 +46,19 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
           <div className="relative px-5 pb-7 pt-6 sm:px-8 sm:pb-8 sm:pt-9 lg:px-10 lg:pt-10">
             <div className="campaign-copy sm:max-w-[56%] lg:max-w-[52%]">
               <p className="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] sm:mb-5">
-                <span>{dict.campaign.spine}</span>
-                <span aria-hidden="true">·</span>
-                Lucky Store
+                {locale === 'bn' ? (
+                  <>
+                    <span>{dict.campaign.spine}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>Lucky Store</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Your Neighborhood Family Grocer</span>
+                    <span aria-hidden="true">·</span>
+                    <span>Est. 1947</span>
+                  </>
+                )}
               </p>
               <h1 id="campaign-hero-title" className="campaign-display text-warm-accent-text text-balance text-[2rem] font-black leading-[1.03] tracking-tight sm:text-[2.5rem] lg:text-[3.25rem]">
                 {dict.campaign.headline}
