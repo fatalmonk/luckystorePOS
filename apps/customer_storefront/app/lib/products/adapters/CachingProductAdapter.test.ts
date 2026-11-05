@@ -108,14 +108,16 @@ describe('CachingProductAdapter', () => {
       expect(inner.search).toHaveBeenCalledTimes(2);
     });
 
-    it('keeps page, limit, and explicit-offset pagination distinct', async () => {
+    it('shares equivalent page and offset pagination while separating distinct pages', async () => {
       inner = createFakeAdapter();
       const adapter = new CachingProductAdapter(inner);
+      await adapter.search({ query: 'milk', limit: 10 });
+      await adapter.search({ query: 'milk', limit: 10, page: 0 });
+      await adapter.search({ query: 'milk', limit: 10, offset: 0 });
       await adapter.search({ query: 'milk', page: 1, limit: 10 });
-      await adapter.search({ query: 'milk', page: 1, limit: 10, offset: 0 });
-      await adapter.search({ query: 'milk', page: 2, limit: 10 });
+      await adapter.search({ query: 'milk', limit: 10, offset: 10 });
       await adapter.search({ query: 'milk', page: 1, limit: 20 });
-      expect(inner.search).toHaveBeenCalledTimes(4);
+      expect(inner.search).toHaveBeenCalledTimes(3);
     });
 
     it('keys category filters without delimiter collisions', async () => {

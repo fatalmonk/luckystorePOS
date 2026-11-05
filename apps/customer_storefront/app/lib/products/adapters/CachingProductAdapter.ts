@@ -57,13 +57,14 @@ function evictIfNeeded<T>(cache: Map<string, T>, maxSize: number): void {
  * Hash function for search criteria (for cache keys)
  */
 function hashCriteria(criteria: ProductSearchCriteria): string {
+  const limit = criteria.limit ?? 60;
+  const offset = criteria.offset ?? (criteria.page ?? 0) * limit;
   return JSON.stringify([
     criteria.query ?? '',
     criteria.categoryId ?? '',
     criteria.categoryIds ?? [],
-    criteria.page ?? 0,
-    criteria.limit ?? 60,
-    criteria.offset ?? null,
+    limit,
+    offset,
   ]);
 }
 
