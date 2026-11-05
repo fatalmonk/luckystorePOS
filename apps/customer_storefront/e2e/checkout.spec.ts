@@ -53,7 +53,7 @@ async function openFirstProduct(page: Page) {
   await page.goto('/');
   const firstProduct = page.getByTestId('grid-product-card').first();
   await expect(firstProduct).toBeVisible({ timeout: 10000 });
-  await firstProduct.getByRole('link', { name: /^View / }).click();
+  await firstProduct.getByRole('link', { name: /^Quick view:/ }).click();
   const preview = page.getByRole('dialog');
   await expect(preview).toBeVisible();
   await preview.getByRole('link', { name: 'Full product details' }).click();
@@ -278,7 +278,14 @@ test.describe('Isolated Supabase order integration', () => {
     await page.fill('[data-testid="checkout-phone-input"]', '01712345678');
     await page.fill('[data-testid="checkout-address-input"]', 'Approved Supabase test project only');
     await page.click('[data-testid="checkout-review-btn"]');
-    await page.click('[data-testid="checkout-place-order-btn"]');
+    const checkoutResponsePromise = page.waitForResponse(
+      (response) => response.url().endsWith('/api/checkout') && response.request().method() === 'POST',
+    );
+    const [checkoutResponse] = await Promise.all([
+      checkoutResponsePromise,
+      page.click('[data-testid="checkout-place-order-btn"]'),
+    ]);
+    expect(checkoutResponse.status()).toBe(200);
 
     await page.waitForURL(/\/order/);
     await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();
