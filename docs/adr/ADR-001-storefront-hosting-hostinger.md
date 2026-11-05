@@ -1,7 +1,7 @@
 # ADR-001: Migrate Customer Storefront from Vercel to Hostinger behind Cloudflare
 
 ## Status
-Proposed
+Accepted and implemented
 
 ## Date
 2026-10-07
@@ -19,7 +19,7 @@ Migrate `apps/customer_storefront` from Vercel to Hostinger Business Web Hosting
 2. Route traffic through Cloudflare edge proxy with SSL mode **Full (strict)** using Cloudflare Origin CA certificates on Hostinger.
 3. Build deterministically in **GitHub Actions** via a promotion pipeline (Build once $\to$ Immutable Release Artifact $\to$ Deploy Staging $\to$ Validate $\to$ Deploy identical artifact to Production).
 4. For initial cutover: **Bypass edge HTML caching** by default; cache only static assets (`/_next/static/*`, media, web fonts).
-5. Maintain Vercel deployment untouched for 14+ days as an instant DNS rollback target.
+5. Keep the Vercel `lucky-store` project for customer storefront previews. It is not a production rollback target; production traffic is served by Hostinger.
 
 ## Alternatives Considered
 
@@ -44,4 +44,4 @@ Migrate `apps/customer_storefront` from Vercel to Hostinger Business Web Hosting
 - **Compute Model**: Shifts from Vercel serverless functions to a persistent Node.js background process on CloudLinux (~3 GB RAM, 2 vCPU shared account-wide).
 - **Latency & TTFB**: Persistent Node process eliminates serverless cold starts. Database query latency to Supabase (`us-east-1`) remains identical from Boston datacenter.
 - **Edge Caching**: Edge HTML caching is disabled on migration day to protect session-bearing dynamic requests; static assets are cached globally at Cloudflare edge.
-- **Rollback Window**: 14-day zero-risk rollback to Vercel via Cloudflare DNS record restore.
+- **Release Path**: Storefront pushes to `main` build an immutable package, deploy and validate on Hostinger staging, then deploy the same package to Hostinger production and run production smoke checks. Use a previously validated Hostinger release for production rollback.

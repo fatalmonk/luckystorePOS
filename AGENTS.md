@@ -8,6 +8,12 @@
 - **Transparency:** Report failing commands exactly as they occur.
 - **Secret Protection:** Never output secrets, credentials, API keys, or tokens.
 
+## Deployment Environments
+- Customer storefront production is `luckystore1947.com` on Hostinger behind Cloudflare. Storefront changes pushed to `main` build one immutable release, deploy it to Hostinger staging, run smoke/E2E/load checks, then deploy that same release to production and run production smoke checks. Use `.github/workflows/storefront-hostinger.yml` for normal releases; do not manually upload `app.zip`.
+- Vercel `lucky-store-pos` serves the admin web app. Vercel `lucky-store` is for customer storefront previews; its ignored-build step intentionally skips production-target builds. Do not change that step to publish the customer storefront on Vercel without an explicit deployment decision.
+- Shared root dependency files such as `package.json` and `package-lock.json` can trigger `lucky-store-pos` builds even when no `apps/admin_web` source files changed.
+- Supabase test project ref: `grxxenvdhfwzafzyykgo`. Production ref: `hvmyxyccfnkrbxqbhlnm`. Storefront E2E mutations must stay on the test project; retain the preflight that rejects production.
+
 ## Workflow
 1. **Research:** Target relevant files and understand the task.
 2. **Implementation:** Apply changes surgically.
