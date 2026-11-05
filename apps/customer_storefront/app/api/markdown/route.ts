@@ -230,7 +230,33 @@ function mdPrivacyPage(): string {
   return md;
 }
 
-function mdTermsPage(): string {
+function mdTermsPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('কেনাকাটার শর্তাবলী', 'চকবাজারের লাকি স্টোর থেকে মুদি ও দৈনন্দিন বাজারের পণ্য অর্ডারের শর্ত।');
+    md += `*কার্যকর তারিখ: ৪ নভেম্বর ২০২৬*\n\n`;
+    md += `লাকি স্টোর ${DELIVERY_POLICY.establishedYear} সাল থেকে চকবাজারের একটি মুদি ও দৈনন্দিন বাজারের দোকান। ঠিকানা: ${DELIVERY_POLICY.hubAddress}।\n\n`;
+    md += `## অর্ডার\n\n`;
+    md += `এই ওয়েবসাইটে মুদি ও দৈনন্দিন বাজারের পণ্য অর্ডার করা যায়। অর্ডার মানে দোকান থেকে সেই পণ্য গুছিয়ে পাঠানোর অনুরোধ। ডেলিভারি দেন আমাদের নিজস্ব কর্মীরা; বাইরের কুরিয়ার ব্যবহার করা হয় না।\n\n`;
+    md += `কাছের একটি পরিচিত স্থানসহ পুরো ঠিকানা দিন। নিচে উল্লেখ করা এলাকার বাইরে ডেলিভারি হয় না।\n\n`;
+    md += `## দাম ও স্টক\n\n`;
+    md += `দাম টাকায় (৳) দেখানো হয়। পণ্যের পাতায় যে দাম আছে, সেটিই সেই পণ্যের দাম। দোকানে স্টক থাকলে তবেই পণ্য প্যাক করা হয়। কোনো পণ্য দিতে না পারলে সেটি অর্ডার থেকে বাদ যায়। আপনি যা পাননি, তার জন্য চার্জ হয় না; যা পেয়েছেন এবং রেখেছেন, শুধু তার জন্যই টাকা দেন।\n\n`;
+    md += `## পেমেন্ট\n\n`;
+    md += `পণ্য দেখে নেওয়ার পর দরজায় পেমেন্ট করেন। আমরা ক্যাশ অন ডেলিভারি এবং ${DELIVERY_POLICY.paymentMethods.bkashNumber} নম্বরে দরজায় bKash নিই। অর্ডার পৌঁছানোর আগে টাকা চাওয়া হয় না।\n\n`;
+    md += `## ডেলিভারি\n\n`;
+    md += `- আমাদের নিজস্ব কর্মীরা শুধু এমদাদ পার্ক, চকবাজারের দোকান থেকে ${DELIVERY_POLICY.radiusKm} কিমির মধ্যে ডেলিভারি দেন\n`;
+    md += `- ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ফ্রি; এর কম হলে ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}\n`;
+    md += `- খোলা থাকে ${DELIVERY_POLICY.deliveryHours.display}; এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়\n\n`;
+    md += `## পণ্য দেখে নেওয়া ও ফেরত\n\n`;
+    md += `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective} ক্যাশ ও bKash-এ টাকা ফেরতের বিস্তারিত [ফেরত নীতিতে](${BASE_URL}/bn/return-policy) আছে।\n\n`;
+    md += `## প্রযোজ্য আইন\n\n`;
+    md += `এই শর্ত বাংলাদেশের আইন অনুসারে চলবে।\n\n`;
+    md += `## যোগাযোগ\n\n`;
+    md += `- **ফোন / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+    md += `- **ইমেইল:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+    md += `- **ঠিকানা:** ${DELIVERY_POLICY.hubAddress}\n`;
+    return md;
+  }
+
   let md = mdHeader('Shopping Terms', 'Terms for ordering groceries from Lucky Store in Chawkbazar.');
   md += `*Effective date: 4 November 2026*\n\n`;
   md += `Lucky Store, established in ${DELIVERY_POLICY.establishedYear}, is a grocery and daily bazaar shop at ${DELIVERY_POLICY.hubAddress}.\n\n`;
@@ -246,6 +272,8 @@ function mdTermsPage(): string {
   md += `- Open ${DELIVERY_POLICY.deliveryHours.display}, with same-day dispatch\n\n`;
   md += `## Returns\n\n`;
   md += `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective} See the [return policy](${BASE_URL}/return-policy).\n\n`;
+  md += `## Governing law\n\n`;
+  md += `These terms are governed by the laws of Bangladesh.\n\n`;
   md += `## Contact\n\n`;
   md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
   md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
@@ -253,7 +281,25 @@ function mdTermsPage(): string {
   return md;
 }
 
-function mdAboutPage(): string {
+function mdAboutPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('লাকি স্টোর সম্পর্কে', `এমদাদ পার্ক, চকবাজারের মুদি ও দৈনন্দিন বাজারের দোকান। ${DELIVERY_POLICY.establishedYear} সাল থেকে।`);
+    md += `লাকি স্টোরের ঠিকানা ${DELIVERY_POLICY.hubAddress}। দোকানটি চট্টগ্রামের চকবাজার এলাকায়, এমদাদ পার্কে।\n\n`;
+    md += `## ১৯৪৭ সাল থেকে\n\n`;
+    md += `দোকানটি ${DELIVERY_POLICY.establishedYear} সাল থেকে এই জায়গায় আছে। চকবাজারের পরিবারেরা বহু বছর ধরে এই কাউন্টার থেকে দৈনন্দিন বাজার কিনে আসছেন। এখন একই দোকানে এই ওয়েবসাইট থেকেও অর্ডার করা যায়।\n\n`;
+    md += `## কী বিক্রি হয়\n\n`;
+    md += `আমরা মুদি ও দৈনন্দিন বাজারের পণ্য বিক্রি করি: চাল, রান্নার তেল, চা, মসলা, নাস্তা, এবং রান্নাঘর ও ঘরের নিত্যপ্রয়োজনীয় জিনিস।\n\n`;
+    md += `## ডেলিভারি\n\n`;
+    md += `আমাদের নিজস্ব কর্মীরা দোকান থেকে ${DELIVERY_POLICY.radiusKm} কিমির মধ্যে ডেলিভারি দেন। ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি, তার কম হলে ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}। দোকান খোলা থাকে ${DELIVERY_POLICY.deliveryHours.display}। এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়।\n\n`;
+    md += `পণ্য দেখে নেওয়ার পর ক্যাশ অন ডেলিভারি বা দরজায় bKash-এ টাকা দিতে পারেন।\n\n`;
+    md += `এলাকা, চার্জ ও সময়ের বিস্তারিত [ডেলিভারি পাতায়](${BASE_URL}/bn/delivery) আছে।\n\n`;
+    md += `## যোগাযোগ\n\n`;
+    md += `- **ফোন:** [01731944544](tel:+8801731944544)\n`;
+    md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+    md += `- **ইমেইল:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+    return md;
+  }
+
   let md = mdHeader('About Lucky Store', `Grocery and daily bazaar shop in Emdad Park, Chawkbazar, since ${DELIVERY_POLICY.establishedYear}.`);
   md += `Lucky Store is at ${DELIVERY_POLICY.hubAddress}.\n\n`;
   md += `The shop has sold daily groceries in Chawkbazar since ${DELIVERY_POLICY.establishedYear}. It sells rice, cooking oil, tea, spices, snacks, and household essentials.\n\n`;
@@ -264,7 +310,26 @@ function mdAboutPage(): string {
   return md;
 }
 
-function mdReturnPolicyPage(): string {
+function mdReturnPolicyPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('ফেরত নীতি', `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective}`);
+    md += `*কার্যকর তারিখ: ৪ নভেম্বর ২০২৬*\n\n`;
+    md += `## দরজায় দেখে, তারপর টাকা\n\n`;
+    md += `${RETURN_RULES.bn.doorstep} ডেলিভারি কর্মী অপেক্ষা করেন, যাতে আপনি সিল, ওজন, প্যাকেট ও মেয়াদ দেখতে পারেন। নষ্ট, ভুল বা বাদ পড়া পণ্য টাকা দেওয়ার আগে ফেরত দিতে পারেন। সেই পণ্যের জন্য চার্জ হবে না। দরজায় ফেরত দিলে আলাদা ফি লাগে না।\n\n`;
+    md += `## মন বদলালে ফেরত নয়\n\n`;
+    md += `টাকা দেওয়ার পর মন বদলানোর জন্য পণ্য ফেরত নেওয়া হয় না। যে খাবার আপনি দেখে রেখেছেন, সেটিও এর মধ্যে পড়ে।\n\n`;
+    md += `## ত্রুটিপূর্ণ পণ্য, ২৪ ঘণ্টা\n\n`;
+    md += `${RETURN_RULES.bn.defective} এই ২৪ ঘণ্টা কেনা বা ডেলিভারির সময় থেকে গণনা হয়। রসিদ রাখুন। ত্রুটিপূর্ণ পণ্যের মধ্যে নষ্ট বা ক্ষতিগ্রস্ত খাবারও পড়ে, এবং অন্য যেকোনো ত্রুটিপূর্ণ জিনিসও।\n\n`;
+    md += `## কীভাবে জানাবেন\n\n`;
+    md += `দরজায় থাকতে টাকা দেওয়ার আগে ডেলিভারি কর্মীকে বলুন। টাকা দেওয়ার পর ত্রুটিপূর্ণ পণ্য হলে ২৪ ঘণ্টার মধ্যে ফোন বা WhatsApp করুন এবং রসিদ রাখুন:\n\n`;
+    md += `- **ফোন:** [01731944544](tel:+8801731944544)\n`;
+    md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n\n`;
+    md += `## ক্যাশ ও bKash-এ টাকা ফেরত\n\n`;
+    md += `- **টাকা দেওয়ার আগে:** যে পণ্য রাখছেন, শুধু তার জন্য টাকা দেন। নগদ টাকা ডেলিভারি কর্মীকে দেন। bKash-এ রাখা পণ্যের মোট টাকা পাঠান, নম্বর ${DELIVERY_POLICY.paymentMethods.bkashNumber}। যে পণ্য ফেরত দিচ্ছেন তার জন্য আগেই bKash পাঠিয়ে থাকলে, কর্মী যাওয়ার আগে বলে দিন; সেই টাকা bKash-এ ফেরত দেওয়া হবে।\n`;
+    md += `- **টাকা দেওয়ার পর:** মন বদলালে টাকা ফেরত হয় না। ত্রুটিপূর্ণ পণ্য ২৪ ঘণ্টার মধ্যে রসিদসহ ফেরত দিলে, যেভাবে টাকা দিয়েছিলেন সেভাবেই ফেরত পাবেন: নগদ দিলে নগদ, bKash দিলে bKash। ফেরতের আলাদা ফি নেই।\n`;
+    return md;
+  }
+
   let md = mdHeader('Return Policy', `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}`);
   md += `*Effective date: 4 November 2026*\n\n`;
   md += `## Checked at the door, before payment\n\n`;
@@ -598,11 +663,11 @@ export async function GET(req: NextRequest) {
     } else if (path === '/privacy') {
       markdown = mdPrivacyPage();
     } else if (path === '/terms' || path === '/bn/terms') {
-      markdown = mdTermsPage();
+      markdown = mdTermsPage(path.startsWith('/bn/'));
     } else if (path === '/about' || path === '/bn/about') {
-      markdown = mdAboutPage();
+      markdown = mdAboutPage(path.startsWith('/bn/'));
     } else if (path === '/return-policy' || path === '/bn/return-policy') {
-      markdown = mdReturnPolicyPage();
+      markdown = mdReturnPolicyPage(path.startsWith('/bn/'));
     } else if (path === '/data-deletion') {
       markdown = mdDataDeletionPage();
     } else if (path === '/security-policy') {
