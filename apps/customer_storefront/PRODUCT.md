@@ -1,85 +1,55 @@
----
-name: Lucky Store Customer Storefront
-version: 1.0.0
----
+# Product
 
-# Lucky Store — Customer Storefront
+<!-- impeccable:product-schema 1 -->
 
-## Product identity
+## Platform
 
-- **Name:** Lucky Store 1947 — Customer Storefront
-- **Tagline:** "Your friendly neighborhood grocery, now online."
-- **Business:** Local grocery and household essentials delivery in Chittagong, Bangladesh.
-- **Established:** 1947
-- **Website:** https://luckystore1947.com
-- **Primary channel:** Mobile-web PWA / responsive web storefront
-- **Language:** English (primary UI), Bengali ready (Noto Sans Bengali loaded)
-- **Contact:** WhatsApp +8801731944544
+web
 
-## Audience
+## Users
 
-- **Primary:** Urban and semi-urban households in Chittagong ordering everyday groceries.
-- **Secondary:** Busy professionals, young families, and returning customers used to neighborhood kirana stores but wanting WhatsApp/chat-assisted ordering online.
-- **Device:** 70%+ mobile. Mobile-web first; desktop is an upscale adaptation, not a separate experience.
-- **Literacy assumption:** Mixed English/Bengali; UI copy is short, scannable, and avoids jargon.
+- Households and individual shoppers in Chattogram who want to browse everyday groceries and home essentials online.
+- The storefront supports English and Bengali and is designed for mobile web as well as desktop.
 
-## What the surface must prove
+## Product Purpose
 
-A first-time visitor should, within one viewport:
+Lucky Store's storefront helps customers discover grocery and household products, review product details, build a cart, place orders, and manage follow-up tasks such as wishlists and order status. Success means customers can find what they need and understand the next step in ordering or getting help.
 
-1. Recognize a trusted local grocery store (not a generic app).
-2. See that staples they buy every week can be ordered quickly.
-3. Feel the store is active, helpful, and reachable via WhatsApp if anything goes wrong.
+## Positioning
 
-## Core jobs
+Lucky Store is a Chawkbazar neighborhood grocery brought online. The storefront combines the store's grocery catalog with online browsing and ordering flows. Describe store-based fulfillment, delivery coverage, fees, hours, payment options, stock, and prices only when current project or operational sources verify them.
 
-- **Browse:** Discover products by category, search, and curated campaigns.
-- **Buy:** Add to cart, review, and checkout with minimal friction on mobile.
-- **Trust:** See clear pricing, stock status, and delivery expectations; contact support easily.
-- **Return:** Reorder, check order status, and manage a wishlist.
+## Operating Context
 
-## Key features
+- Customers browse by category, search or filter the catalog, review product pages, manage a cart, and proceed through checkout.
+- The storefront is bilingual (English and Bengali) and must preserve localized labels and routes.
+- Customers may use account, wishlist, order-status, and support paths when available.
 
-- Category browsing, search, and filters
-- Product detail pages with quick-view modal
-- Campaign / deal surfaces (Deal of the Week, featured products)
-- Cart with local-storage persistence and cart-fly animation
-- WhatsApp-assisted checkout fallback
-- Order status page
-- Wishlist and recently viewed
-- Auth via Supabase (OTP / email)
-- Light/dark theme toggle
+## Capabilities and Constraints
 
-## Brand personality
+- The storefront supports category browsing, search and filters, product pages with an in-place quick preview, cart and checkout, order status, order repurchase at current catalog prices, wishlist, recently viewed products, Supabase authentication, and light/dark themes.
+- The responsive home experience includes campaign and deal surfaces, curated product discovery, mobile navigation, a product grid, and pull-to-refresh on supported touch devices. Shared cart feedback can show the current cart summary and delivery-threshold progress.
+- Preserve localized routes and copy in English and Bengali, accessible keyboard and touch interaction, current stock validation, and the established storefront design system.
+- Customer-facing product, price, and availability data must come from the current catalog. Re-purchasing an order uses current catalog prices and stock; unavailable or unverified items must not be added.
+- This record covers `apps/customer_storefront` only. Its UI uses the `warm-*` tokens mapped in `tailwind.config.js` and `app/tokens.css`; do not assume `admin_web` token classes apply here. Keep palette, typography, and component specifications in `DESIGN.md`.
+- Operational details such as delivery area, charges, schedules, payment availability, stock, and prices can change; verify the appropriate current source before presenting them as facts.
+- Do not use model-generated or OCR-derived product details to authorize catalog, inventory, or financial changes.
 
-- Warm, neighborly, efficient, and trustworthy.
-- Celebrates the neighborhood store heritage without feeling old.
-- Uses deep night and saffron as its anchor; warm paper as its default ground.
-- Friendly but never gimmicky; helpful but never intrusive.
+## Brand Commitments
 
-## Tone of voice
+- Use the Lucky Store 1947 name and the established neighborhood-grocery identity.
+- Keep customer-facing language plain, direct, warm, and easy to scan; localize content naturally in Bengali.
+- Use the supplied logo assets rather than recreating the logo as text.
 
-- Plain, direct, warm.
-- "Add to bag" not "Add to cart" in some contexts; "Order on WhatsApp" where chat fallback matters.
-- Use Bengali numerals/labels where localized.
+## Evidence on Hand
 
-## Visual commitments
+- The storefront implementation and customer-facing flows are in this app, including `app/components/HomeShell.tsx`, `app/components/CampaignGrid.tsx`, and the category, product, cart, and checkout routes.
+- `app/lib/deliveryData.ts` is the project source for delivery policy copy and structured data; recheck it when using operational delivery details.
+- Do not invent customer testimonials, adoption statistics, independent product claims, or current availability.
 
-- **Primary text / deep night:** `#0B0B0D`
-- **Brand accent / saffron:** `#f0c444`
-- **Paper ground (light):** `#FDFBF7`
-- **Dark mode ground:** `#0B0B0D`
-- Logo is an image asset (`logo-main.png`, `logo-main-inverse.png`) and must not be recreated as text.
-- Banner/promo images must always be wide landscape (16:9 or 21:9); never 1:1 for wide slots.
+## Product Principles
 
-## Constraints
-
-- Phase 1 forbids changes to PosProvider, auth flow logic, Supabase migrations, and core business logic.
-- All design work must preserve working behavior and project conventions.
-- RTK wrappers are preferred for reads, builds, and diffs.
-
-## Success metrics
-
-- First viewport communicates trust + assortment.
-- Mobile cart completion feels native-fast.
-- Theme, logo, and accent remain consistent across every surface.
+1. Help customers find everyday items with direct browse and search paths.
+2. Keep product, price, and availability information grounded in current sources.
+3. Make the next ordering or support step clear in both supported languages.
+4. Keep local service claims specific and verifiable.

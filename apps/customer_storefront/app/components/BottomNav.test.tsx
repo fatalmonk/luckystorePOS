@@ -25,7 +25,7 @@ describe('BottomNav', () => {
     expect(links[1]).toHaveAttribute('href', '/category');
     expect(links[1]).toHaveTextContent('Shop');
     expect(links[2]).toHaveAttribute('href', '/search');
-    expect(links[2]).toHaveTextContent('Search');
+    expect(links[2]).toHaveTextContent('Find');
     expect(links[3]).toHaveAttribute('href', '/cart');
     expect(links[3]).toHaveTextContent('Cart');
     expect(links[4]).toHaveAttribute('href', '/profile');

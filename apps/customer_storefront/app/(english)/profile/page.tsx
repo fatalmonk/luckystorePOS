@@ -10,6 +10,8 @@ import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/updated/Header';
 import { formatBdt } from '../../lib/formatPrice';
 import { getLocalWishlist } from '../../lib/wishlistHelpers';
+import { useCartContext } from '../../components/CartProvider';
+import { loadBuyAgainProducts } from './loadBuyAgainProducts';
 
 interface OrderItem {
   id: string;
@@ -37,6 +39,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, status, error, ensureAuth, signOut } = useAuth();
   const { showToast } = useToast();
+  const { addToCart } = useCartContext();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -254,12 +257,30 @@ export default function ProfilePage() {
                         <span className="text-warm-muted font-medium">Total Amount</span>
                         <span className="text-base font-bold text-warm-fg">{formatBdt(order.total)}</span>
                       </div>
-                      <Link
-                        href={`/order?num=${encodeURIComponent(order.order_number)}`}
-                        className="inline-flex min-h-9 items-center text-xs font-bold text-warm-success hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-success"
-                      >
-                        View live order status
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <Link href={`/order?num=${encodeURIComponent(order.order_number)}`} className="inline-flex min-h-11 items-center text-xs font-bold text-warm-success hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-success">
+                          View live order status
+                        </Link>
+                        <button type="button" onClick={async () => {
+                          let products;
+                          try {
+                            products = await loadBuyAgainProducts(order.items);
+                          } catch {
+                            showToast('Could not load current products');
+                            return;
+                          }
+                          let added = 0;
+                          let unavailable = 0;
+                          for (const item of order.items) {
+                            const product = products.get(item.id);
+                            if (!product || product.stock <= 0 || product.availabilityUnknown) { unavailable++; continue; }
+                            for (let quantity = 0; quantity < Math.min(item.qty, product.stock); quantity++) {
+                              if (addToCart(product)) added++;
+                            }
+                          }
+                          showToast(added ? `Added ${added} item${added === 1 ? '' : 's'} at current prices${unavailable ? ` · ${unavailable} unavailable` : ''}` : 'No order items are currently available');
+                        }} className="min-h-11 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg">Buy again</button>
+                      </div>
                     </div>
                   </div>
                 ))}

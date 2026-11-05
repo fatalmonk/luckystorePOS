@@ -174,14 +174,12 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
       tone="night"
       className="deal-panel space-y-5 p-4 sm:space-y-6 sm:p-5"
     >
-      <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:gap-y-2">
-        <div className="min-w-0">
-          <h2 id="weekly-deal-title" className="deal-panel-title text-balance text-2xl font-black tracking-tight sm:text-3xl">
-            {dict.deal.title}
-          </h2>
-        </div>
-        <DealCountdown locale={locale} className="justify-self-end" />
-        <p className="deal-panel-copy max-w-2xl text-sm">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 sm:gap-x-4">
+        <h2 id="weekly-deal-title" className="deal-panel-title min-w-0 text-pretty text-xl font-black leading-tight tracking-tight min-[480px]:text-2xl sm:text-3xl">
+          {dict.deal.title}
+        </h2>
+        <DealCountdown locale={locale} className="w-fit max-w-full justify-self-end" />
+        <p className="deal-panel-copy col-span-2 min-w-0 max-w-2xl text-sm leading-6">
           {weeklyEditionActive
             ? (locale === 'bn' ? 'এই সপ্তাহের যাচাইকৃত বাছাই—র‍্যাঙ্কবিহীন। অনলাইন চেকআউটে আরও ৫% ছাড় প্রযোজ্য।' : 'This week’s verified unranked picks. Get an extra 5% off the current selling price in online checkout.')
             : dict.deal.subtitle}

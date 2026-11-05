@@ -1243,3 +1243,39 @@ html.dark [class*="border-white/"] {
   -webkit-mask-image: linear-gradient(to bottom, transparent, black var(--scroll-fade-size), black calc(100% - var(--scroll-fade-size)), transparent);
 }
 
+
+/* Keep tap feedback local to the control; release gently back into place. */
+.store-press,
+.store-dock a {
+  touch-action: manipulation;
+  transition: scale 180ms cubic-bezier(.2, .8, .2, 1), background-color 140ms ease, opacity 100ms ease;
+}
+
+.store-press:active,
+.store-dock a:active {
+  scale: .97;
+  opacity: .82;
+  transition-duration: 45ms;
+}
+
+.store-press:focus-visible,
+.store-dock a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-press,
+  .store-dock a {
+    transition: none;
+  }
+
+  .store-press:active,
+  .store-dock a:active {
+    scale: none;
+  }
+}
+
+html.store-pull-enabled {
+  overscroll-behavior-y: contain;
+}

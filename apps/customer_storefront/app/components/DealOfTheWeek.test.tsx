@@ -45,9 +45,9 @@ describe('DealOfTheWeek', () => {
     products[4].stock = 0;
     render(<DealOfTheWeek products={products} discountedProductCount={48} />);
 
-    expect(screen.getByRole('heading', { name: 'Deal of the Week' })).toHaveClass('text-2xl', 'sm:text-3xl');
+    expect(screen.getByRole('heading', { name: 'Deal of the Week' })).toHaveClass('text-xl', 'min-[480px]:text-2xl', 'sm:text-3xl');
     expect(
-      screen.getByText('A cherished kitchen staple, handpicked for you at an exceptional price.')
+      screen.getByText('A weekly pick at a special price.')
     ).toBeInTheDocument();
     expect(screen.getByText('Countdown')).toHaveClass('justify-self-end');
     expect(screen.getByRole('link', { name: '50% off — View Deal 1' })).toBeInTheDocument();

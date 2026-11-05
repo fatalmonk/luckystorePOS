@@ -10,6 +10,11 @@ import React, {
   type ReactNode,
 } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useOptionalCartContext } from './CartProvider';
+import { usePathname } from 'next/navigation';
+import { formatBdt } from '../lib/formatPrice';
+import { getDictionary } from '../lib/i18n/dictionaries';
+import { getLocaleFromPathname, toBengaliNumerals } from '../lib/i18n/config';
 import {
   spring,
   transition as motionTransition,
@@ -31,10 +36,11 @@ export interface Toast {
   action?: ToastAction;
   duration?: number;
   type?: 'default' | 'success' | 'error' | 'info';
+  persistent?: boolean;
 }
 
 export interface ToastContextType {
-  showToast: (message: string, action?: ToastAction, duration?: number) => void;
+  showToast: (message: string, action?: ToastAction, duration?: number, persistent?: boolean) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -49,13 +55,22 @@ function ToastList({
   dismiss: (id: string) => void;
 }) {
   const reduce = useShouldReduceMotion();
+  const cart = useOptionalCartContext();
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
+  const copy = getDictionary(locale).toast;
+  const subtotal = cart?.subtotal ?? 0;
+  const total = cart?.total ?? 0;
+  const totalItems = cart?.totalItems ?? 0;
+  const progress = Math.min(100, (subtotal / 500) * 100);
+  const localizeNumber = (value: number) => locale === 'bn' ? toBengaliNumerals(value) : String(value);
   const enter = useTempoTransition(spring.toast);
   const leave = useTempoTransition(motionTransition.dismiss);
 
   return (
     <section
-      aria-label="Notifications"
-      className="pointer-events-none fixed bottom-20 left-1/2 z-[9999] flex w-[92%] max-w-[420px] -translate-x-1/2 flex-col gap-2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0"
+      aria-label={copy.notifications}
+      className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-[9999] flex w-[92%] max-w-[420px] -translate-x-1/2 flex-col gap-2 md:bottom-6"
     >
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false}>
@@ -85,9 +100,25 @@ function ToastList({
               }}
               transition={enter}
               style={{ originY: 1 }}
-              className="pointer-events-auto flex items-center justify-between gap-3 rounded-2xl border border-warm-border bg-warm-fg px-4 py-3.5 text-sm font-semibold text-warm-bg shadow-xl"
+              className={`pointer-events-auto relative flex items-center justify-between gap-3 rounded-2xl border border-warm-border bg-warm-fg px-4 text-sm font-semibold text-warm-bg shadow-xl ${toast.persistent ? 'pb-10 pt-3.5' : 'py-3.5'}`}
             >
-              <span className="flex-1 text-left leading-snug">{toast.message}</span>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                <span className="min-w-0 text-left leading-snug">{toast.persistent && cart ? copy.cartUpdated : toast.message}</span>
+                {toast.persistent && cart && <span className="shrink-0 text-xs font-semibold text-warm-bg/85">{copy.cartSummary.replace('{count}', localizeNumber(totalItems)).replace('{itemLabel}', totalItems === 1 ? copy.itemSingular : copy.itemPlural).replace('{total}', formatBdt(total))}</span>}
+              </div>
+              {toast.persistent && (
+                <button type="button" onClick={() => dismiss(toast.id)} aria-label={copy.dismiss} className="grid size-8 shrink-0 place-items-center rounded-full text-warm-bg/70 hover:bg-white/10 hover:text-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">×</button>
+              )}
+              {toast.persistent && cart && (
+                <div className="absolute inset-x-0 bottom-0 px-4 pb-3" aria-label={copy.deliveryProgress.replace('{percent}', localizeNumber(Math.round(progress)))}>
+                  <div className="h-1 overflow-hidden rounded-full bg-white/20">
+                    <motion.div className="h-full rounded-full bg-warm-accent" initial={false} animate={{ width: `${progress}%` }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 180, damping: 24 }} />
+                  </div>
+                  <p className="mt-1.5 text-[11px] font-medium text-warm-bg/75" aria-live="polite">
+                    {subtotal >= 500 ? copy.freeDeliveryUnlocked : copy.freeDeliveryProgress.replace('{subtotal}', formatBdt(subtotal)).replace('{threshold}', formatBdt(500))}
+                  </p>
+                </div>
+              )}
               {toast.action && (
                 <button
                   type="button"
@@ -130,12 +161,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showToast = useCallback(
-    (message: string, action?: ToastAction, duration = 3200) => {
+    (message: string, action?: ToastAction, duration = 3200, persistent = false) => {
       const id = `toast-${++toastCounter}`;
-      setToasts((prev) => [...prev, { id, message, action, duration }]);
+      setToasts((prev) => {
+        if (persistent) {
+          const transientToasts = prev.filter((toast) => !toast.persistent);
+          prev.filter((toast) => toast.persistent).forEach((toast) => {
+            const timer = timersRef.current.get(toast.id);
+            if (timer) clearTimeout(timer);
+            timersRef.current.delete(toast.id);
+          });
+          return [...transientToasts, { id, message, action, duration, persistent }];
+        }
+        return [...prev, { id, message, action, duration, persistent }];
+      });
 
-      const timer = setTimeout(() => dismiss(id), duration);
-      timersRef.current.set(id, timer);
+      if (!persistent) {
+        const timer = setTimeout(() => dismiss(id), duration);
+        timersRef.current.set(id, timer);
+      }
     },
     [dismiss]
   );

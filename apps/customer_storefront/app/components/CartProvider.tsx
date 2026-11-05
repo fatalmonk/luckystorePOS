@@ -17,3 +17,7 @@ export function useCartContext() {
   }
   return context;
 }
+
+export function useOptionalCartContext() {
+  return useContext(CartContext);
+}

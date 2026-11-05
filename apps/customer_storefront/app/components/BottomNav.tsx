@@ -43,7 +43,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
   return (
     <BottomNavShell>
       <nav
-        className={`pointer-events-auto flex origin-bottom items-center justify-between gap-0.5 rounded-full border border-warm-border/70 bg-warm-surface/90 shadow-[0_12px_32px_rgba(11,11,13,0.12),0_2px_8px_rgba(11,11,13,0.06)] backdrop-blur-2xl transition-[max-width,height,padding,box-shadow,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:transition-none dark:border-white/10 dark:bg-[#121214]/90 dark:shadow-[0_16px_40px_rgba(0,0,0,0.5),0_2px_10px_rgba(0,0,0,0.4)] ${
+        className={`store-dock pointer-events-auto flex origin-bottom items-center justify-between gap-0.5 rounded-full border border-warm-border/70 bg-warm-surface/90 shadow-[0_12px_32px_rgba(11,11,13,0.12),0_2px_8px_rgba(11,11,13,0.06)] backdrop-blur-2xl transition-[max-width,height,padding,box-shadow,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:transition-none dark:border-white/10 dark:bg-[#121214]/90 dark:shadow-[0_16px_40px_rgba(0,0,0,0.5),0_2px_10px_rgba(0,0,0,0.4)] ${
           isSqueezed
             ? 'h-12 w-full max-w-[280px] px-3 py-0.5 shadow-[0_8px_20px_rgba(11,11,13,0.18)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.6)]'
             : 'h-[3.875rem] w-full max-w-[390px] px-2 py-1'
@@ -63,7 +63,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           hideLabel={isSqueezed}
         />
         <ActiveLink
-          href="/search"
+          href={withLocale('/search', currentLocale)}
           icon={<SearchIcon size={20} />}
           label={dict.bottomNav.search}
           hideLabel={isSqueezed}

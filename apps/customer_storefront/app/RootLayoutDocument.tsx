@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
 import './globals.css';
+import { PullToRefresh } from './components/PullToRefresh';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
@@ -471,6 +472,7 @@ export default function RootLayoutDocument({
             <CartProvider>
               <ToastProvider>
                 <CartSheetProvider>
+                  <PullToRefresh lang={lang} />
                   <div className="app-container">
 
                     {children}

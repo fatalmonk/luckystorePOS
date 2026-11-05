@@ -28,7 +28,12 @@ export function HeroDiscoveryRail({
 }: HeroDiscoveryRailProps) {
   const dict = getDictionary(locale);
   const discoveryTitle = title ?? dict.campaign.discoveryTitle;
-  const picks = products.filter((product) => product.stock > 0).slice(0, 8);
+  const inStockProducts = products.filter((product) => product.stock > 0);
+  const isBulkPack = (product: Product) => /\b(?:25|50|75|100)\s?kg\b/i.test(product.name);
+  const picks = [
+    ...inStockProducts.filter((product) => !isBulkPack(product)),
+    ...inStockProducts.filter(isBulkPack),
+  ].slice(0, 8);
   const chips = dict.campaign.searchChips;
 
   const [mounted, setMounted] = useState(false);
@@ -129,7 +134,7 @@ export function HeroDiscoveryRail({
       action={withLocale('/category', locale)}
       className="group/search relative"
       role="search"
-      aria-label="Search groceries"
+      aria-label={locale === 'bn' ? 'দ্রুত পণ্য খুঁজুন' : 'Quick product search'}
     >
       <MagnifyingGlass
         size={20}
@@ -152,7 +157,7 @@ export function HeroDiscoveryRail({
   );
 
   return (
-    <div className="hero-discovery flex min-w-0 flex-col gap-4">
+    <div className="hero-discovery flex min-w-0 flex-col gap-2 sm:gap-4">
       <div
         ref={anchorRef}
         data-sticky-search-anchor="true"
@@ -184,7 +189,7 @@ export function HeroDiscoveryRail({
         )}
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Suggested grocery searches">
+      <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide sm:gap-4" aria-label="Suggested grocery searches">
         {chips.map(({ label, href }) => (
           <Link
             key={label}
@@ -204,29 +209,24 @@ export function HeroDiscoveryRail({
 
       {picks.length > 0 ? (
         <section aria-labelledby="hero-discovery-title" className="min-w-0">
-          <div className="mb-2 flex items-end justify-between gap-3">
+          <div className="mb-2">
             <h2 id="hero-discovery-title" className="text-lg font-black tracking-tight text-warm-fg sm:text-xl">
               {discoveryTitle}
             </h2>
-            <Link
-              href={withLocale('/category', locale)}
-              className="inline-flex min-h-11 items-center text-sm font-extrabold text-warm-fg underline underline-offset-4 transition-colors hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-            >
-              {dict.heritage.cta}
-            </Link>
           </div>
 
-          <div
-            className="hero-product-strip flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-hide"
-            aria-label={`${discoveryTitle} products`}
-          >
-            {picks.map((product, index) => (
+          <div className="relative min-w-0">
+            <div
+              className="hero-product-strip flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pr-8 scrollbar-hide"
+              aria-label={`${discoveryTitle} products`}
+            >
+              {picks.map((product, index) => (
               <Link
                 key={product.id}
                 href={withLocale(`/product/${toProductSlug(product.name, product.id)}`, locale)}
-                className="group/product flex min-h-[13.5rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-[transform,box-shadow] duration-200 [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-warm-card-hover motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="group/product flex min-h-[12rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-[transform,box-shadow] duration-200 [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-warm-card-hover motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                <span className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well">
+                <span className="relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well sm:aspect-[4/3]">
                   <ProductImage
                     src={product.image_url}
                     alt={product.name}
@@ -237,7 +237,7 @@ export function HeroDiscoveryRail({
                     showLoadingState
                   />
                 </span>
-                <span className="flex flex-1 flex-col justify-between gap-2 p-3">
+                <span className="flex flex-1 flex-col justify-between gap-2 p-2.5 sm:p-3">
                   <span>
                     <span className="line-clamp-2 text-sm font-bold leading-5 text-warm-fg">
                       {product.name}
@@ -248,8 +248,10 @@ export function HeroDiscoveryRail({
                     {formatBdt(product.price)}
                   </span>
                 </span>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-warm-bg to-transparent" />
           </div>
         </section>
       ) : null}

@@ -1,19 +1,19 @@
 /* Hallmark · macrostructure: Mobile-First App Shell · genre: modern-minimal · theme: Deep Night & Saffron
- * paper: #FDFBF7 · accent: #f0c444 Saffron · display: Geist · body: Geist
+ * paper: #F6F3EC · accent: #f0c444 Saffron · display: Geist · body: Geist
  * diversification: first-run · studied: no · source: reference HTML
  */
 
 :root {
   /* Paper scale - warm neutral */
-  --color-paper: #FDFBF7;
-  --color-surface: #ffffff;
+  --color-paper: #F6F3EC;
+  --color-surface: #FFFDF8;
   --color-foreground: #0B0B0D;
   --color-muted: #525252;
   --color-dim: #525252;
-  --color-border: #E8E4DC;
-  --color-border-light: #FDFBF7;
-  --color-image-well: #F7F1E8;
-  --color-image-well-border: #E8E0D4;
+  --color-border: #E1DACD;
+  --color-border-light: #F6F3EC;
+  --color-image-well: #F0EBE0;
+  --color-image-well-border: #E2D9C8;
 
   /* Layout */
   --bottom-nav-height: 60px;
@@ -31,21 +31,21 @@
   --color-section-kicker: #6A4E00;
 
   /* Campaign experience — theme adaptive */
-  --color-campaign-surface: #FDFBF7;
-  --color-campaign-surface-raised: #FFFFFF;
+  --color-campaign-surface: #F6F3EC;
+  --color-campaign-surface-raised: var(--color-surface);
   --color-campaign-on-image: #0B0B0D;
   --color-campaign-on-image-muted: #525252;
-  --color-campaign-overlay-strong: rgba(253, 251, 247, 0.92);
+  --color-campaign-overlay-strong: rgba(246, 243, 236, 0.92);
   --color-campaign-overlay-soft: rgba(240, 196, 68, 0.08);
-  --color-campaign-border: #E8E4DC;
+  --color-campaign-border: #E1DACD;
   --color-campaign-control: rgba(11, 11, 13, 0.05);
   --color-campaign-control-hover: rgba(240, 196, 68, 0.16);
   --color-campaign-orbit: rgba(240, 196, 68, 0.14);
   --color-campaign-orbit-faint: rgba(11, 11, 13, 0.04);
   --color-campaign-logo-surface: #0B0B0D;
   --shadow-campaign-card: 0 12px 32px rgba(11, 11, 13, 0.08);
-  --shadow-market-panel: 0 12px 32px rgba(11, 11, 13, 0.05);
-  --color-market-edge: #E8E4DC;
+  --shadow-market-panel: 0 1px 2px rgba(62, 47, 25, 0.05), 0 8px 24px -12px rgba(62, 47, 25, 0.16);
+  --color-market-edge: #E1DACD;
 
   /* Semantic - status colors */
   --color-success: #16A34A;

@@ -21,20 +21,16 @@ describe('Footer', () => {
     );
   });
 
-  it('uses the approved English neighborhood brand story', () => {
+  it('shows concise delivery and payment details instead of repeating the brand story', () => {
     render(<Footer locale="en" />);
 
-    expect(
-      screen.getByText(
-        'Your Neighborhood Family Grocer picking up quality products, your favorite brands and daily essentials since 1947.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Delivery: 09:00 AM–12:30 AM daily · Pay by COD or bKash')).toBeInTheDocument();
+    expect(screen.queryByText(/Your Neighborhood Family Grocer, picking up quality products/)).not.toBeInTheDocument();
   });
 
   it('gives Bengali shoppers the same delivery-coverage qualification', () => {
     render(<Footer locale="bn" />);
 
-    expect(screen.getByText(/প্রকাশিত ডেলিভারি এলাকা চকবাজার থেকে ১ কিমির মধ্যে/)).toBeInTheDocument();
-    expect(screen.getByText(/অর্ডারের আগে আপনার ঠিকানা আওতাভুক্ত কি না দেখে নিন/)).toBeInTheDocument();
+    expect(screen.getByText('ডেলিভারি: প্রতিদিন সকাল ৯টা–রাত ১২:৩০ · COD বা bKash-এ পেমেন্ট')).toBeInTheDocument();
   });
 });

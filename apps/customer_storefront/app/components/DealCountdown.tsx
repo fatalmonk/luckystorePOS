@@ -177,23 +177,23 @@ export function DealCountdown({
       ];
 
   return (
-    <div className={`deal-countdown flex items-center gap-3 rounded-warm-card border px-3 py-2.5 sm:px-4 sm:py-3 ${className}`}>
+    <div className={`deal-countdown flex min-w-0 max-w-full items-center gap-2 rounded-warm-card border px-2.5 py-2 sm:gap-3 sm:px-4 sm:py-3 ${className}`}>
       <span className="hidden text-xs font-extrabold uppercase tracking-wider text-warm-muted sm:inline">
         {locale === 'bn' ? 'বাকি আছে' : 'Ends in'}
       </span>
       <time
         dateTime={targetEndTime}
         aria-label={`${timeLeft.days} days, ${timeLeft.hours} hours, ${timeLeft.minutes} minutes, ${timeLeft.seconds} seconds remaining`}
-        className="flex items-center gap-1.5 font-mono text-center"
+        className="flex min-w-0 items-center gap-1 font-mono text-center sm:gap-1.5"
       >
         {timeSegments.map(([label, value], index) => (
           <React.Fragment key={String(label)}>
             {index > 0 && <span className="mb-4 text-xs font-black text-warm-muted" aria-hidden="true">:</span>}
             <span className="flex flex-col items-center">
-              <span className="deal-countdown-value min-w-[32px] rounded-warm-control px-2 py-1 text-sm font-black">
+              <span className="deal-countdown-value min-w-[28px] rounded-warm-control px-1.5 py-1 text-xs font-black sm:min-w-[32px] sm:px-2 sm:text-sm">
                 {value}
               </span>
-              <span className="mt-0.5 text-xs font-semibold uppercase leading-4 text-warm-muted">
+              <span className="mt-0.5 text-[10px] font-semibold uppercase leading-4 text-warm-muted sm:text-xs">
                 {label}
               </span>
             </span>
