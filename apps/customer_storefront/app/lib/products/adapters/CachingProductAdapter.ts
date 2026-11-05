@@ -13,6 +13,7 @@ import type {
   PaginatedProducts,
   ProductDataPort,
 } from '../types';
+import { resolveProductSearchPagination } from '../types';
 
 // Simple in-memory cache entry
 interface CacheEntry<T> {
@@ -57,14 +58,14 @@ function evictIfNeeded<T>(cache: Map<string, T>, maxSize: number): void {
  * Hash function for search criteria (for cache keys)
  */
 function hashCriteria(criteria: ProductSearchCriteria): string {
-  const normalized = {
-    q: criteria.query ?? '',
-    cat: criteria.categoryId ?? '',
-    cats: criteria.categoryIds?.join(',') ?? '',
-    p: criteria.page ?? 0,
-    l: criteria.limit ?? 60,
-  };
-  return JSON.stringify(normalized);
+  const { limit, offset } = resolveProductSearchPagination(criteria);
+  return JSON.stringify([
+    criteria.query ?? '',
+    criteria.categoryId ?? '',
+    criteria.categoryIds ?? [],
+    limit,
+    offset,
+  ]);
 }
 
 /**
