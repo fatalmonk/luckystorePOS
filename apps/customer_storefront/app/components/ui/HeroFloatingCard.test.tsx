@@ -36,7 +36,7 @@ describe('HeroDiscoveryRail', () => {
   it('renders a grocery search form, suggested searches, and real in-stock products', () => {
     render(<HeroDiscoveryRail products={products} />);
 
-    expect(screen.getByRole('search', { name: 'Search groceries' })).toHaveAttribute(
+    expect(screen.getByRole('search', { name: 'Quick product search' })).toHaveAttribute(
       'action',
       '/category',
     );
@@ -54,6 +54,23 @@ describe('HeroDiscoveryRail', () => {
       '/product/miniket-rice--rice1',
     );
     expect(within(rail).queryByRole('link', { name: /Fresh Milk/ })).not.toBeInTheDocument();
+  });
+
+  it('shows everyday pack sizes before bulk products in the discovery rail', () => {
+    const bulkRice: Product = {
+      ...products[0],
+      id: 'bulk-rice',
+      name: 'ACI Chinigura 50 kg Loose',
+      price: 8000,
+    };
+    const everydayRice = { ...products[0], id: 'daily-rice', name: 'Miniket Rice 1 kg' };
+
+    render(<HeroDiscoveryRail products={[bulkRice, everydayRice]} />);
+
+    const rail = screen.getByLabelText('A few essentials to get you started products');
+    const links = within(rail).getAllByRole('link');
+    expect(links[0]).toHaveAccessibleName(/Miniket Rice 1 kg/);
+    expect(links[1]).toHaveAccessibleName(/ACI Chinigura 50 kg Loose/);
   });
 
   it('does not render fake rating or review signals', () => {

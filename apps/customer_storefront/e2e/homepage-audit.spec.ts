@@ -44,7 +44,7 @@ test.describe('Storefront homepage shell audit', () => {
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Daily Bazaar & Pantry Staples', exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Shop by routine' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'A few essentials to get you started' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Serving Chattogram since 1947.' })).toBeVisible();
 
     const header = page.getByRole('banner');

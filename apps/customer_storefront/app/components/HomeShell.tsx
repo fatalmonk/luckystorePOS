@@ -5,7 +5,6 @@ import { CampaignGrid } from './CampaignGrid';
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
 import { CartStorageNotice } from './CartStorageNotice';
-import { CategoryQuickGrid } from './CategoryQuickGrid';
 import { HomeTrustStrip } from './HomeTrustStrip';
 import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
@@ -103,8 +102,6 @@ export function HomeShell({
             <CampaignGrid products={campaignProducts} locale={locale} />
 
             <HomeTeaBanner locale={locale} />
-
-            <CategoryQuickGrid categories={categories} locale={locale} />
 
             <nav aria-label={dict.popularBazaar.label} className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-warm-muted scrollbar-hide">
               <span className="shrink-0 font-bold text-warm-fg">{dict.popularBazaar.label}</span>

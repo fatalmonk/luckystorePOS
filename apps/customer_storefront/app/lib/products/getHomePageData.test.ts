@@ -95,4 +95,5 @@ describe('getHomePageData catalogue diagnostics', () => {
       expect.objectContaining({ source: 'Nestle product search' }),
     );
   });
+
 });

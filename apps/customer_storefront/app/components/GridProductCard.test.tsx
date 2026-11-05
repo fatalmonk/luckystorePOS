@@ -87,8 +87,10 @@ describe('GridProductCard', () => {
   it('uses image and title links for navigation', () => {
     renderCard();
 
-    expect(screen.getByRole('link', { name: 'View Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
-    expect(screen.getByRole('link', { name: 'Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
+    expect(screen.getByRole('link', { name: 'Quick view: Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
+    const titleLink = screen.getByRole('link', { name: 'Test Rice' });
+    expect(titleLink).toHaveAttribute('href', '/product/test-rice--abc123');
+    expect(titleLink).toHaveClass('min-h-11', 'px-1', 'py-1');
   });
 
   it('uses the curated Kheer half-liter image when the catalog image is missing', () => {
@@ -153,4 +155,49 @@ describe('GridProductCard', () => {
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('Added another Test Rice to cart')).toBeInTheDocument();
   });
+
+  it('opens a keyboard-dismissible preview, keeps focus restoration, and uses the shared cart add action', () => {
+    renderCard();
+    const trigger = screen.getByRole('link', { name: 'Quick view: Test Rice' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = screen.getByRole('dialog', { name: 'Test Rice' });
+    expect(dialog).toHaveClass('rounded-t-warm-sheet', 'md:rounded-warm-panel');
+    expect(screen.getByText('Pack size')).toBeInTheDocument();
+    expect(dialog).toHaveTextContent('1 kg');
+    expect(screen.getByRole('link', { name: 'Full product details' })).toHaveAttribute('href', '/product/test-rice--abc123');
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Cart' }));
+    expect(add).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('localizes preview labels and disables quantity changes for unverified stock', () => {
+    render(<GridProductCard product={{ ...product, availabilityUnknown: true }} locale="bn" />);
+    fireEvent.click(screen.getByRole('link', { name: 'দ্রুত দেখুন: Test Rice' }));
+
+    expect(screen.getByRole('dialog', { name: 'Test Rice' })).toBeInTheDocument();
+    expect(screen.getByText('প্যাকের পরিমাণ')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'স্টক যাচাই করা যায়নি' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'যোগ করুন' })).not.toBeInTheDocument();
+  });
+
+  it('opens from the product name and traps keyboard focus inside the preview', () => {
+    renderCard();
+    const titleLink = screen.getByRole('link', { name: 'Test Rice' });
+    fireEvent.click(titleLink);
+
+    const closeButton = screen.getByRole('button', { name: 'Close product preview' });
+    const detailsLink = screen.getByRole('link', { name: 'Full product details' });
+    expect(document.activeElement).toBe(closeButton);
+    detailsLink.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(closeButton);
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(detailsLink);
+  });
+
 });

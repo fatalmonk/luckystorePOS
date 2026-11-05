@@ -55,6 +55,7 @@
     "@cloudflare/workers-types": "^4.20260623.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^24.5.2",
+    "next": "15.5.28",
     "tsx": "^4.20.5",
     "turbo": "^2.11.7",
     "typescript": "^5.9.2"

@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ToastProvider, useToast } from './Toast';
 
+vi.mock('next/navigation', () => ({ usePathname: () => '/bn/shop' }));
+
 function TestConsumer({
   message,
   actionLabel,
@@ -40,6 +42,24 @@ describe('Toast Component', () => {
     );
 
     expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('shows transient toasts without requiring CartProvider', () => {
+    render(<ToastProvider><TestConsumer message="Saved" /></ToastProvider>);
+    fireEvent.click(screen.getByText('Trigger Toast'));
+    expect(screen.getByRole('status')).toHaveTextContent('Saved');
+  });
+
+  it('localizes persistent cart toast copy and avoids stale item messages', async () => {
+    function PersistentConsumer() {
+      const { showToast } = useToast();
+      return <button onClick={() => showToast('Added Rice to cart', undefined, undefined, true)}>Show cart</button>;
+    }
+    render(<ToastProvider><PersistentConsumer /></ToastProvider>);
+    fireEvent.click(screen.getByText('Show cart'));
+    expect(screen.getByText('Added Rice to cart')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'বিজ্ঞপ্তি বন্ধ করুন' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('ফ্রি ডেলিভারির অগ্রগতি: ০ শতাংশ')).toBeNull();
   });
 
   it('displays a toast when triggered and auto-dismisses after duration', async () => {

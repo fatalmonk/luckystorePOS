@@ -121,7 +121,7 @@ export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {})
             href={href}
             aria-current={active ? 'page' : undefined}
             title={label}
-            className={`group flex h-16 ${locale === 'bn' ? 'w-[64px]' : 'w-[46px]'} shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-[10px] font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
+            className={`store-press group flex h-16 ${locale === 'bn' ? 'w-[64px]' : 'w-[46px]'} shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center text-[10px] font-bold leading-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent ${
               active
                 ? 'bg-warm-surface text-warm-fg'
                 : 'text-warm-muted hover:bg-warm-surface/70 hover:text-warm-fg'

@@ -52,7 +52,7 @@ describe('Header catalog filter strip', () => {
     expect(screen.getAllByText('Lucky Store')).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: 'Switch to Dark mode' })).toHaveLength(2);
     expect(screen.getByLabelText('Search products')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Submit search' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit search' })).toHaveClass('h-11', 'w-11');
     const cartButtons = screen.getAllByRole('button', { name: 'Cart' });
     expect(cartButtons).toHaveLength(2);
     expect(cartButtons.find((button) => button.dataset.compact === 'true')).toBeInTheDocument();
@@ -67,6 +67,8 @@ describe('Header catalog filter strip', () => {
     const categories = screen.getByRole('navigation', { name: 'Product categories' });
     expect(categories).toBeInTheDocument();
     expect(within(categories).getByRole('link', { name: 'All' })).toBeInTheDocument();
+    expect(within(categories).getByRole('link', { name: 'All' })).toHaveClass('min-h-11');
+    expect(screen.getByRole('button', { name: 'Scroll categories forward' })).toHaveClass('h-11', 'w-11');
     const allLinks = screen.getAllByRole('link', { name: 'All' });
     expect(allLinks).toHaveLength(2);
     allLinks.forEach((link) => expect(link).toBeInTheDocument());

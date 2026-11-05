@@ -71,7 +71,7 @@
 | **Bangla Interface** | English + Bangla with HindSiliguri font throughout | English-only | English-only |
 | **Competitor Price Monitoring** | AI-powered scraping of Shwapno, Chaldal, AamaderBazar | Not available | Not available |
 | **Multi-Tenant Security** | Supabase RLS with tenant isolation per store | Basic auth only | Basic auth only |
-| **Deployment** | Docker one-command, Vercel free tier, APK sideload | Complex server setup | Vendor lock-in |
+| **Deployment** | Hostinger storefront, Vercel admin/previews, APK sideload | Complex server setup | Vendor lock-in |
 | **Cost** | Free & Open Source (Apache 2.0) | License fees + hardware | Monthly SaaS fees |
 | **Realtime Inventory** | Supabase realtime subscriptions; low-stock alerts | End-of-day manual counts | Polling-based only |
 
@@ -384,7 +384,7 @@
 **Flutter 3.29+** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · flutter_thermal_printer · pdf · printing · csv · excel · webview_flutter
 
 ### Customer Storefront
-**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 3 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
+**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 4 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
 
 ### Admin Web
 **React 19.2** · Vite 6 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 3 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns 4 · clsx
@@ -393,7 +393,7 @@
 **Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage · Neon APAC read replica
 
 ### Infrastructure
-**Cloudflare** · R2 object storage (APAC) · Workers (image proxy, Neon proxy, agent) · Turnstile · Wrangler · Docker (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions (7 workflows) · Vercel (admin + storefront + landing)
+**Cloudflare** · R2 object storage (APAC) · Workers (image proxy, Neon proxy, agent) · Turnstile · Wrangler · Docker (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions · Hostinger (customer storefront production) · Vercel (admin and storefront previews)
 
 ### Scraper
 **Node.js** · Puppeteer · string-similarity · xlsx
@@ -502,7 +502,7 @@ luckystorePOS/
 <br>
 
 - Production runs on Hostinger behind Cloudflare; GitHub Actions builds an immutable Next.js standalone release, deploys it to staging, validates it, then promotes the same artifact to production ([workflow](.github/workflows/storefront-hostinger.yml), [hosting decision](docs/adr/ADR-001-storefront-hosting-hostinger.md))
-- Vercel remains available as the rollback target during the Hostinger cutover
+- Vercel project `lucky-store` is used for storefront previews; its production-target build is intentionally skipped. Hostinger serves customer production.
 - Next.js 15 App Router with ISR (60s revalidate), SSR, sitemap + robots generation
 - Live: [luckystore1947.com](https://luckystore1947.com)
 - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_IMAGE_BASE_URL`, `NEXT_PUBLIC_AGENT_WORKER_URL`
@@ -557,7 +557,7 @@ Set required secrets on each edge function:
 
 | Document | Purpose |
 |:---------|:--------|
-| [Deployment Guide](docs/DEPLOYMENT.md) | Full deployment instructions |
+| [Deployment Guide](DEPLOYMENT.md) | Full deployment instructions |
 | [Design System](docs/DESIGN_SYSTEM.md) | Visual language, tokens, component patterns |
 | [Brand Guidelines](docs/BRAND_GUIDELINES.md) | Brand identity, colors, typography |
 | [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md) | Security fixes and hardening |

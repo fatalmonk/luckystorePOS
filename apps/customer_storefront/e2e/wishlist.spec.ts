@@ -10,7 +10,10 @@ async function openFirstOutOfStockProduct(page: Page): Promise<Page | null> {
   }
 
   const productCard = outOfStockButton.locator('xpath=ancestor::article[1]');
-  await productCard.getByRole('link', { name: /^View / }).click();
+  await productCard.getByRole('link', { name: /^Quick view:/ }).click();
+  const preview = page.getByRole('dialog');
+  await expect(preview).toBeVisible();
+  await preview.getByRole('link', { name: 'Full product details' }).click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 

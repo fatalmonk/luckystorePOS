@@ -1,9 +1,34 @@
 import type { Locale } from './config';
 import { DELIVERY_POLICY, RETURN_RULES } from '../deliveryData';
 
+function formatBanglaDeliveryTime(time: string) {
+  const match = /^(\d{1,2}):(\d{2})\s+(AM|PM)$/i.exec(time);
+  if (!match) return time;
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const period = match[3].toUpperCase();
+  const partOfDay = period === 'AM'
+    ? hour === 12 || hour < 5 ? 'রাত' : 'সকাল'
+    : hour === 12 ? 'দুপুর' : hour < 5 ? 'দুপুর' : hour < 8 ? 'বিকেল' : 'রাত';
+  const localizedHour = hour.toLocaleString('bn-BD', { useGrouping: false });
+  const formattedTime = minute === 0
+    ? `${localizedHour}টা`
+    : `${localizedHour}:${minute.toLocaleString('bn-BD', { minimumIntegerDigits: 2, useGrouping: false })}`;
+
+  return `${partOfDay} ${formattedTime}`;
+}
+
+const bnDeliveryHours = `প্রতিদিন ${formatBanglaDeliveryTime(DELIVERY_POLICY.deliveryHours.start)}–${formatBanglaDeliveryTime(DELIVERY_POLICY.deliveryHours.end)}`;
+
 export const dictionaries = {
   en: {
     language: 'বাংলা',
+    toast: {
+      notifications: 'Notifications', dismiss: 'Dismiss notification', cartUpdated: 'Your cart', cartSummary: '{count} {itemLabel} · {total}', itemSingular: 'item', itemPlural: 'items',
+      deliveryProgress: 'Free delivery progress: {percent} percent', freeDeliveryUnlocked: 'Free delivery unlocked',
+      freeDeliveryProgress: '{subtotal} of {threshold} towards free delivery', addedToCart: '{name} added to cart', addedAnotherToCart: 'Added another {name} to cart', removedOneFromCart: 'Removed one {name} from cart',
+    },
     header: {
       promoText: `Free doorstep delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar on orders over ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}`,
       searchPlaceholder: 'Search for milk, rice, oil...',
@@ -28,7 +53,7 @@ export const dictionaries = {
       basketAlt: 'A tote of everyday Lucky Store groceries',
       discoveryTitle: 'A few essentials to get you started',
       organicTitle: 'Search organic staples',
-      searchPlaceholder: 'Search rice, milk, oil, snacks...',
+      searchPlaceholder: 'Quick search: rice, milk, oil...',
       searchChips: [
         { label: 'Rice', href: '/category?q=rice' },
         { label: 'Milk', href: '/category?q=milk' },
@@ -109,7 +134,7 @@ export const dictionaries = {
     },
     deal: {
       title: 'Deal of the Week',
-      subtitle: 'A cherished kitchen staple, handpicked for you at an exceptional price.',
+      subtitle: 'A weekly pick at a special price.',
       off: 'off',
       endsIn: 'Ends in',
       days: 'd',
@@ -123,6 +148,12 @@ export const dictionaries = {
       outOfStock: 'Out of stock',
       lastOne: 'Last one',
       save: 'Save',
+      quickView: 'Quick view',
+      closeQuickView: 'Close product preview',
+      packSize: 'Pack size',
+      available: 'In stock',
+      stockRemaining: '{count} available',
+      viewDetails: 'Full product details',
     },
     heritage: {
       badge: 'Roots & Heritage',
@@ -131,7 +162,7 @@ export const dictionaries = {
       cta: 'Shop groceries',
     },
     footer: {
-      story: 'Your Neighborhood Family Grocer, picking up quality products, your favorite brands and daily essentials since 1947. Delivery is limited to our published 1 km Chawkbazar area; check coverage before ordering.',
+      serviceDetails: `Delivery: ${DELIVERY_POLICY.deliveryHours.display} · Pay by COD or bKash`,
       shopTitle: 'Shop',
       helpTitle: 'Help & Support',
       legalTitle: 'Legal & Policy',
@@ -160,7 +191,7 @@ export const dictionaries = {
     bottomNav: {
       home: 'Home',
       browse: 'Shop',
-      search: 'Search',
+      search: 'Find',
       cart: 'Cart',
       cartBadge: 'items in cart',
       whatsapp: 'WhatsApp',
@@ -295,6 +326,11 @@ export const dictionaries = {
   },
   bn: {
     language: 'English',
+    toast: {
+      notifications: 'বিজ্ঞপ্তি', dismiss: 'বিজ্ঞপ্তি বন্ধ করুন', cartUpdated: 'আপনার ব্যাগ', cartSummary: '{count} {itemLabel} · {total}', itemSingular: 'টি পণ্য', itemPlural: 'টি পণ্য',
+      deliveryProgress: 'ফ্রি ডেলিভারির অগ্রগতি: {percent} শতাংশ', freeDeliveryUnlocked: 'ফ্রি ডেলিভারি চালু হয়েছে',
+      freeDeliveryProgress: 'ফ্রি ডেলিভারির জন্য {threshold}-এর মধ্যে {subtotal}', addedToCart: '{name} ব্যাগে যোগ করা হয়েছে', addedAnotherToCart: '{name} আরও একটি ব্যাগে যোগ করা হয়েছে', removedOneFromCart: 'ব্যাগ থেকে {name} একটি সরানো হয়েছে',
+    },
     header: {
       promoText: `চকবাজার থেকে ${DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')} কিমির মধ্যে ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')}+ অর্ডারে ফ্রি হোম ডেলিভারি`,
       searchPlaceholder: 'চাল, ডাল, তেল বা দুধ খুঁজুন...',
@@ -319,13 +355,14 @@ export const dictionaries = {
       basketAlt: 'লাকি স্টোরের নিত্যপ্রয়োজনীয় গ্রোসারির কাপড়ের ব্যাগ',
       discoveryTitle: 'বাজার শুরু করুন এই পণ্যগুলো দিয়ে',
       organicTitle: 'অর্গানিক নিত্যপণ্য',
-      searchPlaceholder: 'চাল, দুধ, তেল ও নাস্তা খুঁজুন...',
+      searchPlaceholder: 'দ্রুত খুঁজুন: চাল, দুধ, তেল...',
       searchChips: [
         { label: 'চাল', href: '/bn/category/rice-and-grain' },
         { label: 'দুধ', href: '/bn/category/dairy-and-eggs' },
         { label: 'তেল', href: '/bn/category/oil-and-ghee' },
         { label: 'নাস্তা', href: '/bn/category/snacks' },
         { label: 'রান্না', href: '/bn/category/cooking-essentials' },
+        { label: 'পরিষ্কার', href: '/bn/category/cleaning-supplies' },
       ],
     },
     trustStrip: {
@@ -400,7 +437,7 @@ export const dictionaries = {
     },
     deal: {
       title: 'সপ্তাহের সেরা অফার',
-      subtitle: 'আপনার রান্নার সেরা পণ্যটি এখন বিশেষ ছাড়ে।',
+      subtitle: 'এই সপ্তাহের বাছাই, বিশেষ দামে।',
       off: 'ছাড়',
       endsIn: 'বাকি আছে',
       days: 'দিন',
@@ -414,6 +451,12 @@ export const dictionaries = {
       outOfStock: 'স্টক শেষ',
       lastOne: 'শেষ ১টি',
       save: 'সাশ্রয়',
+      quickView: 'দ্রুত দেখুন',
+      closeQuickView: 'পণ্যের প্রিভিউ বন্ধ করুন',
+      packSize: 'প্যাকের পরিমাণ',
+      available: 'স্টকে আছে',
+      stockRemaining: '{count}টি আছে',
+      viewDetails: 'পণ্যের বিস্তারিত দেখুন',
     },
     heritage: {
       badge: 'ঐতিহ্য ও বিশ্বাস',
@@ -422,7 +465,7 @@ export const dictionaries = {
       cta: 'বাজার করুন',
     },
     footer: {
-      story: 'লাকি স্টোর ১৯৪৭ সাল থেকে চট্টগ্রামের পরিবারের নিত্যপ্রয়োজনীয় বাজারের সঙ্গী। প্রকাশিত ডেলিভারি এলাকা চকবাজার থেকে ১ কিমির মধ্যে; অর্ডারের আগে আপনার ঠিকানা আওতাভুক্ত কি না দেখে নিন।',
+      serviceDetails: `ডেলিভারি: ${bnDeliveryHours} · COD বা bKash-এ পেমেন্ট`,
       shopTitle: 'কেনাকাটা',
       helpTitle: 'সহায়তা',
       legalTitle: 'নিয়মাবলী',

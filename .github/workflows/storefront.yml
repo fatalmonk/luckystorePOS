@@ -5,6 +5,8 @@ on:
     branches: [main, develop]
     paths:
       - 'apps/customer_storefront/**'
+      - '!apps/customer_storefront/**/*.md'
+      - '!apps/customer_storefront/**/*.mdx'
       - 'supabase/migrations/**'
       # Admin-only migrations use the `_admin_` name segment and do not change
       # the storefront contract; all other migrations keep storefront coverage.
@@ -16,6 +18,8 @@ on:
     branches: [main, develop]
     paths:
       - 'apps/customer_storefront/**'
+      - '!apps/customer_storefront/**/*.md'
+      - '!apps/customer_storefront/**/*.mdx'
       - 'supabase/migrations/**'
       # Keep this in sync with the push filter above.
       - '!supabase/migrations/**_admin_*.sql'

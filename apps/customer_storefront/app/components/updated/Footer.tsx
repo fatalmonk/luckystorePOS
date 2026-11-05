@@ -44,6 +44,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
     { label: dict.footer.weeklyDeals, href: withLocale('/category?theme=deals', locale) },
     { label: dict.footer.newArrivals, href: withLocale('/category?theme=new', locale) },
     { label: dict.footer.cookingEssentials, href: withLocale('/category/cooking-essentials', locale) },
+    { label: dict.footer.wishlist, href: withLocale('/wishlist', locale), prefetch: false },
   ];
 
   const helpLinks = [
@@ -51,7 +52,6 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
     { label: dict.footer.deliveryInfo, href: withLocale('/delivery', locale) },
     { label: dict.footer.contact, href: '/contact' },
     { label: dict.footer.faq, href: '/contact#faq' },
-    { label: dict.footer.wishlist, href: '/wishlist' },
   ];
 
   const legalLinks = [
@@ -100,36 +100,36 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
         </div>
       </div>
       <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8 sm:pt-12 lg:px-12">
-        <div className="grid gap-6 sm:gap-8 md:grid-cols-2 xl:grid-cols-12 xl:gap-8">
-          <div className="min-w-0 xl:col-span-4">
+        <div className="grid gap-8 sm:gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:grid-cols-12 xl:gap-8">
+          <div className="min-w-0 xl:col-span-5">
             <Logo className="[&_img]:!h-10 sm:[&_img]:!h-14" locale={locale} />
 
-            <p className="site-footer-muted mt-4 max-w-md text-sm leading-6 sm:mt-6 sm:text-[15px] sm:leading-7">
-              {dict.footer.story}
+            <p className="site-footer-muted mt-3 max-w-md text-sm leading-6 sm:mt-4 sm:text-[15px] sm:leading-7">
+              {dict.footer.serviceDetails}
             </p>
 
 
-            <address className="mt-4 flex flex-col items-start not-italic sm:mt-6">
+            <address className="mt-4 grid grid-cols-1 gap-x-5 gap-y-1 not-italic min-[480px]:grid-cols-2 sm:mt-5">
               <a
                 href="tel:+8801731944544"
-                className={`site-footer-link gap-3 text-sm ${footerFocus}`}
+                className={`site-footer-link min-w-0 gap-2 text-sm ${footerFocus}`}
               >
                 <Phone size={18} aria-hidden="true" className="shrink-0" />
                 +8801731944544
               </a>
               <a
                 href="mailto:hello@luckystore1947.com"
-                className={`site-footer-link gap-3 break-all text-sm ${footerFocus}`}
+                className={`site-footer-link min-w-0 gap-2 break-all text-sm ${footerFocus}`}
               >
                 <EnvelopeSimple size={18} aria-hidden="true" className="shrink-0" />
                 hello@luckystore1947.com
               </a>
-              <p className="site-footer-muted mt-2 text-sm leading-6">
+              <p className="site-footer-muted mt-1 text-sm leading-6 min-[480px]:col-span-2">
                 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203
               </p>
             </address>
 
-            <div className="mt-4 flex items-center gap-2.5" aria-label="Lucky Store on social media">
+            <div className="mt-4 flex items-center gap-2.5 sm:mt-5" aria-label="Lucky Store on social media">
               {socialLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
@@ -146,13 +146,28 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-6 sm:border-t-0 sm:pt-0 md:-ml-4 md:grid-cols-[minmax(0,1fr)_auto] xl:col-span-4">
+          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-6 sm:border-t-0 sm:pt-0 md:gap-x-8 xl:col-span-5">
             <nav aria-labelledby="footer-shop-heading">
               <h2 id="footer-shop-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 {dict.footer.shopTitle}
               </h2>
               <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
                 {shopLinks.map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} prefetch={link.prefetch} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <nav aria-labelledby="footer-help-heading">
+              <h2 id="footer-help-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
+                {dict.footer.helpTitle}
+              </h2>
+              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
+                {helpLinks.map((link) => (
                   <li key={link.label}>
                     <Link href={link.href} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
@@ -161,32 +176,18 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
                 ))}
               </ul>
             </nav>
-
-            <nav aria-labelledby="footer-help-heading" className="md:text-right">
-              <h2 id="footer-help-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
-                {dict.footer.helpTitle}
-              </h2>
-              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
-                {helpLinks.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} prefetch={link.href === '/wishlist' || link.href === '/bn/wishlist' ? false : undefined} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </div>
 
-          <div className="relative hidden min-h-64 xl:col-span-4 xl:block" aria-hidden="true">
+          <div className="relative hidden min-h-64 xl:col-span-2 xl:block" aria-hidden="true">
             <Image src="/images/footer-grocery-tote.webp" alt="" fill sizes="380px" className="object-contain object-bottom" />
           </div>
         </div>
 
         <div className="site-footer-bottom mt-8 border-t pt-5 sm:mt-12 sm:pt-6">
           <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
-            <div className="flex flex-col items-start gap-1.5 font-medium sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 font-medium sm:justify-between sm:gap-4">
               <p>{locale === 'bn' ? '© লাকি স্টোর। স্থাপিত ১৯৪৭।' : '© Lucky Store. Est. 1947.'}</p>
+              <span className="hidden text-warm-muted sm:inline" aria-hidden="true">·</span>
               <p>{locale === 'bn' ? 'চকবাজার, চট্টগ্রাম, বাংলাদেশ' : 'Chattogram, Bangladesh'}</p>
             </div>
 
