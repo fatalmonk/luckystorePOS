@@ -27,7 +27,7 @@ Lucky Store is a Chawkbazar neighborhood grocery brought online. The storefront 
 
 ## Capabilities and Constraints
 
-- The storefront supports category browsing, search and filters, product pages with an in-place quick preview, cart and checkout, order status, order repurchase at current catalog prices, wishlist, recently viewed products, Supabase authentication, and light/dark themes.
+- The storefront supports category browsing, search and filters, product pages with an in-place quick preview, cart and checkout, order status, order repurchase at current catalog prices, wishlist, recently viewed products, optional Supabase sign-in for account features, and light/dark themes. Checkout is available to guests without signing in.
 - The responsive home experience includes campaign and deal surfaces, curated product discovery, mobile navigation, a product grid, and pull-to-refresh on supported touch devices. Shared cart feedback can show the current cart summary and delivery-threshold progress.
 - Preserve localized routes and copy in English and Bengali, accessible keyboard and touch interaction, current stock validation, and the established storefront design system.
 - Customer-facing product, price, and availability data must come from the current catalog. Re-purchasing an order uses current catalog prices and stock; unavailable or unverified items must not be added.
