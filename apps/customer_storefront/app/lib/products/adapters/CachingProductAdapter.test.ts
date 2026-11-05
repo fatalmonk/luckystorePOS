@@ -92,6 +92,77 @@ describe('CachingProductAdapter', () => {
 
       expect(inner.search).toHaveBeenCalledTimes(2);
     });
+
+    it('returns distinct results for different explicit offsets', async () => {
+      inner = createFakeAdapter({
+        search: vi.fn(async (criteria) => ({
+          products: [fakeProduct(String(criteria.offset))],
+          hasMore: true,
+        })),
+      });
+      const adapter = new CachingProductAdapter(inner);
+      const page1 = await adapter.search({ query: 'milk', limit: 10, offset: 0 });
+      const page2 = await adapter.search({ query: 'milk', limit: 10, offset: 10 });
+      expect(page1.products[0].id).toBe('0');
+      expect(page2.products[0].id).toBe('10');
+      expect(inner.search).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps page, limit, and explicit-offset pagination distinct', async () => {
+      inner = createFakeAdapter();
+      const adapter = new CachingProductAdapter(inner);
+      await adapter.search({ query: 'milk', page: 1, limit: 10 });
+      await adapter.search({ query: 'milk', page: 1, limit: 10, offset: 0 });
+      await adapter.search({ query: 'milk', page: 2, limit: 10 });
+      await adapter.search({ query: 'milk', page: 1, limit: 20 });
+      expect(inner.search).toHaveBeenCalledTimes(4);
+    });
+
+    it('keys category filters without delimiter collisions', async () => {
+      inner = createFakeAdapter();
+      const adapter = new CachingProductAdapter(inner);
+      await adapter.search({ categoryId: 'dairy' });
+      await adapter.search({ categoryId: 'produce' });
+      await adapter.search({ categoryIds: ['dairy', 'produce'] });
+      await adapter.search({ categoryIds: ['dairy,produce'] });
+      expect(inner.search).toHaveBeenCalledTimes(4);
+    });
+
+    it('does not share search results across adapter instances', async () => {
+      const firstInner = createFakeAdapter({
+        search: vi.fn().mockResolvedValue({ products: [fakeProduct('first')], hasMore: false }),
+      });
+      const secondInner = createFakeAdapter({
+        search: vi.fn().mockResolvedValue({ products: [fakeProduct('second')], hasMore: false }),
+      });
+      const criteria = { query: 'milk' };
+
+      const first = await new CachingProductAdapter(firstInner).search(criteria);
+      const second = await new CachingProductAdapter(secondInner).search(criteria);
+
+      expect(first.products[0].id).toBe('first');
+      expect(second.products[0].id).toBe('second');
+      expect(firstInner.search).toHaveBeenCalledTimes(1);
+      expect(secondInner.search).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns updated search data after explicit invalidation', async () => {
+      const oldResult = { products: [fakeProduct('old')], hasMore: false };
+      const updatedProduct = { ...fakeProduct('updated'), price: 125, stock: 3 };
+      inner = createFakeAdapter({
+        search: vi.fn()
+          .mockResolvedValueOnce(oldResult)
+          .mockResolvedValueOnce({ products: [updatedProduct], hasMore: false }),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      await adapter.search({ query: 'milk' });
+      adapter.invalidate({ search: true });
+      const refreshed = await adapter.search({ query: 'milk' });
+
+      expect(refreshed.products[0]).toMatchObject({ id: 'updated', price: 125, stock: 3 });
+      expect(inner.search).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('getById', () => {
