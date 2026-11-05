@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User as UserIcon, SignOut, Calendar, MapPin, Phone, Package, ArrowLeft, Heart } from '@phosphor-icons/react';
@@ -39,7 +39,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, status, error, ensureAuth, signOut } = useAuth();
   const { showToast } = useToast();
-  const { addToCart } = useCartContext();
+  const { addToCart, syncPrices } = useCartContext();
+  const buyAgainInFlight = useRef(false);
+  const [buyAgainOrderId, setBuyAgainOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -261,25 +263,39 @@ export default function ProfilePage() {
                         <Link href={`/order?num=${encodeURIComponent(order.order_number)}`} className="inline-flex min-h-11 items-center text-xs font-bold text-warm-success hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-success">
                           View live order status
                         </Link>
-                        <button type="button" onClick={async () => {
-                          let products;
+                        <button type="button" disabled={buyAgainOrderId === order.id} onClick={async () => {
+                          if (buyAgainInFlight.current) return;
+                          buyAgainInFlight.current = true;
+                          setBuyAgainOrderId(order.id);
                           try {
-                            products = await loadBuyAgainProducts(order.items);
-                          } catch {
-                            showToast('Could not load current products');
-                            return;
-                          }
-                          let added = 0;
-                          let unavailable = 0;
-                          for (const item of order.items) {
-                            const product = products.get(item.id);
-                            if (!product || product.stock <= 0 || product.availabilityUnknown) { unavailable++; continue; }
-                            for (let quantity = 0; quantity < Math.min(item.qty, product.stock); quantity++) {
-                              if (addToCart(product)) added++;
+                            let products;
+                            try {
+                              products = await loadBuyAgainProducts(order.items);
+                            } catch {
+                              showToast('Could not load current products');
+                              return;
                             }
+                            syncPrices([...products.values()].map((product) => ({
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                              mrp: product.originalPrice,
+                            })));
+                            let added = 0;
+                            let unavailable = 0;
+                            for (const item of order.items) {
+                              const product = products.get(item.id);
+                              if (!product || product.stock <= 0 || product.availabilityUnknown) { unavailable++; continue; }
+                              for (let quantity = 0; quantity < Math.min(item.qty, product.stock); quantity++) {
+                                if (addToCart(product)) added++;
+                              }
+                            }
+                            showToast(added ? `Added ${added} item${added === 1 ? '' : 's'} at current prices${unavailable ? ` · ${unavailable} unavailable` : ''}` : 'No order items are currently available');
+                          } finally {
+                            buyAgainInFlight.current = false;
+                            setBuyAgainOrderId(null);
                           }
-                          showToast(added ? `Added ${added} item${added === 1 ? '' : 's'} at current prices${unavailable ? ` · ${unavailable} unavailable` : ''}` : 'No order items are currently available');
-                        }} className="min-h-11 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg">Buy again</button>
+                        }} className="min-h-11 rounded-full border border-warm-border px-4 text-xs font-bold text-warm-fg disabled:cursor-wait disabled:opacity-60">{buyAgainOrderId === order.id ? 'Adding…' : 'Buy again'}</button>
                       </div>
                     </div>
                   </div>
