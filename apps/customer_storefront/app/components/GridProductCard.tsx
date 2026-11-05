@@ -86,10 +86,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
-        event.preventDefault();
-        (event.shiftKey ? last : first).focus();
-      } else if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -162,7 +159,7 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
             setIsPreviewOpen(true);
           }}
           ref={previewTriggerRef as React.Ref<HTMLAnchorElement>}
-          aria-label={`${dict.productCard.quickView}: ${product.name}`}
+          aria-label={`View ${product.name}`}
           className="absolute inset-0 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warm-accent"
         >
           <ProductImage

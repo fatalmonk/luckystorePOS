@@ -64,10 +64,6 @@ function ToastList({
   const totalItems = cart?.totalItems ?? 0;
   const progress = Math.min(100, (subtotal / 500) * 100);
   const localizeNumber = (value: number) => locale === 'bn' ? toBengaliNumerals(value) : String(value);
-  const localizeBdt = (value: number) => {
-    const formatted = formatBdt(value);
-    return locale === 'bn' ? toBengaliNumerals(formatted) : formatted;
-  };
   const enter = useTempoTransition(spring.toast);
   const leave = useTempoTransition(motionTransition.dismiss);
 
@@ -108,7 +104,7 @@ function ToastList({
             >
               <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
                 <span className="min-w-0 text-left leading-snug">{toast.persistent && cart ? copy.cartUpdated : toast.message}</span>
-                {toast.persistent && cart && <span className="shrink-0 text-xs font-semibold text-warm-bg/85">{copy.cartSummary.replace('{count}', localizeNumber(totalItems)).replace('{itemLabel}', totalItems === 1 ? copy.itemSingular : copy.itemPlural).replace('{total}', localizeBdt(total))}</span>}
+                {toast.persistent && cart && <span className="shrink-0 text-xs font-semibold text-warm-bg/85">{copy.cartSummary.replace('{count}', localizeNumber(totalItems)).replace('{itemLabel}', totalItems === 1 ? copy.itemSingular : copy.itemPlural).replace('{total}', formatBdt(total))}</span>}
               </div>
               {toast.persistent && (
                 <button type="button" onClick={() => dismiss(toast.id)} aria-label={copy.dismiss} className="grid size-8 shrink-0 place-items-center rounded-full text-warm-bg/70 hover:bg-white/10 hover:text-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent">×</button>
@@ -119,7 +115,7 @@ function ToastList({
                     <motion.div className="h-full rounded-full bg-warm-accent" initial={false} animate={{ width: `${progress}%` }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 180, damping: 24 }} />
                   </div>
                   <p className="mt-1.5 text-[11px] font-medium text-warm-bg/75" aria-live="polite">
-                    {subtotal >= 500 ? copy.freeDeliveryUnlocked : copy.freeDeliveryProgress.replace('{subtotal}', localizeBdt(subtotal)).replace('{threshold}', localizeBdt(500))}
+                    {subtotal >= 500 ? copy.freeDeliveryUnlocked : copy.freeDeliveryProgress.replace('{subtotal}', formatBdt(subtotal)).replace('{threshold}', formatBdt(500))}
                   </p>
                 </div>
               )}

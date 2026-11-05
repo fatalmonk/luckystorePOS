@@ -20,8 +20,7 @@ test('previews a product and returns focus to the same spot in the aisle', async
   const preview = page.getByRole('dialog', { name, exact: true });
   await expect(preview).toBeVisible();
   await expect(page).toHaveURL(url);
-  // ProductImage can render either an <img> or its accessible role="img" fallback.
-  await expect(preview.getByRole('img')).toBeVisible();
+  await expect(preview.locator('img')).toBeVisible();
   await expect(preview).toContainText((await card.locator('p').first().innerText()).trim());
   const box = (await preview.boundingBox())!;
   const viewport = page.viewportSize()!;

@@ -285,7 +285,12 @@ test.describe('Isolated Supabase order integration', () => {
       checkoutResponsePromise,
       page.click('[data-testid="checkout-place-order-btn"]'),
     ]);
-    expect(checkoutResponse.status()).toBe(200);
+    let checkoutError = '';
+    if (!checkoutResponse.ok()) {
+      const payload = await checkoutResponse.json().catch(() => null);
+      checkoutError = typeof payload?.error === 'string' ? payload.error : 'No safe error detail returned';
+    }
+    expect(checkoutResponse.status(), checkoutError).toBe(200);
 
     await page.waitForURL(/\/order/);
     await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();

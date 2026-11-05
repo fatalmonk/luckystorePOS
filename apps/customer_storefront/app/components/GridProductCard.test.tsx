@@ -87,7 +87,7 @@ describe('GridProductCard', () => {
   it('uses image and title links for navigation', () => {
     renderCard();
 
-    expect(screen.getByRole('link', { name: 'Quick view: Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
+    expect(screen.getByRole('link', { name: 'View Test Rice' })).toHaveAttribute('href', '/product/test-rice--abc123');
     const titleLink = screen.getByRole('link', { name: 'Test Rice' });
     expect(titleLink).toHaveAttribute('href', '/product/test-rice--abc123');
     expect(titleLink).toHaveClass('min-h-11', 'px-1', 'py-1');
@@ -158,7 +158,7 @@ describe('GridProductCard', () => {
 
   it('opens a keyboard-dismissible preview, keeps focus restoration, and uses the shared cart add action', () => {
     renderCard();
-    const trigger = screen.getByRole('link', { name: 'Quick view: Test Rice' });
+    const trigger = screen.getByRole('link', { name: 'View Test Rice' });
     trigger.focus();
     fireEvent.click(trigger);
 
@@ -177,7 +177,7 @@ describe('GridProductCard', () => {
 
   it('localizes preview labels and disables quantity changes for unverified stock', () => {
     render(<GridProductCard product={{ ...product, availabilityUnknown: true }} locale="bn" />);
-    fireEvent.click(screen.getByRole('link', { name: 'দ্রুত দেখুন: Test Rice' }));
+    fireEvent.click(screen.getByRole('link', { name: 'View Test Rice' }));
 
     expect(screen.getByRole('dialog', { name: 'Test Rice' })).toBeInTheDocument();
     expect(screen.getByText('প্যাকের পরিমাণ')).toBeInTheDocument();

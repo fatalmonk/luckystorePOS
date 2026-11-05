@@ -15,7 +15,7 @@ test.describe('Storefront commerce surfaces', () => {
     await page.getByRole('heading', { name: 'Popular Right Now' }).waitFor();
 
     const card = page.getByTestId('grid-product-card').first();
-    const image = card.getByRole('link', { name: /^View / });
+    const image = card.getByRole('link', { name: /^Quick view:/ });
     const name = card.locator('a').nth(1);
     const unit = card.locator('p').first();
     const price = card.locator('.font-mono').first();
