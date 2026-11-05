@@ -17,10 +17,27 @@ describe('loadBuyAgainProducts', () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      '/api/products?id=product-on-page-two',
+      '/api/products?id=product-on-page-two&fresh=1',
       { cache: 'no-store' },
     );
     expect(products.get('product-on-page-two')).toMatchObject({ price: 125, stock: 3 });
+  });
+
+  it('loads independent product IDs concurrently', async () => {
+    let release: () => void = () => {};
+    const barrier = new Promise<void>((resolve) => { release = resolve; });
+    const fetchMock = vi.fn(async (url: string) => {
+      if (fetchMock.mock.calls.length === 2) release();
+      await barrier;
+      const id = new URL(url, 'https://store.test').searchParams.get('id')!;
+      return { ok: true, json: async () => ({ id, price: 125, stock: 3 }) };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const products = await loadBuyAgainProducts([{ id: 'first' }, { id: 'second' }]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(products.size).toBe(2);
   });
 
   it('treats deleted products as unavailable', async () => {
@@ -34,6 +51,14 @@ describe('loadBuyAgainProducts', () => {
       json: async () => ({ id: 'snapshot', price: 125, stock: 0, availabilityUnknown: true, degraded: true }),
     }));
     await expect(loadBuyAgainProducts([{ id: 'snapshot' }])).resolves.toEqual(new Map());
+  });
+
+  it('rejects negative catalog prices before returning products to add', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'negative-price', price: -1, stock: 3 }),
+    }));
+    await expect(loadBuyAgainProducts([{ id: 'negative-price' }])).rejects.toThrow('Invalid current product');
   });
 
   it('rejects a failed lookup before returning any products to add to cart', async () => {

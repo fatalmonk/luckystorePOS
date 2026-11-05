@@ -1,6 +1,26 @@
 import type { Locale } from './config';
 import { DELIVERY_POLICY } from '../deliveryData';
 
+function formatBanglaDeliveryTime(time: string) {
+  const match = /^(\d{1,2}):(\d{2})\s+(AM|PM)$/i.exec(time);
+  if (!match) return time;
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const period = match[3].toUpperCase();
+  const partOfDay = period === 'AM'
+    ? hour === 12 || hour < 5 ? 'রাত' : 'সকাল'
+    : hour === 12 ? 'দুপুর' : hour < 5 ? 'দুপুর' : hour < 8 ? 'বিকেল' : 'রাত';
+  const localizedHour = hour.toLocaleString('bn-BD', { useGrouping: false });
+  const formattedTime = minute === 0
+    ? `${localizedHour}টা`
+    : `${localizedHour}:${minute.toLocaleString('bn-BD', { minimumIntegerDigits: 2, useGrouping: false })}`;
+
+  return `${partOfDay} ${formattedTime}`;
+}
+
+const bnDeliveryHours = `প্রতিদিন ${formatBanglaDeliveryTime(DELIVERY_POLICY.deliveryHours.start)}–${formatBanglaDeliveryTime(DELIVERY_POLICY.deliveryHours.end)}`;
+
 export const dictionaries = {
   en: {
     language: 'বাংলা',
@@ -444,7 +464,7 @@ export const dictionaries = {
       cta: 'বাজার করুন',
     },
     footer: {
-      serviceDetails: 'ডেলিভারি: প্রতিদিন সকাল ৯টা–রাত ১২:৩০ · COD বা bKash-এ পেমেন্ট',
+      serviceDetails: `ডেলিভারি: ${bnDeliveryHours} · COD বা bKash-এ পেমেন্ট`,
       shopTitle: 'কেনাকাটা',
       helpTitle: 'সহায়তা',
       legalTitle: 'নিয়মাবলী',

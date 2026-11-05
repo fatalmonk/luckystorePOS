@@ -1251,15 +1251,15 @@ html.dark [class*="border-white/"] {
   transition: scale 180ms cubic-bezier(.2, .8, .2, 1), background-color 140ms ease, opacity 100ms ease;
 }
 
-.store-press:active,
-.store-dock a:active {
+.store-press:active:not([class*="active:scale"]),
+.store-dock a:active:not([class*="active:scale"]) {
   scale: .97;
   opacity: .82;
   transition-duration: 45ms;
 }
 
-.store-press:focus-visible,
-.store-dock a:focus-visible {
+.store-press:focus-visible:not([class*="focus-visible:ring"]),
+.store-dock a:focus-visible:not([class*="focus-visible:ring"]) {
   outline: 2px solid currentColor;
   outline-offset: -3px;
 }
