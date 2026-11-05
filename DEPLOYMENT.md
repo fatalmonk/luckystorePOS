@@ -32,7 +32,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 - Normal releases use [the Hostinger GitHub Actions workflow](.github/workflows/storefront-hostinger.yml), not a manual dashboard upload.
 - A storefront-related push to `main` builds one immutable Next.js standalone package, deploys it to `next.luckystore1947.com`, runs staging smoke/E2E/load validation, then deploys the same package to `luckystore1947.com` and runs production smoke checks.
 - `workflow_dispatch` supports staging-only or production promotion; production promotion still requires successful staging validation.
-- The Vercel `lucky-store` project is for previews. Its ignored-build step skips production-target deployments.
+- Vercel `lucky-store` is for customer storefront previews; its ignored-build step skips production-target deployments and previews without storefront runtime changes. `lucky-store-pos` skips builds unless admin app code or shared workspace dependencies change. Both projects use `scripts/vercel/ignore-build.sh` for these path checks.
 
 ### Features
 
