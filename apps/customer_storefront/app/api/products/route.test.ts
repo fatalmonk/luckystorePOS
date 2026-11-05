@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   getById: vi.fn(),
+  createRepository: vi.fn(() => ({ repo: { search: mocks.search, getById: mocks.getById } })),
   snapshot: [{
     id: 'snapshot-product-id',
     name: 'Snapshot Product',
@@ -18,7 +19,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../../lib/products/index', () => ({
-  createProductRepository: vi.fn(() => ({ repo: { search: mocks.search, getById: mocks.getById } })),
+  createProductRepository: mocks.createRepository,
   createProductId: vi.fn((id: string) => id),
 }));
 vi.mock('../../lib/supabase', () => ({ supabase: {} }));
@@ -103,5 +104,16 @@ describe('GET /api/products pagination', () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toMatchObject({ error: 'catalog unavailable' });
+  });
+
+  it('bypasses the shared product cache for explicit fresh ID lookups', async () => {
+    mocks.getById.mockResolvedValueOnce({
+      id: 'live-product-id', name: 'Live Product', price: 125, stock: 4,
+    });
+
+    const response = await GET(new NextRequest('https://store.test/api/products?id=live-product-id&fresh=1'));
+
+    expect(response.status).toBe(200);
+    expect(mocks.createRepository).toHaveBeenCalledWith({}, { enableCache: false });
   });
 });

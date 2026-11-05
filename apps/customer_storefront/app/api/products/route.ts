@@ -18,6 +18,7 @@ export const revalidate = 60;
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
+  const requireFreshProduct = id !== null && searchParams.get('fresh') === '1';
   const query = searchParams.get('q') || undefined;
   const rawLimit = searchParams.get('limit');
   const rawOffset = searchParams.get('offset');
@@ -33,7 +34,9 @@ export async function GET(req: NextRequest) {
   const page = Math.floor(offset / limit);
 
   try {
-    const { repo } = createProductRepository(supabase);
+    const { repo } = requireFreshProduct
+      ? createProductRepository(supabase, { enableCache: false })
+      : createProductRepository(supabase);
 
     if (id) {
       const product = await repo.getById(createProductId(id));

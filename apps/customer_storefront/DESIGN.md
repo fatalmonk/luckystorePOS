@@ -8,7 +8,7 @@ colors:
   saffron-ghost: "rgba(240, 196, 68, 0.08)"
   saffron-muted: "#FFF8E1"
   saffron-dark: "#d4a820"
-  paper: "#FDFBF7"
+  paper: "#F6F3EC"
   dark-page-background: "#0F0F0F"
   surface: "#ffffff"
   surface-dark: "#121212"
@@ -115,7 +115,7 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 - **Saffron Dark** (`#d4a820`): Dark-mode hover and richer saffron moments.
 
 ### Neutral
-- **Warm Paper** (`#FDFBF7`): Default light-mode page background. Warmer than pure white to reduce glare and reinforce the physical-store metaphor.
+- **Warm Paper** (`#F6F3EC`): Default light-mode page background. Warmer than pure white to reduce glare and reinforce the physical-store metaphor.
 - **Dark Page Ground** (`#0F0F0F`): Default dark-mode page background. Keep it distinct from Deep Night brand surfaces (`#0B0B0D`) and raised dark surfaces (`#121212`).
 - **Surface White** (`#ffffff`): Cards, inputs, modals, and raised containers in light mode.
 - **Image Well** (`#F7F1E8` light / `#2F2923` dark): Product and category image backgrounds. It is warmer than pure white in light mode and visibly lifted from the dark page ground in dark mode.
@@ -137,7 +137,7 @@ The palette is built around two brand-locked colors: Deep Night (`#0B0B0D`) and 
 ### Named rules
 **The Saffron Rarity Rule.** Saffron occupies ≤10% of any given screen. Its scarcity is the signal.
 
-**The Warm Ground Rule.** Page backgrounds are warm paper (`#FDFBF7`) in light mode and charcoal (`#0F0F0F`) in dark mode; avoid pure `#FFFFFF` page fills or `#1A1A1A` dark fills. Reserve Deep Night (`#0B0B0D`) for brand-locked surfaces and campaign treatments.
+**The Warm Ground Rule.** Page backgrounds are warm paper (`#F6F3EC`) in light mode and charcoal (`#0F0F0F`) in dark mode; avoid pure `#FFFFFF` page fills or `#1A1A1A` dark fills. Reserve Deep Night (`#0B0B0D`) for brand-locked surfaces and campaign treatments.
 
 **The Image Well Rule.** Product photography and fallback art sit on `--color-image-well` with `--color-image-well-border`, not on ad hoc white wells. Dark mode image wells stay warm and distinct from the page ground.
 

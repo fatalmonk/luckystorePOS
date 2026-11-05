@@ -61,7 +61,7 @@ function applyTheme(theme: Theme, withTransition = false) {
   root.style.colorScheme = theme;
   document
     .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    ?.setAttribute('content', theme === 'dark' ? '#0B0B0D' : '#FDFBF7');
+    ?.setAttribute('content', theme === 'dark' ? '#0B0B0D' : '#F6F3EC');
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

@@ -53,16 +53,20 @@ async function openFirstProduct(page: Page) {
   await page.goto('/');
   const firstProduct = page.getByTestId('grid-product-card').first();
   await expect(firstProduct).toBeVisible({ timeout: 10000 });
-  await firstProduct.getByRole('link', { name: /^View / }).click();
+  await firstProduct.getByRole('link', { name: /^Quick view:/ }).click();
+  const preview = page.getByRole('dialog');
+  await expect(preview).toBeVisible();
+  await preview.getByRole('link', { name: 'Full product details' }).click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 }
 
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
   // Scope to the main product detail area to avoid the hidden mobile sticky bar button
-  const addButton = page.locator('main button:has-text("Add to Cart")');
-  const outOfStockButton = page.locator('main button:has-text("Out of stock")');
-  const alreadyInCart = page.locator('main button[aria-label="Increase quantity"]');
+  const main = page.getByRole('main');
+  const addButton = page.getByRole('button', { name: 'Add to Cart', exact: true }).first();
+  const outOfStockButton = page.getByRole('button', { name: 'Out of stock', exact: true }).first();
+  const alreadyInCart = page.getByRole('button', { name: 'Increase quantity' }).first();
 
   try {
     return await Promise.race([
@@ -82,7 +86,7 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
     return false;
   }
 
-  const addButton = page.locator('main button:has-text("Add to Cart")');
+  const addButton = page.getByRole('button', { name: 'Add to Cart', exact: true }).first();
   if (await addButton.isVisible()) {
     await addButton.click();
   }
@@ -274,7 +278,19 @@ test.describe('Isolated Supabase order integration', () => {
     await page.fill('[data-testid="checkout-phone-input"]', '01712345678');
     await page.fill('[data-testid="checkout-address-input"]', 'Approved Supabase test project only');
     await page.click('[data-testid="checkout-review-btn"]');
-    await page.click('[data-testid="checkout-place-order-btn"]');
+    const checkoutResponsePromise = page.waitForResponse(
+      (response) => response.url().endsWith('/api/checkout') && response.request().method() === 'POST',
+    );
+    const [checkoutResponse] = await Promise.all([
+      checkoutResponsePromise,
+      page.click('[data-testid="checkout-place-order-btn"]'),
+    ]);
+    let checkoutError = '';
+    if (!checkoutResponse.ok()) {
+      const payload = await checkoutResponse.json().catch(() => null);
+      checkoutError = typeof payload?.error === 'string' ? payload.error : 'No safe error detail returned';
+    }
+    expect(checkoutResponse.status(), checkoutError).toBe(200);
 
     await page.waitForURL(/\/order/);
     await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();

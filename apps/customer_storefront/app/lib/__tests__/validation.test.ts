@@ -22,6 +22,14 @@ describe('checkoutSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts seeded item IDs with a zero version nibble', () => {
+    const result = checkoutSchema.safeParse({
+      ...validBase,
+      items: [{ ...validBase.items[0], id: 'a0740001-0000-0000-0000-000000000001' }],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects empty items array', () => {
     const result = checkoutSchema.safeParse({ ...validBase, items: [] });
     expect(result.success).toBe(false);

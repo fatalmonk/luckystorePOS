@@ -297,7 +297,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               setIsMobileSearchOpen(false);
               setShowSuggestions(false);
             }}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface text-warm-fg transition-colors hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded="true"
             aria-controls="mobile-search-header"
             aria-label="Close search"
@@ -375,12 +375,12 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List className="-translate-y-2" weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-[9px]" weight="bold" size={24} aria-hidden="true" />
           </button>
 
           <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
@@ -406,18 +406,18 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
       </div>
 
       {/* Main Bar: Logo, Central Search + Category Dropdown, Actions */}
-      <div className="header-corner-gradient mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:flex lg:max-w-none lg:px-4">
+      <div className="header-corner-gradient mx-auto hidden h-14 max-w-7xl items-center justify-between gap-0 px-3 sm:px-6 md:flex md:pl-[14px] lg:max-w-none lg:px-4">
         {/* Left cluster: drawer trigger and brand */}
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List className="-translate-y-2" weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-[9px]" weight="bold" size={24} aria-hidden="true" />
           </button>
 
           <Logo className="header-brand-logo ml-0.5 lg:h-14 lg:w-auto" locale={currentLocale} />
@@ -454,7 +454,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="mr-1 store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label={currentLocale === 'bn' ? 'অনুসন্ধান করুন' : 'Submit search'}
             >
               <ArrowRight weight="bold" size={16} aria-hidden="true" />
@@ -513,7 +513,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
       {!isDistractionFreePage && (
         <nav
           aria-label={currentLocale === 'bn' ? 'ক্যাটাগরি' : 'Categories'}
-          className={`mx-auto ${isFilterPage ? 'hidden md:flex' : 'flex'} max-w-7xl items-center px-3 pb-1 sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden`}
+          className={`relative mx-auto ${isFilterPage ? 'hidden md:flex' : 'flex'} max-w-7xl items-center px-3 pb-1 after:pointer-events-none after:absolute after:right-3 after:top-0 after:z-10 after:h-11 after:w-8 after:bg-gradient-to-l after:from-warm-bg after:to-transparent sm:px-6 md:ml-[72px] md:max-w-none md:px-4 lg:hidden`}
         >
           <div
             ref={mobileCategoriesRef}
@@ -542,7 +542,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
               allLabel={dict.header.allCategories}
-              itemClassName="inline-flex h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="inline-flex min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
 
@@ -553,7 +553,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               desktopCategoriesRef.current?.scrollBy({ left: 360, behavior: reducedMotion ? 'auto' : 'smooth' });
             }}
             aria-label="Scroll categories forward"
-            className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-warm-border bg-warm-bg text-warm-fg shadow-warm-md transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="absolute right-2 top-1.5 flex h-11 w-11 items-center justify-center rounded-full border border-warm-border bg-warm-bg text-warm-fg shadow-warm-md transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
           >
             <CaretRight aria-hidden="true" size={22} weight="bold" />
           </button>
