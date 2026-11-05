@@ -61,14 +61,12 @@ export function PullToRefresh({ lang }: { lang: 'en' | 'bn' }) {
   const labels = lang === 'bn'
     ? ['রিফ্রেশ করতে টানুন', 'রিফ্রেশ করতে ছেড়ে দিন', 'রিফ্রেশ হচ্ছে…']
     : ['Pull to refresh', 'Release to refresh', 'Refreshing…'];
-  return (
+  return (pending || distance > 0) ? (
     <div role="status" className="pointer-events-none fixed inset-x-0 top-16 z-[60] flex justify-center">
-      {(pending || distance > 0) && (
         <span className="rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-sm font-semibold text-warm-fg shadow-sm"
           style={{ opacity: pending ? 1 : 0.45 + 0.55 * distance / threshold }}>
           {pending ? labels[2] : distance >= threshold ? labels[1] : labels[0]}
         </span>
-      )}
     </div>
-  );
+  ) : null;
 }

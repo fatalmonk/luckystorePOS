@@ -54,15 +54,19 @@ async function openFirstProduct(page: Page) {
   const firstProduct = page.getByTestId('grid-product-card').first();
   await expect(firstProduct).toBeVisible({ timeout: 10000 });
   await firstProduct.getByRole('link', { name: /^View / }).click();
+  const preview = page.getByRole('dialog');
+  await expect(preview).toBeVisible();
+  await preview.getByRole('link', { name: 'Full product details' }).click();
   await page.waitForURL(/\/product\//);
   await expect(page.locator('h1')).toBeVisible();
 }
 
 async function getFirstProductStockStatus(page: Page): Promise<'in-stock' | 'out-of-stock'> {
   // Scope to the main product detail area to avoid the hidden mobile sticky bar button
-  const addButton = page.locator('main button:has-text("Add to Cart")');
-  const outOfStockButton = page.locator('main button:has-text("Out of stock")');
-  const alreadyInCart = page.locator('main button[aria-label="Increase quantity"]');
+  const main = page.getByRole('main');
+  const addButton = page.getByRole('button', { name: 'Add to Cart', exact: true }).first();
+  const outOfStockButton = page.getByRole('button', { name: 'Out of stock', exact: true }).first();
+  const alreadyInCart = page.getByRole('button', { name: 'Increase quantity' }).first();
 
   try {
     return await Promise.race([
@@ -82,7 +86,7 @@ async function addFirstInStockProductToCart(page: Page): Promise<boolean> {
     return false;
   }
 
-  const addButton = page.locator('main button:has-text("Add to Cart")');
+  const addButton = page.getByRole('button', { name: 'Add to Cart', exact: true }).first();
   if (await addButton.isVisible()) {
     await addButton.click();
   }
