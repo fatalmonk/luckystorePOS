@@ -49,6 +49,15 @@ while IFS= read -r path; do
       break
       ;;
   esac
+
+  if [[ "$project" == "admin" ]]; then
+    case "$path" in
+      landing/*.html|vercel.json|.vercelignore)
+        needs_build=1
+        break
+        ;;
+    esac
+  fi
 done <<< "$changed_paths"
 
 if [[ "$needs_build" == 1 ]]; then
