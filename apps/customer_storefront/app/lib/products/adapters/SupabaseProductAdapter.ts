@@ -16,7 +16,7 @@ import type {
   BrandParser,
   EmojiResolver,
 } from '../types';
-import { createProductId } from '../types';
+import { createProductId, resolveProductSearchPagination } from '../types';
 import {
   validateProductRow,
   validateCategoryRow,
@@ -105,8 +105,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
   ) {}
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
-    const limit = criteria.limit ?? 60;
-    const offset = criteria.offset ?? (criteria.page ?? 0) * limit;
+    const { limit, offset } = resolveProductSearchPagination(criteria);
 
     const { products: searchResults, hasMore } = await searchStorefrontProducts({
       query: criteria.query,

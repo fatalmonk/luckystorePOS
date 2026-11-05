@@ -68,6 +68,18 @@ export interface ProductSearchCriteria {
   /** Exact row offset; when omitted, page-based pagination is used. */
   offset?: number;
 }
+export interface ProductSearchPagination {
+  limit: number;
+  offset: number;
+}
+/** Resolve pagination once so cache identity and database queries use the same rule. */
+export function resolveProductSearchPagination(
+  criteria: Pick<ProductSearchCriteria, 'limit' | 'page' | 'offset'>,
+  defaultLimit = 60,
+): ProductSearchPagination {
+  const limit = criteria.limit ?? defaultLimit;
+  return { limit, offset: criteria.offset ?? (criteria.page ?? 0) * limit };
+}
 
 // Pagination result
 export interface PaginatedProducts {

@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache';
 import { supabase as defaultSupabase } from '../supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '../products/types';
-import { createProductId } from '../products/types';
+import { createProductId, resolveProductSearchPagination } from '../products/types';
 import { isMissingItemTranslationsTableError } from '../translationErrors';
 
 export interface SearchOptions {
@@ -66,7 +66,7 @@ function sanitizePostgrestSearchTerm(input: string): string {
 }
 
 export async function searchStorefrontProducts(options: SearchOptions = {}): Promise<SearchProductsResponse> {
-  const limit = options.limit ?? 50;
+  const { limit, offset } = resolveProductSearchPagination(options, 50);
   const normalizedQuery = (options.query ?? '').trim().toLowerCase();
   const cacheOptions: CachedSearchOptions = {
     query: normalizedQuery,
@@ -74,7 +74,7 @@ export async function searchStorefrontProducts(options: SearchOptions = {}): Pro
     categoryId: options.categoryId ?? null,
     categoryIds: options.categoryIds,
     limit,
-    offset: options.offset !== undefined ? options.offset : (options.page ?? 0) * limit,
+    offset,
   };
 
   // Test and custom callers may provide a distinct client; keep those isolated
