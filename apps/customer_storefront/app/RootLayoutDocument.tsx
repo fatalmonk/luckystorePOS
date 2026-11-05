@@ -14,7 +14,7 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
-import { getDeliveryShippingServiceSchema } from './lib/deliveryData';
+import { getDeliveryShippingServiceSchema, getMerchantReturnPolicies } from './lib/deliveryData';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -220,14 +220,7 @@ export default function RootLayoutDocument({
                 latitude: '22.35500093723366',
                 longitude: '91.83628930715629',
               },
-              hasMerchantReturnPolicy: {
-                '@type': 'MerchantReturnPolicy',
-                applicableCountry: 'BD',
-                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-                merchantReturnDays: 1,
-                returnMethod: 'https://schema.org/ReturnInStore',
-                returnFees: 'https://schema.org/FreeReturn',
-              },
+              hasMerchantReturnPolicy: getMerchantReturnPolicies(),
               hasShippingService: getDeliveryShippingServiceSchema(),
               sameAs: [
                 'https://facebook.com/luckystore1947',

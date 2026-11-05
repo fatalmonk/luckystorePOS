@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
 import { GoogleMapEmbed } from './GoogleMapEmbed';
+import { RETURN_RULES } from '../../lib/deliveryData';
 import { Select } from '../../components/ui/Select';
 
 export function ContactForm() {
@@ -219,7 +221,7 @@ export function ContactForm() {
             About Lucky Store 1947
           </h2>
           <p className="text-xs sm:text-sm text-warm-muted leading-relaxed mt-2">
-            Founded in 1947 in Chittagong, Lucky Store has been serving generations of families with authentic, premium-quality groceries, cooking essentials, fresh produce, and everyday items. We combine traditional market trust with modern fast home delivery across Chittagong city.
+            Founded in 1947, Lucky Store is a grocery and daily bazaar shop at 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203. Our own staff deliver within 1 km of the shop.
           </p>
         </div>
       </div>
@@ -237,18 +239,18 @@ export function ContactForm() {
 
         <div className="space-y-4">
           <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
-            <h3 className="text-sm font-bold text-warm-fg">Does Lucky Store offer home delivery for online grocery in Chittagong?</h3>
-            <p className="text-xs text-warm-muted leading-relaxed">Yes! We deliver fresh groceries, oil, rice, and daily bazaar items across Chittagong city directly to your doorstep.</p>
+            <h3 className="text-sm font-bold text-warm-fg">Does Lucky Store offer home delivery?</h3>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes. Our own staff deliver groceries and daily bazaar items within 1 km of the shop at Emdad Park, Chawkbazar.</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
             <h3 className="text-sm font-bold text-warm-fg">Can I pay when my grocery order arrives?</h3>
-            <p className="text-xs text-warm-muted leading-relaxed">Yes, Cash on Delivery (COD) is available for all Chittagong city orders.</p>
+            <p className="text-xs text-warm-muted leading-relaxed">Yes. For addresses within 1 km of the shop, you can pay cash on delivery or by bKash at the door, after you check the order.</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-warm-bg/60 border border-warm-border/50 space-y-1">
             <h3 className="text-sm font-bold text-warm-fg">What if an item in my order is damaged or missing?</h3>
-            <p className="text-xs text-warm-muted leading-relaxed">We offer free instant returns and replacement upon delivery if any product is missing or damaged.</p>
+            <p className="text-xs text-warm-muted leading-relaxed">{RETURN_RULES.en.doorstep} {RETURN_RULES.en.defective} See the <Link href="/return-policy" className="font-semibold text-warm-accent-dark underline underline-offset-2 hover:no-underline">return policy</Link>.</p>
           </div>
         </div>
       </div>

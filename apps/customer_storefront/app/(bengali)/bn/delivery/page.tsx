@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Header } from '../../../components/updated/Header';
 import { Footer } from '../../../components/updated/Footer';
 import { BottomNav } from '../../../components/BottomNav';
-import { DELIVERY_POLICY, COVERED_AREAS, BENGALI_DELIVERY_FAQS, getBengaliDeliveryFaqSchema } from '../../../lib/deliveryData';
+import { DELIVERY_POLICY, COVERED_AREAS, BENGALI_DELIVERY_FAQS, RETURN_RULES, getBengaliDeliveryFaqSchema } from '../../../lib/deliveryData';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../../components/seo/JsonLd';
 
@@ -77,7 +77,7 @@ export default function BengaliDeliveryPage() {
         </section>
         <section className="mt-12 rounded-2xl border border-warm-border bg-warm-surface p-6" aria-labelledby="payment-heading">
           <h2 id="payment-heading" className="text-2xl font-black">পেমেন্ট ও পণ্য পরীক্ষা পদ্ধতি</h2>
-          <p className="mt-3 leading-8 text-warm-muted">ক্যাশ অন ডেলিভারি (COD) ও bKash-এ পেমেন্ট সুবিধা রয়েছে। ডেলিভারি পার্টনারের কাছ থেকে প্যাকেট, ওজন, সিল ও মেয়াদ নিজে দেখে নিশ্চিত হয়ে তারপর নিশ্চিন্তে পেমেন্ট করুন।</p>
+          <p className="mt-3 leading-8 text-warm-muted">ক্যাশ অন ডেলিভারি (COD) ও bKash-এ পেমেন্ট সুবিধা রয়েছে। ডেলিভারি পার্টনারের কাছ থেকে প্যাকেট, ওজন, সিল ও মেয়াদ নিজে দেখে নিশ্চিত হয়ে তারপর নিশ্চিন্তে পেমেন্ট করুন। {RETURN_RULES.bn.doorstep} {RETURN_RULES.bn.defective}</p>
         </section>
         <section className="mt-12" aria-labelledby="delivery-faq-heading">
           <h2 id="delivery-faq-heading" className="text-2xl font-black">ডেলিভারি সম্পর্কে সাধারণ প্রশ্ন</h2>

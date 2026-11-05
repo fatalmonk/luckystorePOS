@@ -1,5 +1,5 @@
 import React from 'react';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
 import { JsonLd } from './JsonLd';
 
 export interface FaqItem {
@@ -40,7 +40,7 @@ export function FaqJsonLd({ items }: { items?: readonly FaqItem[] }) {
         name: 'What if something is missing or damaged?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Inspect the order when it arrives. If an item is missing, damaged, or not acceptable, hand it back immediately and contact the store team for support.',
+          text: `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}`,
         },
       },
       {

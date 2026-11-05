@@ -39,14 +39,14 @@ export function TermsScreen() {
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>🚚 Delivery & Doorstep Inspection</Text>
         <Text style={styles.bodyText}>
-          Delivery slots are approximate within Chattogram city zones. Customers are encouraged to inspect goods upon delivery before making payment.
+          Our own staff deliver within 1 km of the shop at Emdad Park, Chawkbazar. Items are checked at the door on delivery, before payment.
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>🔄 Returns & Refunds</Text>
         <Text style={styles.bodyText}>
-          Perishable items may be rejected at the doorstep if damaged or unsatisfactory. Non-perishable items with defects can be returned within 24 hours with the order receipt.
+          Items are checked at the door on delivery, before payment. Once paid, a product cannot be returned for a change of mind. Defective items can be returned within 24 hours of purchase or delivery, with the receipt.
         </Text>
       </View>
     </ScrollView>

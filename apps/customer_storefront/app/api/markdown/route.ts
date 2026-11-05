@@ -3,7 +3,7 @@ import { createProductRepository, createProductId } from '../../lib/products/ind
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
 import { POPULAR_BRANDS, getBrandBySlug, isProductOfBrand } from '../../lib/brandsData';
 
 export const dynamic = 'force-dynamic';
@@ -73,7 +73,9 @@ const SITE_MAP = [
   { path: '/delivery', label: 'Delivery Information', desc: 'Coverage areas, fees, hours, and COD policies' },
   { path: '/contact', label: 'Contact Us', desc: 'Address, phone, email, WhatsApp' },
   { path: '/privacy', label: 'Privacy Policy', desc: 'How we handle your data' },
-  { path: '/terms', label: 'Terms of Service', desc: 'Usage terms and conditions' },
+  { path: '/about', label: 'About Lucky Store', desc: 'Grocery shop in Emdad Park, Chawkbazar, since 1947' },
+  { path: '/terms', label: 'Shopping Terms', desc: 'Orders, prices, payment, and the 1 km delivery area' },
+  { path: '/return-policy', label: 'Return Policy', desc: 'Doorstep checks, replacements, and cash or bKash refunds' },
   { path: '/data-deletion', label: 'Data Deletion', desc: 'Request deletion of your data' },
   { path: '/security-policy', label: 'Security Policy', desc: 'Our security practices' },
   { path: '/login', label: 'Login', desc: 'Sign in to your account' },
@@ -228,50 +230,120 @@ function mdPrivacyPage(): string {
   return md;
 }
 
-function mdTermsPage(): string {
-  let md = mdHeader('Terms of Service', 'Terms and conditions for using Lucky Store.');
-  md += `*Effective date: May 6, 2024*\n\n`;
+function mdTermsPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('কেনাকাটার শর্তাবলী', 'চকবাজারের লাকি স্টোর থেকে মুদি ও দৈনন্দিন বাজারের পণ্য অর্ডারের শর্ত।');
+    md += `*কার্যকর তারিখ: ৪ নভেম্বর ২০২৬*\n\n`;
+    md += `লাকি স্টোর ${DELIVERY_POLICY.establishedYear} সাল থেকে চকবাজারের একটি মুদি ও দৈনন্দিন বাজারের দোকান। ঠিকানা: ${DELIVERY_POLICY.hubAddress}।\n\n`;
+    md += `## অর্ডার\n\n`;
+    md += `এই ওয়েবসাইটে মুদি ও দৈনন্দিন বাজারের পণ্য অর্ডার করা যায়। অর্ডার মানে দোকান থেকে সেই পণ্য গুছিয়ে পাঠানোর অনুরোধ। ডেলিভারি দেন আমাদের নিজস্ব কর্মীরা; বাইরের কুরিয়ার ব্যবহার করা হয় না।\n\n`;
+    md += `কাছের একটি পরিচিত স্থানসহ পুরো ঠিকানা দিন। নিচে উল্লেখ করা এলাকার বাইরে ডেলিভারি হয় না।\n\n`;
+    md += `## দাম ও স্টক\n\n`;
+    md += `দাম টাকায় (৳) দেখানো হয়। পণ্যের পাতায় যে দাম আছে, সেটিই সেই পণ্যের দাম। দোকানে স্টক থাকলে তবেই পণ্য প্যাক করা হয়। কোনো পণ্য দিতে না পারলে সেটি অর্ডার থেকে বাদ যায়। আপনি যা পাননি, তার জন্য চার্জ হয় না; যা পেয়েছেন এবং রেখেছেন, শুধু তার জন্যই টাকা দেন।\n\n`;
+    md += `## পেমেন্ট\n\n`;
+    md += `পণ্য দেখে নেওয়ার পর দরজায় পেমেন্ট করেন। আমরা ক্যাশ অন ডেলিভারি এবং ${DELIVERY_POLICY.paymentMethods.bkashNumber} নম্বরে দরজায় bKash নিই। অর্ডার পৌঁছানোর আগে টাকা চাওয়া হয় না।\n\n`;
+    md += `## ডেলিভারি\n\n`;
+    md += `- আমাদের নিজস্ব কর্মীরা শুধু এমদাদ পার্ক, চকবাজারের দোকান থেকে ${DELIVERY_POLICY.radiusKm} কিমির মধ্যে ডেলিভারি দেন\n`;
+    md += `- ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ফ্রি; এর কম হলে ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}\n`;
+    md += `- খোলা থাকে ${DELIVERY_POLICY.deliveryHours.display}; এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়\n\n`;
+    md += `## পণ্য দেখে নেওয়া ও ফেরত\n\n`;
+    md += `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective} ক্যাশ ও bKash-এ টাকা ফেরতের বিস্তারিত [ফেরত নীতিতে](${BASE_URL}/bn/return-policy) আছে।\n\n`;
+    md += `## প্রযোজ্য আইন\n\n`;
+    md += `এই শর্ত বাংলাদেশের আইন অনুসারে চলবে।\n\n`;
+    md += `## যোগাযোগ\n\n`;
+    md += `- **ফোন / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+    md += `- **ইমেইল:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+    md += `- **ঠিকানা:** ${DELIVERY_POLICY.hubAddress}\n`;
+    return md;
+  }
 
-  md += `## ✍️ Acceptance of Terms\n\n`;
-  md += `By accessing or using Lucky Store POS, you agree to be bound by these Terms and all applicable `;
-  md += `laws and regulations. If you do not agree with any part of these terms, you may not use our service.\n\n`;
+  let md = mdHeader('Shopping Terms', 'Terms for ordering groceries from Lucky Store in Chawkbazar.');
+  md += `*Effective date: 4 November 2026*\n\n`;
+  md += `Lucky Store, established in ${DELIVERY_POLICY.establishedYear}, is a grocery and daily bazaar shop at ${DELIVERY_POLICY.hubAddress}.\n\n`;
+  md += `## Orders\n\n`;
+  md += `Orders are packed at the shop and delivered by our own staff. We do not use an outside courier.\n\n`;
+  md += `## Pricing and availability\n\n`;
+  md += `Prices are in taka. An item is packed only when it is in stock. You are not charged for an item you do not receive, and you pay only for items you receive and accept.\n\n`;
+  md += `## Payment\n\n`;
+  md += `Pay at the door after you check the order: cash on delivery, or bKash to ${DELIVERY_POLICY.paymentMethods.bkashNumber}.\n\n`;
+  md += `## Delivery\n\n`;
+  md += `- Only within ${DELIVERY_POLICY.radiusKm} km of the Emdad Park shop\n`;
+  md += `- Free on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more; ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below that\n`;
+  md += `- Open ${DELIVERY_POLICY.deliveryHours.display}, with same-day dispatch\n\n`;
+  md += `## Returns\n\n`;
+  md += `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective} See the [return policy](${BASE_URL}/return-policy).\n\n`;
+  md += `## Governing law\n\n`;
+  md += `These terms are governed by the laws of Bangladesh.\n\n`;
+  md += `## Contact\n\n`;
+  md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544) · [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+  md += `- **Address:** ${DELIVERY_POLICY.hubAddress}\n`;
+  return md;
+}
 
-  md += `## 🛒 Description of Service\n\n`;
-  md += `Lucky Store POS provides point-of-sale and inventory management tools for retail businesses, `;
-  md += `plus an online storefront for customers to place orders. Features include sales processing, `;
-  md += `inventory tracking, customer management, and reporting.\n\n`;
+function mdAboutPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('লাকি স্টোর সম্পর্কে', `এমদাদ পার্ক, চকবাজারের মুদি ও দৈনন্দিন বাজারের দোকান। ${DELIVERY_POLICY.establishedYear} সাল থেকে।`);
+    md += `লাকি স্টোরের ঠিকানা ${DELIVERY_POLICY.hubAddress}। দোকানটি চট্টগ্রামের চকবাজার এলাকায়, এমদাদ পার্কে।\n\n`;
+    md += `## ১৯৪৭ সাল থেকে\n\n`;
+    md += `দোকানটি ${DELIVERY_POLICY.establishedYear} সাল থেকে এই জায়গায় আছে। চকবাজারের পরিবারেরা বহু বছর ধরে এই কাউন্টার থেকে দৈনন্দিন বাজার কিনে আসছেন। এখন একই দোকানে এই ওয়েবসাইট থেকেও অর্ডার করা যায়।\n\n`;
+    md += `## কী বিক্রি হয়\n\n`;
+    md += `আমরা মুদি ও দৈনন্দিন বাজারের পণ্য বিক্রি করি: চাল, রান্নার তেল, চা, মসলা, নাস্তা, এবং রান্নাঘর ও ঘরের নিত্যপ্রয়োজনীয় জিনিস।\n\n`;
+    md += `## ডেলিভারি\n\n`;
+    md += `আমাদের নিজস্ব কর্মীরা দোকান থেকে ${DELIVERY_POLICY.radiusKm} কিমির মধ্যে ডেলিভারি দেন। ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি, তার কম হলে ৳${DELIVERY_POLICY.standardDeliveryFeeBdt}। দোকান খোলা থাকে ${DELIVERY_POLICY.deliveryHours.display}। এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়।\n\n`;
+    md += `পণ্য দেখে নেওয়ার পর ক্যাশ অন ডেলিভারি বা দরজায় bKash-এ টাকা দিতে পারেন।\n\n`;
+    md += `এলাকা, চার্জ ও সময়ের বিস্তারিত [ডেলিভারি পাতায়](${BASE_URL}/bn/delivery) আছে।\n\n`;
+    md += `## যোগাযোগ\n\n`;
+    md += `- **ফোন:** [01731944544](tel:+8801731944544)\n`;
+    md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n`;
+    md += `- **ইমেইল:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+    return md;
+  }
 
-  md += `## 👤 User Accounts\n\n`;
-  md += `- You must provide accurate and complete information when creating an account\n`;
-  md += `- You are responsible for maintaining the security of your account credentials\n`;
-  md += `- You are responsible for all activities under your account\n`;
-  md += `- Notify us immediately of any unauthorized use\n\n`;
+  let md = mdHeader('About Lucky Store', `Grocery and daily bazaar shop in Emdad Park, Chawkbazar, since ${DELIVERY_POLICY.establishedYear}.`);
+  md += `Lucky Store is at ${DELIVERY_POLICY.hubAddress}.\n\n`;
+  md += `The shop has sold daily groceries in Chawkbazar since ${DELIVERY_POLICY.establishedYear}. It sells rice, cooking oil, tea, spices, snacks, and household essentials.\n\n`;
+  md += `Our own staff deliver within ${DELIVERY_POLICY.radiusKm} km. Delivery is free on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} or more, and ৳${DELIVERY_POLICY.standardDeliveryFeeBdt} below that. The shop is open ${DELIVERY_POLICY.deliveryHours.display}, and orders placed in those hours are dispatched the same day.\n\n`;
+  md += `Pay cash on delivery or by bKash at the door after you check the order.\n\n`;
+  md += `- **Phone / WhatsApp:** [01731944544](tel:+8801731944544)\n`;
+  md += `- **Email:** [hello@luckystore1947.com](mailto:hello@luckystore1947.com)\n`;
+  return md;
+}
 
-  md += `## 💳 Payment Terms\n\n`;
-  md += `Some features may require payment. You agree to pay all fees associated with your subscription `;
-  md += `plan. All payments are non-refundable unless otherwise stated. Online orders use Cash on Delivery (COD) by default.\n\n`;
+function mdReturnPolicyPage(isBn = false): string {
+  if (isBn) {
+    let md = mdHeader('ফেরত নীতি', `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective}`);
+    md += `*কার্যকর তারিখ: ৪ নভেম্বর ২০২৬*\n\n`;
+    md += `## দরজায় দেখে, তারপর টাকা\n\n`;
+    md += `${RETURN_RULES.bn.doorstep} ডেলিভারি কর্মী অপেক্ষা করেন, যাতে আপনি সিল, ওজন, প্যাকেট ও মেয়াদ দেখতে পারেন। নষ্ট, ভুল বা বাদ পড়া পণ্য টাকা দেওয়ার আগে ফেরত দিতে পারেন। সেই পণ্যের জন্য চার্জ হবে না। দরজায় ফেরত দিলে আলাদা ফি লাগে না।\n\n`;
+    md += `## মন বদলালে ফেরত নয়\n\n`;
+    md += `টাকা দেওয়ার পর মন বদলানোর জন্য পণ্য ফেরত নেওয়া হয় না। যে খাবার আপনি দেখে রেখেছেন, সেটিও এর মধ্যে পড়ে।\n\n`;
+    md += `## ত্রুটিপূর্ণ পণ্য, ২৪ ঘণ্টা\n\n`;
+    md += `${RETURN_RULES.bn.defective} এই ২৪ ঘণ্টা কেনা বা ডেলিভারির সময় থেকে গণনা হয়। রসিদ রাখুন। ত্রুটিপূর্ণ পণ্যের মধ্যে নষ্ট বা ক্ষতিগ্রস্ত খাবারও পড়ে, এবং অন্য যেকোনো ত্রুটিপূর্ণ জিনিসও।\n\n`;
+    md += `## কীভাবে জানাবেন\n\n`;
+    md += `দরজায় থাকতে টাকা দেওয়ার আগে ডেলিভারি কর্মীকে বলুন। টাকা দেওয়ার পর ত্রুটিপূর্ণ পণ্য হলে ২৪ ঘণ্টার মধ্যে ফোন বা WhatsApp করুন এবং রসিদ রাখুন:\n\n`;
+    md += `- **ফোন:** [01731944544](tel:+8801731944544)\n`;
+    md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n\n`;
+    md += `## ক্যাশ ও bKash-এ টাকা ফেরত\n\n`;
+    md += `- **টাকা দেওয়ার আগে:** যে পণ্য রাখছেন, শুধু তার জন্য টাকা দেন। নগদ টাকা ডেলিভারি কর্মীকে দেন। bKash-এ রাখা পণ্যের মোট টাকা পাঠান, নম্বর ${DELIVERY_POLICY.paymentMethods.bkashNumber}। যে পণ্য ফেরত দিচ্ছেন তার জন্য আগেই bKash পাঠিয়ে থাকলে, কর্মী যাওয়ার আগে বলে দিন; সেই টাকা bKash-এ ফেরত দেওয়া হবে।\n`;
+    md += `- **টাকা দেওয়ার পর:** মন বদলালে টাকা ফেরত হয় না। ত্রুটিপূর্ণ পণ্য ২৪ ঘণ্টার মধ্যে রসিদসহ ফেরত দিলে, যেভাবে টাকা দিয়েছিলেন সেভাবেই ফেরত পাবেন: নগদ দিলে নগদ, bKash দিলে bKash। ফেরতের আলাদা ফি নেই।\n`;
+    return md;
+  }
 
-  md += `## 📊 Data and Content\n\n`;
-  md += `You retain ownership of your business data. By using our service, you grant us a license to `;
-  md += `store and process your data for the purpose of providing our services.\n\n`;
-
-  md += `## ⚠️ Limitation of Liability\n\n`;
-  md += `Lucky Store shall not be liable for any indirect, incidental, special, consequential, or `;
-  md += `punitive damages resulting from your use of the service.\n\n`;
-
-  md += `## 🚪 Termination\n\n`;
-  md += `We may terminate or suspend your account at any time for violations of these terms. `;
-  md += `You may also terminate your account at any time by contacting us.\n\n`;
-
-  md += `## ⚖️ Governing Law\n\n`;
-  md += `These Terms shall be governed by the laws of Bangladesh.\n\n`;
-
-  md += `## 📞 Contact Information\n\n`;
-  md += `For questions about these Terms:\n`;
-  md += `- **Email:** [luckystore.1947@gmail.com](mailto:luckystore.1947@gmail.com)\n`;
+  let md = mdHeader('Return Policy', `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}`);
+  md += `*Effective date: 4 November 2026*\n\n`;
+  md += `## Checked at the door, before payment\n\n`;
+  md += `${RETURN_RULES.en.doorstep} You can refuse a damaged, wrong, or missing item before you pay, and you are not charged for it.\n\n`;
+  md += `## No return for a change of mind\n\n`;
+  md += `Once paid, a product cannot be returned for a change of mind. That includes food you have already checked and accepted.\n\n`;
+  md += `## Defective items within 24 hours\n\n`;
+  md += `${RETURN_RULES.en.defective}\n\n`;
+  md += `## How to ask\n\n`;
   md += `- **Phone:** [01731944544](tel:+8801731944544)\n`;
-  md += `- **Google Maps:** [View location](https://maps.app.goo.gl/tfiRABoc1WsKEt619)\n`;
-  md += `- **Address:** 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh\n`;
+  md += `- **WhatsApp:** [wa.me/8801731944544](${DELIVERY_POLICY.supportWhatsAppUrl})\n\n`;
+  md += `## Refunds\n\n`;
+  md += `- **Before payment:** pay only for the items you keep. Cash is paid to the delivery partner. bKash goes to ${DELIVERY_POLICY.paymentMethods.bkashNumber}.\n`;
+  md += `- **After payment:** a change of mind is not refunded. A defective item returned within 24 hours with the receipt is refunded the way you paid, cash or bKash, with no return fee.\n`;
   return md;
 }
 
@@ -384,7 +456,7 @@ function mdDeliveryPage(): string {
   md += `## 💳 Payment Options & Doorstep Inspection\n\n`;
   md += `- **Cash on Delivery (COD):** 100% supported. Pay the delivery partner upon arrival.\n`;
   md += `- **bKash Mobile Payment:** Send money or scan QR upon delivery to \`${DELIVERY_POLICY.paymentMethods.bkashNumber}\`.\n`;
-  md += `- **Doorstep Inspection Guarantee:** Inspect all items, seals, rice varieties, and expiration dates before paying. Decline unsatisfactory items on the spot with zero penalty.\n\n`;
+  md += `- **Doorstep inspection and returns:** ${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}\n\n`;
 
   md += `## ❓ Frequently Asked Questions\n\n`;
   md += `1. **What areas are covered?** Areas and nearby parts of neighborhoods within 1 km of Chawkbazar, Chattogram.\n`;
@@ -590,8 +662,12 @@ export async function GET(req: NextRequest) {
       markdown = mdContactPage();
     } else if (path === '/privacy') {
       markdown = mdPrivacyPage();
-    } else if (path === '/terms') {
-      markdown = mdTermsPage();
+    } else if (path === '/terms' || path === '/bn/terms') {
+      markdown = mdTermsPage(path.startsWith('/bn/'));
+    } else if (path === '/about' || path === '/bn/about') {
+      markdown = mdAboutPage(path.startsWith('/bn/'));
+    } else if (path === '/return-policy' || path === '/bn/return-policy') {
+      markdown = mdReturnPolicyPage(path.startsWith('/bn/'));
     } else if (path === '/data-deletion') {
       markdown = mdDataDeletionPage();
     } else if (path === '/security-policy') {

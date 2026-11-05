@@ -2,16 +2,24 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
+import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
+
+const CANONICAL = 'https://www.luckystore1947.com/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Read the Terms of Service governing accounts, service access, payment terms, and platform usage across Lucky Store point-of-sale and storefront applications.',
+  description: `Shopping terms for Lucky Store, a grocery and daily bazaar shop at Emdad Park, Chawkbazar. Covers orders, prices, cash or bKash at the door, and delivery within ${DELIVERY_POLICY.radiusKm} km.`,
   robots: {
     index: true,
     follow: true,
   },
   alternates: {
-    canonical: 'https://www.luckystore1947.com/terms',
+    canonical: CANONICAL,
+    languages: {
+      'en-BD': CANONICAL,
+      'bn-BD': 'https://www.luckystore1947.com/bn/terms',
+      'x-default': CANONICAL,
+    },
   },
 };
 
@@ -35,8 +43,11 @@ function PolicySection({ icon, title, children }: PolicySectionProps) {
   );
 }
 
+const linkClass =
+  'text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline';
+
 export default function TermsOfServicePage() {
-  const effectiveDate = 'May 6, 2024';
+  const effectiveDate = '4 November 2026';
 
   return (
     <>
@@ -49,75 +60,82 @@ export default function TermsOfServicePage() {
               Terms of Service
             </h1>
             <p className="text-sm text-warm-muted max-w-md mx-auto leading-relaxed">
-              Welcome to Lucky Store. By using our application, you agree to these Terms of Service.
+              These terms cover shopping with Lucky Store, our grocery and daily bazaar shop in Chawkbazar.
             </p>
             <p className="text-xs text-warm-muted mt-3">Effective date: {effectiveDate}</p>
           </div>
 
           <div className="space-y-4 mb-10">
-            <PolicySection icon="✍️" title="Acceptance of Terms">
+            <PolicySection icon="🏪" title="The shop">
               <p>
-                By accessing or using Lucky Store POS, you agree to be bound by these Terms and all applicable
-                laws and regulations. If you do not agree with any part of these terms, you may not use our service.
+                Lucky Store, established in {DELIVERY_POLICY.establishedYear}, is a grocery and daily bazaar shop at {DELIVERY_POLICY.hubAddress}.
+                Placing an order means you agree to these terms and to our <Link href="/return-policy" className={linkClass}>return policy</Link>.
               </p>
             </PolicySection>
 
-            <PolicySection icon="🛒" title="Description of Service">
+            <PolicySection icon="🛒" title="Orders">
               <p>
-                Lucky Store POS provides point-of-sale and inventory management tools for retail businesses,
-                plus an online storefront for customers to place orders. Features include sales processing,
-                inventory tracking, customer management, and reporting.
+                You can order groceries and daily bazaar items on this website. An order asks our shop to pack those items.
+                Our own staff deliver orders. We do not use an outside courier.
+              </p>
+              <p>
+                Please give a complete address with a nearby landmark. We deliver only inside the area described below.
               </p>
             </PolicySection>
 
-            <PolicySection icon="👤" title="User Accounts">
+            <PolicySection icon="🏷️" title="Pricing and availability">
+              <p>
+                Prices are shown in taka (৳). The price on the product is the price for that item.
+              </p>
+              <p>
+                We pack an item only when it is in stock at the shop. If something cannot be supplied, we leave it out of the order.
+                You are not charged for an item you do not receive. You pay only for the items you receive and accept.
+              </p>
+            </PolicySection>
+
+            <PolicySection icon="💵" title="Payment">
+              <p>
+                You pay at the door, after you have checked the order. We accept:
+              </p>
               <ul className="list-disc pl-4 space-y-1">
-                <li>You must provide accurate and complete information when creating an account</li>
-                <li>You are responsible for maintaining the security of your account credentials</li>
-                <li>You are responsible for all activities under your account</li>
-                <li>Notify us immediately of any unauthorized use</li>
+                <li>{DELIVERY_POLICY.paymentMethods.cod}</li>
+                <li>bKash at the door to {DELIVERY_POLICY.paymentMethods.bkashNumber}</li>
+              </ul>
+              <p>We do not ask you to pay before the order arrives.</p>
+            </PolicySection>
+
+            <PolicySection icon="🚚" title="Delivery">
+              <p>
+                Our own staff deliver only within {DELIVERY_POLICY.radiusKm} km of the shop at Emdad Park, Chawkbazar.
+                Addresses outside that radius are not covered. The streets we serve are listed on the <Link href="/delivery" className={linkClass}>delivery page</Link>.
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Free on orders of ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} or more</li>
+                <li>৳{DELIVERY_POLICY.standardDeliveryFeeBdt} on orders below ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}</li>
+                <li>Open {DELIVERY_POLICY.deliveryHours.display}</li>
+                <li>Orders placed during those hours are dispatched the same day</li>
               </ul>
             </PolicySection>
 
-            <PolicySection icon="💳" title="Payment Terms">
+            <PolicySection icon="🔄" title="Checking your order and returns">
+              <p>{RETURN_RULES.en.doorstep}</p>
+              <p>{RETURN_RULES.en.defective}</p>
               <p>
-                Some features may require payment. You agree to pay all fees associated with your subscription
-                plan. All payments are non-refundable unless otherwise stated. Online orders use Cash on Delivery (COD) by default.
+                Cash and bKash refunds are set out in the <Link href="/return-policy" className={linkClass}>return policy</Link>.
               </p>
             </PolicySection>
 
-            <PolicySection icon="📊" title="Data and Content">
-              <p>
-                You retain ownership of your business data. By using our service, you grant us a license to
-                store and process your data for the purpose of providing our services.
-              </p>
+            <PolicySection icon="⚖️" title="Governing law">
+              <p>These terms are governed by the laws of Bangladesh.</p>
             </PolicySection>
 
-            <PolicySection icon="⚠️" title="Limitation of Liability">
-              <p>
-                Lucky Store shall not be liable for any indirect, incidental, special, consequential, or
-                punitive damages resulting from your use of the service.
-              </p>
-            </PolicySection>
-
-            <PolicySection icon="🚪" title="Termination">
-              <p>
-                We may terminate or suspend your account at any time for violations of these terms.
-                You may also terminate your account at any time by contacting us.
-              </p>
-            </PolicySection>
-
-            <PolicySection icon="⚖️" title="Governing Law">
-              <p>These Terms shall be governed by the laws of Bangladesh.</p>
-            </PolicySection>
-
-            <PolicySection icon="📞" title="Contact Information">
-              <p>For questions about these Terms, please contact us at:</p>
+            <PolicySection icon="📞" title="Contact">
+              <p>Questions about an order or these terms:</p>
               <ul className="list-disc pl-4 space-y-1">
-                <li>Email: <a href="mailto:hello@luckystore1947.com" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">hello@luckystore1947.com</a></li>
-                <li>Phone: <a href="tel:+8801731944544" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">01731944544</a></li>
-                <li>Find us on Google Maps: <a href="https://maps.app.goo.gl/tfiRABoc1WsKEt619" target="_blank" rel="noopener" className="text-warm-accent-dark font-semibold underline underline-offset-2 hover:no-underline">maps.app.goo.gl/tfiRABoc1WsKEt619</a></li>
-                <li>Address: 665 Percival Hill Road, Emdad Park, Chawkbazar, Chittagong, Bangladesh</li>
+                <li>Phone: <a href="tel:+8801731944544" className={linkClass}>01731944544</a></li>
+                <li>WhatsApp: <a href={DELIVERY_POLICY.supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>wa.me/8801731944544</a></li>
+                <li>Email: <a href="mailto:hello@luckystore1947.com" className={linkClass}>hello@luckystore1947.com</a></li>
+                <li>Address: {DELIVERY_POLICY.hubAddress}</li>
               </ul>
             </PolicySection>
           </div>

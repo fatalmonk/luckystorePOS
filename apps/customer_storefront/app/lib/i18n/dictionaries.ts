@@ -1,5 +1,5 @@
 import type { Locale } from './config';
-import { DELIVERY_POLICY } from '../deliveryData';
+import { DELIVERY_POLICY, RETURN_RULES } from '../deliveryData';
 
 function formatBanglaDeliveryTime(time: string) {
   const match = /^(\d{1,2}):(\d{2})\s+(AM|PM)$/i.exec(time);
@@ -100,7 +100,7 @@ export const dictionaries = {
         },
         {
           question: 'What if something is missing or damaged?',
-          answer: 'Inspect the order when it arrives. If an item is missing, damaged, or not acceptable, hand it back immediately and contact the store team for support.',
+          answer: `${RETURN_RULES.en.doorstep} ${RETURN_RULES.en.defective}`,
         },
       ],
     },
@@ -178,6 +178,7 @@ export const dictionaries = {
       wishlist: 'Wishlist',
       privacyPolicy: 'Privacy policy',
       termsOfService: 'Terms of service',
+      returnPolicy: 'Return policy',
       securityPolicy: 'Security policy',
       address: 'Chawkbazar, Chattogram, Bangladesh',
       callUs: 'Call us:',
@@ -402,7 +403,7 @@ export const dictionaries = {
         },
         {
           question: 'কোনো পণ্য কম বা ক্ষতিগ্রস্ত হলে কী করব?',
-          answer: 'ডেলিভারি আসার সময় পণ্য দেখে নিন। কোনো পণ্য কম, ক্ষতিগ্রস্ত বা গ্রহণযোগ্য না হলে সঙ্গে সঙ্গে ফেরত দিন এবং দোকানের টিমকে জানান।',
+          answer: `${RETURN_RULES.bn.doorstep} ${RETURN_RULES.bn.defective}`,
         },
       ],
     },
@@ -480,6 +481,7 @@ export const dictionaries = {
       wishlist: 'পছন্দের তালিকা',
       privacyPolicy: 'গোপনীয়তা নীতি',
       termsOfService: 'ব্যবহারের শর্তাবলী',
+      returnPolicy: 'ফেরত নীতি',
       securityPolicy: 'নিরাপত্তা নীতি',
       address: 'চকবাজার, চট্টগ্রাম, বাংলাদেশ',
       callUs: 'কল করুন:',

@@ -3205,7 +3205,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       {
         question: "Can I inspect this ice cream stick on delivery?",
-        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.",
+        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
       },
     ],
@@ -3920,7 +3920,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       {
         question: "Can I inspect this ice cream upon delivery?",
-        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.",
+        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
       },
     ],
@@ -3998,7 +3998,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       },
       {
         question: "Can I inspect this ice cream upon delivery?",
-        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.",
+        answer: "Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
       },
     ],
@@ -4633,7 +4633,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Concentrated lemon grease-cutting liquid formulation","Leaves dishes squeaky clean with zero white residue","Large 1 Litre value bottle for households"],
     usageDirections: "Dilute one teaspoon of Vim liquid in a small bowl of water, dip a wet sponge into the solution, scrub dishes, and rinse clean.",
     storageInstructions: "Keep in a cool, dry place. Keep out of reach of children.",
-    faqs: [{"question":"Does Vim liquid leave white residue on glass or steel utensils?","answer":"The manufacturer highlights that its liquid formula cleans thoroughly without leaving white powdery residue.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"Does Vim liquid leave white residue on glass or steel utensils?","answer":"The manufacturer highlights that its liquid formula cleans thoroughly without leaving white powdery residue.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -4680,7 +4680,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Concentrated lemon-powered liquid degreaser","Rinses away completely with no white chalky residue","Convenient 475ml daily-use bottle"],
     usageDirections: "Mix one teaspoon of Vim liquid with a small cup of water, apply with a sponge to utensils, scrub, and rinse thoroughly.",
     storageInstructions: "Store in a cool, dry place out of reach of children.",
-    faqs: [{"question":"What is the volume of this bottle?","answer":"This SKU contains 475 ml of concentrated dishwashing liquid.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is the volume of this bottle?","answer":"This SKU contains 475 ml of concentrated dishwashing liquid.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -4771,7 +4771,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     specifications: [{"label":"Brand","value":"Radhuni","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Net Weight","value":"40g","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Manufacturer","value":"Square Food & Beverage Ltd.","evidenceRefs":["MFR_SPEC"]},{"label":"Product Type","value":"Kacchi Biryani Ready Mix","evidenceRefs":["MFR_SPEC"]},{"label":"Storage","value":"Store in an airtight container in a cool, dry place","evidenceRefs":["STORAGE_SPEC"]}],
     highlights: ["Tailored spice mix for authentic dum-cooked Kacchi Biryani","Packaged by Square Food & Beverage Ltd.","40g packet size"],
     storageInstructions: "Store in an airtight container in a cool, dry place away from direct moisture.",
-    faqs: [{"question":"What type of biryani is this mix designed for?","answer":"The manufacturer designates this blend specifically for traditional Kacchi Biryani preparations.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this item at delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What type of biryani is this mix designed for?","answer":"The manufacturer designates this blend specifically for traditional Kacchi Biryani preparations.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this item at delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -4861,7 +4861,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     specifications: [{"label":"Brand","value":"Radhuni","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Net Weight","value":"40g","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Manufacturer","value":"Square Food & Beverage Ltd.","evidenceRefs":["MFR_SPEC"]},{"label":"Product Type","value":"Tehari Ready Mix Spices","evidenceRefs":["MFR_SPEC"]},{"label":"Storage","value":"Store in an airtight container in a cool, dry place","evidenceRefs":["STORAGE_SPEC"]}],
     highlights: ["Formulated for traditional Old Dhaka-style beef or mutton Tehari","Produced by Square Food & Beverage Ltd.","40g packet size"],
     storageInstructions: "Store in an airtight container in a cool, dry place away from moisture.",
-    faqs: [{"question":"What dish is Radhuni Tehari Masala used for?","answer":"The manufacturer states it is crafted for traditional beef and mutton Tehari preparations.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this spice mix on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What dish is Radhuni Tehari Masala used for?","answer":"The manufacturer states it is crafted for traditional beef and mutton Tehari preparations.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this spice mix on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -4951,7 +4951,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     specifications: [{"label":"Brand","value":"Radhuni","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Net Weight","value":"100g","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Manufacturer","value":"Square Food & Beverage Ltd.","evidenceRefs":["MFR_SPEC"]},{"label":"Product Type","value":"Chicken Curry Masala","evidenceRefs":["MFR_SPEC"]},{"label":"Storage","value":"Store in an airtight container in a cool, dry place","evidenceRefs":["STORAGE_SPEC"]}],
     highlights: ["Balanced spice blend for daily chicken curry dishes","Manufactured by Square Food & Beverage Ltd.","100g packet size"],
     storageInstructions: "Store in an airtight container in a cool, dry place away from heat.",
-    faqs: [{"question":"What is Radhuni Murgir Masala formulated for?","answer":"The manufacturer states it is a complete spice blend crafted for cooking traditional chicken curries.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is Radhuni Murgir Masala formulated for?","answer":"The manufacturer states it is a complete spice blend crafted for cooking traditional chicken curries.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5041,7 +5041,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     specifications: [{"label":"Brand","value":"Radhuni","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Net Volume","value":"500 ml","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"label":"Manufacturer","value":"Square Food & Beverage Ltd.","evidenceRefs":["MFR_SPEC"]},{"label":"Product Type","value":"Pure Mustard Oil","evidenceRefs":["MFR_SPEC"]},{"label":"Storage","value":"Store in a cool, dry place away from direct sunlight","evidenceRefs":["STORAGE_SPEC"]}],
     highlights: ["High-pungency pure mustard oil from selected mustard seeds","Manufactured by Square Food & Beverage Ltd.","Convenient 500ml bottle size"],
     storageInstructions: "Store in a cool, dry place away from direct sunlight. Keep bottle capped.",
-    faqs: [{"question":"What is the volume of this bottle?","answer":"It contains 500 ml of pure mustard oil.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I inspect this oil bottle upon delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is the volume of this bottle?","answer":"It contains 500 ml of pure mustard oil.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I inspect this oil bottle upon delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5087,7 +5087,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Iconic transparent gel toothpaste from Unilever Bangladesh","Formulated with intense menthol and active mouthwash components","Full-size 145g family tube"],
     usageDirections: "Brush teeth thoroughly at least twice a day or as directed by a dentist. Spit and rinse after brushing.",
     storageInstructions: "Store in a cool, dry place away from direct heat and sunlight. Cap tube securely after each use.",
-    faqs: [{"question":"Who manufactures Close Up in Bangladesh?","answer":"Close Up is manufactured and distributed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"What flavor and format is this toothpaste?","answer":"It is a transparent gel toothpaste featuring intense Menthol Fresh flavor.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this product at delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"Who manufactures Close Up in Bangladesh?","answer":"Close Up is manufactured and distributed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"What flavor and format is this toothpaste?","answer":"It is a transparent gel toothpaste featuring intense Menthol Fresh flavor.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this product at delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5134,7 +5134,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Bangladesh market-leading dishwashing bar from Unilever","Powerful lemon formulation cuts through heavy grease and burnt residue","Value 300g family bar size"],
     usageDirections: "Rub a damp scrubber on the Vim bar to create a rich lather, scrub greasy dishes and utensils, then rinse thoroughly with clean water.",
     storageInstructions: "Store in a draining soap dish away from sitting water to maximize bar longevity.",
-    faqs: [{"question":"Who manufactures Vim dishwashing products in Bangladesh?","answer":"Vim is manufactured and marketed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"What active cleaning ingredient is featured in Vim bar?","answer":"The manufacturer formulates Vim with lemon extract and grease-cutting degreasers.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this cleaning bar at delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"Who manufactures Vim dishwashing products in Bangladesh?","answer":"Vim is manufactured and marketed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"What active cleaning ingredient is featured in Vim bar?","answer":"The manufacturer formulates Vim with lemon extract and grease-cutting degreasers.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this cleaning bar at delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5181,7 +5181,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Lemon power formula cuts tough oil and food stains","Manufactured by Unilever Bangladesh Ltd.","Economical 125g bar size"],
     usageDirections: "Apply with a damp scrubber onto utensils, lather to lift grease, and rinse clean with water.",
     storageInstructions: "Store in a draining soap dish away from standing water.",
-    faqs: [{"question":"What is the bar weight?","answer":"This SKU is a 125g compact dishwashing bar.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is the bar weight?","answer":"This SKU is a 125g compact dishwashing bar.","evidenceRefs":["MFR_SPEC","CATALOG_RECORD"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5228,7 +5228,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Trusted fabric cleaning soap bar from Unilever Bangladesh","Removes daily dirt, cuff/collar grime, and fabric stains","125g single-bar format"],
     usageDirections: "Wet the soiled garment, rub the Wheel laundry bar directly onto cuffs, collars, and stained areas, gently scrub, and rinse thoroughly with clean water.",
     storageInstructions: "Store in a dry soap holder after use to maintain bar hardness.",
-    faqs: [{"question":"Who manufactures Wheel laundry products in Bangladesh?","answer":"Wheel is produced and marketed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this laundry soap at delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"Who manufactures Wheel laundry products in Bangladesh?","answer":"Wheel is produced and marketed by Unilever Bangladesh Ltd.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this laundry soap at delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5275,7 +5275,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["100% pure natural coffee from roasted coffee beans","Portioned 0.9g single-cup sachet format","Quick preparation with hot water or milk"],
     usageDirections: "Empty the contents of the 0.9g sachet into a cup, add 100-120ml of hot (not boiling) water or milk, sweeten to taste, and stir well.",
     storageInstructions: "Store in a cool, dry place away from moisture.",
-    faqs: [{"question":"What is inside the Nescafé Classic 0.9g sachet?","answer":"It contains 100% pure instant coffee made from roasted coffee beans with no chicory.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is inside the Nescafé Classic 0.9g sachet?","answer":"It contains 100% pure instant coffee made from roasted coffee beans with no chicory.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I check this item on delivery?","answer":"Yes. Lucky Store offers 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5322,7 +5322,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     highlights: ["Pre-blended coffee, creamer, and sugar for instant creamy coffee","Manufactured by Nestlé","Portioned 14g single-cup sachet"],
     usageDirections: "Empty the 14g sachet into a mug, pour in 150ml of hot (not boiling) water, stir thoroughly, and enjoy.",
     storageInstructions: "Store in a cool, dry place away from direct sunlight.",
-    faqs: [{"question":"What is included in Nescafé 3 in 1?","answer":"It is a pre-mixed formulation of Nescafé coffee, creamer, and sugar.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this coffee sachet on delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment across Chattogram.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
+    faqs: [{"question":"What is included in Nescafé 3 in 1?","answer":"It is a pre-mixed formulation of Nescafé coffee, creamer, and sugar.","evidenceRefs":["MFR_SPEC"]},{"question":"Can I inspect this coffee sachet on delivery?","answer":"Yes. Lucky Store provides 100% doorstep inspection before payment within 1 km of our Emdad Park shop in Chawkbazar.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       MFR_SPEC: {
         source: "MANUFACTURER",
@@ -5506,7 +5506,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     category: "Baby Care",
     summary: "Nestlé NAN OPTIPRO 2 is a spray-dried follow-up infant formula tailored for infants from 6 to 12 months as the liquid part of a progressively diversified diet. It contains OPTIPRO age-optimised protein, Bifidus BL probiotic cultures, DHA, ARA, and 16 essential vitamins and minerals to complement solid feeding.",
     specifications: [{"label":"Stage","value":"Stage 2 (6 to 12 Months)","evidenceRefs":["MFR_PRODUCT_PAGE"]},{"label":"Product Type","value":"Spray-Dried Follow-Up Formula Powder","evidenceRefs":["MFR_PRODUCT_PAGE"]},{"label":"Net Weight","value":"350g","evidenceRefs":["MFR_PRODUCT_PAGE","CATALOG_RECORD"]},{"label":"Key Nutrients","value":"OPTIPRO protein, Bifidus BL, DHA, ARA, Iron, Calcium & Vitamins","evidenceRefs":["MFR_PRODUCT_PAGE"]},{"label":"Origin","value":"Manufactured by Nestlé; Distributed via Authorized Retail Channels","evidenceRefs":["MFR_PRODUCT_PAGE"]},{"label":"Storage","value":"Store in a cool, dry place. Seal tightly; use within 4 weeks of opening","evidenceRefs":["STORAGE_SPEC"]}],
-    highlights: ["Follow-up formula designed for infants from 6 months of age alongside complementary feeding","Contains OPTIPRO age-adapted protein blend suited to growing infants' nutritional requirements","Fortified with Bifidus BL probiotics, DHA & ARA fatty acids, iron, and vitamin D","Available with doorstep seal and batch verification across Chattogram delivery radius"],
+    highlights: ["Follow-up formula designed for infants from 6 months of age alongside complementary feeding","Contains OPTIPRO age-adapted protein blend suited to growing infants' nutritional requirements","Fortified with Bifidus BL probiotics, DHA & ARA fatty acids, iron, and vitamin D","Available with doorstep seal and batch verification within the 1 km delivery radius of our Emdad Park shop"],
     usageDirections: "Wash hands and sterilise feeding bottle or cup thoroughly. Boil drinking water for 5 minutes and let cool until lukewarm. Pour exact quantity of water into bottle and add level scoops using only the enclosed measure. Cap bottle and shake thoroughly until fully dissolved. Notice: Mother's milk is best for your baby. Do not feed Stage 2 to infants under 6 months.",
     storageInstructions: "Store tightly sealed pack in a cool, dry place away from heat and direct sunlight. Fold inner foil or seal lid securely after each feed. Use within 4 weeks after opening.",
     faqs: [{"question":"When should a baby transition to NAN OPTIPRO 2?","answer":"NAN OPTIPRO 2 is designed as a follow-up formula for babies from 6 months of age as complementary foods are introduced, supporting diversified dietary progression under pediatric advice.","evidenceRefs":["MFR_PRODUCT_PAGE"]},{"question":"How is formula freshness assured during delivery?","answer":"Lucky Store ensures factory-sealed stock rotation with clear batch numbers and expiry dates. Customers can inspect the container seal at the doorstep before confirming payment.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],

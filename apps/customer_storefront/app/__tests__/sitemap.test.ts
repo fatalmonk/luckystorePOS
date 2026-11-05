@@ -233,7 +233,21 @@ describe('sitemap', () => {
     expect(urls).not.toContain('https://www.luckystore1947.com/bn/privacy');
 
     expect(urls).toContain('https://www.luckystore1947.com/terms');
-    expect(urls).not.toContain('https://www.luckystore1947.com/bn/terms');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/terms');
+    const termsEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/terms');
+    const termsBn = entries.find((e) => e.url === 'https://www.luckystore1947.com/bn/terms');
+    expect(termsEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/terms');
+    expect(termsBn?.alternates?.languages?.['en-BD']).toBe('https://www.luckystore1947.com/terms');
+
+    expect(urls).toContain('https://www.luckystore1947.com/about');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/about');
+    const aboutEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/about');
+    expect(aboutEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/about');
+
+    expect(urls).toContain('https://www.luckystore1947.com/return-policy');
+    expect(urls).toContain('https://www.luckystore1947.com/bn/return-policy');
+    const returnsEn = entries.find((e) => e.url === 'https://www.luckystore1947.com/return-policy');
+    expect(returnsEn?.alternates?.languages?.['bn-BD']).toBe('https://www.luckystore1947.com/bn/return-policy');
 
     expect(urls).toContain('https://www.luckystore1947.com/security-policy');
     expect(urls).not.toContain('https://www.luckystore1947.com/bn/security-policy');

@@ -9,6 +9,7 @@ import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
 import {
   DELIVERY_POLICY,
   COVERED_AREAS,
+  RETURN_RULES,
   getDeliveryFaqSchema,
 } from '../../lib/deliveryData';
 
@@ -264,9 +265,8 @@ export default function DeliveryHubPage() {
               </h3>
               <p className="text-sm text-warm-muted leading-relaxed">
                 You have the right to inspect every product at your door before completing payment. Check seals on
-                edible oils, verify rice varieties (Miniket, Chinigura, Nazirshail), and examine packaging integrity. If
-                any item does not meet your complete satisfaction, you may decline that specific item or return the
-                entire package with the delivery partner immediately with zero penalty.
+                edible oils, verify rice varieties (Miniket, Chinigura, Nazirshail), and examine packaging integrity.
+                {RETURN_RULES.en.doorstep} {RETURN_RULES.en.defective}
               </p>
             </div>
           </section>

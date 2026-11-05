@@ -15,13 +15,16 @@ describe('Footer', () => {
       '/category?theme=deals',
     );
     expect(screen.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/contact');
+    expect(screen.getByRole('link', { name: 'About us' })).toHaveAttribute('href', '/about');
+    expect(screen.getByRole('link', { name: 'Return policy' })).toHaveAttribute('href', '/return-policy');
+    expect(screen.getByRole('link', { name: 'Terms of service' })).toHaveAttribute('href', '/terms');
     expect(screen.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',
     );
   });
 
-  it('shows concise delivery and payment details instead of repeating the brand story', () => {
+  it('shows concise English delivery and payment details', () => {
     render(<Footer locale="en" />);
 
     expect(screen.getByText('Delivery: 09:00 AM–12:30 AM daily · Pay by COD or bKash')).toBeInTheDocument();
@@ -31,6 +34,9 @@ describe('Footer', () => {
   it('gives Bengali shoppers the same delivery-coverage qualification', () => {
     render(<Footer locale="bn" />);
 
+    expect(screen.getByRole('link', { name: 'আমাদের সম্পর্কে' })).toHaveAttribute('href', '/bn/about');
+    expect(screen.getByRole('link', { name: 'ফেরত নীতি' })).toHaveAttribute('href', '/bn/return-policy');
+    expect(screen.getByRole('link', { name: 'ব্যবহারের শর্তাবলী' })).toHaveAttribute('href', '/bn/terms');
     expect(screen.getByText('ডেলিভারি: প্রতিদিন সকাল ৯টা–রাত ১২:৩০ · COD বা bKash-এ পেমেন্ট')).toBeInTheDocument();
   });
 });

@@ -25,7 +25,7 @@ const copy = {
     start: 'Start your order', delivery: 'Within 1 km · Free delivery ৳500+ · Pay after inspection',
     categories: 'Shop by routine', retry: 'Try again', loading: 'Loading today’s groceries…', seeAll: 'See all', add: 'Add', added: 'Added',
     unavailable: 'We couldn’t load the latest products right now. Please check your connection and try again.',
-    footerTitle: 'Lucky Store · Est. 1947', footerBody: 'Everyday groceries delivered with care across Chattogram.',
+    footerTitle: 'Lucky Store · Est. 1947', footerBody: 'Everyday groceries delivered with care within 1 km of our Emdad Park shop.',
     allCategories: 'All',
   },
   bn: {
@@ -34,7 +34,7 @@ const copy = {
     start: 'অর্ডার শুরু করুন', delivery: '১ কিমির মধ্যে · ৳৫০০+ ফ্রি ডেলিভারি · দেখে তারপর পেমেন্ট',
     categories: 'প্রয়োজন অনুযায়ী কিনুন', retry: 'আবার চেষ্টা করুন', loading: 'আজকের নিত্যপণ্য লোড হচ্ছে…', seeAll: 'সব দেখুন', add: 'যোগ করুন', added: 'যোগ হয়েছে',
     unavailable: 'এই মুহূর্তে পণ্য লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।',
-    footerTitle: 'লাকি স্টোর · ১৯৪৭ থেকে', footerBody: 'চট্টগ্রামজুড়ে যত্নের সঙ্গে দৈনন্দিন নিত্যপণ্য পৌঁছে দিচ্ছি।',
+    footerTitle: 'লাকি স্টোর · ১৯৪৭ থেকে', footerBody: 'এমদাদ পার্কের দোকান থেকে ১ কিমির মধ্যে যত্নের সঙ্গে দৈনন্দিন নিত্যপণ্য পৌঁছে দিই।',
     allCategories: 'সকল',
   },
 } as const;

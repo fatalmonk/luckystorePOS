@@ -2,7 +2,7 @@ import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
 import { validateGtin } from '../../lib/products/gtin';
-import { DELIVERY_POLICY } from '../../lib/deliveryData';
+import { DELIVERY_POLICY, getMerchantReturnPolicies } from '../../lib/deliveryData';
 import { getBrandByName } from '../../lib/brandsData';
 import { JsonLd } from './JsonLd';
 
@@ -110,15 +110,7 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
         url: 'https://www.luckystore1947.com',
       },
       shippingDetails: getOfferShippingDetails(product),
-      hasMerchantReturnPolicy: {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'BD',
-        returnPolicyCountry: 'BD',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-        itemCondition: 'https://schema.org/NewCondition',
-        description:
-          'No post-payment returns. Lucky Store offers 100% doorstep inspection: customers may inspect packaging, seals, and dates before payment and reject an item immediately at zero fee penalty.',
-      },
+      hasMerchantReturnPolicy: getMerchantReturnPolicies(),
     },
   };
 

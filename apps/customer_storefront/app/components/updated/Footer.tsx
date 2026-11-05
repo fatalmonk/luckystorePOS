@@ -48,7 +48,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
   ];
 
   const helpLinks = [
-    { label: dict.footer.aboutUs, href: '/contact#about' },
+    { label: dict.footer.aboutUs, href: withLocale('/about', locale) },
     { label: dict.footer.deliveryInfo, href: withLocale('/delivery', locale) },
     { label: dict.footer.contact, href: '/contact' },
     { label: dict.footer.faq, href: '/contact#faq' },
@@ -56,7 +56,8 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
 
   const legalLinks = [
     { label: dict.footer.privacyPolicy, href: '/privacy' },
-    { label: dict.footer.termsOfService, href: '/terms' },
+    { label: dict.footer.termsOfService, href: withLocale('/terms', locale) },
+    { label: dict.footer.returnPolicy, href: withLocale('/return-policy', locale) },
     { label: dict.footer.securityPolicy, href: '/security-policy' },
   ];
 
