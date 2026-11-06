@@ -1,4 +1,4 @@
-import './offline_transaction_sync_service.dart';
+import '../../models/queued_offline_transaction.dart';
 
 /// Types of conflicts that can occur during sync
 enum ConflictType {

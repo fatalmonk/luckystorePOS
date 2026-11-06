@@ -39,7 +39,7 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
-  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string, _idempotencyKey?: string) => {
+  update: async (storeId: string, itemId: string, delta: number, reason: string, notes?: string) => {
     const { data, error } = await supabase.rpc('adjust_stock', {
       p_store_id: storeId,
       p_item_id: itemId,
@@ -71,16 +71,22 @@ export const inventory = {
     category_id?: string | null;
     image_url?: string;
   }) => {
-    // Remove properties that are not columns in the items table
-    if ('last_purchased_date' in updates) {
-      delete (updates as any).last_purchased_date;
-    }
+    const { name, price, cost, mrp, sku, barcode, category_id, image_url } = updates;
+    const databaseUpdates = {
+      ...(name !== undefined && { name }),
+      ...(price !== undefined && { price }),
+      ...(cost !== undefined && { cost }),
+      ...(mrp !== undefined && { mrp }),
+      ...(sku !== undefined && { sku }),
+      ...(barcode !== undefined && { barcode }),
+      ...(category_id !== undefined && { category_id }),
+      ...(image_url !== undefined && { image_url }),
+    };
 
-    // RLS requires store_id check - filter by both id AND store_id
     const { data, error } = await supabase
       .from('items')
       .update({
-        ...updates,
+        ...databaseUpdates,
         updated_at: new Date().toISOString(),
       })
       .eq('id', itemId)
@@ -140,7 +146,6 @@ export const inventory = {
     return data;
   },
   deleteProduct: async (storeId: string, itemId: string) => {
-    // Soft delete item by setting is_active = false
     const { data, error } = await supabase
       .from('items')
       .update({ is_active: false } as any)

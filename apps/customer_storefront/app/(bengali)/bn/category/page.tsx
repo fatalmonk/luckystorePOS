@@ -8,6 +8,7 @@ import { supabase } from '../../../lib/supabase';
 import { getSingleParam } from '../../../lib/utils';
 import { normalizeCategorySlug } from '../../../lib/types';
 import { BENGALI_CATEGORY_NAMES, CATALOG_SNAPSHOT_PRODUCTS } from '../../../lib/products/getHomePageData';
+import { loadCategoryCatalogProducts } from '../../../lib/categoryRouteData';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,19 +97,9 @@ export default async function BengaliCategoryRootPage({
   }));
 
   const { repo } = createProductRepository(supabase);
-  let rawProducts = [] as typeof CATALOG_SNAPSHOT_PRODUCTS;
-  try {
-    const result = await repo.search({ query: searchTerm || undefined });
-    rawProducts = result.products.length > 0
-      ? result.products
-      : searchTerm
-        ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        : CATALOG_SNAPSHOT_PRODUCTS;
-  } catch {
-    rawProducts = searchTerm
-      ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      : CATALOG_SNAPSHOT_PRODUCTS;
-  }
+  const catalog = await loadCategoryCatalogProducts(repo, CATALOG_SNAPSHOT_PRODUCTS, searchTerm);
+  const rawProducts = catalog.products;
+  if (catalog.error) console.error('Failed to fetch Bengali category catalog:', catalog.error);
 
   // Overlay Bengali translations
   const productIds = (rawProducts ?? []).map((p) => p.id);

@@ -34,6 +34,34 @@ export interface CashflowData {
 }
 
 export const dashboard = {
+  getDeliveryOrders: async (storeId: string) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (error) throw error;
+    return data || [];
+  },
+  getDailySales: async (storeId: string) => {
+    const { data, error } = await supabase
+      .from('daily_sales')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('sale_date', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+  getExpenses: async (storeId: string) => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('expense_date', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
   getStats: async (storeId: string): Promise<DashboardStats> => {
     const { data, error } = await supabase.rpc('get_manager_dashboard_stats', { p_store_id: storeId });
     if (error) throw error;

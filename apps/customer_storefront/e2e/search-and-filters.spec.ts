@@ -51,9 +51,7 @@ test.describe('Search suggestions and catalog filters', () => {
     await page.goto('/category?q=milk&theme=deals');
 
     const priceTrigger = page.getByRole('button', { name: /^Price/ });
-    if (await priceTrigger.count() === 0) {
-      test.skip(true, 'Catalog route did not render because live product data failed schema validation');
-    }
+    await expect(priceTrigger).toBeVisible();
     await priceTrigger.click();
 
     const priceMenu = page.getByRole('menu', { name: 'Price' });

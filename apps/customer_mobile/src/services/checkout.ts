@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { resolveApiBaseUrl } from './home';
-import { CartItem } from '../state/cart-context';
+import type { CartItem } from '../models/cart-item';
 
 export const CheckoutItemSchema = z.object({
   id: z.string().min(1),

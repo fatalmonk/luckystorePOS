@@ -11,18 +11,10 @@ import {
 
 import { CART_ITEMS_KEY, getItem, setItem } from '../services/storage';
 import { calculateCartTotals, FREE_DELIVERY_THRESHOLD } from './cart-calc';
+import type { CartItem } from '../models/cart-item';
+import { getAvailableCartStock, getEditableCartStockLimit } from '../domain/cart-stock';
 
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  unit: string;
-  qty: number;
-  imageUrl?: string;
-  emoji?: string;
-  stock?: number;
-}
+export type { CartItem } from '../models/cart-item';
 
 export interface CartContextState {
   items: CartItem[];
@@ -101,7 +93,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     hasUserMutatedRef.current = true;
     setItems((current) => {
       const existingIndex = current.findIndex((item) => item.id === productId);
-      const availableStock = typeof itemDetails?.stock === 'number' ? itemDetails.stock : 99;
+      const availableStock = getAvailableCartStock(itemDetails?.stock);
 
       if (availableStock <= 0) {
         return current;
@@ -111,8 +103,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const next = [...current];
         const existing = next[existingIndex];
         const maxStock = typeof itemDetails?.stock === 'number'
-          ? itemDetails.stock
-          : (typeof existing.stock === 'number' && existing.stock > 0 ? existing.stock : availableStock);
+          ? getAvailableCartStock(itemDetails.stock)
+          : getEditableCartStockLimit(existing.stock);
         if (maxStock <= 0) {
           return current;
         }
@@ -150,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           if (typeof item.stock === 'number' && item.stock <= 0) return null;
           const newQty = item.qty + delta;
           if (newQty <= 0) return null;
-          const maxStock = typeof item.stock === 'number' && item.stock > 0 ? item.stock : 99;
+          const maxStock = getEditableCartStockLimit(item.stock);
           return { ...item, qty: Math.min(maxStock, newQty) };
         })
         .filter((item): item is CartItem => item !== null);

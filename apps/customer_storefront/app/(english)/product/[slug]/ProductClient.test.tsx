@@ -94,10 +94,24 @@ describe('ProductClient Brand Linking', () => {
     }
   });
 
+  it('keeps an out-of-stock product unavailable and offers similar items', () => {
+    render(
+      <ProductClient
+        product={{ ...mockProduct, stock: 0 }}
+        crossSell={[]}
+        locale="en"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /is out of stock/ })).toBeDisabled();
+    expect(screen.getByRole('link', { name: 'See Similar Items' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: /add to cart/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /notify/i })).not.toBeInTheDocument();
+  });
+
   it('renders brand links to dedicated brand hub in English locale', () => {
     render(<ProductClient product={mockProduct} crossSell={[]} locale="en" />);
 
-    // Brand link in subtitle below product title
     const brandLinks = screen.getAllByRole('link', { name: 'Ispahani' });
     expect(brandLinks.length).toBeGreaterThanOrEqual(1);
     for (const link of brandLinks) {
@@ -220,7 +234,6 @@ describe('ProductClient Brand Linking', () => {
     );
 
     const brandLinks = screen.getAllByRole('link', { name: 'Ispahani' });
-    // Should have both subtitle and table links
     expect(brandLinks.length).toBe(2);
     expect(brandLinks[0]).toHaveAttribute('href', '/brand/ispahani');
     expect(brandLinks[1]).toHaveAttribute('href', '/brand/ispahani');

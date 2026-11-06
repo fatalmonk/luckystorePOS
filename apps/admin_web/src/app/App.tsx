@@ -10,6 +10,7 @@ import { OfflineIndicator } from '@/components';
 import { InstallPrompt } from '@/components';
 import { AuthProvider, useAuth } from '../lib/AuthContext';
 import { ResetPasswordPage } from './ResetPasswordPage';
+import { ADMIN_ROUTE_PATHS } from './routePaths';
 
 const LazyCanvaDesignPage = React.lazy(() => import('../features/canva/CanvaDesignPage').then(m => ({ default: m.CanvaDesignPage })));
 const LazyCanvaConnectionPage = React.lazy(() => import('../features/canva/CanvaConnectionPage').then(m => ({ default: m.CanvaConnectionPage })));
@@ -84,40 +85,40 @@ export function App() {
             <ErrorBoundary>
               <OfflineIndicator />
               <Routes>
-                <Route path="/oauth/consent" element={<OAuthConsentPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/canva-connect/callback" element={<AuthGuard><LazyRoute><LazyCanvaConnectionPage /></LazyRoute></AuthGuard>} />
-                <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-                  <Route path="pos" element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
+                <Route path={ADMIN_ROUTE_PATHS.oauthConsent} element={<OAuthConsentPage />} />
+                <Route path={ADMIN_ROUTE_PATHS.resetPassword} element={<ResetPasswordPage />} />
+                <Route path={ADMIN_ROUTE_PATHS.canvaCallback} element={<AuthGuard><LazyRoute><LazyCanvaConnectionPage /></LazyRoute></AuthGuard>} />
+                <Route path={ADMIN_ROUTE_PATHS.root} element={<AuthGuard><Layout /></AuthGuard>}>
+                  <Route path={ADMIN_ROUTE_PATHS.quickPos} element={<LazyRoute><LazyQuickPosPage /></LazyRoute>} />
                   <Route index element={<LazyRoute><LazyDashboardPage /></LazyRoute>} />
-                  <Route path="dashboard-v2" element={<LazyRoute><LazyDashboardV2Page /></LazyRoute>} />
-                  <Route path="delivery-orders" element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
-                  <Route path="products" element={<Navigate to="/inventory" replace />} />
-                  <Route path="sales" element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
-                  <Route path="competitor-prices" element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
-                  <Route path="inventory" element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
-                  <Route path="inventory/missing-images" element={<LazyRoute><LazyMissingImagesPage /></LazyRoute>} />
-                  <Route path="inventory/history" element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
-                  <Route path="inventory/categories" element={<LazyRoute><LazyCategoriesPage /></LazyRoute>} />
-                  <Route path="finance/suppliers" element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />
-                  <Route path="finance/customers" element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />
-                  <Route path="collections" element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />
-                  <Route path="purchase" element={<PurchaseRoleRoute><LazyRoute><LazyPurchaseEntryPage /></LazyRoute></PurchaseRoleRoute>} />
-                  <Route path="purchase/history" element={<PurchaseRoleRoute><LazyRoute><LazyPurchaseHistoryPage /></LazyRoute></PurchaseRoleRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.dashboardV2} element={<LazyRoute><LazyDashboardV2Page /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.deliveryOrders} element={<LazyRoute><LazyDeliveryOrdersPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.productsAlias.slice(1)} element={<Navigate to={ADMIN_ROUTE_PATHS.inventory} replace />} />
+                  <Route path={ADMIN_ROUTE_PATHS.sales} element={<LazyRoute><LazySalesHistoryPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.competitorPrices} element={<LazyRoute><LazyCompetitorPricesPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.inventory} element={<LazyRoute><LazyInventoryListPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.missingImages} element={<LazyRoute><LazyMissingImagesPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.stockHistory} element={<LazyRoute><LazyStockHistoryPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.categories} element={<LazyRoute><LazyCategoriesPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.supplierLedger} element={<LazyRoute><LazySupplierLedgerPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.customerLedger} element={<LazyRoute><LazyCustomerLedgerPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.collections} element={<LazyRoute><LazyCollectionsWorkspace /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.purchase} element={<PurchaseRoleRoute><LazyRoute><LazyPurchaseEntryPage /></LazyRoute></PurchaseRoleRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.purchaseHistory} element={<PurchaseRoleRoute><LazyRoute><LazyPurchaseHistoryPage /></LazyRoute></PurchaseRoleRoute>} />
                   
-                  <Route path="finance" element={<LazyRoute><LazyFinanceDashboardPage /></LazyRoute>} />
-                  <Route path="settings" element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
-                  <Route path="canva-designs" element={<LazyRoute><LazyCanvaDesignPage /></LazyRoute>} />
-                  <Route path="canva-connect" element={<LazyRoute><LazyCanvaConnectionPage /></LazyRoute>} />
-                  <Route path="reports" element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
-                  <Route path="reminders" element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
-                  <Route path="import" element={<Navigate to="/import/products" replace />} />
-                  <Route path="import/parties" element={<LazyRoute><LazyImportPartiesPage /></LazyRoute>} />
-                  <Route path="import/products" element={<LazyRoute><LazyImportProductsPage /></LazyRoute>} />
-                  <Route path="other-income" element={<LazyRoute><LazyOtherIncomePage /></LazyRoute>} />
-                  <Route path="staff" element={<LazyRoute><LazyStaffDashboardPage /></LazyRoute>} />
-                  <Route path="social-post" element={<LazyRoute><LazySocialPostPage /></LazyRoute>} />
-                  <Route path="translations" element={<LazyRoute><LazyTranslationsPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.finance} element={<LazyRoute><LazyFinanceDashboardPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.settings} element={<LazyRoute><LazySettingsPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.canvaDesigns} element={<LazyRoute><LazyCanvaDesignPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.canvaConnect} element={<LazyRoute><LazyCanvaConnectionPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.reports} element={<LazyRoute><LazyReportsPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.reminders} element={<LazyRoute><LazyRemindersPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.importAlias.slice(1)} element={<Navigate to={ADMIN_ROUTE_PATHS.importProducts} replace />} />
+                  <Route path={ADMIN_ROUTE_PATHS.importParties} element={<LazyRoute><LazyImportPartiesPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.importProducts} element={<LazyRoute><LazyImportProductsPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.otherIncome} element={<LazyRoute><LazyOtherIncomePage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.staff} element={<LazyRoute><LazyStaffDashboardPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.socialPost} element={<LazyRoute><LazySocialPostPage /></LazyRoute>} />
+                  <Route path={ADMIN_ROUTE_PATHS.translations} element={<LazyRoute><LazyTranslationsPage /></LazyRoute>} />
                 </Route>
               </Routes>
               <InstallPrompt />

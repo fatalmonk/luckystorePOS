@@ -155,19 +155,10 @@ export function DashboardPage() {
     };
   }, [storeId, queryClient, notify]);
 
-  // Query to fetch dashboard delivery orders
   const deliveryOrdersQuery = useQuery({
     queryKey: ['dashboard-delivery-orders', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getDeliveryOrders(storeId) : [];
     },
     enabled: !!storeId,
   });
@@ -190,34 +181,18 @@ export function DashboardPage() {
     enabled: !!storeId,
   });
 
-  // Fetch daily sales data for comparison (ALL days, not just 30)
   const dailySalesQuery = useQuery({
     queryKey: ['daily-sales-comparison', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('daily_sales')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('sale_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getDailySales(storeId) : [];
     },
     enabled: !!storeId,
   });
 
-  // Fetch expenses data including stock purchase category
   const expensesQuery = useQuery({
     queryKey: ['expenses-dashboard', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('expense_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getExpenses(storeId) : [];
     },
     enabled: !!storeId,
   });
@@ -436,11 +411,11 @@ export function DashboardPage() {
 
       {/* Missing Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-warm-surface border-l-4 border-l-warm-success border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+        <div className="bg-warm-surface border border-warm-border-warm rounded-xl p-6 shadow-sm">
           <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Receive</span>
           <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toReceive)}</h2>
         </div>
-        <div className="bg-warm-surface border-l-4 border-l-warm-danger border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+        <div className="bg-warm-surface border border-warm-border-warm rounded-xl p-6 shadow-sm">
           <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Give</span>
           <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toGive)}</h2>
         </div>
