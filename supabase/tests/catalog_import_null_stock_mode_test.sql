@@ -23,6 +23,9 @@ DECLARE
   v_batch_id uuid;
   v_stock_before integer;
   v_stock_after integer;
+  v_item_snapshot jsonb;
+  v_image_version bigint;
+  v_image_url text;
   v_error_code text;
 BEGIN
   INSERT INTO public.tenants(name)
@@ -62,6 +65,9 @@ BEGIN
 
   SELECT qty INTO v_stock_before
   FROM public.stock_levels WHERE store_id = v_store_id AND item_id = v_item_id;
+  SELECT to_jsonb(i), i.image_version, i.image_url
+    INTO v_item_snapshot, v_image_version, v_image_url
+  FROM public.items AS i WHERE i.id = v_item_id;
 
   BEGIN
     PERFORM public.catalog_import_row_apply(
@@ -71,22 +77,11 @@ BEGIN
       v_store_id,
       2,
       v_item_id,
-      1,
-      NULL,
-      jsonb_build_object(
-        'sku', 'NULL-MODE-' || left(v_tenant_id::text, 8),
-        'barcode', NULL,
-        'name', 'Must roll back',
-        'brand', NULL,
-        'category_id', NULL,
-        'cost', 0,
-        'price', 20,
-        'mrp', NULL,
-        'is_active', true,
-        'image_key', NULL
-      ),
+      v_image_version,
+      v_image_url,
+      v_item_snapshot,
       v_stock_before,
-      jsonb_build_object('sku', 'NULL-MODE-' || left(v_tenant_id::text, 8), 'name', 'Must roll back', 'price', 20),
+      jsonb_build_object('sku', 'NULL-MODE-' || left(v_tenant_id::text, 8), 'name', 'Must roll back', 'price', 10),
       jsonb_build_object('mode', NULL, 'quantity', 4),
       NULL,
       false

@@ -16,7 +16,7 @@ end $$;
 do $$
 declare
   t uuid; t2 uuid; st uuid; st2 uuid; st3 uuid; item uuid; ext uuid; au uuid; staff uuid; ok boolean; k text;
-  rejected boolean; error_message text; preview_key text;
+  rejected boolean; error_message text; preview_key text; new_key text; new_url text; other_key text;
 begin
   insert into public.tenants(name) values('Image CAS proof') returning id into t;
   insert into public.tenants(name) values('Other tenant') returning id into t2;
@@ -27,6 +27,9 @@ begin
   insert into public.users(id,auth_id,email,role,tenant_id,store_id) values(au,au,'image-proof-'||t||'@example.test','manager',t,st) returning id into staff;
   perform set_config('request.jwt.claim.sub',au::text,true);
   k := 'products/'||t||'/original.webp';
+  new_key := 'products/'||t||'/TEST-'||gen_random_uuid()||'.webp';
+  new_url := 'https://images.luckystore1947.com/'||new_key;
+  other_key := 'products/'||t2||'/TEST-'||gen_random_uuid()||'.webp';
   insert into public.items(tenant_id,name,image_url,image_version) values(t,'CAS item','https://images.luckystore1947.com/'||k,999) returning id into item;
   insert into public.stock_levels(store_id,item_id,qty) values(st,item,1);
   if (select image_version from public.items where id=item) <> 1 then raise exception '[FAIL] arbitrary INSERT version'; end if;
@@ -54,22 +57,21 @@ begin
   update public.items set price=123,name='Changed name',description='Changed description' where id=item;
   update public.stock_levels set qty=9 where store_id=st and item_id=item;
   if (select image_version from public.items where id=item)<>1 then raise exception '[FAIL] unrelated edits invalidate CAS'; end if;
-  if public.publish_item_image_if_current(item,t,st,'stale',1,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum') then
+  if public.publish_item_image_if_current(item,t,st,'stale',1,new_key,new_url,repeat('a',64)) then
     raise exception '[FAIL] stale key'; end if;
-  if public.publish_item_image_if_current(item,t,st,k,0,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum') then
+  if public.publish_item_image_if_current(item,t,st,k,0,new_key,new_url,repeat('a',64)) then
     raise exception '[FAIL] stale version'; end if;
-  if public.publish_item_image_if_current(item,t,st2,k,1,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum') then
-    raise exception '[FAIL] cross store'; end if;
-  if public.publish_item_image_if_current(item,t2,st3,k,1,'products/'||t2||'/new.webp','https://images.luckystore1947.com/products/'||t2||'/new.webp','checksum') then
+  -- Image provenance is tenant-scoped, so another store in the same tenant is permitted.
+  if public.publish_item_image_if_current(item,t2,st3,k,1,other_key,'https://images.luckystore1947.com/'||other_key,repeat('a',64)) then
     raise exception '[FAIL] cross tenant'; end if;
-  ok := public.publish_item_image_if_current(item,t,st,k,1,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum');
-  if not ok or (select image_version<>2 or image_checksum is distinct from 'checksum' from public.items where id=item) then
+  ok := public.publish_item_image_if_current(item,t,st,k,1,new_key,new_url,repeat('a',64));
+  if not ok or (select image_version<>2 or image_checksum is distinct from repeat('a',64) from public.items where id=item) then
     raise exception '[FAIL] matching CAS/version/checksum'; end if;
-  if public.publish_item_image_if_current(item,t,st,k,1,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum') then
+  if public.publish_item_image_if_current(item,t,st,k,1,new_key,new_url,repeat('a',64)) then
     raise exception '[FAIL] CAS replay'; end if;
   if (select image_version from public.items where id=item)<>2 then raise exception '[FAIL] replay incremented version'; end if;
   -- Same URL publication still advances once and preserves the supplied checksum.
-  if not public.publish_item_image_if_current(item,t,st,'products/'||t||'/new.webp',2,'products/'||t||'/new.webp','https://images.luckystore1947.com/products/'||t||'/new.webp','checksum-2') then
+  if not public.publish_item_image_if_current(item,t,st,new_key,2,new_key,new_url,repeat('b',64)) then
     raise exception '[FAIL] same URL CAS'; end if;
   update public.items set image_url='https://legacy.example/product.jpg' where id=item;
   if (select image_key is not null or image_checksum is not null or image_version<>4 from public.items where id=item) then
@@ -78,25 +80,20 @@ begin
   if (select image_key is not null from public.items where id=ext) then raise exception '[FAIL] fabricated external key'; end if;
   update public.items set image_url='https://images.luckystore1947.com/products/../ambiguous.webp' where id=ext;
   if (select image_key is not null from public.items where id=ext) then raise exception '[FAIL] ambiguous URL fabricated a key'; end if;
-  -- The test project's preview URL must round-trip through the items trigger.
+  -- Preview URLs must not be published for an ordinary tenant.
   preview_key := 'products/'||t||'/TEST-'||gen_random_uuid()||'.webp';
-  ok := public.publish_item_image_if_current(
-    item, t, st, null, 4, preview_key,
-    'https://lucky-store-images-preview.luckystore-1947.workers.dev/'||preview_key,
-    repeat('a',64)
-  );
-  if not ok or (select image_key is distinct from preview_key or image_version<>5 from public.items where id=item) then
-    raise exception '[FAIL] preview CAS failed to persist trigger-derived image key'; end if;
   rejected := false;
   begin
     perform public.publish_item_image_if_current(
-      item, t, st, preview_key, 5, 'products/'||t2||'/PREVIEW-OTHER.webp',
-      'https://lucky-store-images-preview.luckystore-1947.workers.dev/products/'||t2||'/PREVIEW-OTHER.webp',
-      repeat('b',64)
+      item, t, st, null, 4, preview_key,
+      'https://lucky-store-images-preview.luckystore-1947.workers.dev/'||preview_key,
+      repeat('a',64)
     );
-  exception when others then rejected := true;
+  exception when others then
+    get stacked diagnostics error_message = message_text;
+    rejected := error_message = 'Preview image URLs are restricted to the Security Tests tenant';
   end;
-  if not rejected or (select image_key is distinct from preview_key or image_version<>5 from public.items where id=item) then
+  if not rejected or (select image_key is not null or image_version<>4 from public.items where id=item) then
     raise exception '[FAIL] non-test tenant preview CAS was not rolled back';
   end if;
   rejected := false;
@@ -110,6 +107,6 @@ begin
   if not rejected then raise exception '[FAIL] preview URL INSERT was accepted'; end if;
   if has_function_privilege('authenticated','public.publish_item_image_if_current(uuid,uuid,uuid,text,bigint,text,text,text)','EXECUTE') then
     raise exception '[FAIL] browser CAS privilege'; end if;
-  raise notice '[PASS] image CAS: match, replay, stale key/version, unrelated price/stock/name/description, tenant/store, arbitrary version, checksum and legacy URLs';
+  raise notice '[PASS] image CAS: match, replay, stale key/version, unrelated edits, tenant scope, preview restriction, checksum and legacy URLs';
 end $$;
 rollback;

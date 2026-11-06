@@ -1,0 +1,154 @@
+-- Test-project schema parity only. Campaign rows from the production migration are intentionally omitted because their product IDs are not part of the isolated E2E catalog.
+CREATE TABLE public.storefront_item_promotions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  store_id uuid NOT NULL REFERENCES public.stores(id),
+  item_id uuid NOT NULL REFERENCES public.items(id),
+  expected_name text NOT NULL,
+  campaign_key text NOT NULL,
+  revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+  is_current boolean NOT NULL DEFAULT true,
+  discount_percent numeric(5, 2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
+  expected_price numeric(12, 2) NOT NULL CHECK (expected_price >= 0),
+  expected_mrp numeric(12, 2) NOT NULL CHECK (expected_mrp >= expected_price AND expected_price <= round(expected_mrp * 0.90, 2)),
+  starts_at timestamptz NOT NULL,
+  ends_at timestamptz NOT NULL CHECK (ends_at > starts_at),
+  offer_terms text NOT NULL,
+  selection_reason text NOT NULL,
+  evidence_source text NOT NULL,
+  evidence_checked_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT statement_timestamp(),
+  UNIQUE (campaign_key, item_id, revision)
+);
+CREATE UNIQUE INDEX storefront_item_promotions_one_current_pick ON public.storefront_item_promotions (campaign_key, item_id) WHERE is_current IS TRUE;
+ALTER TABLE public.storefront_item_promotions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.storefront_item_promotions FROM PUBLIC;
+REVOKE ALL ON public.storefront_item_promotions FROM anon, authenticated;
+GRANT SELECT ON public.storefront_item_promotions TO anon, authenticated;
+GRANT ALL ON public.storefront_item_promotions TO service_role;
+CREATE POLICY storefront_item_promotions_current_campaign_read ON public.storefront_item_promotions FOR SELECT TO anon, authenticated USING (tenant_id = '00000000-0000-0000-0000-000000000001'::uuid AND store_id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid AND is_current IS TRUE AND ends_at > statement_timestamp());
+
+CREATE OR REPLACE FUNCTION public.create_order_with_stock_idempotent(
+  p_order_number text,
+  p_tenant_id uuid,
+  p_store_id uuid,
+  p_customer_name text,
+  p_customer_phone text,
+  p_customer_address text,
+  p_items jsonb,
+  p_subtotal numeric,
+  p_delivery_fee numeric,
+  p_total numeric,
+  p_payment_method text,
+  p_notes text DEFAULT NULL,
+  p_delivery_slot text DEFAULT NULL,
+  p_idempotency_key text DEFAULT NULL
+) RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_response jsonb;
+  v_rows integer;
+  v_expected_tenant_id uuid;
+  v_item jsonb;
+  v_id uuid;
+  v_qty integer;
+  v_canonical_items jsonb;
+  v_subtotal numeric;
+  v_delivery_fee numeric;
+  v_total numeric;
+BEGIN
+  IF p_store_id <> '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid THEN
+    RAISE EXCEPTION 'Unsupported storefront store';
+  END IF;
+  SELECT tenant_id INTO v_expected_tenant_id FROM public.stores WHERE id = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd'::uuid;
+  IF v_expected_tenant_id IS NULL OR p_tenant_id IS DISTINCT FROM v_expected_tenant_id THEN
+    RAISE EXCEPTION 'Invalid storefront tenant';
+  END IF;
+  IF jsonb_typeof(p_items) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'Items must be a JSON array'; END IF;
+  IF jsonb_array_length(p_items) = 0 THEN RAISE EXCEPTION 'Cart is empty'; END IF;
+
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_items) LOOP
+    IF jsonb_typeof(v_item) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'Each cart item must be a JSON object'; END IF;
+    BEGIN
+      v_id := (v_item->>'id')::uuid;
+      v_qty := (v_item->>'qty')::integer;
+    EXCEPTION WHEN invalid_text_representation THEN RAISE EXCEPTION 'Cart item id and quantity are invalid';
+    END;
+    IF v_qty IS NULL OR v_qty <= 0 THEN RAISE EXCEPTION 'Item quantity must be a positive integer'; END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM public.items i JOIN public.stock_levels sl ON sl.item_id = i.id AND sl.store_id = p_store_id
+      WHERE i.id = v_id AND i.tenant_id = v_expected_tenant_id AND i.is_active IS TRUE AND i.price IS NOT NULL AND i.price >= 0
+    ) THEN RAISE EXCEPTION 'Item is not available in the storefront catalog'; END IF;
+  END LOOP;
+
+  SELECT jsonb_agg(jsonb_build_object(
+      'id', requested.item_id, 'name', i.name, 'price', priced.unit_price,
+      'base_price', i.price, 'discount_percent', promo.discount_percent, 'campaign_key', promo.campaign_key,
+      'qty', requested.qty, 'unit', requested.unit
+    ) ORDER BY requested.first_ordinal), coalesce(sum(priced.unit_price * requested.qty), 0)
+  INTO v_canonical_items, v_subtotal
+  FROM (
+    SELECT (entry.item->>'id')::uuid AS item_id, sum((entry.item->>'qty')::integer)::integer AS qty,
+      min(entry.ordinality) AS first_ordinal,
+      (array_agg(nullif(entry.item->>'unit', '') ORDER BY entry.ordinality))[1] AS unit
+    FROM jsonb_array_elements(p_items) WITH ORDINALITY AS entry(item, ordinality)
+    GROUP BY (entry.item->>'id')::uuid
+  ) requested
+  JOIN public.items i ON i.id = requested.item_id AND i.tenant_id = v_expected_tenant_id AND i.is_active IS TRUE
+  LEFT JOIN LATERAL (
+    SELECT p.discount_percent, p.campaign_key FROM public.storefront_item_promotions p
+    WHERE p.tenant_id = v_expected_tenant_id AND p.store_id = p_store_id AND p.item_id = i.id
+      AND p.is_current IS TRUE AND p.expected_name = i.name AND p.expected_price = i.price AND p.expected_mrp = i.mrp
+      AND p.starts_at <= statement_timestamp() AND p.ends_at > statement_timestamp()
+      AND EXISTS (
+        SELECT 1 FROM public.stock_levels sl WHERE sl.item_id = i.id AND sl.store_id = p_store_id
+          AND greatest(0, coalesce(sl.qty, 0) - coalesce(sl.reserved, 0) - coalesce(sl.qty_reserved_online, 0)) > 0
+      )
+    ORDER BY p.discount_percent DESC LIMIT 1
+  ) promo ON TRUE
+  CROSS JOIN LATERAL (SELECT round(i.price * (1 - coalesce(promo.discount_percent, 0) / 100), 2) AS unit_price) priced;
+
+  IF v_canonical_items IS NULL THEN RAISE EXCEPTION 'Cart is empty'; END IF;
+  v_delivery_fee := CASE WHEN v_subtotal >= 500 THEN 0 ELSE 40 END;
+  v_total := v_subtotal + v_delivery_fee;
+  IF round(coalesce(p_subtotal, -1), 2) IS DISTINCT FROM round(v_subtotal, 2) THEN RAISE EXCEPTION 'Subtotal does not match catalog prices and active offers'; END IF;
+  IF round(coalesce(p_delivery_fee, -1), 2) IS DISTINCT FROM round(v_delivery_fee, 2) THEN RAISE EXCEPTION 'Delivery fee does not match store policy'; END IF;
+  IF round(coalesce(p_total, -1), 2) IS DISTINCT FROM round(v_total, 2) THEN RAISE EXCEPTION 'Total does not match catalog prices and active offers'; END IF;
+
+  IF nullif(trim(p_idempotency_key), '') IS NOT NULL THEN
+    INSERT INTO public.idempotency_keys (idempotency_key, tenant_id, locked_at)
+    VALUES (trim(p_idempotency_key), v_expected_tenant_id, clock_timestamp())
+    ON CONFLICT (tenant_id, idempotency_key) DO NOTHING;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    IF v_rows = 0 THEN
+      SELECT response_body INTO v_response FROM public.idempotency_keys
+      WHERE idempotency_key = trim(p_idempotency_key) AND tenant_id = v_expected_tenant_id;
+      IF v_response IS NOT NULL THEN RETURN jsonb_build_object('order', v_response, 'replayed', TRUE); END IF;
+      RAISE EXCEPTION 'This order is already being processed';
+    END IF;
+  END IF;
+
+  BEGIN
+    v_response := public.create_order_with_stock_v2(
+      p_order_number, v_expected_tenant_id, p_store_id, p_customer_name, p_customer_phone,
+      p_customer_address, v_canonical_items, v_subtotal, v_delivery_fee, v_total, p_payment_method, p_notes, p_delivery_slot
+    );
+    IF nullif(trim(p_idempotency_key), '') IS NOT NULL THEN
+      UPDATE public.idempotency_keys SET response_body = v_response, completed_at = clock_timestamp()
+      WHERE idempotency_key = trim(p_idempotency_key) AND tenant_id = v_expected_tenant_id;
+    END IF;
+    RETURN jsonb_build_object('order', v_response, 'replayed', FALSE);
+  EXCEPTION WHEN OTHERS THEN
+    IF nullif(trim(p_idempotency_key), '') IS NOT NULL THEN
+      DELETE FROM public.idempotency_keys WHERE idempotency_key = trim(p_idempotency_key)
+        AND tenant_id = v_expected_tenant_id AND response_body IS NULL;
+    END IF;
+    RAISE;
+  END;
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.create_order_with_stock_idempotent(text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text) FROM public, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order_with_stock_idempotent(text, uuid, uuid, text, text, text, jsonb, numeric, numeric, numeric, text, text, text, text) TO anon, authenticated;

@@ -69,6 +69,7 @@ DO $$
 DECLARE
   v_match_version text;
   v_linked boolean;
+  v_rejected boolean := false;
 BEGIN
   -- Existing four-argument matcher callers remain valid with the new optional brand argument.
   SELECT matcher_version INTO v_match_version
@@ -80,14 +81,27 @@ BEGIN
   );
   IF v_match_version IS NULL THEN RAISE EXCEPTION 'legacy matcher argument set did not resolve'; END IF;
 
-  -- Existing four-argument link calls continue using the default false confirmation flag.
+  -- The four-argument call still resolves but must require confirmation
+  -- when matching evidence does not independently verify identity.
+  BEGIN
+    v_linked := public.link_competitor_price_item(
+      p_store_id => '92000000-0000-0000-0000-000000000011',
+      p_price_record_id => '94000000-0000-0000-0000-000000000012',
+      p_item_id => '93000000-0000-0000-0000-000000000011',
+      p_competitor_product_url => NULL
+    );
+  EXCEPTION WHEN SQLSTATE 'P0001' THEN
+    v_rejected := SQLERRM = 'product identity confirmation required';
+  END;
+  IF NOT v_rejected THEN RAISE EXCEPTION 'legacy link call bypassed identity confirmation'; END IF;
   v_linked := public.link_competitor_price_item(
     p_store_id => '92000000-0000-0000-0000-000000000011',
     p_price_record_id => '94000000-0000-0000-0000-000000000012',
     p_item_id => '93000000-0000-0000-0000-000000000011',
-    p_competitor_product_url => NULL
+    p_competitor_product_url => NULL,
+    p_confirmed_product_identity => true
   );
-  IF v_linked IS DISTINCT FROM true THEN RAISE EXCEPTION 'legacy link argument set did not resolve'; END IF;
+  IF v_linked IS DISTINCT FROM true THEN RAISE EXCEPTION 'confirmed link failed'; END IF;
 END;
 $$;
 
