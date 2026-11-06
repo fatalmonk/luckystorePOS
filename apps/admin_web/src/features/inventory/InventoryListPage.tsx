@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 import { EmptyState, ErrorState } from '../../components/PageState';
 import { History, Package, AlertTriangle, TrendingDown, Wallet, Plus, ShoppingCart, Upload } from 'lucide-react';
 import { useNotify } from '../../components/NotificationContext';
@@ -335,21 +336,21 @@ export function InventoryListPage() {
             Add Product
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/inventory/history">
+            <Link to={ADMIN_ROUTE_PATHS.stockHistory}>
               <History size={16} data-icon="inline-start" />
               Audit Log
             </Link>
           </Button>
           {(user?.role === 'admin' || user?.role === 'manager') && (
             <Button variant="outline" asChild>
-              <Link to="/purchase">
+              <Link to={ADMIN_ROUTE_PATHS.purchase}>
                 <ShoppingCart size={16} data-icon="inline-start" />
                 Record Purchase
               </Link>
             </Button>
           )}
           <Button variant="outline" asChild>
-            <Link to="/import/products">
+              <Link to={ADMIN_ROUTE_PATHS.importProducts}>
               <Upload size={16} data-icon="inline-start" />
               Import
             </Link>

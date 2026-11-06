@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 
 type Connection = { status: string; canvaUserId: string | null; canvaTeamId: string | null };
 const labels: Record<string, string> = {
@@ -27,7 +28,7 @@ async function request(path: string, method = 'GET'): Promise<Record<string, unk
 // OAuth callback relay: uses the current RetailOS session, never provider tokens.
 // Query parameters are removed before any network request; they are not persisted.
 export function CanvaConnectionPage() {
-  const callback = useRef(window.location.pathname === '/canva-connect/callback' ? window.location.search : null);
+  const callback = useRef(window.location.pathname === ADMIN_ROUTE_PATHS.canvaCallback ? window.location.search : null);
   const started = useRef(false);
   const [connection, setConnection] = useState<Connection | null>(null);
   const [busy, setBusy] = useState(true);
@@ -39,7 +40,7 @@ export function CanvaConnectionPage() {
     started.current = true;
     const query = callback.current;
     callback.current = null;
-    if (query !== null) window.history.replaceState(null, '', '/canva-connect/callback');
+    if (query !== null) window.history.replaceState(null, '', ADMIN_ROUTE_PATHS.canvaCallback);
     void (async () => {
       try {
         if (query !== null) {
@@ -82,7 +83,7 @@ export function CanvaConnectionPage() {
   return (
     <main className="p-6 space-y-4">
       <h1>Canva connection</h1>
-      <a href="/canva-designs">Create a product design</a>
+      <a href={ADMIN_ROUTE_PATHS.canvaDesigns}>Create a product design</a>
       <p role="status" aria-live="polite">{busy ? 'Checking Canva connection…' : connection ? labels[connection.status] ?? 'Connection unavailable' : 'Canva is not connected'}</p>
       {connection?.canvaTeamId && <p>Canva team: {connection.canvaTeamId}</p>}
       {error && <p role="alert">{error}</p>}

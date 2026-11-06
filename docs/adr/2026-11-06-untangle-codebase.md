@@ -5,6 +5,9 @@
 - English and Bengali category routes independently resolved category/group slugs, legacy category names, canonical redirects, and catalog snapshot fallback. Added shared category route and catalog helpers; both locales now use them, preserve query parameters on redirects, and show consistent product counts.
 - Admin route strings were duplicated between router and sidebar. Added `ADMIN_ROUTE_PATHS` as the shared route source.
 - Two financial metric cards used side rails, then top accent borders that still clashed with rounded corners. Removed the accent borders; the labels and values already distinguish the metrics.
+- PR review found the root README still named the removed scraper dependency; updated the scraper stack entry.
+- Persisted offline queue deserialization previously failed as a batch and cleared all loaded transactions. It now parses records individually, retains malformed records in the persisted queue, exposes their count, and continues loading valid entries.
+- Admin navigation had route literals outside the router/sidebar map. Migrated command palette, bottom navigation, dashboard, setup checklist, inventory, and Canva navigation to shared route constants; corrected the stale Finance and daily-sales destinations to registered routes.
 - Dashboard queries lived in the UI while other admin data access used the API boundary. Moved delivery, sales, and expense reads to the dashboard API domain; realtime subscriptions remain with the dashboard feature.
 - Inventory update accepted an unused idempotency argument and removed one field through an untyped catch-all. Removed the argument and made supported field mapping explicit.
 - Customer mobile checkout imported a cart type from UI state, and unknown stock policy duplicated a magic limit. Moved the type into the model layer and centralized the policy.

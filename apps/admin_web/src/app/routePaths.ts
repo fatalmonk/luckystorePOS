@@ -31,4 +31,5 @@ export const ADMIN_ROUTE_PATHS = {
   staff: '/staff',
   socialPost: '/social-post',
   translations: '/translations',
+  login: '/login',
 } as const;

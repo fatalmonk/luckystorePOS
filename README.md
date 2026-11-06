@@ -396,7 +396,7 @@
 **Cloudflare** · R2 object storage (APAC) · Workers (image proxy, Neon proxy, agent) · Turnstile · Wrangler · Docker (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions · Hostinger (customer storefront production) · Vercel (admin and storefront previews)
 
 ### Scraper
-**Node.js** · Puppeteer · string-similarity · xlsx
+**Node.js** · Puppeteer · xlsx
 
 ---
 

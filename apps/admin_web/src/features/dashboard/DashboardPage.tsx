@@ -18,6 +18,7 @@ import { format, subDays, parseISO } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
 import { settingsQueryKeys } from '../../lib/queryKeys';
 import { hasActivePaymentMethod } from './setupChecklistState';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -491,7 +492,7 @@ export function DashboardPage() {
                     <ShoppingBag size={14} className="text-warm-accent" />
                     Recent Delivery Orders
                   </h3>
-                  <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                  <a href={ADMIN_ROUTE_PATHS.deliveryOrders} className="text-xs text-warm-accent hover:underline font-bold">
                     View All
                   </a>
                 </div>
@@ -604,7 +605,7 @@ export function DashboardPage() {
                 ) : (
                   <div className="text-center text-warm-muted py-8">
                     {t('dashboard.noDailySales')}{' '}
-                    <a href="/daily-sales" className="text-primary-default hover:underline">
+                    <a href={ADMIN_ROUTE_PATHS.sales} className="text-primary-default hover:underline">
                       {t('dashboard.addDailySales')}
                     </a>
                   </div>
@@ -656,7 +657,7 @@ export function DashboardPage() {
                     <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
                   </div>
                   <a 
-                    href="/pos" 
+                    href={ADMIN_ROUTE_PATHS.quickPos}
                     className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
                   >
                     Launch
@@ -778,7 +779,7 @@ export function DashboardPage() {
                   <ShoppingBag size={18} className="text-warm-accent" />
                   Active Delivery Orders
                 </h3>
-                <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                <a href={ADMIN_ROUTE_PATHS.deliveryOrders} className="text-xs text-warm-accent hover:underline font-bold">
                   Manage Orders
                 </a>
               </div>

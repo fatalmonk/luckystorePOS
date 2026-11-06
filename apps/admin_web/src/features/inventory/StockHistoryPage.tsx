@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/AuthContext';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 import { ErrorState, EmptyState, SkeletonBlock } from '@/components';
 import { History, ArrowLeft, ArrowUp, ArrowDown, User, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -44,7 +45,7 @@ export function StockHistoryPage() {
   return (
     <div className="history-container">
       <header className="mb-4">
-        <Link to="/inventory">
+        <Link to={ADMIN_ROUTE_PATHS.inventory}>
           <Button variant="secondary" size="sm" icon={<ArrowLeft size={18} />} className="mb-4">
             Back to Inventory
           </Button>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { ADMIN_ROUTE_PATHS } from '../app/routePaths';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -44,15 +45,15 @@ export function TopHeader({
   const isBengali = i18n.language === 'bn';
 
   const commands = [
-    { label: isBengali ? 'ড্যাশবোর্ড' : 'Dashboard', description: isBengali ? 'মূল সারসংক্ষেপ দেখুন' : 'View the main overview', path: '/' },
-    { label: isBengali ? 'পণ্য তালিকা' : 'Inventory', description: isBengali ? 'পণ্য ও স্টক পরিচালনা করুন' : 'Manage products and stock', path: '/inventory' },
-    { label: isBengali ? 'নতুন ক্রয়' : 'New purchase', description: isBengali ? 'ক্রয় গ্রহণ শুরু করুন' : 'Start purchase receiving', path: '/purchase' },
-    { label: isBengali ? 'বিক্রয় ইতিহাস' : 'Sales history', description: isBengali ? 'সাম্প্রতিক বিক্রয় পর্যালোচনা করুন' : 'Review recent sales', path: '/sales' },
-    { label: isBengali ? 'গ্রাহক লেজার' : 'Customer ledger', description: isBengali ? 'গ্রাহক স্টেটমেন্ট দেখুন' : 'View customer statements', path: '/finance/customers' },
-    { label: isBengali ? 'সরবরাহকারী লেজার' : 'Supplier ledger', description: isBengali ? 'সরবরাহকারী স্টেটমেন্ট দেখুন' : 'View supplier statements', path: '/finance/suppliers' },
-    { label: isBengali ? 'আদায়' : 'Collections', description: isBengali ? 'গ্রাহক পেমেন্ট পরিচালনা করুন' : 'Manage customer payments', path: '/collections' },
-    { label: isBengali ? 'প্রতিবেদন' : 'Reports', description: isBengali ? 'বিক্রয় ও আর্থিক প্রতিবেদন দেখুন' : 'Review sales and financial reports', path: '/reports' },
-    { label: isBengali ? 'সেটিংস' : 'Settings', description: isBengali ? 'স্টোর সেটিংস পরিচালনা করুন' : 'Manage store settings', path: '/settings' },
+    { label: isBengali ? 'ড্যাশবোর্ড' : 'Dashboard', description: isBengali ? 'মূল সারসংক্ষেপ দেখুন' : 'View the main overview', path: ADMIN_ROUTE_PATHS.root },
+    { label: isBengali ? 'পণ্য তালিকা' : 'Inventory', description: isBengali ? 'পণ্য ও স্টক পরিচালনা করুন' : 'Manage products and stock', path: ADMIN_ROUTE_PATHS.inventory },
+    { label: isBengali ? 'নতুন ক্রয়' : 'New purchase', description: isBengali ? 'ক্রয় গ্রহণ শুরু করুন' : 'Start purchase receiving', path: ADMIN_ROUTE_PATHS.purchase },
+    { label: isBengali ? 'বিক্রয় ইতিহাস' : 'Sales history', description: isBengali ? 'সাম্প্রতিক বিক্রয় পর্যালোচনা করুন' : 'Review recent sales', path: ADMIN_ROUTE_PATHS.sales },
+    { label: isBengali ? 'গ্রাহক লেজার' : 'Customer ledger', description: isBengali ? 'গ্রাহক স্টেটমেন্ট দেখুন' : 'View customer statements', path: ADMIN_ROUTE_PATHS.customerLedger },
+    { label: isBengali ? 'সরবরাহকারী লেজার' : 'Supplier ledger', description: isBengali ? 'সরবরাহকারী স্টেটমেন্ট দেখুন' : 'View supplier statements', path: ADMIN_ROUTE_PATHS.supplierLedger },
+    { label: isBengali ? 'আদায়' : 'Collections', description: isBengali ? 'গ্রাহক পেমেন্ট পরিচালনা করুন' : 'Manage customer payments', path: ADMIN_ROUTE_PATHS.collections },
+    { label: isBengali ? 'প্রতিবেদন' : 'Reports', description: isBengali ? 'বিক্রয় ও আর্থিক প্রতিবেদন দেখুন' : 'Review sales and financial reports', path: ADMIN_ROUTE_PATHS.reports },
+    { label: isBengali ? 'সেটিংস' : 'Settings', description: isBengali ? 'স্টোর সেটিংস পরিচালনা করুন' : 'Manage store settings', path: ADMIN_ROUTE_PATHS.settings },
   ];
 
   const filteredCommands = commands.filter((command) => {
