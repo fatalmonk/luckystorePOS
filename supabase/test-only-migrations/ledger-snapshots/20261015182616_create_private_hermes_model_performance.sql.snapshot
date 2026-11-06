@@ -1,0 +1,27 @@
+create table if not exists public.model_performance (
+  id bigint generated always as identity primary key,
+  invocation_id uuid not null unique,
+  session_id text,
+  model_id text not null,
+  task_type text not null,
+  context_length integer check (context_length >= 0),
+  latency_ms integer check (latency_ms >= 0),
+  cost_usd numeric(18, 9) check (cost_usd >= 0),
+  invocation_success boolean not null,
+  tool_success boolean,
+  quality_score numeric(5, 4) check (quality_score between 0 and 1),
+  error_kind text,
+  "timestamp" timestamptz not null default now()
+);
+comment on table public.model_performance is 'Hermes/Jev model invocation telemetry; contains metrics and opaque identifiers, never prompts or responses.';
+comment on column public.model_performance.context_length is 'Provider-reported prompt/input token count for this invocation; NULL when unavailable.';
+comment on column public.model_performance.cost_usd is 'Estimated USD cost from Hermes pricing, NULL when unavailable; not a provider invoice.';
+comment on column public.model_performance.tool_success is 'NULL when no tool outcome has been deterministically checked.';
+comment on column public.model_performance.quality_score is 'Rubric score normalized to 0..1; NULL until scored with a defined rubric.';
+alter table public.model_performance enable row level security;
+revoke all on table public.model_performance from anon, authenticated;
+revoke all on sequence public.model_performance_id_seq from anon, authenticated;
+grant select, insert, update on table public.model_performance to service_role;
+grant usage, select on sequence public.model_performance_id_seq to service_role;
+create index if not exists model_performance_timestamp_idx on public.model_performance ("timestamp" desc);
+create index if not exists model_performance_model_timestamp_idx on public.model_performance (model_id, "timestamp" desc);

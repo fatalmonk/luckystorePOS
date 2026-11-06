@@ -7,7 +7,7 @@
 - **Implementation:** PR #588 is merged to `main` as `d54b2ea680e0d8c7b11a3cad4ec92c62f5ea2453`.
 - **Test database:** Both catalog migrations are applied and the SQL/security regression checks passed. The intended test and production storefront records were read-only checked as public on 2026-11-06.
 - **Target history mismatch:** The test ledger recorded the follow-up migration as `20261106011758`; production and the merged repository use `20261106000000`. A local test-alignment rename was reversed so the worktree again matches the merged repository and production. Both projects' live function source has SHA-256 `e45cb90d5f61ce9996d1ab80f6d3f92484ce23a2586df8e9df38e3503a4b4987`.
-- **Full ledger reconciliation:** Still incomplete. The test project has 283 migration records and this worktree has 275 migration files. The remaining unmatched entries need source and database-state mapping before any migration-history repair or automatic synchronization.
+- **Full ledger reconciliation:** Still incomplete. The test project now has 288 migration records after five test-only forward migrations; the production migration directory has 275 files. The historical differences still need provenance mapping before any history repair or automatic synchronization.
 - **Production release:** Both catalog migration records and the reviewed function are present in production as checked read-only on 2026-11-06. Hostinger workflow run `42141518789`, triggered by the `d54b2ea` push to `main`, successfully built one immutable artifact, deployed it to staging, passed staging validation, deployed the same artifact to production, and passed production smoke. A separate read-only, actual-`anon` one-item RPC smoke returned total `684`, page count `1`, and no cost fields in the returned item. Production egress savings are unknown.
 
 The local `main` checkout was separately fast-forwarded to the PR #588 merge. No migration-history repair or automatic sync was run in this task.
@@ -15,13 +15,13 @@ The local `main` checkout was separately fast-forwarded to the PR #588 merge. No
 ## Decision at a glance
 
 | Area | Status | Evidence |
-|---|---|---|
+| --- | --- | --- |
 | PR #588 | Merged | Merge commit `d54b2ea680e0d8c7b11a3cad4ec92c62f5ea2453`; Project Doctor, CI, Storefront CI/CD (build, lint/typecheck, Chromium E2E), and Vercel checks passed on `67b9212d`. |
 | Mobile catalog optimization | Implemented | One server-side RPC returns a filtered page and exact total; browse cache remains 60 seconds. |
 | Synthetic payload measurement | 99.75% fewer serialized catalog bytes | Test-project harness only; not a billable-egress or production measurement. |
 | Follow-up SQL security verification | Passed in non-production | Forward migration applied; complete SQL suite and supplemental `anon`-role private-store, unconfigured-store, cross-tenant, and cost-redaction checks passed transactionally. |
 | Intended store visibility | Enabled as checked | `is_public_storefront = true` for store `4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd` in both test and production, checked read-only on 2026-11-06. |
-| Migration history reconciliation | Production aligned; test ledger divergent | Production has 275 migration records matching all 275 repository versions. Test has 283 records with historical timestamp and test-only differences. No history repair or automatic sync was run. |
+| Migration history reconciliation | Production aligned; test ledger divergent | Production has 275 migration records matching all 275 repository versions. Test now has 288 records, including five reviewed test-only forward migrations. No history repair or automatic sync was run. |
 | Production rollout | Deployed and smoke-checked | Hostinger run `42141518789` deployed merged SHA `d54b2ea` to staging and production, with both validation jobs successful. Both catalog migrations and reviewed function are live in production. |
 | Production egress savings | Unknown | No pre/post gateway byte trace or billing measurement is available. |
 
@@ -47,7 +47,7 @@ The production smoke ran in a read-only transaction under the `anon` role and ro
 Environment: non-production Supabase test project `grxxenvdhfwzafzyykgo`. A transaction generated 5,000 synthetic catalog rows and published Bengali translations, ran five before/after iterations, and rolled all fixture data back. The catalog response sizes below are PostgreSQL `jsonb::text` byte counts for RPC/translation payloads; they exclude HTTP framing, TLS, gateway overhead, category response bytes, and Supabase billing accounting. They are a controlled comparison, not a billable-egress measurement.
 
 | Metric | Before | After | Change |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | Mobile cold-path Supabase reads, including one uncached category read | 61 (10 catalog RPC + 50 translation reads + 1 category read) | 2 (1 catalog RPC + 1 category read) | 96.72% fewer requests |
 | Catalog and translation JSON text bytes | 3,682,419 | 9,189 | 99.75% fewer serialized bytes |
 | Product rows fetched for a 20-item response | 5,009 catalog rows + 5,000 translation rows | 20 catalog rows; translations included in those rows | 99.60% fewer catalog rows |
@@ -68,6 +68,8 @@ Homepage, web category listing, web search, product detail, brand pages, middlew
 
 A read-only query of production Supabase edge logs for 2026-11-05 23:00 through 2026-11-06 02:20 UTC found **zero** paths containing `mobile_catalog`. The 00:00–01:00 UTC pre-release and 01:20–02:20 UTC post-release slices had other catalog traffic, but the mobile RPC had no observed calls. Only 610 of 1,906 edge-log events in the broader window carried a `Content-Length` header, and the headers visible on catalog paths were mostly tiny responses. These logs do not establish a wire-byte or billable-egress comparison. Measure again after real mobile catalog traffic is observed; do not generate production fixtures to force a result.
 
+One later, explicitly controlled read-only production route probe used `locale=en&limit=1&offset=0`. It returned one item, exact total `684`, `hasMore=true`, and no cost field in that item. Supabase edge logs recorded one `200` call to `search_storefront_mobile_catalog_v1` in the probe window (02:45–02:53 UTC). Exclude this probe from any real-traffic savings estimate.
+
 The exact total is computed from all matching rows, so database work still grows with the matching catalog size even though fewer rows cross the network. Monitor RPC execution time and database load as the catalog grows. The 60-second cache applies to catalog browsing. Checkout independently fetches current catalog prices and replaces client-supplied prices with database values; order creation goes through the existing stock-aware server RPC. Those checkout paths were not changed by Phase 3.
 
 ## Verification and security
@@ -85,7 +87,7 @@ The exact total is computed from all matching rows, so database work still grows
 
 **Status: production version set aligned; test-project ledger remains divergent.**
 
-The test project's migration ledger contains 283 records. Production has 275 records, and this worktree has 275 migration files. Production and the worktree have identical version sets. Their names are not all identical, so the version-set check does not prove every historical SQL body equivalent. The test-versus-worktree version-set comparison found:
+Before the five forward migrations below, the test project's migration ledger contained 283 records. It now contains 288. Production has 275 records, and `supabase/migrations` has 275 files. Production and the production migration directory have identical version sets. Their names are not all identical, so the version-set check does not prove every historical SQL body equivalent. The initial test-versus-production-directory comparison found:
 
 - **17 test versions** with no same-version repository file. Nine have a same-named production/repository migration under a different timestamp. Two are present under `supabase/test-only-migrations`. Five have no same-named current file or matching migration path in available Git history. The seventeenth is the follow-up catalog migration, which has the reviewed function body under a different version.
 - **9 repository versions** with no same-version test record. Three pair by name with test records at different timestamps, including the follow-up catalog migration. Six have no same-name test record and need classification as pending or otherwise applied.
@@ -105,13 +107,42 @@ The test project's migration ledger contains 283 records. Production has 275 rec
 
 These are comparisons of the SQL strings retained in each database ledger. They do not authorize changing either ledger. The production ledger's version set matches the repository, while 13 historical production records use names different from the corresponding repository filenames; those names also need review before declaring full history equivalence.
 
-The test database ledger was not edited. The target function definition's SHA-256 matches live `pg_proc.prosrc` in both environments and the checked-in function body. The five test-only records without repository paths affect `model_performance`, promotions/order test schema, checkout core, rate-limit/stock-view hardening, and privileged maintenance RPC access. Their SQL is retained in the test ledger, but their deployment origin and intended persistence are not established. The two preview-image migrations have files under `supabase/test-only-migrations`; their recorded function bodies differ materially from those files, including tenant and preview-host conditions. Read-only `pg_proc` checks show that the test project's current `publish_item_image_if_current` and `sync_item_image_metadata` bodies match the recorded test-ledger versions exactly. Do not treat the files as equivalent to the recorded migrations or replay them automatically.
+The historical test database ledger entries were not edited. The target mobile catalog function definition's SHA-256 matches live `pg_proc.prosrc` in both environments and the checked-in function body. The five test-only records without repository paths affect `model_performance`, promotions/order test schema, checkout core, rate-limit/stock-view hardening, and privileged maintenance RPC access. Their SQL is retained in the test ledger and copied byte-for-byte into inert `.sql.snapshot` files; their original deployment provenance is still unknown. The two October preview-image migrations have same-version files under `supabase/test-only-migrations`, but their recorded function bodies differ materially from those files. The test project's live bodies matched the recorded ledger strings before the new forward fixes below. Do not replay the October files or rewrite historical ledger rows.
+The historical test database ledger entries were not edited. The target mobile catalog function definition's SHA-256 matches live `pg_proc.prosrc` in both environments and the checked-in function body.
+
+The five test-only records without repository paths have now been forensically traced to their origins:
+
+- `20261015182616_create_private_hermes_model_performance`: Created during Hermes/Jev autonomous host agent runs (.hermes/ telemetry). Creates `public.model_performance` (cost/latency tracking); RLS enabled, granted only to `service_role`. Test-only telemetry.
+- `20261015183610_storefront_item_promotions_e2e_schema`: Created as a test-only counterpart for PR #484 / migration `20261015100000`. Omits production campaign rows/UUIDs so isolated test catalogs can execute E2E suites.
+- `20261015224451_test_week_one_promotion_checkout_core`: Applied directly during PR #484 pre-release verification (documented in `system-docs/releases/2026-10-19-week-one-promotion.md`). Defines `create_order_with_stock_idempotent_unowned` for test-promotion evaluation.
+- `20261019031539_harden_testing_rate_limits_and_stock_views`: Applied directly on test on 2026-10-19 03:15 UTC to revoke `rate_limits` and set `security_invoker` on stock views; codified and merged into production migration `20261019130000_harden_search_paths_and_rls_initplans.sql` (PR #513/#514).
+- `20261019031628_restrict_internal_privileged_maintenance_rpcs`: Applied directly on test on 2026-10-19 03:16 UTC to revoke competitor cleanup RPC privileges; also codified and merged into production migration `20261019130000`.
+
+Their SQL is retained in the test ledger and copied byte-for-byte into inert `.sql.snapshot` files. The two October preview-image migrations have same-version files under `supabase/test-only-migrations`, but their recorded function bodies differ materially from those files. The test project's live bodies matched the recorded ledger strings before the new forward fixes below. Do not replay the October files or rewrite historical ledger rows.
 
 The six repository versions absent from the test ledger are `20261022120000`, `20261026000000`, `20261029024810`, `20261029030023`, `20261031193836`, and `20261103000000`. Their absence is a test-project state question, not evidence that production lacks them; all six versions occur in production.
 
-Read-only function-hash comparisons confirm material test/production state differences for the absent migrations. The production conservative competitor-matching migration has functions/signatures missing from the test project, including `classify_competitor_product_match`, `extract_product_pack_signature`, `extract_product_variant`, and `is_valid_product_gtin`; shared competitor functions also differ. `catalog_import_row_apply` differs between projects, as does `publish_item_image_if_current`. The weekly promotion renewal is a data migration and was not assessed by these function checks. These findings rule out marking the six versions as already applied in test based on names or production history.
+Before the new forward migrations, function-hash comparisons confirmed material test/production differences: the test project lacked production competitor-matching functions/signatures, and its `catalog_import_row_apply` and `publish_item_image_if_current` differed. The weekly promotion renewal is a data migration and was not assessed by function checks. The original six production versions remain absent from test history; the forward migrations do not mark them applied.
 
 After the temporary filename alignment, the full transactional SQL suite and actual-`anon` private/unconfigured/cross-tenant/cost checks passed again. Offset `100000` was accepted and `100001` rejected. Fixtures rolled back, and a post-run query found no leftovers. The filename was then restored to the production/repository version without changing SQL bytes. These checks validate the catalog function; they do **not** resolve the other migration-ledger differences.
+
+### 2026-11-06 Security Tests forward fixes
+
+The applied SQL for five records without repository paths and two divergent preview-image records is preserved as exact, inert `.sql.snapshot` files under `supabase/test-only-migrations/ledger-snapshots`. A secret-pattern check found no private keys, JWTs, Supabase secret keys, password assignments, or database URLs in those seven strings. These snapshots are evidence, not migrations.
+
+Five new forward migrations were applied **only** to test project `grxxenvdhfwzafzyykgo`, with their recorded versions used as filenames:
+
+| Version | Change | Verification |
+| --- | --- | --- |
+| `20261106024618` | Restrict preview-image CAS to the dedicated test tenant; reject URL/checksum with null key. | A no-item mutation proof failed before and passed after; live function source hash matches the file; `anon` and `authenticated` cannot execute it. |
+| `20261106024841` | Reject `NULL` catalog-import stock mode. | Fixture regression failed before and passed after; live function hash matches the reviewed production function; fixtures rolled back. |
+| `20261106025141` | Bring conservative competitor matcher definitions to the test project. | Variant-conflict and confirmed-rematch tests passed; all nine reviewed function signatures/source hashes match production, with no `anon` execution grants. |
+| `20261106025547` | Reject direct preview URL inserts and non-test-tenant preview URLs in the image metadata trigger. | Direct-insert proof failed before and passed after; dedicated-tenant CAS and unrelated item update passed; live trigger body hash matches the file. |
+| `20261106030019` | Recognize mixed-case preview hostnames and optional port 443 in the direct-write guard. | Mixed-case/default-port insert failed its proof before and passed after; focused and broad image tests passed; live trigger body hash matches the file. |
+
+The broad image metadata test was updated for the strict CAS key/checksum format, tenant-scoped images, and preview-host restriction, then passed. The focused CAS, trigger, catalog-import, and mobile-catalog SQL suites passed after all five migrations. No test fixtures remained. Security Advisor counts stayed at one informational and three warning notices before and after these changes.
+
+The broader `competitor_prices_forward_migration_test.sql` could not complete because the test project lacks a frozen price-alerts RPC signature required by that suite. This is a separate schema gap; the two focused matcher tests passed. No production database migration was run.
 
 **Before any migration-history repair or automatic synchronization:**
 

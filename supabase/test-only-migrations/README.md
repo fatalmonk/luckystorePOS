@@ -4,4 +4,14 @@ SQL files in this directory record migrations applied only to the Security Tests
 
 Production migration sources belong in `supabase/migrations` and must match the versions and SQL recorded by the production project.
 
-As checked on 2026-11-06, the Security Tests project's recorded SQL for the two preview-image migrations in this directory differs materially from these files. Its live `publish_item_image_if_current` and `sync_item_image_metadata` bodies match the recorded SQL. Do not replay these files or mark their versions repaired until the tenant and preview-host conditions are reviewed against the ledger and intended test policy. See `system-docs/audits/2026-11-06-supabase-egress-phase3-results.md` for the reconciliation evidence.
+The SQL recorded for the two October preview-image migrations differs materially from their same-version files in this directory. Exact applied strings are preserved as inert evidence in `ledger-snapshots/`. Do not replay the October files or mark their versions repaired.
+
+On 2026-11-06, five separately verified forward migrations were applied only to the Security Tests project:
+
+- `20261106024618_restrict_preview_image_cas_to_test_tenant.sql`: reject preview-host publication for other tenants and URL/checksum metadata without an image key.
+- `20261106024841_fix_catalog_import_null_stock_mode_test.sql`: reject null stock mode; function body matches the reviewed production migration.
+- `20261106025141_conservative_competitor_matching_test.sql`: bring conservative matcher functions and grants to the reviewed production definition.
+- `20261106025547_restrict_preview_image_trigger_to_cas_test.sql`: reject direct preview URL inserts and non-test-tenant preview URLs.
+- `20261106030019_guard_preview_host_variants_test.sql`: also recognize mixed-case preview hostnames and the default HTTPS port in direct writes.
+
+These versions match the Security Tests migration ledger. The historical October SQL remains unchanged in the ledger. See `system-docs/audits/2026-11-06-supabase-egress-phase3-results.md` for verification and remaining differences.

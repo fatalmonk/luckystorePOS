@@ -1,0 +1,5 @@
+REVOKE ALL ON TABLE public.rate_limits FROM PUBLIC, anon, authenticated;
+ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.v_stock_ledger_recent, public.v_stock_ledger_product_summary FROM PUBLIC, anon;
+ALTER VIEW public.v_stock_ledger_recent SET (security_invoker = true);
+ALTER VIEW public.v_stock_ledger_product_summary SET (security_invoker = true);
