@@ -161,7 +161,8 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
     if (_categorySlugsCache === null) return true;
   }
 
-  return _categorySlugsCache.has(slug);
+  const cachedSlugs = _categorySlugsCache;
+  return cachedSlugs?.has(slug) ?? true;
 }
 
 /**
