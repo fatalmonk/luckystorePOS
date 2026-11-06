@@ -4,6 +4,9 @@ import { act } from 'react';
 import { useCart } from '../../hooks/useCart';
 import type { Product } from '../types';
 
+const mockSupabaseFrom = vi.hoisted(() => vi.fn());
+vi.mock('../supabase', () => ({ supabase: { from: mockSupabaseFrom } }));
+
 const mockProduct: Product = {
   id: 'prod-1',
   name: 'Test Milk',
@@ -42,9 +45,21 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+function createPromotionQuery() {
+  const query: any = {};
+  query.select = vi.fn(() => query);
+  query.eq = vi.fn(() => query);
+  query.in = vi.fn(() => query);
+  query.then = (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+    Promise.resolve({ data: [], error: null }).then(resolve);
+  return query;
+}
+
 describe('useCart', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockSupabaseFrom.mockReset();
+    mockSupabaseFrom.mockImplementation(createPromotionQuery);
     localStorageMock.clear();
   });
 
@@ -309,6 +324,7 @@ describe('useCart', () => {
 
     it('does not start the 30s interval when the tab is hidden on mount', async () => {
       Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      localStorageMock.setItem('lucky-cart', JSON.stringify([{ ...mockProduct, qty: 1 }]));
       const setIntervalSpy = vi.spyOn(window, 'setInterval');
 
       renderHook(() => useCart());
@@ -318,11 +334,14 @@ describe('useCart', () => {
         ([, delay]) => delay === 30_000,
       );
       expect(promotionIntervalCalls).toHaveLength(0);
+      expect(mockSupabaseFrom).toHaveBeenCalledTimes(1);
+      expect(mockSupabaseFrom).toHaveBeenCalledWith('storefront_item_promotions');
       setIntervalSpy.mockRestore();
     });
 
     it('starts the 30s interval when a hidden tab becomes visible', async () => {
       Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      localStorageMock.setItem('lucky-cart', JSON.stringify([{ ...mockProduct, qty: 1 }]));
       const setIntervalSpy = vi.spyOn(window, 'setInterval');
 
       renderHook(() => useCart());
@@ -330,6 +349,8 @@ describe('useCart', () => {
 
       // Confirm no interval started while hidden
       expect(setIntervalSpy.mock.calls.filter(([, d]) => d === 30_000)).toHaveLength(0);
+      expect(mockSupabaseFrom).toHaveBeenCalledTimes(1);
+      expect(mockSupabaseFrom).toHaveBeenCalledWith('storefront_item_promotions');
 
       // Simulate tab becoming visible
       Object.defineProperty(document, 'hidden', { value: false, configurable: true });
@@ -339,6 +360,16 @@ describe('useCart', () => {
       });
 
       expect(setIntervalSpy.mock.calls.filter(([, d]) => d === 30_000).length).toBeGreaterThanOrEqual(1);
+      expect(mockSupabaseFrom).toHaveBeenCalledTimes(2);
+
+      const promotionInterval = setIntervalSpy.mock.calls.find(([, delay]) => delay === 30_000)?.[0];
+      expect(promotionInterval).toBeDefined();
+      await act(async () => {
+        (promotionInterval as () => void)();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(mockSupabaseFrom).toHaveBeenCalledTimes(3);
       setIntervalSpy.mockRestore();
     });
 

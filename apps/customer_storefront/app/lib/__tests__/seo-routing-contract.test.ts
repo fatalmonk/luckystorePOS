@@ -450,6 +450,45 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       );
     });
 
+    it('coalesces concurrent category route validation into one upstream fetch', async () => {
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        new Response(JSON.stringify([{ slug: 'fresh-market', name: 'Fresh Market' }]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+      const { middleware, _resetCategorySlugCacheForTest } = await import('../../../middleware');
+      _resetCategorySlugCacheForTest();
+      try {
+        const responses = await Promise.all(
+          Array.from({ length: 20 }, (_, index) =>
+            middleware(new NextRequest(
+              `https://www.luckystore1947.com/${index % 2 === 0 ? '' : 'bn/'}category/fresh-market`,
+            )),
+          ),
+        );
+
+        expect(responses.every((response) => response.status !== 404)).toBe(true);
+        const categoryFetches = fetchSpy.mock.calls.filter(([input]) =>
+          new URL(String(input)).pathname === '/rest/v1/categories',
+        );
+        expect(categoryFetches).toHaveLength(1);
+      } finally {
+        _resetCategorySlugCacheForTest();
+        fetchSpy.mockRestore();
+        if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+        else process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+        if (originalKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
+      }
+    });
+
     it('returns a real 404 before session handling for unknown category slugs', async () => {
       const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
