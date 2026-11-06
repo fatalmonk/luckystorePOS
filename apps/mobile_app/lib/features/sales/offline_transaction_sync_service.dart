@@ -9,10 +9,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/sync_action_audit_log.dart';
 import '../../models/sale_transaction_snapshot.dart';
+import '../../models/queued_offline_transaction.dart';
+export '../../models/queued_offline_transaction.dart';
 import './offline_sync_operational_alert_engine.dart';
 import './conflict_resolver.dart';
-
-enum OfflineSyncState { pending, syncing, synced, failed, conflict }
 
 class OfflineSyncDashboardStats {
   final int queuedSalesCount;
@@ -56,170 +56,6 @@ class SyncActionActor {
   });
 }
 
-class QueuedOfflineTransaction {
-  final String clientTransactionId;
-  final String transactionTraceId;
-  final String storeId;
-  final String cashierId;
-  final String? sessionId;
-  final List<Map<String, dynamic>> items;
-  final List<Map<String, dynamic>> payments;
-  final double discount;
-  final DateTime createdAt;
-  final DateTime? syncedAt;
-  final OfflineSyncState state;
-  final int retryCount;
-  final DateTime? nextRetryAt;
-  final String? lastError;
-  final String? conflictType;
-  final bool requiresManagerReview;
-  final DateTime? reviewedAt;
-  final DateTime? conflictAcknowledgedAt;
-  final Map<String, dynamic>? conflictMeta;
-  final Map<String, dynamic>? snapshot;
-  final String syncValidationState;
-  final String fulfillmentPolicy;
-
-  const QueuedOfflineTransaction({
-    required this.clientTransactionId,
-    required this.transactionTraceId,
-    required this.storeId,
-    required this.cashierId,
-    required this.sessionId,
-    required this.items,
-    required this.payments,
-    required this.discount,
-    required this.createdAt,
-    required this.syncedAt,
-    required this.state,
-    required this.retryCount,
-    required this.nextRetryAt,
-    required this.lastError,
-    required this.conflictType,
-    required this.requiresManagerReview,
-    required this.reviewedAt,
-    required this.conflictAcknowledgedAt,
-    required this.conflictMeta,
-    required this.snapshot,
-    required this.syncValidationState,
-    required this.fulfillmentPolicy,
-  });
-
-  QueuedOfflineTransaction copyWith({
-    DateTime? syncedAt,
-    OfflineSyncState? state,
-    int? retryCount,
-    DateTime? nextRetryAt,
-    String? lastError,
-    String? conflictType,
-    bool? requiresManagerReview,
-    DateTime? reviewedAt,
-    DateTime? conflictAcknowledgedAt,
-    Map<String, dynamic>? conflictMeta,
-    String? syncValidationState,
-    List<Map<String, dynamic>>? items,
-    List<Map<String, dynamic>>? payments,
-    double? discount,
-  }) {
-    return QueuedOfflineTransaction(
-      clientTransactionId: clientTransactionId,
-      transactionTraceId: transactionTraceId,
-      storeId: storeId,
-      cashierId: cashierId,
-      sessionId: sessionId,
-      items: items ?? this.items,
-      payments: payments ?? this.payments,
-      discount: discount ?? this.discount,
-      createdAt: createdAt,
-      syncedAt: syncedAt ?? this.syncedAt,
-      state: state ?? this.state,
-      retryCount: retryCount ?? this.retryCount,
-      nextRetryAt: nextRetryAt,
-      lastError: lastError,
-      conflictType: conflictType ?? this.conflictType,
-      requiresManagerReview: requiresManagerReview ?? this.requiresManagerReview,
-      reviewedAt: reviewedAt ?? this.reviewedAt,
-      conflictAcknowledgedAt:
-          conflictAcknowledgedAt ?? this.conflictAcknowledgedAt,
-      conflictMeta: conflictMeta ?? this.conflictMeta,
-      snapshot: snapshot,
-      syncValidationState: syncValidationState ?? this.syncValidationState,
-      fulfillmentPolicy: fulfillmentPolicy,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'client_transaction_id': clientTransactionId,
-        'transaction_trace_id': transactionTraceId,
-        'store_id': storeId,
-        'cashier_id': cashierId,
-        'session_id': sessionId,
-        'items': items,
-        'payments': payments,
-        'discount': discount,
-        'created_at': createdAt.toIso8601String(),
-        'synced_at': syncedAt?.toIso8601String(),
-        'state': state.name,
-        'retry_count': retryCount,
-        'next_retry_at': nextRetryAt?.toIso8601String(),
-        'last_error': lastError,
-        'conflict_type': conflictType,
-        'requires_manager_review': requiresManagerReview,
-        'reviewed_at': reviewedAt?.toIso8601String(),
-        'conflict_acknowledged_at': conflictAcknowledgedAt?.toIso8601String(),
-        'conflict_meta': conflictMeta,
-        'snapshot': snapshot,
-        'sync_validation_state': syncValidationState,
-        'fulfillment_policy': fulfillmentPolicy,
-      };
-
-  factory QueuedOfflineTransaction.fromJson(Map<String, dynamic> json) {
-    final rawItems = (json['items'] as List<dynamic>? ?? const []);
-    final rawPayments = (json['payments'] as List<dynamic>? ?? const []);
-    return QueuedOfflineTransaction(
-      clientTransactionId: json['client_transaction_id'] as String,
-      transactionTraceId: json['transaction_trace_id'] as String? ?? json['client_transaction_id'] as String,
-      storeId: json['store_id'] as String,
-      cashierId: json['cashier_id'] as String,
-      sessionId: json['session_id'] as String?,
-      items: rawItems.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
-      payments:
-          rawPayments.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
-      discount: (json['discount'] as num? ?? 0).toDouble(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      syncedAt: json['synced_at'] != null
-          ? DateTime.parse(json['synced_at'] as String)
-          : null,
-      state: OfflineSyncState.values.firstWhere(
-        (s) => s.name == (json['state'] as String? ?? 'pending'),
-        orElse: () => OfflineSyncState.pending,
-      ),
-      retryCount: (json['retry_count'] as num? ?? 0).toInt(),
-      nextRetryAt: json['next_retry_at'] != null
-          ? DateTime.parse(json['next_retry_at'] as String)
-          : null,
-      lastError: json['last_error'] as String?,
-      conflictType: json['conflict_type'] as String?,
-      requiresManagerReview: json['requires_manager_review'] as bool? ?? false,
-      reviewedAt: json['reviewed_at'] != null
-          ? DateTime.parse(json['reviewed_at'] as String)
-          : null,
-      conflictAcknowledgedAt: json['conflict_acknowledged_at'] != null
-          ? DateTime.parse(json['conflict_acknowledged_at'] as String)
-          : null,
-      conflictMeta: json['conflict_meta'] == null
-          ? null
-          : Map<String, dynamic>.from(json['conflict_meta'] as Map),
-      snapshot: json['snapshot'] == null
-          ? null
-          : Map<String, dynamic>.from(json['snapshot'] as Map),
-      syncValidationState:
-          json['sync_validation_state'] as String? ?? 'PENDING_SERVER_VALIDATION',
-      fulfillmentPolicy: json['fulfillment_policy'] as String? ?? 'STRICT',
-    );
-  }
-}
-
 class OfflineTransactionSyncService extends ChangeNotifier {
   OfflineTransactionSyncService._();
   static final OfflineTransactionSyncService instance =
@@ -227,6 +63,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
   final _random = Random();
   final _queue = <QueuedOfflineTransaction>[];
+  final _invalidQueueRecords = <Object?>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
   final _conflictResolver = ConflictResolver();
@@ -241,18 +78,16 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   int _consecutiveFailures = 0;
 
   List<QueuedOfflineTransaction> get queue => List.unmodifiable(_queue);
+  int get invalidQueueRecordCount => _invalidQueueRecords.length;
   List<SyncActionAuditLog> get auditLogs => List.unmodifiable(_auditLogs);
   OfflineSyncWorkerTelemetry get telemetry => OfflineSyncWorkerTelemetry(
-        lastRunAt: _lastRunAt,
-        lastSuccessAt: _lastSuccessAt,
-        consecutiveFailures: _consecutiveFailures,
-        currentlyProcessing: _currentlyProcessing,
-      );
-  List<OfflineSyncOperationalAlert> operationalAlerts() => _alertEngine.evaluate(
-        queue: _queue,
-        stats: dashboardStats(),
-        telemetry: telemetry,
-      );
+    lastRunAt: _lastRunAt,
+    lastSuccessAt: _lastSuccessAt,
+    consecutiveFailures: _consecutiveFailures,
+    currentlyProcessing: _currentlyProcessing,
+  );
+  List<OfflineSyncOperationalAlert> operationalAlerts() => _alertEngine
+      .evaluate(queue: _queue, stats: dashboardStats(), telemetry: telemetry);
 
   Future<void> initialize(SupabaseClient supabase) async {
     if (_initialized && identical(_supabase, supabase)) return;
@@ -260,8 +95,10 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     await _loadQueue();
     await _loadLogs();
     _workerTimer?.cancel();
-    _workerTimer =
-        Timer.periodic(const Duration(seconds: 12), (_) => unawaited(_syncQueue()));
+    _workerTimer = Timer.periodic(
+      const Duration(seconds: 12),
+      (_) => unawaited(_syncQueue()),
+    );
     _initialized = true;
     notifyListeners();
   }
@@ -273,8 +110,14 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     final millis = DateTime.now().millisecondsSinceEpoch;
     final rand = _random.nextInt(1 << 32).toRadixString(16).padLeft(8, '0');
     // I27: Pad to 8 chars before substring to prevent RangeError on short IDs
-    final shortStore = storeId.replaceAll('-', '').padRight(8, '0').substring(0, 8);
-    final shortCashier = cashierId.replaceAll('-', '').padRight(8, '0').substring(0, 8);
+    final shortStore = storeId
+        .replaceAll('-', '')
+        .padRight(8, '0')
+        .substring(0, 8);
+    final shortCashier = cashierId
+        .replaceAll('-', '')
+        .padRight(8, '0')
+        .substring(0, 8);
     return 'tx-$shortStore-$shortCashier-$millis-$rand';
   }
 
@@ -283,8 +126,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     required Map<String, dynamic>? snapshot,
   }) async {
     final clientTransactionId = intent.clientTransactionId;
-    final duplicate =
-        _queue.any((q) => q.clientTransactionId == clientTransactionId);
+    final duplicate = _queue.any(
+      (q) => q.clientTransactionId == clientTransactionId,
+    );
     if (duplicate) return;
 
     _queue.add(
@@ -351,7 +195,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     required String clientTransactionId,
     required SyncActionActor actor,
   }) async {
-    final i = _queue.indexWhere((q) => q.clientTransactionId == clientTransactionId);
+    final i = _queue.indexWhere(
+      (q) => q.clientTransactionId == clientTransactionId,
+    );
     if (i < 0) return;
     _queue[i] = _queue[i].copyWith(
       state: OfflineSyncState.pending,
@@ -372,50 +218,57 @@ class OfflineTransactionSyncService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> forceSyncNow({required SyncActionActor actor}) async => _syncQueue();
+  Future<void> forceSyncNow({required SyncActionActor actor}) async =>
+      _syncQueue();
 
   OfflineSyncDashboardStats dashboardStats() {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    final activeQueue = _queue
-        .where(
-          (q) =>
-              q.state == OfflineSyncState.pending ||
-              q.state == OfflineSyncState.syncing ||
-              q.state == OfflineSyncState.failed,
-        )
-        .toList();
-    final pendingQueue = _queue
-        .where(
-          (q) =>
-              q.state == OfflineSyncState.pending ||
-              q.state == OfflineSyncState.syncing,
-        )
-        .toList();
-    final oldest = pendingQueue.isEmpty
-        ? null
-        : pendingQueue
-            .map((q) => q.createdAt)
-            .reduce((a, b) => a.isBefore(b) ? a : b);
+    final activeQueue =
+        _queue
+            .where(
+              (q) =>
+                  q.state == OfflineSyncState.pending ||
+                  q.state == OfflineSyncState.syncing ||
+                  q.state == OfflineSyncState.failed,
+            )
+            .toList();
+    final pendingQueue =
+        _queue
+            .where(
+              (q) =>
+                  q.state == OfflineSyncState.pending ||
+                  q.state == OfflineSyncState.syncing,
+            )
+            .toList();
+    final oldest =
+        pendingQueue.isEmpty
+            ? null
+            : pendingQueue
+                .map((q) => q.createdAt)
+                .reduce((a, b) => a.isBefore(b) ? a : b);
 
     return OfflineSyncDashboardStats(
       queuedSalesCount: activeQueue.length,
-      syncedToday: _queue
-          .where(
-            (q) =>
-                q.state == OfflineSyncState.synced &&
-                q.syncedAt != null &&
-                q.syncedAt!.isAfter(startOfDay),
-          )
-          .length,
+      syncedToday:
+          _queue
+              .where(
+                (q) =>
+                    q.state == OfflineSyncState.synced &&
+                    q.syncedAt != null &&
+                    q.syncedAt!.isAfter(startOfDay),
+              )
+              .length,
       failedSyncs:
           _queue.where((q) => q.state == OfflineSyncState.failed).length,
-      conflictsNeedingReview: _queue
-          .where(
-            (q) =>
-                q.state == OfflineSyncState.conflict && q.requiresManagerReview,
-          )
-          .length,
+      conflictsNeedingReview:
+          _queue
+              .where(
+                (q) =>
+                    q.state == OfflineSyncState.conflict &&
+                    q.requiresManagerReview,
+              )
+              .length,
       oldestPendingSaleAge: oldest == null ? null : now.difference(oldest),
     );
   }
@@ -430,19 +283,20 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       final now = DateTime.now();
       var runHadSuccess = false;
       var runHadFailure = false;
-      final candidates = _queue.where((tx) {
-        if (tx.state == OfflineSyncState.synced ||
-            tx.state == OfflineSyncState.conflict ||
-            tx.state == OfflineSyncState.syncing) {
-          return false;
-        }
-        // Exclude permanently failed transactions to prevent battery drain
-        if (tx.state == OfflineSyncState.failed && tx.retryCount > 10) {
-          return false;
-        }
-        final nextRetry = tx.nextRetryAt;
-        return nextRetry == null || !nextRetry.isAfter(now);
-      }).toList();
+      final candidates =
+          _queue.where((tx) {
+            if (tx.state == OfflineSyncState.synced ||
+                tx.state == OfflineSyncState.conflict ||
+                tx.state == OfflineSyncState.syncing) {
+              return false;
+            }
+            // Exclude permanently failed transactions to prevent battery drain
+            if (tx.state == OfflineSyncState.failed && tx.retryCount > 10) {
+              return false;
+            }
+            final nextRetry = tx.nextRetryAt;
+            return nextRetry == null || !nextRetry.isAfter(now);
+          }).toList();
 
       for (final tx in candidates) {
         final outcome = await _syncSingle(tx);
@@ -470,26 +324,26 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   Future<_SyncAttemptOutcome> _syncSingle(QueuedOfflineTransaction tx) async {
     _replace(
       tx.clientTransactionId,
-      tx.copyWith(
-        state: OfflineSyncState.syncing,
-        lastError: null,
-      ),
+      tx.copyWith(state: OfflineSyncState.syncing, lastError: null),
     );
     await _persistQueue();
     notifyListeners();
 
     try {
-      final result = await _supabase!.rpc('complete_sale', params: {
-        'p_store_id': tx.storeId,
-        'p_cashier_id': tx.cashierId,
-        'p_session_id': tx.sessionId,
-        'p_items': tx.items,
-        'p_payments': tx.payments,
-        'p_discount': tx.discount,
-        'p_client_transaction_id': tx.clientTransactionId,
-        'p_snapshot': tx.snapshot,
-        'p_fulfillment_policy': tx.fulfillmentPolicy,
-      });
+      final result = await _supabase!.rpc(
+        'complete_sale',
+        params: {
+          'p_store_id': tx.storeId,
+          'p_cashier_id': tx.cashierId,
+          'p_session_id': tx.sessionId,
+          'p_items': tx.items,
+          'p_payments': tx.payments,
+          'p_discount': tx.discount,
+          'p_client_transaction_id': tx.clientTransactionId,
+          'p_snapshot': tx.snapshot,
+          'p_fulfillment_policy': tx.fulfillmentPolicy,
+        },
+      );
 
       final parsed = Map<String, dynamic>.from(result as Map);
       final status = (parsed['status'] as String? ?? 'REJECTED').toUpperCase();
@@ -501,7 +355,8 @@ class OfflineTransactionSyncService extends ChangeNotifier {
           currentSnapshot: tx.snapshot,
         );
 
-        if (resolution.requiresManagerReview || resolution.strategy == ResolutionStrategy.manualReview) {
+        if (resolution.requiresManagerReview ||
+            resolution.strategy == ResolutionStrategy.manualReview) {
           // Conflict requires manual review
           _replace(
             tx.clientTransactionId,
@@ -517,7 +372,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
           return _SyncAttemptOutcome.conflict;
         } else if (resolution.strategy == ResolutionStrategy.cancel) {
           // Transaction cancelled - remove from queue
-          _queue.removeWhere((q) => q.clientTransactionId == tx.clientTransactionId);
+          _queue.removeWhere(
+            (q) => q.clientTransactionId == tx.clientTransactionId,
+          );
           return _SyncAttemptOutcome.failed;
         } else if (resolution.resolvedTransaction != null) {
           // Auto-resolved - update transaction and retry
@@ -575,8 +432,9 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   }
 
   void _replace(String clientTransactionId, QueuedOfflineTransaction next) {
-    final i =
-        _queue.indexWhere((q) => q.clientTransactionId == clientTransactionId);
+    final i = _queue.indexWhere(
+      (q) => q.clientTransactionId == clientTransactionId,
+    );
     if (i >= 0) _queue[i] = next;
   }
 
@@ -589,6 +447,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
   @visibleForTesting
   Future<void> clearQueueForTesting() async {
     _queue.clear();
+    _invalidQueueRecords.clear();
     try {
       final file = await _queueFile();
       if (await file.exists()) {
@@ -610,22 +469,42 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       if (!await file.exists()) return;
       final raw = await file.readAsString();
       if (raw.trim().isEmpty) return;
+      final decodedJson = jsonDecode(raw);
+      if (decodedJson is! List<dynamic>) {
+        await _backupInvalidQueueFile(file);
+        return;
+      }
+      final records = decodedJson;
+      final decoded = decodeQueuedTransactionRecords(records);
       _queue
         ..clear()
-        ..addAll((jsonDecode(raw) as List<dynamic>).map(
-          (e) => QueuedOfflineTransaction.fromJson(
-            Map<String, dynamic>.from(e as Map),
-          ),
-        ));
+        ..addAll(decoded.transactions);
+      _invalidQueueRecords
+        ..clear()
+        ..addAll(decoded.invalidRecords);
     } catch (_) {
-      _queue.clear();
+      try {
+        await _backupInvalidQueueFile(await _queueFile());
+      } catch (_) {
+        // Keep the current in-memory queue when unreadable data cannot be backed up.
+      }
+    }
+  }
+
+  /// Preserves an unreadable queue document before later writes can replace it.
+  Future<void> _backupInvalidQueueFile(File file) async {
+    if (await file.exists()) {
+      await file.copy('${file.path}.backup');
     }
   }
 
   Future<void> _persistQueue() async {
     final file = await _queueFile();
     final tmpFile = File('${file.path}.tmp');
-    final encoded = jsonEncode(_queue.map((e) => e.toJson()).toList());
+    final encoded = jsonEncode([
+      ..._queue.map((e) => e.toJson()),
+      ..._invalidQueueRecords,
+    ]);
     await tmpFile.writeAsString(encoded, flush: true);
     await tmpFile.rename(file.path);
   }
@@ -638,9 +517,13 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       if (raw.trim().isEmpty) return;
       _auditLogs
         ..clear()
-        ..addAll((jsonDecode(raw) as List<dynamic>).map(
-          (e) => SyncActionAuditLog.fromJson(Map<String, dynamic>.from(e as Map)),
-        ));
+        ..addAll(
+          (jsonDecode(raw) as List<dynamic>).map(
+            (e) => SyncActionAuditLog.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          ),
+        );
     } catch (_) {
       _auditLogs.clear();
     }

@@ -6,10 +6,8 @@ import { createProductRepository } from '../../../../lib/products/index';
 import { getCachedCategories } from '../../../../lib/products/getCachedCategories';
 import { supabase } from '../../../../lib/supabase';
 import { getSingleParam } from '../../../../lib/utils';
-import { getCategoryGroup, getParentGroup, normalizeCategorySlug } from '../../../../lib/types';
-import { resolveCanonicalCategory } from '../../../../lib/categoryResolution';
-import type { CategoryGroup } from '../../../../lib/types';
-import type { Product } from '../../../../lib/products/types';
+import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../../lib/categoryResolution';
+import { resolveCategoryRouteData } from '../../../../lib/categoryRouteData';
 import { BENGALI_CATEGORY_NAMES } from '../../../../lib/products/getHomePageData';
 
 export const dynamic = 'force-dynamic';
@@ -49,15 +47,8 @@ export async function generateMetadata({
     notFound();
   }
 
-  if (categorySlug !== canonicalSlug) {
-    const p = new URLSearchParams();
-    for (const [key, value] of Object.entries(resolvedSearch)) {
-      if (typeof value === 'string') p.set(key, value);
-      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
-    }
-    const qs = p.toString();
-    permanentRedirect(qs ? `/bn/category/${canonicalSlug}?${qs}` : `/bn/category/${canonicalSlug}`);
-  }
+  const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
+  if (canonicalPath) permanentRedirect(canonicalPath);
 
   const hasFilters = Object.values(resolvedSearch).some((value) =>
     Array.isArray(value) ? value.length > 0 : Boolean(value),
@@ -133,98 +124,24 @@ export default async function BengaliCategorySlugPage({
     notFound();
   }
 
-  if (categorySlug !== canonicalSlug) {
-    const p = new URLSearchParams();
-    for (const [key, value] of Object.entries(resolvedSearch)) {
-      if (typeof value === 'string') p.set(key, value);
-      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
-    }
-    const qs = p.toString();
-    permanentRedirect(qs ? `/bn/category/${canonicalSlug}?${qs}` : `/bn/category/${canonicalSlug}`);
-  }
-
-  let group = initialGroup;
-
-  // Dynamically treat root categories with child categories as groups
-  if (!group && currentCatObj) {
-    const childCats = rawCategories.filter((c) => (c.parentId ?? c.parent_id) === currentCatObj.id);
-    if (childCats.length > 0) {
-      group = {
-        slug: currentCatObj.slug,
-        label: BENGALI_CATEGORY_NAMES[currentCatObj.slug] || currentCatObj.name,
-        emoji: currentCatObj.emoji,
-        subCategories: childCats.map((c) => c.slug),
-      };
-    }
-  }
-
-  // Resolve parent group if this is a subcategory
-  let parentGroup: CategoryGroup | undefined;
-  if (!group) {
-    parentGroup = getParentGroup(canonicalSlug);
-    const parentId = currentCatObj?.parentId ?? currentCatObj?.parent_id;
-    if (!parentGroup && parentId) {
-      const parentCatObj = rawCategories.find((c) => c.id === parentId);
-      if (parentCatObj) {
-        parentGroup = getCategoryGroup(parentCatObj.slug) || {
-          slug: parentCatObj.slug,
-          label: BENGALI_CATEGORY_NAMES[parentCatObj.slug] || parentCatObj.name,
-          emoji: parentCatObj.emoji,
-          subCategories: [canonicalSlug],
-        };
-      }
-    }
-  }
+  const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
+  if (canonicalPath) permanentRedirect(canonicalPath);
 
   const currentCat = canonicalSlug;
   const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
-  let rawProducts: Product[] = [];
-  try {
-    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(canonicalSlug);
-    if (isGroupRoot) {
-      const subCatIds = rawCategories
-        .filter((c) => {
-          const normC = normalizeCategorySlug(c.slug);
-          return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
-        })
-        .map((c) => c.id);
-      if (currentCatObj && !subCatIds.includes(currentCatObj.id)) {
-        subCatIds.push(currentCatObj.id);
-      }
-      const result = await repo.search({
-        query: searchTerm || undefined,
-        categoryIds: subCatIds.length > 0 ? subCatIds : undefined,
-        limit: 500,
-      });
-      rawProducts = result.products as any[];
-    } else if (currentCatObj?.id) {
-      const result = await repo.search({
-        query: searchTerm || undefined,
-        categoryId: currentCatObj.id,
-        limit: 200,
-      });
-      rawProducts = result.products as any[];
-
-      if (rawProducts.length === 0 && !searchTerm) {
-        const fallbackResult = await repo.search({
-          query: currentCatObj.name || canonicalSlug.replace(/-/g, ' '),
-          limit: 200,
-        });
-        rawProducts = fallbackResult.products as any[];
-      }
-    } else {
-      const result = await repo.search({
-        query: searchTerm || canonicalSlug.replace(/-/g, ' '),
-        limit: 200,
-      });
-      rawProducts = result.products as any[];
-    }
-  } catch (err) {
-    console.error('Failed to fetch Bengali category products:', err);
-  }
+  const routeData = await resolveCategoryRouteData({
+    slug: canonicalSlug,
+    categories: rawCategories,
+    currentCategory: currentCatObj,
+    searchTerm,
+    repository: repo,
+    categoryLabel: (category) => BENGALI_CATEGORY_NAMES[category.slug] || category.name,
+  });
+  const { group = initialGroup, parentGroup, products: rawProducts, productCount } = routeData;
+  if (routeData.error) console.error('Failed to fetch Bengali category products:', routeData.error);
 
   // Overlay Bengali translations
   const productIds = rawProducts.map((product) => product.id);
@@ -263,6 +180,7 @@ export default async function BengaliCategorySlugPage({
       parentGroup={parentGroup}
       categories={categories}
       products={products}
+      productCount={productCount}
       theme={theme}
       sort={sort}
       searchParams={resolvedSearch}

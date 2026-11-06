@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 
 type Product = { id: string; name: string; price: number | null; image_url: string | null };
 type Template = { id: string; name: string; expected_dataset_schema: Record<string, unknown> };
@@ -56,7 +57,7 @@ export function CanvaDesignPage() {
   }
   return <main className="p-6 space-y-4">
     <h1>Canva product designs</h1>
-    <a href="/canva-connect">Manage Canva connection</a>
+    <a href={ADMIN_ROUTE_PATHS.canvaConnect}>Manage Canva connection</a>
     <p>Select products in slot order. Names, prices and images come from your store catalog.</p>
     {error && <p role="alert">{error}</p>}
     <label>Search products <input value={productQuery} onChange={e => setProductQuery(e.target.value)} placeholder="Search catalog" /></label>

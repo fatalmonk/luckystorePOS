@@ -1,21 +1,22 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingCart, Users, Wallet, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ADMIN_ROUTE_PATHS } from '../app/routePaths';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Package, label: 'Inventory', path: '/inventory' },
-  { icon: ShoppingCart, label: 'POS', path: '/pos' },
-  { icon: Users, label: 'Customers', path: '/finance/customers' },
-  { icon: Wallet, label: 'Finance', path: '/expenses' },
-  { icon: Send, label: 'Social', path: '/social-post' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: ADMIN_ROUTE_PATHS.root },
+  { icon: Package, label: 'Inventory', path: ADMIN_ROUTE_PATHS.inventory },
+  { icon: ShoppingCart, label: 'POS', path: ADMIN_ROUTE_PATHS.quickPos },
+  { icon: Users, label: 'Customers', path: ADMIN_ROUTE_PATHS.customerLedger },
+  { icon: Wallet, label: 'Finance', path: ADMIN_ROUTE_PATHS.finance },
+  { icon: Send, label: 'Social', path: ADMIN_ROUTE_PATHS.socialPost },
 ];
 
 export function BottomNav() {
   const location = useLocation();
   
   // Hide on login page
-  if (location.pathname === '/login') return null;
+  if (location.pathname === ADMIN_ROUTE_PATHS.login) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">

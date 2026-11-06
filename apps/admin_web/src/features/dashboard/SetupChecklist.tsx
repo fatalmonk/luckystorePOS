@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Circle, ArrowRight, X, Sparkles, Building2, Package, CreditCard, Users, RefreshCw, type LucideIcon } from 'lucide-react';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 
 export interface SetupChecklistItem {
   id: string;
@@ -57,7 +58,7 @@ export function SetupChecklist({
       icon: Building2,
       isCompleted: isStoreConfigured,
       status: statuses.store,
-      actionPath: '/settings?tab=receipt',
+      actionPath: `${ADMIN_ROUTE_PATHS.settings}?tab=receipt`,
       actionLabel: isBengali ? 'রসিদ সেটিংস' : 'Receipt Settings',
     },
     {
@@ -69,7 +70,7 @@ export function SetupChecklist({
       icon: Package,
       isCompleted: hasProducts,
       status: statuses.products,
-      actionPath: '/inventory',
+      actionPath: ADMIN_ROUTE_PATHS.inventory,
       actionLabel: isBengali ? 'ইনভেন্টরি খুলুন' : 'Open Inventory',
     },
     {
@@ -81,7 +82,7 @@ export function SetupChecklist({
       icon: CreditCard,
       isCompleted: hasPaymentMethods,
       status: statuses.paymentMethods,
-      actionPath: '/settings?tab=payments',
+      actionPath: `${ADMIN_ROUTE_PATHS.settings}?tab=payments`,
       actionLabel: isBengali ? 'পেমেন্ট সেটিংস' : 'Payment Methods',
     },
     {
@@ -93,7 +94,7 @@ export function SetupChecklist({
       icon: Users,
       isCompleted: hasStaff,
       status: statuses.staff,
-      actionPath: '/settings?tab=users',
+      actionPath: `${ADMIN_ROUTE_PATHS.settings}?tab=users`,
       actionLabel: isBengali ? 'কর্মী পরিচালনা' : 'Manage Staff',
     },
   ];

@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
+import { ADMIN_ROUTE_PATHS } from '../app/routePaths';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Logo } from './ui/Logo';
@@ -44,10 +45,10 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
       titleKey: 'nav.groupOperations', // "Operations" or fallback
       icon: LayoutDashboard,
       items: [
-        { icon: LayoutDashboard, label: t('nav.dashboard', 'Dashboard'), path: '/' },
-        { icon: Monitor, label: t('nav.quickPos', 'Quick POS'), path: '/pos' },
-        { icon: ShoppingBag, label: t('nav.deliveryOrders', 'Delivery Orders'), path: '/delivery-orders' },
-        { icon: ShoppingCart, label: t('nav.sales', 'Sales History'), path: '/sales' },
+        { icon: LayoutDashboard, label: t('nav.dashboard', 'Dashboard'), path: ADMIN_ROUTE_PATHS.root },
+        { icon: Monitor, label: t('nav.quickPos', 'Quick POS'), path: ADMIN_ROUTE_PATHS.quickPos },
+        { icon: ShoppingBag, label: t('nav.deliveryOrders', 'Delivery Orders'), path: ADMIN_ROUTE_PATHS.deliveryOrders },
+        { icon: ShoppingCart, label: t('nav.sales', 'Sales History'), path: ADMIN_ROUTE_PATHS.sales },
       ]
     },
     {
@@ -55,17 +56,17 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
       titleKey: 'nav.groupInventory', // "Inventory"
       icon: Package,
       items: [
-        { icon: Warehouse, label: t('nav.inventory', 'Inventory'), path: '/inventory', children: [
-          { label: t('nav.list', 'List'), path: '/inventory' },
-          { label: t('nav.categories', 'Categories'), path: '/inventory/categories' },
-          { label: t('nav.stockHistory', 'Stock History'), path: '/inventory/history' },
-          { label: t('nav.missingImages', 'Missing Images'), path: '/inventory/missing-images' },
+        { icon: Warehouse, label: t('nav.inventory', 'Inventory'), path: ADMIN_ROUTE_PATHS.inventory, children: [
+          { label: t('nav.list', 'List'), path: ADMIN_ROUTE_PATHS.inventory },
+          { label: t('nav.categories', 'Categories'), path: ADMIN_ROUTE_PATHS.categories },
+          { label: t('nav.stockHistory', 'Stock History'), path: ADMIN_ROUTE_PATHS.stockHistory },
+          { label: t('nav.missingImages', 'Missing Images'), path: ADMIN_ROUTE_PATHS.missingImages },
         ] },
-        ...(canManagePurchases ? [{ icon: PlusCircle, label: t('nav.purchase', 'Purchase'), path: '/purchase', children: [
-          { label: t('nav.newEntry', 'New Entry'), path: '/purchase' },
-          { label: t('nav.purchaseHistory', 'Purchase History'), path: '/purchase/history' },
+        ...(canManagePurchases ? [{ icon: PlusCircle, label: t('nav.purchase', 'Purchase'), path: ADMIN_ROUTE_PATHS.purchase, children: [
+          { label: t('nav.newEntry', 'New Entry'), path: ADMIN_ROUTE_PATHS.purchase },
+          { label: t('nav.purchaseHistory', 'Purchase History'), path: ADMIN_ROUTE_PATHS.purchaseHistory },
         ] }] : []),
-        { icon: TrendingDown, label: t('nav.competitorPrices', 'Competitor Prices'), path: '/competitor-prices' },
+        { icon: TrendingDown, label: t('nav.competitorPrices', 'Competitor Prices'), path: ADMIN_ROUTE_PATHS.competitorPrices },
       ]
     },
     {
@@ -73,11 +74,11 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
       titleKey: 'nav.groupFinance', // "Finance & Accounting"
       icon: Wallet,
       items: [
-        { icon: BarChart3, label: t('nav.financeWorkspace', 'Finance Workspace'), path: '/finance' },
-        { icon: Wallet, label: t('nav.supplierLedger', 'Supplier Ledger'), path: '/finance/suppliers' },
-        { icon: Users, label: t('nav.customerLedger', 'Customer Ledger'), path: '/finance/customers' },
-        { icon: PhoneCall, label: t('nav.collections', 'Collections'), path: '/collections' },
-        { icon: Banknote, label: t('nav.otherIncome', 'Other Income'), path: '/other-income' },
+        { icon: BarChart3, label: t('nav.financeWorkspace', 'Finance Workspace'), path: ADMIN_ROUTE_PATHS.finance },
+        { icon: Wallet, label: t('nav.supplierLedger', 'Supplier Ledger'), path: ADMIN_ROUTE_PATHS.supplierLedger },
+        { icon: Users, label: t('nav.customerLedger', 'Customer Ledger'), path: ADMIN_ROUTE_PATHS.customerLedger },
+        { icon: PhoneCall, label: t('nav.collections', 'Collections'), path: ADMIN_ROUTE_PATHS.collections },
+        { icon: Banknote, label: t('nav.otherIncome', 'Other Income'), path: ADMIN_ROUTE_PATHS.otherIncome },
       ]
     },
     {
@@ -85,11 +86,11 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
       titleKey: 'nav.groupManagement', // "Management"
       icon: ShieldCheck,
       items: [
-        { icon: BarChart3, label: t('nav.reports', 'Reports'), path: '/reports' },
-        { icon: Users, label: t('nav.manageStaff', 'Manage Staff'), path: '/staff' },
-        { icon: Database, label: t('nav.dataManagement', 'Data Management'), path: '/import', children: [
-          { label: t('nav.importProducts', 'Import Products'), path: '/import/products' },
-          { label: t('nav.importParties', 'Import Parties'), path: '/import/parties' },
+        { icon: BarChart3, label: t('nav.reports', 'Reports'), path: ADMIN_ROUTE_PATHS.reports },
+        { icon: Users, label: t('nav.manageStaff', 'Manage Staff'), path: ADMIN_ROUTE_PATHS.staff },
+        { icon: Database, label: t('nav.dataManagement', 'Data Management'), path: ADMIN_ROUTE_PATHS.importAlias, children: [
+          { label: t('nav.importProducts', 'Import Products'), path: ADMIN_ROUTE_PATHS.importProducts },
+          { label: t('nav.importParties', 'Import Parties'), path: ADMIN_ROUTE_PATHS.importParties },
         ] },
       ]
     },
@@ -98,11 +99,11 @@ function useNavGroups(canManagePurchases: boolean): NavGroup[] {
       titleKey: 'nav.groupSystem', // "System"
       icon: Settings,
       items: [
-        { icon: Settings, label: t('nav.settings', 'Settings'), path: '/settings' },
-        { icon: Palette, label: t('nav.canva', 'Canva connection'), path: '/canva-connect' },
-        { icon: Bell, label: t('nav.reminders', 'Reminders'), path: '/reminders' },
-        { icon: Send, label: t('nav.socialPost', 'Social Post'), path: '/social-post' },
-        { icon: Languages, label: t('nav.translations'), path: '/translations' },
+        { icon: Settings, label: t('nav.settings', 'Settings'), path: ADMIN_ROUTE_PATHS.settings },
+        { icon: Palette, label: t('nav.canva', 'Canva connection'), path: ADMIN_ROUTE_PATHS.canvaConnect },
+        { icon: Bell, label: t('nav.reminders', 'Reminders'), path: ADMIN_ROUTE_PATHS.reminders },
+        { icon: Send, label: t('nav.socialPost', 'Social Post'), path: ADMIN_ROUTE_PATHS.socialPost },
+        { icon: Languages, label: t('nav.translations'), path: ADMIN_ROUTE_PATHS.translations },
       ]
     }
   ], [t, canManagePurchases]);

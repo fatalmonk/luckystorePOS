@@ -5,10 +5,8 @@ import { createProductRepository } from '../../../lib/products/index';
 import { getCachedCategories } from '../../../lib/products/getCachedCategories';
 import { supabase } from '../../../lib/supabase';
 import { getSingleParam } from '../../../lib/utils';
-import { getCategoryGroup, getParentGroup, CATEGORY_GROUPS, normalizeCategorySlug } from '../../../lib/types';
-import { resolveCanonicalCategory } from '../../../lib/categoryResolution';
-import type { CategoryGroup } from '../../../lib/types';
-import type { Category, Product } from '../../../lib/products/types';
+import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../lib/categoryResolution';
+import { resolveCategoryRouteData } from '../../../lib/categoryRouteData';
 import type { Metadata } from 'next';
 
 const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }> = {
@@ -68,15 +66,8 @@ export async function generateMetadata({
     notFound();
   }
 
-  if (categorySlug !== canonicalSlug) {
-    const p = new URLSearchParams();
-    for (const [key, value] of Object.entries(resolvedSearch)) {
-      if (typeof value === 'string') p.set(key, value);
-      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
-    }
-    const qs = p.toString();
-    permanentRedirect(qs ? `/category/${canonicalSlug}?${qs}` : `/category/${canonicalSlug}`);
-  }
+  const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
+  if (canonicalPath) permanentRedirect(canonicalPath);
 
   const hasFilters = Object.values(resolvedSearch).some((value) =>
     Array.isArray(value) ? value.length > 0 : Boolean(value),
@@ -151,48 +142,8 @@ export default async function CategorySlugPage({
     notFound();
   }
 
-  if (categorySlug !== canonicalSlug) {
-    const p = new URLSearchParams();
-    for (const [key, value] of Object.entries(resolvedSearch)) {
-      if (typeof value === 'string') p.set(key, value);
-      else if (Array.isArray(value) && value.length) p.set(key, value[0]);
-    }
-    const qs = p.toString();
-    permanentRedirect(qs ? `/category/${canonicalSlug}?${qs}` : `/category/${canonicalSlug}`);
-  }
-
-  let group = initialGroup;
-
-  // Dynamically treat root categories with child categories as groups
-  if (!group && currentCatObj) {
-    const childCats = categories.filter((c) => (c.parentId ?? c.parent_id) === currentCatObj.id);
-    if (childCats.length > 0) {
-      group = {
-        slug: currentCatObj.slug,
-        label: currentCatObj.name,
-        emoji: currentCatObj.emoji,
-        subCategories: childCats.map((c) => c.slug),
-      };
-    }
-  }
-
-  // Resolve parent group if this is a subcategory
-  let parentGroup: CategoryGroup | undefined;
-  if (!group) {
-    parentGroup = getParentGroup(canonicalSlug);
-    const parentId = currentCatObj?.parentId ?? currentCatObj?.parent_id;
-    if (!parentGroup && parentId) {
-      const parentCatObj = categories.find((c) => c.id === parentId);
-      if (parentCatObj) {
-        parentGroup = getCategoryGroup(parentCatObj.slug) || {
-          slug: parentCatObj.slug,
-          label: parentCatObj.name,
-          emoji: parentCatObj.emoji,
-          subCategories: [canonicalSlug],
-        };
-      }
-    }
-  }
+  const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
+  if (canonicalPath) permanentRedirect(canonicalPath);
 
   const currentCat = canonicalSlug;
 
@@ -200,59 +151,15 @@ export default async function CategorySlugPage({
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
-  let products: Product[] = [];
-  let productCount: number | undefined;
-  try {
-    const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(canonicalSlug);
-    if (isGroupRoot) {
-      // Visiting the group page itself (e.g. /category/personal-care) -> aggregate all subcategories
-      const subCatIds = categories
-        .filter((c) => {
-          const normC = normalizeCategorySlug(c.slug);
-          return group!.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
-        })
-        .map((c) => c.id);
-      if (currentCatObj && !subCatIds.includes(currentCatObj.id)) {
-        subCatIds.push(currentCatObj.id);
-      }
-      const result = await repo.search({
-        query: searchTerm || undefined,
-        categoryIds: subCatIds.length > 0 ? subCatIds : undefined,
-        limit: 500,
-      });
-      products = result.products as any[];
-      if (!result.hasMore) productCount = result.products.length;
-    } else if (currentCatObj?.id) {
-      // Visiting a specific subcategory with DB ID (e.g. /category/rice-and-grain)
-      const result = await repo.search({
-        query: searchTerm || undefined,
-        categoryId: currentCatObj.id,
-        limit: 200,
-      });
-      products = result.products as any[];
-      if (!result.hasMore) productCount = result.products.length;
-
-      // Fallback: if categoryId search yielded 0 products (e.g. legacy products tagged by name), fallback to name
-      if (products.length === 0 && !searchTerm) {
-        const fallbackResult = await repo.search({
-          query: currentCatObj.name || canonicalSlug.replace(/-/g, ' '),
-          limit: 200,
-        });
-        products = fallbackResult.products as any[];
-        productCount = fallbackResult.hasMore ? undefined : fallbackResult.products.length;
-      }
-    } else {
-      // Valid leaf category or subcategory without direct DB category row -> search by keyword
-      const result = await repo.search({
-        query: searchTerm || canonicalSlug.replace(/-/g, ' '),
-        limit: 200,
-      });
-      products = result.products as any[];
-      if (!result.hasMore) productCount = result.products.length;
-    }
-  } catch (err) {
-    console.error('Failed to fetch category products:', err);
-  }
+  const routeData = await resolveCategoryRouteData({
+    slug: canonicalSlug,
+    categories,
+    currentCategory: currentCatObj,
+    searchTerm,
+    repository: repo,
+  });
+  const { group = initialGroup, parentGroup, products, productCount } = routeData;
+  if (routeData.error) console.error('Failed to fetch category products:', routeData.error);
 
   return (
     <CategoryShell

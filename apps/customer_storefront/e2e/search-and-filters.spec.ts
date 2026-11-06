@@ -45,26 +45,17 @@ test.describe('Search suggestions and catalog filters', () => {
     expect(contrast).toBeGreaterThanOrEqual(4.5);
   });
 
-  test('desktop price menu is visible and preserves unrelated query parameters', async ({ page }) => {
+  test('desktop price filter is visible and preserves unrelated query parameters', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) < 768, 'Desktop header filters are intentionally hidden on mobile');
 
     await page.goto('/category?q=milk&theme=deals');
 
-    const priceTrigger = page.getByRole('button', { name: /^Price/ });
-    if (await priceTrigger.count() === 0) {
-      test.skip(true, 'Catalog route did not render because live product data failed schema validation');
-    }
-    await priceTrigger.click();
-
-    const priceMenu = page.getByRole('menu', { name: 'Price' });
-    await expect(priceMenu).toBeVisible();
-
-    const menuBox = await priceMenu.boundingBox();
-    expect(menuBox?.height).toBeGreaterThan(100);
-
-    await priceMenu.getByRole('checkbox', { name: 'Under ৳100' }).check();
+    const priceFilter = page.getByRole('checkbox', { name: 'Under ৳100' });
+    await expect(priceFilter).toBeVisible();
+    await priceFilter.click();
+    await expect(page).toHaveURL(/price=0-100/);
+    await expect(priceFilter).toBeChecked();
     await expect(page).toHaveURL(/q=milk/);
     await expect(page).toHaveURL(/theme=deals/);
-    await expect(page).toHaveURL(/price=0-100/);
   });
 });

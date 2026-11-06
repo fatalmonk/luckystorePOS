@@ -33,7 +33,62 @@ export interface CashflowData {
   net: number;
 }
 
+const DASHBOARD_PAGE_SIZE = 1000;
+
+/** Fetches every page while preserving the ordering defined by the page query. */
+async function fetchAllPages<T>(fetchPage: (offset: number) => Promise<T[]>) {
+  const rows: T[] = [];
+  for (let offset = 0; ; offset += DASHBOARD_PAGE_SIZE) {
+    const page = await fetchPage(offset);
+    rows.push(...page);
+    if (page.length < DASHBOARD_PAGE_SIZE) return rows;
+  }
+}
+
+/** Reads one descending-date page of daily sales for a store. */
+async function fetchDailySalesPage(storeId: string, offset: number) {
+  const { data, error } = await supabase
+    .from('daily_sales')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('sale_date', { ascending: false })
+    .range(offset, offset + DASHBOARD_PAGE_SIZE - 1);
+  if (error) throw error;
+  return data || [];
+}
+
+/** Reads one descending-date page of expenses, with an ID tie-breaker. */
+async function fetchExpensesPage(storeId: string, offset: number) {
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('expense_date', { ascending: false })
+    .order('id', { ascending: false })
+    .range(offset, offset + DASHBOARD_PAGE_SIZE - 1);
+  if (error) throw error;
+  return data || [];
+}
+
 export const dashboard = {
+  getDeliveryOrders: async (storeId: string) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (error) throw error;
+    return data || [];
+  },
+  /** Loads every daily sales row in descending date order for dashboard totals and charts. */
+  getDailySales: async (storeId: string) => {
+    return fetchAllPages((offset) => fetchDailySalesPage(storeId, offset));
+  },
+  /** Loads every expense row in deterministic descending date order for the breakdown. */
+  getExpenses: async (storeId: string) => {
+    return fetchAllPages((offset) => fetchExpensesPage(storeId, offset));
+  },
   getStats: async (storeId: string): Promise<DashboardStats> => {
     const { data, error } = await supabase.rpc('get_manager_dashboard_stats', { p_store_id: storeId });
     if (error) throw error;

@@ -487,30 +487,9 @@ function InventoryListTableRowComponent({
 
       {/* Last Purchase Date */}
       <td className="px-4 py-3 text-right text-xs text-text-secondary whitespace-nowrap">
-        {isEditing('last_purchased_date') ? (
-          <EditableCell
-            value={item.last_purchased_date || ''}
-            type="date"
-            onSave={(val) => handleSave('last_purchased_date', val)}
-            onCancel={() => setEditingCell(null)}
-            inputClassName="w-28 text-xs font-mono"
-          />
-        ) : (
-          <div
-            tabIndex={0}
-            role="button"
-            aria-label="Edit last purchase date"
-            className="cursor-pointer hover:bg-background-subtle rounded px-1.5 py-0.5 -mx-1 focus:outline-none focus:ring-1 focus:ring-primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              startEditing('last_purchased_date');
-            }}
-            onKeyDown={(e) => handleCellKeyDown(e, 'last_purchased_date')}
-            title="Click or press Enter to edit last purchase date"
-          >
-            {formatDate(item.last_purchased_date || item.last_updated)}
-          </div>
-        )}
+        <span className="px-1.5 py-0.5 -mx-1">
+          {formatDate(item.last_purchased_date || item.last_updated)}
+        </span>
       </td>
 
       {/* Actions */}

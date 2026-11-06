@@ -18,6 +18,7 @@ import { format, subDays, parseISO } from 'date-fns';
 import { formatCurrency } from '../../lib/format';
 import { settingsQueryKeys } from '../../lib/queryKeys';
 import { hasActivePaymentMethod } from './setupChecklistState';
+import { ADMIN_ROUTE_PATHS } from '../../app/routePaths';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -155,19 +156,10 @@ export function DashboardPage() {
     };
   }, [storeId, queryClient, notify]);
 
-  // Query to fetch dashboard delivery orders
   const deliveryOrdersQuery = useQuery({
     queryKey: ['dashboard-delivery-orders', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getDeliveryOrders(storeId) : [];
     },
     enabled: !!storeId,
   });
@@ -190,34 +182,18 @@ export function DashboardPage() {
     enabled: !!storeId,
   });
 
-  // Fetch daily sales data for comparison (ALL days, not just 30)
   const dailySalesQuery = useQuery({
     queryKey: ['daily-sales-comparison', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('daily_sales')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('sale_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getDailySales(storeId) : [];
     },
     enabled: !!storeId,
   });
 
-  // Fetch expenses data including stock purchase category
   const expensesQuery = useQuery({
     queryKey: ['expenses-dashboard', storeId],
     queryFn: async () => {
-      if (!storeId) return [];
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('store_id', storeId)
-        .order('expense_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return storeId ? api.dashboard.getExpenses(storeId) : [];
     },
     enabled: !!storeId,
   });
@@ -436,11 +412,11 @@ export function DashboardPage() {
 
       {/* Missing Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-warm-surface border-l-4 border-l-warm-success border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+        <div className="bg-warm-surface border border-warm-border-warm rounded-xl p-6 shadow-sm">
           <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Receive</span>
           <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toReceive)}</h2>
         </div>
-        <div className="bg-warm-surface border-l-4 border-l-warm-danger border-y border-r border-warm-border-warm rounded-r-xl p-6 shadow-sm">
+        <div className="bg-warm-surface border border-warm-border-warm rounded-xl p-6 shadow-sm">
           <span className="text-warm-muted text-xs font-semibold uppercase tracking-wider">To Give</span>
           <h2 className="text-2xl font-bold text-warm-fg mt-2 font-mono">৳{fmt(missingMetrics.toGive)}</h2>
         </div>
@@ -516,7 +492,7 @@ export function DashboardPage() {
                     <ShoppingBag size={14} className="text-warm-accent" />
                     Recent Delivery Orders
                   </h3>
-                  <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                  <a href={ADMIN_ROUTE_PATHS.deliveryOrders} className="text-xs text-warm-accent hover:underline font-bold">
                     View All
                   </a>
                 </div>
@@ -629,7 +605,7 @@ export function DashboardPage() {
                 ) : (
                   <div className="text-center text-warm-muted py-8">
                     {t('dashboard.noDailySales')}{' '}
-                    <a href="/daily-sales" className="text-primary-default hover:underline">
+                    <a href={ADMIN_ROUTE_PATHS.sales} className="text-primary-default hover:underline">
                       {t('dashboard.addDailySales')}
                     </a>
                   </div>
@@ -681,7 +657,7 @@ export function DashboardPage() {
                     <p className="text-white/80 text-sm mt-1">Start a quick sale</p>
                   </div>
                   <a 
-                    href="/pos" 
+                    href={ADMIN_ROUTE_PATHS.quickPos}
                     className="bg-surface-default text-warm-accent px-4 py-2 rounded-lg font-medium hover:bg-surface-default/90 transition-colors"
                   >
                     Launch
@@ -803,7 +779,7 @@ export function DashboardPage() {
                   <ShoppingBag size={18} className="text-warm-accent" />
                   Active Delivery Orders
                 </h3>
-                <a href="/delivery-orders" className="text-xs text-warm-accent hover:underline font-bold">
+                <a href={ADMIN_ROUTE_PATHS.deliveryOrders} className="text-xs text-warm-accent hover:underline font-bold">
                   Manage Orders
                 </a>
               </div>

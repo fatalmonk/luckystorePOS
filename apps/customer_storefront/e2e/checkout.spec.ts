@@ -49,6 +49,26 @@ async function mockSuccessfulCheckout(page: Page, orderNumber: string) {
   });
 }
 
+async function seedCheckoutCart(page: Page) {
+  await page.goto('/cart');
+  await expect(page.getByRole('heading', { name: 'Your cart is empty' })).toBeVisible();
+  await page.evaluate(() => {
+    localStorage.setItem('lucky-cart', JSON.stringify([{
+      id: 'e0000000-0000-0000-0000-000000000001',
+      name: 'E2E fixture product',
+      emoji: '🛒',
+      price: 80,
+      unit: 'pc',
+      category: 'snacks',
+      stock: 4,
+      description: '',
+      qty: 1,
+    }]));
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Cart', exact: true })).toBeVisible();
+}
+
 async function openFirstProduct(page: Page) {
   await page.goto('/');
   const firstProduct = page.getByTestId('grid-product-card').first();
@@ -122,17 +142,11 @@ test.describe('Checkout Flow', () => {
 
   test('completes a full checkout', async ({ page }) => {
     await mockSuccessfulCheckout(page, 'LSO-20990101-MOCKED01');
-    const added = await addFirstInStockProductToCart(page);
-    if (!added) {
-      test.skip(true, 'First product is out of stock, skipping checkout test');
-      return;
-    }
+    await seedCheckoutCart(page);
 
-    // Go to cart
     await page.goto('/cart');
     await expect(page.getByRole('heading', { name: 'Cart', exact: true })).toBeVisible();
 
-    // Proceed to checkout
     await page.click('[data-testid="cart-checkout-btn"]');
     await page.waitForURL('/checkout');
 
@@ -149,10 +163,8 @@ test.describe('Checkout Flow', () => {
     await expect(page.getByText('Pay to 01731944544.')).toBeVisible();
     await page.fill('[data-testid="checkout-bkash-trxid"]', 'E2E123456');
 
-    // Place order
     await page.click('[data-testid="checkout-place-order-btn"]');
 
-    // Should reach order page
     await page.waitForURL(/\/order/);
     await expect(page.locator('[data-testid="order-confirmed-heading"]')).toBeVisible();
     await expect(page).toHaveURL(/#track=ea8a43b4-42bb-49f7-a4b5-6f3b603e7b0f$/);
@@ -160,11 +172,7 @@ test.describe('Checkout Flow', () => {
   });
 
   test('shows validation errors for invalid phone', async ({ page }) => {
-    const added = await addFirstInStockProductToCart(page);
-    if (!added) {
-      test.skip(true, 'First product is out of stock, skipping validation test');
-      return;
-    }
+    await seedCheckoutCart(page);
 
     await page.goto('/checkout');
     await expect(page.locator('[data-testid="checkout-name-input"]')).toBeVisible();
@@ -228,11 +236,7 @@ test.describe('Order Confirmation Display', () => {
 
   test('displays order number, item count, and total correctly', async ({ page }) => {
     await mockSuccessfulCheckout(page, 'LSO-20990101-MOCKED02');
-    const added = await addFirstInStockProductToCart(page);
-    if (!added) {
-      test.skip(true, 'First product is out of stock, skipping order confirmation test');
-      return;
-    }
+    await seedCheckoutCart(page);
 
     // Go to checkout
     await page.goto('/checkout');

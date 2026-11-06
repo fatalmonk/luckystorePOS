@@ -8,6 +8,7 @@ import { getSingleParam } from '../../lib/utils';
 import { normalizeCategorySlug, type Category } from '../../lib/types';
 import { CATALOG_SNAPSHOT_PRODUCTS } from '../../lib/products/getHomePageData';
 import type { Product } from '../../lib/types';
+import { loadCategoryCatalogProducts } from '../../lib/categoryRouteData';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,19 +88,9 @@ export default async function CategoryPage({ searchParams }: { searchParams: Pro
   const sort = getSingleParam(resolvedParams.sort) || 'best';
   const categories = await getCachedCategories();
   const { repo } = createProductRepository(supabase);
-  let products: Product[] = [];
-  try {
-    const result = await repo.search({ query: searchTerm || undefined });
-    products = result.products.length > 0
-      ? result.products
-      : searchTerm
-        ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        : CATALOG_SNAPSHOT_PRODUCTS;
-  } catch {
-    products = searchTerm
-      ? CATALOG_SNAPSHOT_PRODUCTS.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      : CATALOG_SNAPSHOT_PRODUCTS;
-  }
+  const catalog = await loadCategoryCatalogProducts(repo, CATALOG_SNAPSHOT_PRODUCTS, searchTerm);
+  const products: Product[] = catalog.products;
+  if (catalog.error) console.error('Failed to fetch category catalog:', catalog.error);
 
   return (
     <CategoryShell
