@@ -396,6 +396,9 @@ data/catalog/templates/*
 # Keep selected operational and historical records local after untracking.
 /docs/performance/supabase-egress-emergency-2026-10-29.md
 /system-docs/development/supabase-production-migration-repair-runbook.md
+/system-docs/audits/2026-11-06-supabase-egress-phase2-measurement.md
+/system-docs/audits/2026-11-06-supabase-egress-phase3-results.md
+/system-docs/audits/2026-11-06-supabase-egress-phase4-report.md
 /system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
 /social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
 /googlesearchconsole.txt.rtf
