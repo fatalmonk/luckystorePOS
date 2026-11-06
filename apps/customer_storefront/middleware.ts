@@ -89,11 +89,13 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
 const CATEGORY_CACHE_TTL_MS = 5 * 60 * 1000;
 let _categorySlugsCache: Set<string> | null = null;
 let _categoryCacheExpiresAt = 0;
+let _categorySlugsRefresh: Promise<Set<string> | null> | null = null;
 
 /** Reset the in-memory category slug cache. Exported for use in tests only. */
 export function _resetCategorySlugCacheForTest() {
   _categorySlugsCache = null;
   _categoryCacheExpiresAt = 0;
+  _categorySlugsRefresh = null;
 }
 
 async function fetchCategorySlugSet(supabaseUrl: string, supabaseAnonKey: string): Promise<Set<string> | null> {
@@ -137,12 +139,23 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
   if (!supabaseUrl || !supabaseAnonKey) return false;
 
   const now = Date.now();
-  if (_categorySlugsCache === null || now >= _categoryCacheExpiresAt) {
-    const fresh = await fetchCategorySlugSet(supabaseUrl, supabaseAnonKey);
-    if (fresh !== null) {
-      _categorySlugsCache = fresh;
+  if (_categorySlugsRefresh !== null || now >= _categoryCacheExpiresAt) {
+    if (_categorySlugsRefresh === null) {
+      // Set the next retry time before starting the fetch so an upstream failure
+      // cannot make every request retry continuously. Existing stale data remains usable.
       _categoryCacheExpiresAt = now + CATEGORY_CACHE_TTL_MS;
+      _categorySlugsRefresh = fetchCategorySlugSet(supabaseUrl, supabaseAnonKey).then((fresh) => {
+        if (fresh !== null) {
+          _categorySlugsCache = fresh;
+          _categoryCacheExpiresAt = Date.now() + CATEGORY_CACHE_TTL_MS;
+        }
+        return fresh;
+      }).finally(() => {
+        _categorySlugsRefresh = null;
+      });
     }
+    await _categorySlugsRefresh;
+
     // On fetch failure with no prior cache, fail open so live category pages stay available.
     // With a stale cache, serve the stale set rather than failing open for unknown slugs.
     if (_categorySlugsCache === null) return true;

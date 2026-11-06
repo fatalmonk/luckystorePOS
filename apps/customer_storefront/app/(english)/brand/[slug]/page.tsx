@@ -6,6 +6,7 @@ import { createProductRepository } from '../../../lib/products/index';
 import { getCachedCategories } from '../../../lib/products/getCachedCategories';
 import { getBrandBySlug, isProductOfBrand } from '../../../lib/brandsData';
 import { supabase } from '../../../lib/supabase';
+import { searchAllPages } from '../../../lib/products/searchAllPages';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,16 +79,11 @@ export default async function BrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
-  // Fetch all terms concurrently with a single page of up to 1,000 rows each.
-  // isProductOfBrand post-filters to the brand's actual products, so a single
-  // broad page is sufficient: the catalog is currently ~700 items and no brand
-  // exceeds this limit. This eliminates the previous serial while-hasMore loop
-  // that could issue up to 10 × N_terms Supabase requests.
+  // Search terms run concurrently; each term pages only as far as needed,
+  // with a ten-page bound to keep broad searches from running indefinitely.
   const [categories, ...perTermResults] = await Promise.all([
     getCachedCategories(),
-    ...searchTerms.map((term) =>
-      repo.search({ query: term, limit: 1000, page: 0 }).then((r) => r.products),
-    ),
+    ...searchTerms.map((term) => searchAllPages(repo, term)),
   ]);
 
   const rawProductsMap = new Map<string, any>();

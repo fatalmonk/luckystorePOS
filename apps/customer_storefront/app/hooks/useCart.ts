@@ -56,14 +56,23 @@ export function useCart() {
     if (!hydrated) return;
 
     let cancelled = false;
-    const refreshPromotions = async () => {
+    let refreshInFlight: Promise<void> | null = null;
+    const refreshPromotions = () => {
+      if (refreshInFlight) return refreshInFlight;
+
       setPricingNow(new Date());
-      try {
-        const active = await loadActiveStorefrontPromotions(supabase, cart.map((item) => item.id));
-        if (!cancelled) setPromotions(active);
-      } catch {
-        if (!cancelled) setPromotions([]);
-      }
+      refreshInFlight = Promise.resolve()
+        .then(() => loadActiveStorefrontPromotions(supabase, cart.map((item) => item.id)))
+        .then((active) => {
+          if (!cancelled) setPromotions(active);
+        })
+        .catch(() => {
+          if (!cancelled) setPromotions([]);
+        })
+        .finally(() => {
+          refreshInFlight = null;
+        });
+      return refreshInFlight;
     };
 
     void refreshPromotions();
