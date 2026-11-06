@@ -89,8 +89,9 @@ describe('CampaignGrid', () => {
 
     expect(within(hero!).getByText('Your Neighborhood Family Grocer')).toBeInTheDocument();
     expect(within(hero!).getByText('Est. 1947')).toBeInTheDocument();
-    expect(within(hero!).getByRole('search', { name: 'Search groceries' })).toBeInTheDocument();
-    expect(within(hero!).getByRole('searchbox')).toHaveAttribute('name', 'q');
+    const heroSearch = within(hero!).getByRole('search', { name: 'Search groceries' });
+    expect(heroSearch).toHaveAttribute('action', '/category');
+    expect(within(heroSearch).getByRole('searchbox')).toHaveAttribute('name', 'q');
     expect(within(hero!).getByLabelText('A tote of everyday Lucky Store groceries')).toBeInTheDocument();
     expect(within(hero!).getByRole('link', { name: 'Rice' })).toHaveAttribute('href', '/category?q=rice');
     expect(within(hero!).getByText('Search organic staples')).toBeInTheDocument();

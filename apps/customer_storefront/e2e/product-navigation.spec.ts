@@ -11,12 +11,12 @@ test('previews a product and returns focus to the same spot in the aisle', async
   expect(href).toMatch(/^\/product\/[^/]+$/);
   const url = page.url();
   // Measure the aisle when the shopper activates the card, after scrolling settles.
-  const positionAtClick = trigger.evaluate(el => new Promise<number>(resolve => {
-    el.addEventListener('click', () => resolve(el.getBoundingClientRect().top), { once: true });
+  const scrollPositionAtClick = trigger.evaluate(el => new Promise<number>(resolve => {
+    el.addEventListener('click', () => resolve(window.scrollY), { once: true });
   }));
 
   await trigger.click();
-  const position = await positionAtClick;
+  const scrollPosition = await scrollPositionAtClick;
   const preview = page.getByRole('dialog', { name, exact: true });
   await expect(preview).toBeVisible();
   await expect(page).toHaveURL(url);
@@ -35,5 +35,5 @@ test('previews a product and returns focus to the same spot in the aisle', async
   await page.keyboard.press('Escape');
   await expect(preview).toBeHidden();
   await expect(trigger).toBeFocused();
-  expect(Math.abs(await trigger.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThan(2);
+  expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollPosition)).toBeLessThan(2);
 });

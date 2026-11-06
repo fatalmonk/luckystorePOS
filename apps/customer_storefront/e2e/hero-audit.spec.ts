@@ -11,7 +11,7 @@ test.describe('Storefront campaign hero audit', () => {
     });
     await expect(title).toBeVisible();
     const hero = title.locator('xpath=ancestor::section[1]');
-    const search = hero.getByRole('search', { name: 'Quick product search' });
+    const search = hero.getByRole('search', { name: 'Search groceries' });
     await expect(search).toBeVisible();
     await expect(search.getByRole('searchbox')).toHaveAttribute('name', 'q');
 
