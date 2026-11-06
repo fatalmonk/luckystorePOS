@@ -18,6 +18,9 @@ export interface HeroDiscoveryRailProps {
   title?: string;
   locale?: Locale;
   children?: React.ReactNode;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
+  hideInlineSearch?: boolean;
 }
 
 export function HeroDiscoveryRail({
@@ -25,6 +28,9 @@ export function HeroDiscoveryRail({
   title,
   locale = 'en',
   children,
+  searchQuery,
+  onSearchQueryChange,
+  hideInlineSearch = false,
 }: HeroDiscoveryRailProps) {
   const dict = getDictionary(locale);
   const discoveryTitle = title ?? dict.campaign.discoveryTitle;
@@ -39,7 +45,9 @@ export function HeroDiscoveryRail({
   const [mounted, setMounted] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
-  const [query, setQuery] = useState('');
+  const [localQuery, setLocalQuery] = useState('');
+  const query = searchQuery ?? localQuery;
+  const setQuery = onSearchQueryChange ?? setLocalQuery;
   const anchorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -161,13 +169,15 @@ export function HeroDiscoveryRail({
       <div
         ref={anchorRef}
         data-sticky-search-anchor="true"
-        className="relative w-full min-h-[3.5rem]"
+        className={`relative w-full ${hideInlineSearch ? 'min-h-0' : 'min-h-[3.5rem]'}`}
       >
         {isStuck && mounted ? (
           <>
-            <div className="invisible lg:visible" aria-hidden="true">
-              {renderSearchForm(false)}
-            </div>
+            {!hideInlineSearch && (
+              <div className="invisible lg:visible" aria-hidden="true">
+                {renderSearchForm(false)}
+              </div>
+            )}
             {createPortal(
               <div
                 data-sticky-search="true"
@@ -182,7 +192,7 @@ export function HeroDiscoveryRail({
               document.body,
             )}
           </>
-        ) : (
+        ) : hideInlineSearch ? null : (
           <div data-sticky-search="false" className="relative w-full">
             {renderSearchForm(false)}
           </div>

@@ -193,7 +193,7 @@ export function DealCountdown({
               <span className="deal-countdown-value min-w-[28px] rounded-warm-control px-1.5 py-1 text-xs font-black sm:min-w-[32px] sm:px-2 sm:text-sm">
                 {value}
               </span>
-              <span className="mt-0.5 text-[10px] font-semibold uppercase leading-4 text-warm-muted sm:text-xs">
+              <span className="mt-0.5 text-xs font-semibold uppercase leading-4 text-warm-muted">
                 {label}
               </span>
             </span>
