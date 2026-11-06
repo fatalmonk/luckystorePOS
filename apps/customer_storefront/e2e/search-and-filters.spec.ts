@@ -52,9 +52,10 @@ test.describe('Search suggestions and catalog filters', () => {
 
     const priceFilter = page.getByRole('checkbox', { name: 'Under ৳100' });
     await expect(priceFilter).toBeVisible();
-    await priceFilter.check();
+    await priceFilter.click();
+    await expect(page).toHaveURL(/price=0-100/);
+    await expect(priceFilter).toBeChecked();
     await expect(page).toHaveURL(/q=milk/);
     await expect(page).toHaveURL(/theme=deals/);
-    await expect(page).toHaveURL(/price=0-100/);
   });
 });
