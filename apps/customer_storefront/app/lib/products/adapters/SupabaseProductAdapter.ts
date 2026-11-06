@@ -27,8 +27,8 @@ import {
 
 import { searchStorefrontProducts } from '../../search/searchProducts';
 import { fetchStorefrontCatalogItemsByIds } from '../../storefrontCatalogLookup';
+import { STOREFRONT_STORE_ID } from '../constants';
 
-const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 
 /**
  * Maps a raw Supabase row to domain Product.
@@ -101,7 +101,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
     private readonly supabase: SupabaseClient,
     private readonly brandParser: BrandParser,
     private readonly emojiResolver: EmojiResolver,
-    private readonly storeId: string = STORE_ID
+    private readonly storeId: string = STOREFRONT_STORE_ID
   ) {}
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {

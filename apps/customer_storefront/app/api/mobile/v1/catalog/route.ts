@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getMobileCatalog, type MobileCatalogSort, type MobileLocale } from '../../../../lib/mobile/catalog';
@@ -28,15 +29,56 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Offset must be non-negative integer' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
   }
 
-  const body = await getMobileCatalog({
-    locale: locale as MobileLocale,
-    category,
-    q,
-    sort,
-    inStockOnly,
-    limit,
-    offset,
-  });
+  const correlationId = randomUUID();
+  const startedAt = performance.now();
+  try {
+    const body = await getMobileCatalog({
+      locale: locale as MobileLocale,
+      category,
+      q,
+      sort,
+      inStockOnly,
+      limit,
+      offset,
+    });
+    const response = NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
+    const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
+    response.headers.set('X-Correlation-ID', correlationId);
+    response.headers.set('Server-Timing', `mobile-catalog;dur=${durationMs}`);
 
-  return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
+    // Keep successful request logs low-volume. Only aggregate metadata is logged.
+    if (Math.random() < 0.01) {
+      const responseBytes = (await response.clone().arrayBuffer()).byteLength;
+      console.info('storefront_mobile_catalog', {
+        endpoint: '/api/mobile/v1/catalog',
+        rpc: 'search_storefront_mobile_catalog_v1',
+        correlation_id: correlationId,
+        duration_ms: durationMs,
+        returned_rows: body.items.length,
+        response_bytes: responseBytes,
+        errors: 0,
+        cache_status: 'not_exposed_by_next_data_cache',
+      });
+    }
+    return response;
+  } catch (error) {
+    const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
+    console.error('storefront_mobile_catalog_error', {
+      endpoint: '/api/mobile/v1/catalog',
+      correlation_id: correlationId,
+      error_type: error instanceof Error ? error.name : 'unknown',
+      errors: 1,
+    });
+    return NextResponse.json(
+      { error: 'Catalog temporarily unavailable' },
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store',
+          'X-Correlation-ID': correlationId,
+          'Server-Timing': `mobile-catalog;dur=${durationMs}`,
+        },
+      },
+    );
+  }
 }

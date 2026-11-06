@@ -1,7 +1,24 @@
-import { describe, expect, it } from 'vitest';
-import { sortProducts, toMobileCatalog } from './catalog';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { getMobileCatalog, sortProducts, toMobileCatalog } from './catalog';
 import type { Category, Product } from '../products/types';
 import { createProductId } from '../products/types';
+
+const { rpc } = vi.hoisted(() => ({ rpc: vi.fn() }));
+vi.mock('../supabase', () => ({ supabase: { rpc } }));
+vi.mock('../products/getCachedCategories', () => ({ getCachedCategoriesOrThrow: vi.fn() }));
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown, keyParts: string[]) => {
+    const cache = new Map<string, unknown>();
+    return async (...args: unknown[]) => {
+      const key = JSON.stringify([keyParts, args]);
+      if (cache.has(key)) return cache.get(key);
+      const value = await fn(...args);
+      cache.set(key, value);
+      return value;
+    };
+  },
+}));
+import { getCachedCategoriesOrThrow } from '../products/getCachedCategories';
 
 describe('mobile catalog adapter', () => {
   const dummyCategories: Category[] = [
@@ -9,6 +26,94 @@ describe('mobile catalog adapter', () => {
     { id: 'c2', slug: 'oil-and-ghee', name: 'Oil & Ghee', emoji: '🛢️' },
     { id: 'c3', slug: 'tea-and-coffee', name: 'Tea & Coffee', emoji: '☕' },
   ];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('requests one server-filtered page and preserves totals, stock, prices, and Bengali labels', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
+    rpc.mockResolvedValue({
+      data: {
+        total: 61,
+        items: [{
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'Chinigura Rice 1kg',
+          bengali_name: 'চিনিগুঁড়া চাল ১ কেজি',
+          description: 'Premium rice',
+          bengali_description: 'উন্নত মানের চাল',
+          price: 180,
+          mrp: 210,
+          sellable_qty: 3,
+          category: 'Rice & Grains',
+          category_id: 'c1',
+          image_url: 'https://example.invalid/rice.jpg',
+        }],
+      },
+      error: null,
+    });
+
+    const result = await getMobileCatalog({
+      locale: 'bn',
+      category: 'rice-and-grain',
+      q: 'চাল',
+      sort: 'price-asc',
+      inStockOnly: true,
+      limit: 10,
+      offset: 50,
+    });
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('search_storefront_mobile_catalog_v1', {
+      p_store_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
+      p_query: 'চাল',
+      p_category_ids: ['c1'],
+      p_in_stock_only: true,
+      p_sort: 'price-asc',
+      p_limit: 10,
+      p_offset: 50,
+    });
+    expect(result.total).toBe(61);
+    expect(result.hasMore).toBe(true);
+    expect(result.items[0]).toMatchObject({
+      name: 'চিনিগুঁড়া চাল ১ কেজি',
+      description: 'উন্নত মানের চাল',
+      price: 180,
+      originalPrice: 210,
+      stock: 3,
+      categoryId: 'c1',
+    });
+  });
+
+  it('keeps an exact empty-page total and normalizes invalid sort values to best', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
+    rpc.mockResolvedValue({ data: { total: 4, items: [] }, error: null });
+
+    const result = await getMobileCatalog({ sort: 'unsupported' as never, offset: 60 });
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc.mock.calls[0][1]).toMatchObject({ p_sort: 'best', p_offset: 60 });
+    expect(result.items).toEqual([]);
+    expect(result.total).toBe(4);
+    expect(result.hasMore).toBe(false);
+  });
+
+  it('reuses the same server catalog query for a warm cache entry', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
+    rpc.mockResolvedValue({ data: { total: 0, items: [] }, error: null });
+
+    await getMobileCatalog({ q: 'cache-probe', limit: 20, offset: 0 });
+    await getMobileCatalog({ q: 'cache-probe', limit: 20, offset: 0 });
+
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('propagates category lookup failures instead of sending an empty category filter', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockRejectedValueOnce(new Error('categories unavailable'));
+
+    await expect(getMobileCatalog({ category: 'rice-and-grain' })).rejects.toThrow('categories unavailable');
+    expect(rpc).not.toHaveBeenCalled();
+  });
 
   const dummyProducts: Product[] = [
     {
