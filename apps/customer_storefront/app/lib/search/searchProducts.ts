@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '../products/types';
 import { createProductId, resolveProductSearchPagination } from '../products/types';
 import { isMissingItemTranslationsTableError } from '../translationErrors';
+import { STOREFRONT_STORE_ID } from '../products/constants';
 
 export interface SearchOptions {
   query?: string;
@@ -27,7 +28,7 @@ export interface SearchProductsResponse {
   hasMore: boolean;
 }
 
-const DEFAULT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
+const DEFAULT_STORE_ID = STOREFRONT_STORE_ID;
 const DEFAULT_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
   || process.env.SUPABASE_URL
   || 'supabase-url-not-configured';

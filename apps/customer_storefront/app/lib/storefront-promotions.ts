@@ -1,3 +1,7 @@
+import { STOREFRONT_STORE_ID } from './products/constants';
+
+export { STOREFRONT_STORE_ID } from './products/constants';
+
 export interface StorefrontItemPromotion {
   item_id: string;
   expected_name: string;
@@ -15,7 +19,6 @@ export interface StorefrontItemPromotion {
   evidence_checked_at?: string;
 }
 
-export const STOREFRONT_STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
 const PROMOTION_COLUMNS = 'item_id,expected_name,discount_percent,expected_price,expected_mrp,starts_at,ends_at';
 
 export async function loadActiveStorefrontPromotions(
