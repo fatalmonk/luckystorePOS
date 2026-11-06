@@ -81,15 +81,16 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
   }
 }
 
-async function isKnownCategorySlug(slug: string): Promise<boolean> {
-  // Covers group roots and static subcategory taxonomy without a network round-trip.
-  if (isCategoryGroup(slug)) return true;
+// Module-scope category slug cache. Middleware module state persists across requests
+// within the same edge worker instance; a 5-minute TTL keeps slugs fresh while
+// eliminating a no-store Supabase round-trip on every /category/<slug> request.
+// Cache stores the full set of normalized slugs so any slug can be validated without
+// re-fetching. On miss or expiry the cache is rebuilt in one fetch, not per slug.
+const CATEGORY_CACHE_TTL_MS = 5 * 60 * 1000;
+let _categorySlugsCache: Set<string> | null = null;
+let _categoryCacheExpiresAt = 0;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  // Without env, cannot prove the slug exists; keep fail-closed so unknown routes 404 in tests/misconfig.
-  if (!supabaseUrl || !supabaseAnonKey) return false;
-
+async function fetchCategorySlugSet(supabaseUrl: string, supabaseAnonKey: string): Promise<Set<string> | null> {
   try {
     const categoriesUrl = new URL('/rest/v1/categories', supabaseUrl);
     categoriesUrl.searchParams.set('select', 'slug,name');
@@ -102,19 +103,45 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
       },
       cache: 'no-store',
     });
-    // Fail open on transient upstream errors so real category pages stay available.
-    if (!response.ok) return true;
+    if (!response.ok) return null;
 
     const rows = await response.json();
-    if (!Array.isArray(rows)) return true;
+    if (!Array.isArray(rows)) return null;
 
-    return rows.some((row) =>
-      normalizeCategorySlug(row?.slug ?? row?.name ?? '') === slug,
-    );
+    return new Set(rows.map((row: unknown) =>
+      normalizeCategorySlug(
+        (row as Record<string, unknown>)?.slug as string ??
+        (row as Record<string, unknown>)?.name as string ??
+        '',
+      ),
+    ));
   } catch (error) {
-    console.error('Failed to validate category route', { slug, error });
-    return true;
+    console.error('Failed to fetch category slugs for cache', { error });
+    return null;
   }
+}
+
+async function isKnownCategorySlug(slug: string): Promise<boolean> {
+  // Covers group roots and static subcategory taxonomy without a network round-trip.
+  if (isCategoryGroup(slug)) return true;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Without env, cannot prove the slug exists; keep fail-closed so unknown routes 404 in tests/misconfig.
+  if (!supabaseUrl || !supabaseAnonKey) return false;
+
+  const now = Date.now();
+  if (_categorySlugsCache === null || now >= _categoryCacheExpiresAt) {
+    const fresh = await fetchCategorySlugSet(supabaseUrl, supabaseAnonKey);
+    if (fresh !== null) {
+      _categorySlugsCache = fresh;
+      _categoryCacheExpiresAt = now + CATEGORY_CACHE_TTL_MS;
+    }
+    // On fetch failure with no prior cache, fail open so live category pages stay available.
+    if (_categorySlugsCache === null) return true;
+  }
+
+  return _categorySlugsCache.has(slug);
 }
 
 /**
