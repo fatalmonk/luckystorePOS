@@ -18,7 +18,7 @@ describe('Supabase RPC Integration Tests', () => {
       INSERT INTO stores (id, tenant_id, name) VALUES ('${storeA1}', '${tenantA}', 'Store A1'), ('${storeB1}', '${tenantB}', 'Store B1') ON CONFLICT DO NOTHING;
       INSERT INTO items (id, tenant_id, name, sku, barcode, price, is_active) VALUES ('${itemA1}', '${tenantA}', 'Alpha Product 1', 'SKU-A1', 'BAR-A1', 100, true), ('${itemA2}', '${tenantA}', 'Alpha Product 2', 'SKU-A2', 'BAR-A2', 200, true), ('${itemB1}', '${tenantB}', 'Beta Product 1', 'SKU-B1', 'BAR-B1', 150, true) ON CONFLICT DO NOTHING;
       INSERT INTO stock_levels (store_id, item_id, qty) VALUES ('${storeA1}', '${itemA1}', 50), ('${storeA1}', '${itemA2}', 50), ('${storeB1}', '${itemB1}', 0) ON CONFLICT DO NOTHING;
-      INSERT INTO ledger_accounts (id, store_id, code, name, account_type, is_system) VALUES ('c0000000-0000-0000-0000-000000000001', '${storeA1}', '1000', '1000_CASH', 'ASSET', true) ON CONFLICT DO NOTHING;
+      INSERT INTO ledger_accounts (id, store_id, code, name, account_type, is_system) VALUES ('c0000000-0000-0000-0000-000000000001', '${storeA1}', '1000_CASH', 'Cash on Hand', 'ASSET', true) ON CONFLICT DO NOTHING;
       INSERT INTO payment_methods (id, store_id, name, type) VALUES ('${pmCashA}', '${storeA1}', 'Cash', 'cash') ON CONFLICT DO NOTHING;
     `;
     await runSql(sql);
@@ -99,7 +99,7 @@ describe('Supabase RPC Integration Tests', () => {
       });
 
       expect(error).toBeNull();
-      // c0000000-0000-0000-0000-000000000001 is 1000_CASH in seed.sql
+      // c0000000-0000-0000-0000-000000000001 is seeded as the store's cash account.
       expect(data).toBe('c0000000-0000-0000-0000-000000000001');
     });
   });
