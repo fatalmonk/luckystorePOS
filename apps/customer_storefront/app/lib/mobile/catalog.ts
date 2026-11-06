@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache';
-import { getCachedCategories } from '../products/getCachedCategories';
+import { getCachedCategoriesOrThrow } from '../products/getCachedCategories';
 import { createProductId, type Product } from '../products/types';
 import { BENGALI_CATEGORY_NAMES } from '../products/getHomePageData';
 import { getCategoryGroup, normalizeCategorySlug } from '../types';
@@ -221,7 +221,7 @@ export function toMobileCatalog(
 }
 
 export async function getMobileCatalog(query: MobileCatalogQuery = {}): Promise<MobileCatalogPage> {
-  const rawCategories = await getCachedCategories();
+  const rawCategories = await getCachedCategoriesOrThrow();
   const locale = query.locale === 'bn' ? 'bn' : 'en';
   const limit = Math.max(1, Math.min(Math.trunc(query.limit ?? 20), 60));
   const offset = Math.max(0, Math.trunc(query.offset ?? 0));

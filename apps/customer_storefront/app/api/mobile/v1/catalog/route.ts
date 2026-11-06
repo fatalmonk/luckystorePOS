@@ -62,12 +62,23 @@ export async function GET(request: NextRequest) {
     }
     return response;
   } catch (error) {
+    const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
     console.error('storefront_mobile_catalog_error', {
       endpoint: '/api/mobile/v1/catalog',
       correlation_id: correlationId,
       error_type: error instanceof Error ? error.name : 'unknown',
       errors: 1,
     });
-    throw error;
+    return NextResponse.json(
+      { error: 'Catalog temporarily unavailable' },
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store',
+          'X-Correlation-ID': correlationId,
+          'Server-Timing': `mobile-catalog;dur=${durationMs}`,
+        },
+      },
+    );
   }
 }

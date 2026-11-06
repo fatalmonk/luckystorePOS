@@ -8,6 +8,7 @@ DECLARE
   v_other_tenant_id uuid := gen_random_uuid();
   v_store_id uuid := gen_random_uuid();
   v_other_store_id uuid := gen_random_uuid();
+  v_unconfigured_store_id uuid := gen_random_uuid();
   v_category_id uuid := gen_random_uuid();
   v_other_category_id uuid := gen_random_uuid();
   v_apple_id uuid := gen_random_uuid();
@@ -22,7 +23,8 @@ BEGIN
     (v_other_tenant_id, 'Mobile Catalog RPC Isolation Test');
   INSERT INTO public.stores (id, name, tenant_id, metadata) VALUES
     (v_store_id, 'Mobile Catalog Public Test', v_tenant_id, '{"is_public_storefront": true}'),
-    (v_other_store_id, 'Mobile Catalog Private Test', v_tenant_id, '{"is_public_storefront": false}');
+    (v_other_store_id, 'Mobile Catalog Private Test', v_tenant_id, '{"is_public_storefront": false}'),
+    (v_unconfigured_store_id, 'Mobile Catalog Unconfigured Test', v_tenant_id, '{}');
   INSERT INTO public.categories (id, tenant_id, store_id, name, slug) VALUES
     (v_category_id, v_tenant_id, v_store_id, 'Fruit', 'fruit'),
     (v_other_category_id, v_tenant_id, v_store_id, 'Drinks', 'drinks');
@@ -107,6 +109,18 @@ BEGIN
   IF (v_result->>'total')::integer <> 0 OR jsonb_array_length(v_result->'items') <> 0 THEN
     RAISE EXCEPTION 'non-public store must return an empty catalog: %', v_result;
   END IF;
+  v_result := public.search_storefront_mobile_catalog_v1(v_unconfigured_store_id, '', NULL, false, 'best', 20, 0);
+  IF (v_result->>'total')::integer <> 0 OR jsonb_array_length(v_result->'items') <> 0 THEN
+    RAISE EXCEPTION 'store without an explicit public opt-in must return an empty catalog: %', v_result;
+  END IF;
+  BEGIN
+    PERFORM public.search_storefront_mobile_catalog_v1(v_store_id, '', NULL, false, 'best', 20, 100001);
+    RAISE EXCEPTION 'offset above 100000 should have been rejected';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%offset must not exceed 100000%' THEN
+      RAISE;
+    END IF;
+  END;
 
   IF NOT has_function_privilege(
     'anon',

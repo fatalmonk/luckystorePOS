@@ -5,7 +5,7 @@ import { createProductId } from '../products/types';
 
 const { rpc } = vi.hoisted(() => ({ rpc: vi.fn() }));
 vi.mock('../supabase', () => ({ supabase: { rpc } }));
-vi.mock('../products/getCachedCategories', () => ({ getCachedCategories: vi.fn() }));
+vi.mock('../products/getCachedCategories', () => ({ getCachedCategoriesOrThrow: vi.fn() }));
 vi.mock('next/cache', () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown, keyParts: string[]) => {
     const cache = new Map<string, unknown>();
@@ -18,7 +18,7 @@ vi.mock('next/cache', () => ({
     };
   },
 }));
-import { getCachedCategories } from '../products/getCachedCategories';
+import { getCachedCategoriesOrThrow } from '../products/getCachedCategories';
 
 describe('mobile catalog adapter', () => {
   const dummyCategories: Category[] = [
@@ -32,7 +32,7 @@ describe('mobile catalog adapter', () => {
   });
 
   it('requests one server-filtered page and preserves totals, stock, prices, and Bengali labels', async () => {
-    vi.mocked(getCachedCategories).mockResolvedValue(dummyCategories);
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
     rpc.mockResolvedValue({
       data: {
         total: 61,
@@ -86,7 +86,7 @@ describe('mobile catalog adapter', () => {
   });
 
   it('keeps an exact empty-page total and normalizes invalid sort values to best', async () => {
-    vi.mocked(getCachedCategories).mockResolvedValue(dummyCategories);
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
     rpc.mockResolvedValue({ data: { total: 4, items: [] }, error: null });
 
     const result = await getMobileCatalog({ sort: 'unsupported' as never, offset: 60 });
@@ -99,13 +99,20 @@ describe('mobile catalog adapter', () => {
   });
 
   it('reuses the same server catalog query for a warm cache entry', async () => {
-    vi.mocked(getCachedCategories).mockResolvedValue(dummyCategories);
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
     rpc.mockResolvedValue({ data: { total: 0, items: [] }, error: null });
 
     await getMobileCatalog({ q: 'cache-probe', limit: 20, offset: 0 });
     await getMobileCatalog({ q: 'cache-probe', limit: 20, offset: 0 });
 
     expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('propagates category lookup failures instead of sending an empty category filter', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockRejectedValueOnce(new Error('categories unavailable'));
+
+    await expect(getMobileCatalog({ category: 'rice-and-grain' })).rejects.toThrow('categories unavailable');
+    expect(rpc).not.toHaveBeenCalled();
   });
 
   const dummyProducts: Product[] = [
