@@ -130,6 +130,12 @@ BEGIN
   END IF;
   UPDATE public.items SET name = 'Preview trigger unrelated update proof'
   WHERE id = v_test_item;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.items
+    WHERE id = v_test_item AND image_key = v_key AND image_version = 1
+  ) THEN
+    RAISE EXCEPTION 'unrelated update cleared preview image_key';
+  END IF;
 END $proof$;
 
 ROLLBACK;

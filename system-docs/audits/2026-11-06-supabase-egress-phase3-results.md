@@ -139,6 +139,7 @@ Five new forward migrations were applied **only** to test project `grxxenvdhfwza
 | `20261106025141` | Bring conservative competitor matcher definitions to the test project. | Variant-conflict and confirmed-rematch tests passed; all nine reviewed function signatures/source hashes match production, with no `anon` execution grants. |
 | `20261106025547` | Reject direct preview URL inserts and non-test-tenant preview URLs in the image metadata trigger. | Direct-insert proof failed before and passed after; dedicated-tenant CAS and unrelated item update passed; live trigger body hash matches the file. |
 | `20261106030019` | Recognize mixed-case preview hostnames and optional port 443 in the direct-write guard. | Mixed-case/default-port insert failed its proof before and passed after; focused and broad image tests passed; live trigger body hash matches the file. |
+| `20261106040500` | Preserve image_key on unrelated product updates when preview URL is unchanged; widen preview-host guard for empty ports and query/hash edge cases. | Proof verified that unrelated updates preserve image_key; preview-trigger guard tests passed; recorded on test ledger. |
 
 The broad image metadata test was updated for the strict CAS key/checksum format, tenant-scoped images, and preview-host restriction, then passed. The focused CAS, trigger, catalog-import, and mobile-catalog SQL suites passed after all five migrations. No test fixtures remained. Security Advisor counts stayed at one informational and three warning notices before and after these changes.
 
