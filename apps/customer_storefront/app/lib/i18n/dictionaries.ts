@@ -53,6 +53,7 @@ export const dictionaries = {
       basketAlt: 'A tote of everyday Lucky Store groceries',
       discoveryTitle: 'A few essentials to get you started',
       organicTitle: 'Search organic staples',
+      searchLabel: 'Search groceries',
       searchPlaceholder: 'Quick search: rice, milk, oil...',
       searchChips: [
         { label: 'Rice', href: '/category?q=rice' },
@@ -355,6 +356,7 @@ export const dictionaries = {
       basketAlt: 'লাকি স্টোরের নিত্যপ্রয়োজনীয় গ্রোসারির কাপড়ের ব্যাগ',
       discoveryTitle: 'বাজার শুরু করুন এই পণ্যগুলো দিয়ে',
       organicTitle: 'অর্গানিক নিত্যপণ্য',
+      searchLabel: 'পণ্য খুঁজুন',
       searchPlaceholder: 'দ্রুত খুঁজুন: চাল, দুধ, তেল...',
       searchChips: [
         { label: 'চাল', href: '/bn/category/rice-and-grain' },
