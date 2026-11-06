@@ -596,7 +596,8 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
       try {
-        const { middleware } = await import('../../../middleware');
+        const { middleware, _resetCategorySlugCacheForTest } = await import('../../../middleware');
+        _resetCategorySlugCacheForTest();
         const res = await middleware(
           new NextRequest('https://www.luckystore1947.com/category/db-only-category'),
         );

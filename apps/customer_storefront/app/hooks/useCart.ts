@@ -56,21 +56,60 @@ export function useCart() {
     if (!hydrated) return;
 
     let cancelled = false;
-    const refreshPromotions = async () => {
+    let refreshInFlight: Promise<void> | null = null;
+    const refreshPromotions = () => {
+      if (refreshInFlight) return refreshInFlight;
+
       setPricingNow(new Date());
-      try {
-        const active = await loadActiveStorefrontPromotions(supabase, cart.map((item) => item.id));
-        if (!cancelled) setPromotions(active);
-      } catch {
-        if (!cancelled) setPromotions([]);
-      }
+      refreshInFlight = Promise.resolve()
+        .then(() => loadActiveStorefrontPromotions(supabase, cart.map((item) => item.id)))
+        .then((active) => {
+          if (!cancelled) setPromotions(active);
+        })
+        .catch(() => {
+          if (!cancelled) setPromotions([]);
+        })
+        .finally(() => {
+          refreshInFlight = null;
+        });
+      return refreshInFlight;
     };
 
     void refreshPromotions();
-    const interval = window.setInterval(() => void refreshPromotions(), 30_000);
+
+    // Pause polling while the tab is hidden to avoid steady-state Supabase reads
+    // from background tabs. Resume immediately on visibility restore so prices are
+    // fresh when the user returns.
+    let intervalId: number | null = null;
+
+    const startInterval = () => {
+      if (intervalId !== null) return;
+      intervalId = window.setInterval(() => void refreshPromotions(), 30_000);
+    };
+
+    const stopInterval = () => {
+      if (intervalId === null) return;
+      window.clearInterval(intervalId);
+      intervalId = null;
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stopInterval();
+      } else {
+        // Refresh immediately on return so stale promotions aren't shown.
+        void refreshPromotions();
+        startInterval();
+      }
+    };
+
+    if (!document.hidden) startInterval();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      stopInterval();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [cart, hydrated]);
 

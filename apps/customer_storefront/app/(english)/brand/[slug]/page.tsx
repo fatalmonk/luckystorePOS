@@ -6,6 +6,7 @@ import { createProductRepository } from '../../../lib/products/index';
 import { getCachedCategories } from '../../../lib/products/getCachedCategories';
 import { getBrandBySlug, isProductOfBrand } from '../../../lib/brandsData';
 import { supabase } from '../../../lib/supabase';
+import { searchAllPages } from '../../../lib/products/searchAllPages';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,25 +79,11 @@ export default async function BrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
+  // Search terms run concurrently; each term pages only as far as needed,
+  // with a ten-page bound to keep broad searches from running indefinitely.
   const [categories, ...perTermResults] = await Promise.all([
     getCachedCategories(),
-    ...searchTerms.map(async (term) => {
-      const termProducts: any[] = [];
-      let page = 0;
-      let hasMore = true;
-      const maxPages = 10;
-      while (hasMore && page < maxPages) {
-        const pageResult = await repo.search({
-          query: term,
-          limit: 1000,
-          page,
-        });
-        termProducts.push(...pageResult.products);
-        hasMore = pageResult.hasMore;
-        page++;
-      }
-      return termProducts;
-    }),
+    ...searchTerms.map((term) => searchAllPages(repo, term)),
   ]);
 
   const rawProductsMap = new Map<string, any>();
