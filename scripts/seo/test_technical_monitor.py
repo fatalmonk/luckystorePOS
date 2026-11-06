@@ -5,7 +5,7 @@ import datetime as dt
 import hashlib
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from technical_monitor import PageParser, parse_sitemap, robots_summary, schema_types, same_site, fetch, RestrictedRedirectHandler, run, MAX_SITEMAP_URLS, inspect_page
+from technical_monitor import PageParser, parse_sitemap, robots_summary, schema_types, same_site, fetch, RestrictedRedirectHandler, UnsafeRedirectError, run, MAX_SITEMAP_URLS, inspect_page
 from audit_input import validate
 
 class MonitorTests(unittest.TestCase):
@@ -55,6 +55,36 @@ class MonitorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             handler.redirect_request(req, None, 302, "Found", {}, "https://evil.example/")
         self.assertIsNotNone(handler.redirect_request(req, None, 302, "Found", {}, "https://luckystore1947.com/delivery"))
+
+    def test_unsafe_redirect_is_classified_as_confirmed_page_issue(self):
+        with patch("technical_monitor.urllib.request.build_opener") as build_opener:
+            opener = build_opener.return_value
+            opener.open.side_effect = UnsafeRedirectError("blocked unsafe redirect destination")
+            result = fetch("https://www.luckystore1947.com/delivery")
+        self.assertEqual(result["status"], 0)
+        with patch("technical_monitor.fetch", return_value=result):
+            page = inspect_page("https://www.luckystore1947.com/delivery")
+        self.assertIn("redirected_off_site", page["issues"])
+        self.assertFalse(page["limitations"])
+
+    def test_blank_canonical_href_is_an_issue(self):
+        url = "https://www.luckystore1947.com/delivery"
+        with patch("technical_monitor.fetch", return_value={
+            "status": 200, "url": url, "content_type": "text/html",
+            "body": '<link rel="canonical"><link rel="alternate" hreflang="en-BD" href="/delivery">',
+        }):
+            page = inspect_page(url)
+        self.assertIn("canonical_missing_href", page["issues"])
+
+    def test_oversized_response_is_runner_limitation(self):
+        with patch("technical_monitor.urllib.request.build_opener") as build_opener:
+            response = build_opener.return_value.open.return_value.__enter__.return_value
+            response.geturl.return_value = "https://www.luckystore1947.com/delivery"
+            response.status = 200
+            response.read.return_value = b"x" * 8_000_001
+            result = fetch("https://www.luckystore1947.com/delivery")
+        self.assertIsNone(result["status"])
+        self.assertIn("8 MB limit", result["error"])
 
     def test_exact_cap_is_complete(self):
         entries = [f"https://www.luckystore1947.com/product/{i}" for i in range(MAX_SITEMAP_URLS)]
@@ -174,6 +204,14 @@ class AuditInputTests(unittest.TestCase):
         report['status']='issues_found'
         report['issues']=['sample: canonical mismatch']
         self.assertEqual(validate(report,self.run,456,'abc',self.now),report)
+
+    def test_incomplete_issue_report_is_rejected(self):
+        report=copy.deepcopy(self.report)
+        report['status']='incomplete'
+        report['issues']=['sample: canonical mismatch']
+        report['limitations']=['sitemap transport failed']
+        with self.assertRaises(ValueError):
+            validate(report,self.run,456,'abc',self.now)
 
     def test_legacy_schema_and_execution_failure_rejected(self):
         for field,value in [('schema_version',1),('status','execution_failed'),('base_url','https://other.example')]:

@@ -27,8 +27,11 @@ class RestrictedRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Reject unsafe redirect destinations before any redirected request."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         if not same_site(newurl):
-            raise ValueError("blocked unsafe redirect destination")
+            raise UnsafeRedirectError("blocked unsafe redirect destination")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+class UnsafeRedirectError(ValueError):
+    """A production response attempted to redirect outside the audited site."""
 
 def fetch(url):
     if not same_site(url):
@@ -47,6 +50,8 @@ def fetch(url):
                 raise ValueError("response exceeds 8 MB limit")
             return {"status": res.status, "url": res.geturl(), "content_type": res.headers.get("Content-Type", ""), "body": body.decode("utf-8", errors="replace"),
                     "body_sha256": hashlib.sha256(body).hexdigest(), "etag": res.headers.get("ETag"), "last_modified": res.headers.get("Last-Modified")}
+    except UnsafeRedirectError as exc:
+        return {"status": 0, "url": url, "error": str(exc)}
     except urllib.error.HTTPError as exc:
         return {"status": exc.code, "url": exc.geturl(), "error": f"HTTP {exc.code}"}
     except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
@@ -127,6 +132,10 @@ def inspect_page(url):
     res = fetch(url)
     out = {"requested_url": url, "final_url": res["url"], "http_status": res["status"], "issues": [], "warnings": [], "limitations": [],
            "response_evidence": {k: res.get(k) for k in ("body_sha256", "etag", "last_modified")}}
+    if res["status"] == 0:
+        out["issues"].append("redirected_off_site")
+        out["error"] = res.get("error")
+        return out
     if res["status"] is None:
         out["limitations"].append("page_unreachable_from_audit_runner; production defect unconfirmed")
         out["error"] = res.get("error")
@@ -149,10 +158,13 @@ def inspect_page(url):
     if len(p.canonicals) != 1:
         out["issues"].append("expected_exactly_one_canonical")
     else:
-        canonical = urllib.parse.urljoin(res["url"], p.canonicals[0] or "")
-        if not same_site(canonical):
+        href = p.canonicals[0]
+        canonical = urllib.parse.urljoin(res["url"], href) if href and href.strip() else None
+        if canonical is None:
+            out["issues"].append("canonical_missing_href")
+        elif not same_site(canonical):
             out["issues"].append("canonical_off_site_or_not_https")
-        if urllib.parse.urldefrag(canonical)[0].rstrip("/") != urllib.parse.urldefrag(res["url"])[0].rstrip("/"):
+        elif urllib.parse.urldefrag(canonical)[0].rstrip("/") != urllib.parse.urldefrag(res["url"])[0].rstrip("/"):
             out["warnings"].append("canonical_differs_from_final_url_check_intent")
     if any(not x["valid"] for x in p.jsonld):
         out["issues"].append("invalid_jsonld")
@@ -278,7 +290,7 @@ def run(base=BASE, sample_limit=3):
     }
     if report["checks"]["sitemap"]["url_count"] is None:
         report["limitations"].append("sitemap URL count not independently verified")
-    report["status"] = "issues_found" if report["issues"] else ("incomplete" if report["limitations"] else "passed_sample")
+    report["status"] = "incomplete" if report["limitations"] else ("issues_found" if report["issues"] else "passed_sample")
     return report
 
 def main():
