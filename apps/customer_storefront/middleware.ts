@@ -90,6 +90,12 @@ const CATEGORY_CACHE_TTL_MS = 5 * 60 * 1000;
 let _categorySlugsCache: Set<string> | null = null;
 let _categoryCacheExpiresAt = 0;
 
+/** Reset the in-memory category slug cache. Exported for use in tests only. */
+export function _resetCategorySlugCacheForTest() {
+  _categorySlugsCache = null;
+  _categoryCacheExpiresAt = 0;
+}
+
 async function fetchCategorySlugSet(supabaseUrl: string, supabaseAnonKey: string): Promise<Set<string> | null> {
   try {
     const categoriesUrl = new URL('/rest/v1/categories', supabaseUrl);
@@ -138,6 +144,7 @@ async function isKnownCategorySlug(slug: string): Promise<boolean> {
       _categoryCacheExpiresAt = now + CATEGORY_CACHE_TTL_MS;
     }
     // On fetch failure with no prior cache, fail open so live category pages stay available.
+    // With a stale cache, serve the stale set rather than failing open for unknown slugs.
     if (_categorySlugsCache === null) return true;
   }
 
