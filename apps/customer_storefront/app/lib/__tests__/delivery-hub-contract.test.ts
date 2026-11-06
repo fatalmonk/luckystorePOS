@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { NextRequest } from 'next/server';
 import { metadata } from '../../(english)/delivery/page';
 import { JsonLd } from '../../components/seo/JsonLd';
@@ -74,6 +76,28 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   });
 
   describe('Operational Policy & Time Language Precision', () => {
+    it('keeps checkout eligibility copy aligned with the centralized policy in both locales', () => {
+      const checkoutSource = readFileSync(
+        resolve(process.cwd(), 'app/(english)/checkout/page.tsx'),
+        'utf8',
+      );
+      const eligibilityCopy = checkoutSource.match(
+        /<p className="mt-4 text-xs leading-5 text-warm-muted">([\s\S]*?)<\/p>/,
+      )?.[1];
+
+      expect(eligibilityCopy).toContain("locale === 'bn'");
+      expect(eligibilityCopy).toContain('এমদাদ পার্কের দোকান থেকে');
+      expect(eligibilityCopy).toContain("DELIVERY_POLICY.radiusKm.toLocaleString('bn-BD')");
+      expect(eligibilityCopy).toContain("DELIVERY_POLICY.freeDeliveryThresholdBdt.toLocaleString('bn-BD')");
+      expect(eligibilityCopy).toContain('বা তার বেশি অর্ডারে ফ্রি ডেলিভারি');
+      expect(eligibilityCopy).toContain('Emdad Park shop');
+      expect(eligibilityCopy).toContain('Free delivery on orders of');
+      expect(eligibilityCopy).not.toContain('Free delivery on orders over ৳500.');
+      expect(checkoutSource).toContain('Free delivery on orders of ${DELIVERY_POLICY.freeDeliveryThresholdBdt} BDT or more');
+      expect(checkoutSource).toContain('Local delivery ${DELIVERY_POLICY.standardDeliveryFeeBdt} BDT');
+      expect(checkoutSource).not.toContain('Free delivery over 500 BDT');
+    });
+
     it('explicitly specifies delivery hours as 09:00 AM–12:30 AM daily without misleading (Midnight) wording', () => {
       expect(DELIVERY_POLICY.deliveryHours.display).toBe('09:00 AM–12:30 AM daily');
       expect(DELIVERY_POLICY.deliveryHours.start).toBe('09:00 AM');
