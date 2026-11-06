@@ -42,6 +42,8 @@ describe('GET /api/mobile/v1/catalog', () => {
     const response = await GET(request);
     expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(response.headers.get('X-Correlation-ID')).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(response.headers.get('Server-Timing')).toMatch(/^mobile-catalog;dur=/);
     const body = await response.json();
     expect(body.locale).toBe('en');
     expect(Array.isArray(body.categories)).toBe(true);
