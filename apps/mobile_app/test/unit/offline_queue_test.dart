@@ -26,6 +26,31 @@ void main() {
       expect(decoded.invalidRecords, [invalid]);
     });
 
+    test('non-map records are retained for persistence', () {
+      final decoded = decodeQueuedTransactionRecords(['damaged-entry', 42]);
+      expect(decoded.transactions, isEmpty);
+      expect(decoded.invalidRecords, ['damaged-entry', 42]);
+    });
+
+    test('copyWith preserves retry metadata unless explicitly cleared', () {
+      final transaction = QueuedOfflineTransaction.fromJson({
+        'client_transaction_id': 'tx-copy',
+        'store_id': 'store-1',
+        'cashier_id': 'cashier-1',
+        'created_at': '2026-11-06T00:00:00.000Z',
+        'next_retry_at': '2026-11-06T00:05:00.000Z',
+        'last_error': 'network unavailable',
+      });
+
+      final preserved = transaction.copyWith(state: OfflineSyncState.syncing);
+      final cleared = transaction.copyWith(nextRetryAt: null, lastError: null);
+
+      expect(preserved.nextRetryAt, transaction.nextRetryAt);
+      expect(preserved.lastError, transaction.lastError);
+      expect(cleared.nextRetryAt, isNull);
+      expect(cleared.lastError, isNull);
+    });
+
     test('Queued transaction to JSON and back', () {
       final original = {
         'client_transaction_id': 'tx-store123-cash456-1234567890-abc',

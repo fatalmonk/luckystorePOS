@@ -63,7 +63,7 @@ class OfflineTransactionSyncService extends ChangeNotifier {
 
   final _random = Random();
   final _queue = <QueuedOfflineTransaction>[];
-  final _invalidQueueRecords = <Map<String, dynamic>>[];
+  final _invalidQueueRecords = <Object?>[];
   final _auditLogs = <SyncActionAuditLog>[];
   final _alertEngine = const OfflineSyncOperationalAlertEngine();
   final _conflictResolver = ConflictResolver();
@@ -469,7 +469,12 @@ class OfflineTransactionSyncService extends ChangeNotifier {
       if (!await file.exists()) return;
       final raw = await file.readAsString();
       if (raw.trim().isEmpty) return;
-      final records = jsonDecode(raw) as List<dynamic>;
+      final decodedJson = jsonDecode(raw);
+      if (decodedJson is! List<dynamic>) {
+        await _backupInvalidQueueFile(file);
+        return;
+      }
+      final records = decodedJson;
       final decoded = decodeQueuedTransactionRecords(records);
       _queue
         ..clear()
@@ -478,7 +483,18 @@ class OfflineTransactionSyncService extends ChangeNotifier {
         ..clear()
         ..addAll(decoded.invalidRecords);
     } catch (_) {
-      // Keep the current in-memory queue when the persisted file is unreadable.
+      try {
+        await _backupInvalidQueueFile(await _queueFile());
+      } catch (_) {
+        // Keep the current in-memory queue when unreadable data cannot be backed up.
+      }
+    }
+  }
+
+  /// Preserves an unreadable queue document before later writes can replace it.
+  Future<void> _backupInvalidQueueFile(File file) async {
+    if (await file.exists()) {
+      await file.copy('${file.path}.backup');
     }
   }
 

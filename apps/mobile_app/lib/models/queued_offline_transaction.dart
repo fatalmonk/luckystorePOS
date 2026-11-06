@@ -2,7 +2,7 @@ enum OfflineSyncState { pending, syncing, synced, failed, conflict }
 
 class QueuedTransactionRecords {
   final List<QueuedOfflineTransaction> transactions;
-  final List<Map<String, dynamic>> invalidRecords;
+  final List<Object?> invalidRecords;
 
   const QueuedTransactionRecords({
     required this.transactions,
@@ -10,11 +10,15 @@ class QueuedTransactionRecords {
   });
 }
 
+/// Decodes valid queue maps and returns malformed JSON entries unchanged.
 QueuedTransactionRecords decodeQueuedTransactionRecords(List<dynamic> records) {
   final transactions = <QueuedOfflineTransaction>[];
-  final invalidRecords = <Map<String, dynamic>>[];
+  final invalidRecords = <Object?>[];
   for (final record in records) {
-    if (record is! Map) continue;
+    if (record is! Map) {
+      invalidRecords.add(record);
+      continue;
+    }
     final raw = Map<String, dynamic>.from(record);
     try {
       transactions.add(QueuedOfflineTransaction.fromJson(raw));
@@ -27,6 +31,8 @@ QueuedTransactionRecords decodeQueuedTransactionRecords(List<dynamic> records) {
     invalidRecords: invalidRecords,
   );
 }
+
+const _copyWithUnset = Object();
 
 class QueuedOfflineTransaction {
   final String clientTransactionId;
@@ -77,12 +83,13 @@ class QueuedOfflineTransaction {
     required this.fulfillmentPolicy,
   });
 
+  /// Copies this transaction, preserving retry metadata unless explicitly cleared.
   QueuedOfflineTransaction copyWith({
     DateTime? syncedAt,
     OfflineSyncState? state,
     int? retryCount,
-    DateTime? nextRetryAt,
-    String? lastError,
+    Object? nextRetryAt = _copyWithUnset,
+    Object? lastError = _copyWithUnset,
     String? conflictType,
     bool? requiresManagerReview,
     DateTime? reviewedAt,
@@ -106,8 +113,14 @@ class QueuedOfflineTransaction {
       syncedAt: syncedAt ?? this.syncedAt,
       state: state ?? this.state,
       retryCount: retryCount ?? this.retryCount,
-      nextRetryAt: nextRetryAt,
-      lastError: lastError,
+      nextRetryAt:
+          identical(nextRetryAt, _copyWithUnset)
+              ? this.nextRetryAt
+              : nextRetryAt as DateTime?,
+      lastError:
+          identical(lastError, _copyWithUnset)
+              ? this.lastError
+              : lastError as String?,
       conflictType: conflictType ?? this.conflictType,
       requiresManagerReview:
           requiresManagerReview ?? this.requiresManagerReview,

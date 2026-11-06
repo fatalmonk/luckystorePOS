@@ -56,4 +56,11 @@ describe('inventory API', () => {
     const [payload] = update.mock.calls[0] as [Record<string, unknown>];
     expect(payload).not.toHaveProperty('last_purchased_date');
   });
+
+  it('rejects updates with no supported fields without writing a timestamp', async () => {
+    const updates = { last_purchased_date: '2026-11-06' } as Parameters<typeof inventory.updateProduct>[2];
+
+    await expect(inventory.updateProduct('tenant-1', 'item-1', updates)).rejects.toThrow('No supported product fields provided');
+    expect(from).not.toHaveBeenCalled();
+  });
 });

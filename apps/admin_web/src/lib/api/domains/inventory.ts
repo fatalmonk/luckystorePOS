@@ -61,6 +61,7 @@ export const inventory = {
     if (error) throw error;
     return data;
   },
+  /** Updates supported item fields and rejects payloads with no database fields. */
   updateProduct: async (storeId: string, itemId: string, updates: {
     name?: string;
     price?: number;
@@ -82,6 +83,10 @@ export const inventory = {
       ...(category_id !== undefined && { category_id }),
       ...(image_url !== undefined && { image_url }),
     };
+
+    if (Object.keys(databaseUpdates).length === 0) {
+      throw new Error('No supported product fields provided');
+    }
 
     const { data, error } = await supabase
       .from('items')
