@@ -78,25 +78,16 @@ export default async function BengaliBrandPage({
     ? brand.searchQueries
     : [brand.searchQuery];
 
+  // Fetch all terms concurrently with a single page of up to 1,000 rows each.
+  // isProductOfBrand post-filters to the brand's actual products, so a single
+  // broad page is sufficient: the catalog is currently ~700 items and no brand
+  // exceeds this limit. This eliminates the previous serial while-hasMore loop
+  // that could issue up to 10 × N_terms Supabase requests.
   const [categories, ...perTermResults] = await Promise.all([
     getCachedCategories(),
-    ...searchTerms.map(async (term) => {
-      const termProducts: any[] = [];
-      let page = 0;
-      let hasMore = true;
-      const maxPages = 10;
-      while (hasMore && page < maxPages) {
-        const pageResult = await repo.search({
-          query: term,
-          limit: 1000,
-          page,
-        });
-        termProducts.push(...pageResult.products);
-        hasMore = pageResult.hasMore;
-        page++;
-      }
-      return termProducts;
-    }),
+    ...searchTerms.map((term) =>
+      repo.search({ query: term, limit: 1000, page: 0 }).then((r) => r.products),
+    ),
   ]);
 
   const rawProductsMap = new Map<string, any>();
