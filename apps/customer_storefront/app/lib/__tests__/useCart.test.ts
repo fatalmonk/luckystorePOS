@@ -300,4 +300,72 @@ describe('useCart', () => {
     expect(result.current.cart).toHaveLength(1);
     expect(result.current.storageError).toBe(true);
   });
+
+  describe('promotion polling visibility', () => {
+    afterEach(() => {
+      // Reset visibility to visible between tests
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    });
+
+    it('does not start the 30s interval when the tab is hidden on mount', async () => {
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      const setIntervalSpy = vi.spyOn(window, 'setInterval');
+
+      renderHook(() => useCart());
+      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+      const promotionIntervalCalls = setIntervalSpy.mock.calls.filter(
+        ([, delay]) => delay === 30_000,
+      );
+      expect(promotionIntervalCalls).toHaveLength(0);
+      setIntervalSpy.mockRestore();
+    });
+
+    it('starts the 30s interval when a hidden tab becomes visible', async () => {
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      const setIntervalSpy = vi.spyOn(window, 'setInterval');
+
+      renderHook(() => useCart());
+      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+      // Confirm no interval started while hidden
+      expect(setIntervalSpy.mock.calls.filter(([, d]) => d === 30_000)).toHaveLength(0);
+
+      // Simulate tab becoming visible
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'));
+        await new Promise((r) => setTimeout(r, 0));
+      });
+
+      expect(setIntervalSpy.mock.calls.filter(([, d]) => d === 30_000).length).toBeGreaterThanOrEqual(1);
+      setIntervalSpy.mockRestore();
+    });
+
+    it('clears the interval when a visible tab is hidden', async () => {
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+
+      const setIntervalSpy = vi.spyOn(window, 'setInterval');
+      const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
+
+      renderHook(() => useCart());
+      await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+      // Interval should have been started while visible
+      expect(setIntervalSpy.mock.calls.filter(([, d]) => d === 30_000).length).toBeGreaterThanOrEqual(1);
+
+      const clearCallsBefore = clearIntervalSpy.mock.calls.length;
+
+      // Simulate tab hiding
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'));
+        await new Promise((r) => setTimeout(r, 0));
+      });
+
+      expect(clearIntervalSpy.mock.calls.length).toBeGreaterThan(clearCallsBefore);
+      setIntervalSpy.mockRestore();
+      clearIntervalSpy.mockRestore();
+    });
+  });
 });
