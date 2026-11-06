@@ -208,6 +208,12 @@ export function useCart() {
   const clearCart = useCallback(() => {
     cartRef.current = [];
     setCart([]);
+    try {
+      localStorage.setItem(CART_KEY, '[]');
+    } catch (e) {
+      console.error('Failed to save cart:', e);
+      setStorageError(true);
+    }
   }, []);
 
   const syncPrices = useCallback((updates: { id: string; name?: string; price: number; mrp?: number }[]) => {

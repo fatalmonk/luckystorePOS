@@ -78,6 +78,7 @@ test('cart persists through checkout and account navigation; mocked guest order 
   await page.getByTestId('checkout-place-order-btn').click();
   await expect(page).toHaveURL(/\/order\?num=/);
   expect(submitted).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('lucky-cart'))).toBe('[]');
   await page.goto('/cart');
-  await expect(page.getByRole('heading', { name: 'Your cart is empty' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Your cart is empty|আপনার ব্যাগ বর্তমানে খালি আছে/ })).toBeVisible();
 });
