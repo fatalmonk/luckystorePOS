@@ -3,6 +3,7 @@
 import argparse
 import datetime as dt
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -54,7 +55,7 @@ def fetch(url):
         return {"status": 0, "url": url, "error": str(exc)}
     except urllib.error.HTTPError as exc:
         return {"status": exc.code, "url": exc.geturl(), "error": f"HTTP {exc.code}"}
-    except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+    except (urllib.error.URLError, TimeoutError, ValueError, OSError, http.client.HTTPException) as exc:
         return {"status": None, "url": url, "error": str(exc)}
 
 def same_site(url):
@@ -277,6 +278,9 @@ def run(base=BASE, sample_limit=3):
         report["limitations"].extend(f"{url}: {i}" for i in page["limitations"])
     attempted = {page["requested_url"] for page in report["pages"]}
     discovered = set(urls)
+    unsafe_sitemap_urls = sum(not same_site(url) for url in discovered)
+    if unsafe_sitemap_urls:
+        report["issues"].append("off_site_sitemap_urls")
     report["coverage"] = {
         "scope": "sample", "full_site_verified": False,
         "discovered_urls": len(discovered), "attempted_pages": len(attempted),
@@ -284,7 +288,7 @@ def run(base=BASE, sample_limit=3):
         "failed_pages": sum(page["http_status"] != 200 for page in report["pages"]),
         "inspected_sitemap_urls": len(discovered & attempted),
         "skipped_sitemap_urls": len(discovered - attempted),
-        "unsafe_sitemap_urls": sum(not same_site(url) for url in discovered),
+        "unsafe_sitemap_urls": unsafe_sitemap_urls,
         "missing_route_families": missing_families,
         "limitations": ["Bounded route sample only; uninspected URLs, indexing and deployed revision remain unverified."],
     }
