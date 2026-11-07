@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- Ongoing storefront interaction audit, production hydration investigation, and dev-memory diagnosis. Local and production 928-route sweeps completed at four widths. Production showed intermittent React #418/parentNode errors; targeted headless Chromium reruns were 75/75 pageerror-free on five affected routes; cause is still unknown. Dev-only manifest JSON fast path kept native V8 contexts at 3 through 928 server-side requests; after GC heap was 512 MB, ArrayBuffers 629 MB, footprint 1.74 GB, still above 600 MB. Native allocation source and hydration cause remain unknown.
+- PR #596 review repair: resolve 10 actionable comments covering Bengali delivery policy, enrichment provenance, Next config/build scripts, patch refresh safety, translation batching, and Playwright port reuse. Full storefront tests pass; final lint/typecheck and diff review in progress. No merge or deployment.
 ## Decisions
 - Older decisions: untangle-codebase follow-up and PRs #592-595; branch cleanup, Vercel/Supabase environment audits, and PR #584 fixes are recorded in Git history and their referenced docs.
 - 20261106-egress: PR #592 deployed (`42171216215`), focused 93/93; one-process category reads coalesced 20→1. PR #593 merged as `7a0789e`. Phase 3 test-store comparison kept the same 9 IDs while catalog+translation reads fell 2→1 and JSON text 4,954→3,648 bytes; production/billing impact remains unknown. Report commit `4e16adc7` preserved on `local/phase3-audit-report`.

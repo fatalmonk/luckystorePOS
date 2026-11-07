@@ -16,6 +16,7 @@ export const DELIVERY_POLICY = {
     start: '09:00 AM',
     end: '12:30 AM',
     display: '09:00 AM–12:30 AM daily',
+    displayBn: 'প্রতিদিন সকাল ৯টা–রাত ১২টা ৩০ মিনিট',
     daysDisplay: 'Monday–Sunday (7 days a week)',
     scheduleType: 'Delivery hours (orders dispatched same-day during this window)',
   },
@@ -150,7 +151,7 @@ export const BENGALI_DELIVERY_FAQS: DeliveryFaqItem[] = [
   },
   {
     question: 'ডেলিভারির সময় কখন?',
-    answer: `ডেলিভারি সেবার সময় প্রতিদিন সকাল ৯টা থেকে রাত ১২টা ৩০ মিনিট পর্যন্ত। অর্ডার দেওয়ার আগে আপনার ঠিকানা ডেলিভারি সীমার মধ্যে আছে কি না নিশ্চিত করুন।`,
+    answer: `ডেলিভারি সেবার সময় ${DELIVERY_POLICY.deliveryHours.displayBn} পর্যন্ত। অর্ডার দেওয়ার আগে আপনার ঠিকানা ডেলিভারি সীমার মধ্যে আছে কি না নিশ্চিত করুন।`,
   },
 ];
 

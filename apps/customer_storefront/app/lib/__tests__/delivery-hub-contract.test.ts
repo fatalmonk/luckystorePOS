@@ -100,6 +100,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
     it('explicitly specifies delivery hours as 09:00 AM–12:30 AM daily without misleading (Midnight) wording', () => {
       expect(DELIVERY_POLICY.deliveryHours.display).toBe('09:00 AM–12:30 AM daily');
+      expect(DELIVERY_POLICY.deliveryHours.displayBn).toBe('প্রতিদিন সকাল ৯টা–রাত ১২টা ৩০ মিনিট');
       expect(DELIVERY_POLICY.deliveryHours.start).toBe('09:00 AM');
       expect(DELIVERY_POLICY.deliveryHours.end).toBe('12:30 AM');
 
@@ -205,7 +206,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
         BENGALI_DELIVERY_FAQS.map((faq) => faq.answer),
       );
       expect(JSON.stringify(faqSchema)).toContain(`${DELIVERY_POLICY.freeDeliveryThresholdBdt}`);
-      expect(JSON.stringify(faqSchema)).toContain('প্রতিদিন সকাল ৯টা থেকে রাত ১২টা ৩০ মিনিট পর্যন্ত');
+      expect(JSON.stringify(faqSchema)).toContain(`${DELIVERY_POLICY.deliveryHours.displayBn} পর্যন্ত`);
     });
   });
 

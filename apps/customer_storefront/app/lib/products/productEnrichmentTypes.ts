@@ -67,6 +67,13 @@ export interface ProductFieldEvidence {
   storageInstructions?: string[];
 }
 
+export interface ProductLocalizedFieldEvidence {
+  summary?: string[];
+  highlights?: string[][];
+  usageDirections?: string[];
+  storageInstructions?: string[];
+}
+
 export interface ProductEnrichmentLocaleContent {
   summary?: string;
   specifications?: ProductSpecification[];
@@ -105,6 +112,8 @@ export interface ProductEnrichment {
   faqs: ProductFaq[];
   /** Optional locale-specific equivalents for editorial copy and structured details. */
   localizedContent?: Partial<Record<'bn', ProductEnrichmentLocaleContent>>;
+  /** Evidence mappings for localized fields not covered by their inline evidence refs. */
+  localizedFieldEvidence?: Partial<Record<'bn', ProductLocalizedFieldEvidence>>;
   /** Normalized evidence manifest for referential integrity */
   evidenceManifest: Record<string, EvidenceRecord>;
   /** Field-level provenance mappings to evidenceManifest keys */

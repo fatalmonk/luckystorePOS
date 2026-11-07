@@ -5,7 +5,7 @@ const isDev = process.env.NODE_ENV === 'development';
 const nextConfig = {
   // Keep Turbopack and Webpack dev artifacts separate to prevent stale/mixed
   // client and server output when switching compilers. Production stays `.next`.
-  distDir: process.env.NEXT_DEV_DIST_DIR || '.next',
+  distDir: (isDev && process.env.NEXT_DEV_DIST_DIR) || '.next',
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,

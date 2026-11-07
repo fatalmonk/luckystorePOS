@@ -250,40 +250,40 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   if (locale === 'bn') {
     const productIds = products.map((p) => p.id);
     try {
-      const translations: any[] = [];
       const batchSize = 100;
-      for (let index = 0; index < productIds.length; index += batchSize) {
-        const { data: batch, error } = await (supabase as any)
-          .from('item_translations')
-          .select('item_id, name, description')
-          .in('item_id', productIds.slice(index, index + batchSize))
-          .eq('locale', 'bn')
-          .eq('review_status', 'published');
-
-        if (error) {
-          console.error('[homepage-translations] request failed', {
-            batchIndex: Math.floor(index / batchSize),
-            errorCode: typeof error.code === 'string' ? error.code : undefined,
-            errorName: typeof error.name === 'string' ? error.name : 'SupabaseQueryError',
-          });
-          break;
-        }
-
-        if (batch) translations.push(...batch);
-      }
-
-      if (translations.length > 0) {
-        const transMap = new Map(translations.map((t: any) => [t.item_id, t]));
-        products = products.map((p) => {
-          const trans: any = transMap.get(p.id);
-          if (!trans) return p;
-          return {
-            ...p,
-            originalName: p.originalName || p.name,
-            name: trans.name?.trim() || p.name,
-            description: trans.description?.trim() || p.description,
-          };
+      const batches = await Promise.all(
+        Array.from({ length: Math.ceil(productIds.length / batchSize) }, (_, batchIndex) =>
+          (supabase as any)
+            .from('item_translations')
+            .select('item_id, name, description')
+            .in('item_id', productIds.slice(batchIndex * batchSize, (batchIndex + 1) * batchSize))
+            .eq('locale', 'bn')
+            .eq('review_status', 'published'),
+        ),
+      );
+      const failedBatchIndex = batches.findIndex(({ error }) => error);
+      if (failedBatchIndex !== -1) {
+        const error = batches[failedBatchIndex].error;
+        console.error('[homepage-translations] request failed', {
+          batchIndex: failedBatchIndex,
+          errorCode: typeof error.code === 'string' ? error.code : undefined,
+          errorName: typeof error.name === 'string' ? error.name : 'SupabaseQueryError',
         });
+      } else {
+        const translations = batches.flatMap(({ data }) => data ?? []);
+        if (translations.length > 0) {
+          const transMap = new Map(translations.map((t: any) => [t.item_id, t]));
+          products = products.map((p) => {
+            const trans: any = transMap.get(p.id);
+            if (!trans) return p;
+            return {
+              ...p,
+              originalName: p.originalName || p.name,
+              name: trans.name?.trim() || p.name,
+              description: trans.description?.trim() || p.description,
+            };
+          });
+        }
       }
     } catch {
       // In case of network/db failure, fall back to base products

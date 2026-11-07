@@ -7,7 +7,7 @@ import { DELIVERY_POLICY, COVERED_AREAS, BENGALI_DELIVERY_FAQS, RETURN_RULES, ge
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../../components/seo/JsonLd';
 
-const bengaliDeliveryHours = 'প্রতিদিন সকাল ৯টা–রাত ১২টা ৩০ মিনিট';
+const bengaliDeliveryHours = DELIVERY_POLICY.deliveryHours.displayBn;
 
 export const metadata: Metadata = {
   title: { absolute: 'চট্টগ্রাম grocery delivery | Lucky Store' },

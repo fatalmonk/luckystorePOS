@@ -86,19 +86,27 @@ const targets = [
   },
 ];
 
-for (const target of targets) {
+const updates = targets.map((target) => {
   const source = fs.readFileSync(target.path, 'utf8');
   const updated = patchSource(source, target.format);
-  if (updated !== source) fs.writeFileSync(target.path, updated);
-
   const helperPath = path.join(path.dirname(target.path), 'client-reference-manifest-memory.cjs');
-  if (fs.existsSync(helperPath)) {
-    if (fs.readFileSync(helperPath, 'utf8') !== helperSource) {
-      throw new Error(`Refusing to overwrite unexpected file ${helperPath}.`);
-    }
-  } else {
+  return { target, source, updated, helperPath };
+});
+
+// Validate every loader before changing any installed Next.js files. This keeps
+// a version or source mismatch from leaving only part of the patch applied.
+for (const { helperPath } of updates) {
+  const helperDirectory = path.dirname(helperPath);
+  if (!fs.existsSync(helperDirectory)) {
+    throw new Error(`Could not find the expected Next.js helper directory ${helperDirectory}.`);
+  }
+}
+
+for (const { target, source, updated, helperPath } of updates) {
+  if (!fs.existsSync(helperPath) || fs.readFileSync(helperPath, 'utf8') !== helperSource) {
     fs.writeFileSync(helperPath, helperSource);
   }
+  if (updated !== source) fs.writeFileSync(target.path, updated);
 }
 
 console.log(`Next.js ${nextVersion} dev manifest memory patch is ready.`);

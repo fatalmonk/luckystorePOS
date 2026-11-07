@@ -6395,8 +6395,6 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       "Standard factory-sealed 1L consumer packaging",
       "Produced and distributed by BRAC Dairy & Food Project",
     ],
-    usageDirections:
-      "Use as indicated on physical product packaging for optimal quality and freshness.",
     storageInstructions:
       "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
@@ -6464,7 +6462,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       netQuantity: ["PACK_FRONT"],
       category: ["CATALOG_RECORD"],
       summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
-      highlights: [["PACK_FRONT"]],
+      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
       storageInstructions: ["PACK_STORAGE"],
     },
   },
@@ -17355,6 +17353,13 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
             evidenceRefs: ["STORE_DELIVERY_POLICY"],
           },
         ],
+      },
+    },
+    localizedFieldEvidence: {
+      bn: {
+        summary: ["PACK_FRONT", "STORE_INSPECTION_POLICY"],
+        highlights: [["PACK_FRONT"]],
+        storageInstructions: ["PACK_STORAGE"],
       },
     },
     evidenceManifest: {
@@ -30631,14 +30636,14 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Net Quantity", value: "1kg", evidenceRefs: ["PACK_FRONT"] },
       { label: "Catalog Category", value: "Rice", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Manufacturer", value: "Lucky Store Commodity Sourcing", evidenceRefs: ["MFR_SPEC"] },
-      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from heat", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
       "Authentic on-pack Lucky Store Fresh specification: Miniket C (Nouka) Loose",
       "Produced and distributed by Lucky Store Commodity Sourcing",
     ],
     storageInstructions:
-      "Store in a cool, dry place away from direct heat and sunlight.",
+      "Store in a cool, dry place away from heat.",
     faqs: [
       {
         question: "Can I inspect Miniket C (Nouka) Loose at my doorstep before payment?",

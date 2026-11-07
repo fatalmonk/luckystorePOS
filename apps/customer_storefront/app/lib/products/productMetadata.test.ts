@@ -56,7 +56,7 @@ describe('Product metadata identity', () => {
     expect(item.exactName).toBe('Miniket C (Nouka) Loose');
     expect(item.highlights?.join(' ')).not.toMatch(/factory-sealed|consumer packaging/i);
     expect(item.faqs?.[0]?.answer).not.toMatch(/packaging condition|seals/i);
-    expect(item.storageInstructions).toBe('Store in a cool, dry place away from direct heat and sunlight.');
+    expect(item.storageInstructions).toBe('Store in a cool, dry place away from heat.');
     expect(item.usageDirections).toBeUndefined();
   });
 
