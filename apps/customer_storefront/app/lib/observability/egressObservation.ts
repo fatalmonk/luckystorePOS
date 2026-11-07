@@ -1,5 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-
 export const MAX_OBSERVATION_REQUESTS = 500;
 export const MAX_OBSERVATION_BYTES = 10 * 1024 * 1024; // 10 MB measurement & stop condition
 export const MAX_OBSERVATION_SCENARIOS = 20;
@@ -252,6 +250,17 @@ async function measureResponse(response: Response): Promise<{ bytes: number; row
   }
 }
 
+function resolveSafeProcessId(): string {
+  try {
+    if (typeof process !== 'undefined' && 'pid' in process && typeof process.pid === 'number') {
+      return String(process.pid);
+    }
+  } catch {
+    // Edge runtime throws on accessing disallowed process properties
+  }
+  return 'edge-or-browser';
+}
+
 export function createObservedFetch(
   inner: typeof fetch,
   options: {
@@ -318,7 +327,7 @@ export function createObservedFetch(
           sourceSurface: context.sourceSurface ?? 'unknown',
           routeFamily: context.routeFamily ?? 'unknown',
           deploymentSha: context.deploymentSha ?? 'unknown',
-          processId: options.processId ?? String(typeof process === 'undefined' ? 'unknown' : process.pid),
+          processId: options.processId ?? resolveSafeProcessId(),
           navigationId: context.navigationId ?? 'unknown',
           projectionVersion: context.projectionVersion ?? 'unknown',
           cacheResult: context.cacheResult ?? 'unknown',
@@ -340,16 +349,65 @@ export function createObservedFetch(
   };
 }
 
-// Scoped caller attribution using Node AsyncLocalStorage for true async isolation
-const callerAsyncStorage = new AsyncLocalStorage<EgressObservationContext>();
+// Scoped caller attribution: dynamically resolves AsyncLocalStorage when in Node.js
+// using non-statically-analyzable evaluation, and falls back to an isomorphic scoped store
+// for Edge/Browser runtimes so Webpack does not fail on unhandled "node:" URI schemes.
+interface ContextStorage {
+  getStore(): EgressObservationContext | undefined;
+  run<R>(store: EgressObservationContext, callback: () => R): R;
+}
+
+function initContextStorage(): ContextStorage {
+  try {
+    if (typeof globalThis !== 'undefined' && (globalThis as any).AsyncLocalStorage) {
+      const ALS = (globalThis as any).AsyncLocalStorage;
+      const instance = new ALS();
+      return {
+        getStore: () => instance.getStore(),
+        run: (store, cb) => instance.run(store, cb),
+      };
+    }
+
+    if (typeof process !== 'undefined' && typeof require === 'function') {
+      const modName = 'async_hooks';
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const ah = require(modName);
+      if (ah?.AsyncLocalStorage) {
+        const instance = new ah.AsyncLocalStorage();
+        return {
+          getStore: () => instance.getStore(),
+          run: (store: EgressObservationContext, cb: () => any) => instance.run(store, cb),
+        };
+      }
+    }
+  } catch {
+    // Edge or browser environment
+  }
+
+  let currentStore: EgressObservationContext | undefined;
+  return {
+    getStore: () => currentStore,
+    run: (store, cb) => {
+      const prev = currentStore;
+      currentStore = store;
+      try {
+        return cb();
+      } finally {
+        currentStore = prev;
+      }
+    },
+  };
+}
+
+const callerStorage = initContextStorage();
 
 export function withCallerContext<T>(context: EgressObservationContext, fn: () => T): T {
-  const current = callerAsyncStorage.getStore() ?? {};
-  return callerAsyncStorage.run({ ...current, ...context }, fn);
+  const current = callerStorage.getStore() ?? {};
+  return callerStorage.run({ ...current, ...context }, fn);
 }
 
 export function getActiveCallerContext(): EgressObservationContext {
-  return callerAsyncStorage.getStore() ?? {};
+  return callerStorage.getStore() ?? {};
 }
 
 type ObservationEnv = Record<string, string | undefined>;
