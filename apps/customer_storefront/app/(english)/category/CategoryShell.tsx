@@ -191,7 +191,7 @@ export function CategoryShell({
           <div className={`${isAllProducts ? 'p-2 sm:p-4' : 'p-0 md:p-4'} space-y-5 sm:space-y-5 max-w-7xl mx-auto`}>
             <div className={isAllProducts ? 'space-y-4' : 'md:space-y-4'}>
               {!isAllProducts && (
-                <div className="hidden md:block">
+                <div>
                   <Breadcrumbs
                     homeHref={withLocale('/', locale)}
                     homeLabel={isBn ? 'হোম' : 'Home'}

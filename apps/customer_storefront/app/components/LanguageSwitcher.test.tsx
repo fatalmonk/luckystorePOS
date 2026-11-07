@@ -51,6 +51,12 @@ describe('LanguageSwitcher', () => {
     expect(screen.getByRole('link')).toHaveAttribute('href', '/bn/category/ice-cream');
   });
 
+  it.each(['/login', '/signup', '/profile'])('offers the Bengali account route from %s', (pathname) => {
+    mockPathname.value = pathname;
+    render(<LanguageSwitcher />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', `/bn${pathname}`);
+  });
+
   it('does not navigate on modified clicks (meta, ctrl, shift, alt)', () => {
     render(<LanguageSwitcher />);
 

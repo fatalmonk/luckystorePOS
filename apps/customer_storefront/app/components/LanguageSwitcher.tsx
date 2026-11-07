@@ -65,6 +65,9 @@ export function LanguageSwitcher({
         cleanPath === '/cart' ||
         cleanPath === '/checkout' ||
         cleanPath === '/wishlist' ||
+        cleanPath === '/login' ||
+        cleanPath === '/signup' ||
+        cleanPath === '/profile' ||
         cleanPath.startsWith('/category/') ||
         cleanPath.startsWith('/product/');
       const targetPath = target === 'bn' && !supportsBengaliRoute ? '/' : pathname;

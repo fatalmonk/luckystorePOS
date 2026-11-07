@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- PR #596 review repair: resolve 10 actionable comments covering Bengali delivery policy, enrichment provenance, Next config/build scripts, patch refresh safety, translation batching, and Playwright port reuse. Full storefront tests pass; final lint/typecheck and diff review in progress. No merge or deployment.
+- PR #596 review repair: 16 findings assessed; fixed actionable storefront policy, evidence, loading, locale navigation, and tooling issues. Full suite 745/745, lint, typecheck, and diff checks pass. Push final follow-up; no merge or deployment.
 ## Decisions
 - Older decisions: untangle-codebase follow-up and PRs #592-595; branch cleanup, Vercel/Supabase environment audits, and PR #584 fixes are recorded in Git history and their referenced docs.
 - 20261106-egress: PR #592 deployed (`42171216215`), focused 93/93; one-process category reads coalesced 20→1. PR #593 merged as `7a0789e`. Phase 3 test-store comparison kept the same 9 IDs while catalog+translation reads fell 2→1 and JSON text 4,954→3,648 bytes; production/billing impact remains unknown. Report commit `4e16adc7` preserved on `local/phase3-audit-report`.
