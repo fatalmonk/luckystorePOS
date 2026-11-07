@@ -19,6 +19,10 @@ function createMockSupabase(overrides?: {
   itemsError?: any;
   rpcRows?: any[];
   rpcError?: any;
+  /** Rows returned by resolve_storefront_item_prefix_v1 */
+  resolverRows?: Array<{ item_id: string }>;
+  /** Error returned by resolve_storefront_item_prefix_v1 */
+  resolverError?: { message: string } | null;
   stockQty?: number;
   stockReserved?: number;
   onlineReserved?: number;
@@ -36,7 +40,6 @@ function createMockSupabase(overrides?: {
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockImplementation(() => Promise.resolve({ data: categories, error: null })),
     maybeSingle: vi.fn().mockImplementation(function (this: any) {
-      // If querying stock_levels
       return Promise.resolve({
         data: {
           qty: overrides?.stockQty ?? 5,
@@ -87,6 +90,13 @@ function createMockSupabase(overrides?: {
       if (rpcName === 'search_storefront_catalog_v2') {
         return Promise.resolve({ data: overrides?.v2Rows ?? [], error: overrides?.v2Error ?? null });
       }
+      if (rpcName === 'resolve_storefront_item_prefix_v1') {
+        return Promise.resolve({
+          data: overrides?.resolverRows ?? [],
+          error: overrides?.resolverError ?? null,
+        });
+      }
+      // Legacy RPCs — should not be called by the new getByIdPrefix.
       if (rpcName === 'search_storefront_catalog' || rpcName === 'search_items_pos') {
         return Promise.resolve({
           data: overrides?.rpcRows ?? [],
@@ -237,33 +247,189 @@ describe('SupabaseProductAdapter', () => {
     });
   });
 
+  // ─── getByIdPrefix — bounded resolver implementation ──────────────────────
+
   describe('getByIdPrefix', () => {
-    it('resolves 8-char slug prefix via RPC and delegates to getById to include description', async () => {
+    // ── Input validation: no upstream request for invalid input ───────────
+    it('rejects prefix shorter than 4 characters without any RPC call', async () => {
+      const supabase = createMockSupabase();
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('ae')).toBeNull();
+      expect(await adapter.getByIdPrefix('aef')).toBeNull();
+      expect(supabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('rejects empty prefix without any RPC call', async () => {
+      const supabase = createMockSupabase();
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('')).toBeNull();
+      expect(supabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('rejects prefix longer than 32 hex characters without any RPC call', async () => {
+      const supabase = createMockSupabase();
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      // 33 hex chars
+      expect(await adapter.getByIdPrefix('ae09a3ef5f2c4f148a9ca66c63e028b4f')).toBeNull();
+      expect(supabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('rejects malformed input containing non-hex characters without any RPC call', async () => {
+      const supabase = createMockSupabase();
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('ae--')).toBeNull();
+      expect(await adapter.getByIdPrefix('zzzz')).toBeNull();
+      expect(await adapter.getByIdPrefix('ae09-zz-a3ef')).toBeNull();
+      expect(await adapter.getByIdPrefix('ab!cd')).toBeNull();
+      expect(await adapter.getByIdPrefix('ae09\na3ef')).toBeNull();
+      expect(supabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('rejects arbitrary embedded hyphens (not canonical UUID)', async () => {
+      const supabase = createMockSupabase();
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('ae09-a3ef')).toBeNull();
+      expect(await adapter.getByIdPrefix('ae-09-a3-ef')).toBeNull();
+      expect(supabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('accepts full canonical 8-4-4-4-12 UUID input', async () => {
       const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
-      const rpcMatch = {
-        id: fullUuid,
-        name: 'Nescafe Classic 90g Jar',
-        price: 475,
-        category: 'Tea & Coffee',
-        category_id: 'cat-1',
-        qty_on_hand: 2,
-      };
       const dbRow = {
         id: fullUuid,
         name: 'Nescafe Classic 90g Jar',
         price: 475,
+        category_id: 'cat-1',
+        description: 'Rich taste.',
+        brand: 'Nestle',
+      };
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: dbRow,
+        stockQty: 3,
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getByIdPrefix('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+
+      expect(product).not.toBeNull();
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: 'ae09a3ef5f2c4f148a9ca66c63e028b4',
+      });
+    });
+
+    it('accepts uppercase prefix (normalized to lowercase before RPC)', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const dbRow = {
+        id: fullUuid,
+        name: 'Nescafe Classic 90g Jar',
+        price: 475,
+        category_id: 'cat-1',
+        description: 'Rich taste.',
+        brand: 'Nestle',
+      };
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: dbRow,
+        stockQty: 3,
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getByIdPrefix('AE09A3EF');
+
+      expect(product).not.toBeNull();
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: 'ae09a3ef',
+      });
+    });
+
+    it('accepts prefix with surrounding whitespace (trimmed before RPC)', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const dbRow = {
+        id: fullUuid,
+        name: 'Nescafe Classic 90g Jar',
+        price: 475,
+        category_id: 'cat-1',
+        description: '',
+        brand: 'Nestle',
+      };
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: dbRow,
+        stockQty: 1,
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getByIdPrefix('  ae09a3ef  ');
+
+      expect(product).not.toBeNull();
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: 'ae09a3ef',
+      });
+    });
+
+    it('accepts a full 32-hex (unhyphenated UUID) prefix', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const full32 = 'ae09a3ef5f2c4f148a9ca66c63e028b4';
+      const dbRow = {
+        id: fullUuid,
+        name: 'Product',
+        price: 100,
+        category_id: 'cat-1',
+        description: '',
+      };
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: dbRow,
+        stockQty: 1,
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      const product = await adapter.getByIdPrefix(full32);
+
+      expect(product).not.toBeNull();
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: full32,
+      });
+    });
+
+    // ── Identity and ambiguity ────────────────────────────────────────────
+
+    it('returns null when prefix matches zero items', async () => {
+      const supabase = createMockSupabase({ resolverRows: [] });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('deadbeef')).toBeNull();
+    });
+
+    it('resolves a unique 8-char prefix and delegates to getById for full projection', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const dbRow = {
+        id: fullUuid,
+        name: 'Nescafe Classic 90g Jar',
+        price: 475,
+        mrp: 546.25,
         category_id: 'cat-1',
         description: 'Start your morning with the rich taste and irresistible aroma of Nescafe Classic.',
         brand: 'Nestle',
       };
 
       const supabase = createMockSupabase({
-        rpcRows: [rpcMatch],
+        resolverRows: [{ item_id: fullUuid }],
         itemsRow: dbRow,
         stockQty: 2,
       });
-
       const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
       const product = await adapter.getByIdPrefix('ae09a3ef');
 
       expect(product).not.toBeNull();
@@ -271,40 +437,114 @@ describe('SupabaseProductAdapter', () => {
       expect(product?.description).toBe('Start your morning with the rich taste and irresistible aroma of Nescafe Classic.');
       expect(product?.stock).toBe(2);
       expect(product?.category).toBe('Tea & Coffee');
+      // Resolver called once; getById (via items table) also called
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: 'ae09a3ef',
+      });
+      // No search_storefront_catalog calls allowed
+      expect(supabase.rpc).not.toHaveBeenCalledWith('search_storefront_catalog', expect.anything());
     });
 
-    it('rejects prefixes shorter than 4 characters to prevent broad wildcards', async () => {
-      const supabase = createMockSupabase();
+    it('returns null when prefix matches two items (ambiguous)', async () => {
+      const supabase = createMockSupabase({
+        resolverRows: [
+          { item_id: 'ae09a3ef-1111-4f14-8a9c-a66c63e028b4' },
+          { item_id: 'ae09a3ef-2222-4f14-8a9c-a66c63e028b4' },
+        ],
+      });
       const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
 
-      const product = await adapter.getByIdPrefix('ae');
-      expect(product).toBeNull();
-      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(await adapter.getByIdPrefix('ae09a3ef')).toBeNull();
+      // getById must NOT be called for ambiguous results
+      expect(supabase.from).not.toHaveBeenCalledWith('items');
     });
 
-    it('returns null when prefix matches no active items in search_items_pos', async () => {
-      const supabase = createMockSupabase({ rpcRows: [] });
+    it('returns null for ambiguous collision that would have been beyond row 500 in the old scan', async () => {
+      // Simulates a prefix that only resolves to 2 candidates — previously only
+      // detectable after scanning multiple 500-row pages.
+      const supabase = createMockSupabase({
+        resolverRows: [
+          { item_id: '0000ffff-aaaa-4000-8000-000000000001' },
+          { item_id: '0000ffff-aaaa-4000-8000-000000000002' },
+        ],
+      });
       const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
 
-      const product = await adapter.getByIdPrefix('deadbeef');
-      expect(product).toBeNull();
+      expect(await adapter.getByIdPrefix('0000ffff')).toBeNull();
     });
 
-    it('fails closed and returns null when prefix matches multiple items (ambiguous collision)', async () => {
-      const match1 = {
-        id: 'ae09a3ef-1111-4f14-8a9c-a66c63e028b4',
-        name: 'Nescafe Product 1',
-      };
-      const match2 = {
-        id: 'ae09a3ef-2222-4f14-8a9c-a66c63e028b4',
-        name: 'Nescafe Product 2',
-      };
-
-      const supabase = createMockSupabase({ rpcRows: [match1, match2] });
+    it('handles UUID lower boundary prefix "0000"', async () => {
+      const uuid = '00000000-0000-4000-8000-000000000001';
+      const dbRow = { id: uuid, name: 'Zero Product', price: 10, category_id: 'cat-1', description: '' };
+      const supabase = createMockSupabase({ resolverRows: [{ item_id: uuid }], itemsRow: dbRow });
       const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
 
-      const product = await adapter.getByIdPrefix('ae09a3ef');
-      expect(product).toBeNull();
+      expect(await adapter.getByIdPrefix('0000')).not.toBeNull();
+      expect(supabase.rpc).toHaveBeenCalledWith('resolve_storefront_item_prefix_v1', {
+        p_store_id: expect.any(String),
+        p_prefix: '0000',
+      });
+    });
+
+    it('handles UUID upper boundary prefix "ffff"', async () => {
+      const uuid = 'ffff0000-0000-4000-8000-000000000001';
+      const dbRow = { id: uuid, name: 'FF Product', price: 10, category_id: 'cat-1', description: '' };
+      const supabase = createMockSupabase({ resolverRows: [{ item_id: uuid }], itemsRow: dbRow });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('ffff')).not.toBeNull();
+    });
+
+    it('throws when the resolver RPC returns an error (no silent fallback)', async () => {
+      const supabase = createMockSupabase({
+        resolverError: { message: 'DB connection lost' },
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      await expect(adapter.getByIdPrefix('ae09a3ef')).rejects.toThrow('getByIdPrefix resolver RPC failed');
+      // Critically: no search_storefront_catalog fallback
+      expect(supabase.rpc).not.toHaveBeenCalledWith('search_storefront_catalog', expect.anything());
+    });
+
+    it('returns null when the resolver returns an invalid (non-UUID) item_id', async () => {
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: 'not-a-uuid' }],
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      expect(await adapter.getByIdPrefix('ae09a3ef')).toBeNull();
+      // getById must not be called with invalid input
+      expect(supabase.from).not.toHaveBeenCalledWith('items');
+    });
+
+    it('never calls search_storefront_catalog on a valid prefix', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: { id: fullUuid, name: 'Product', price: 10, category_id: 'cat-1', description: '' },
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      await adapter.getByIdPrefix('ae09a3ef');
+
+      expect(supabase.rpc).not.toHaveBeenCalledWith('search_storefront_catalog', expect.anything());
+    });
+
+    it('calls the resolver exactly once per lookup (no pagination loop)', async () => {
+      const fullUuid = 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4';
+      const supabase = createMockSupabase({
+        resolverRows: [{ item_id: fullUuid }],
+        itemsRow: { id: fullUuid, name: 'Product', price: 10, category_id: 'cat-1', description: '' },
+      });
+      const adapter = new SupabaseProductAdapter(supabase, fakeBrandParser, fakeEmojiResolver);
+
+      await adapter.getByIdPrefix('ae09a3ef');
+
+      const resolverCalls = (supabase.rpc as ReturnType<typeof vi.fn>).mock.calls.filter(
+        (args: any[]) => args[0] === 'resolve_storefront_item_prefix_v1',
+      );
+      expect(resolverCalls).toHaveLength(1);
     });
   });
 });

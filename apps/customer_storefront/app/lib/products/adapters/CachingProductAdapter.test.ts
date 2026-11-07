@@ -209,6 +209,154 @@ describe('CachingProductAdapter', () => {
     });
   });
 
+  // ─── getByIdPrefix cache ──────────────────────────────────────────────────
+
+  describe('getByIdPrefix', () => {
+    it('caches a positive prefix result and suppresses a second upstream call', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(product) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const r1 = await adapter.getByIdPrefix('ae09a3ef');
+      const r2 = await adapter.getByIdPrefix('ae09a3ef');
+
+      expect(r1).toEqual(product);
+      expect(r2).toEqual(product);
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('caches a null (miss) prefix result', async () => {
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(null) });
+      const adapter = new CachingProductAdapter(inner);
+
+      await adapter.getByIdPrefix('deadbeef');
+      await adapter.getByIdPrefix('deadbeef');
+
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('treats equivalent normalized prefixes as the same cache key', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(product) });
+      const adapter = new CachingProductAdapter(inner);
+
+      // Uppercase, lowercase, and padded should all share one slot
+      await adapter.getByIdPrefix('AE09A3EF');
+      await adapter.getByIdPrefix('ae09a3ef');
+      await adapter.getByIdPrefix('  ae09a3ef  ');
+
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns null for invalid prefixes without touching the inner adapter', async () => {
+      inner = createFakeAdapter();
+      const adapter = new CachingProductAdapter(inner);
+
+      // Too short after normalization
+      expect(await adapter.getByIdPrefix('ae')).toBeNull();
+      // Too long
+      expect(await adapter.getByIdPrefix('ae09a3ef5f2c4f148a9ca66c63e028b4f')).toBeNull();
+      // No hex chars
+      expect(await adapter.getByIdPrefix('zzzz')).toBeNull();
+      // Malformed / non-hex characters in prefix
+      expect(await adapter.getByIdPrefix('ae09-zz-a3ef')).toBeNull();
+      expect(await adapter.getByIdPrefix('ab!cd')).toBeNull();
+      // Arbitrary embedded hyphens (not canonical UUID)
+      expect(await adapter.getByIdPrefix('ae09-a3ef')).toBeNull();
+      expect(await adapter.getByIdPrefix('ae-09-a3-ef')).toBeNull();
+
+      expect(inner.getByIdPrefix).not.toHaveBeenCalled();
+    });
+
+    it('normalizes full canonical UUID and contiguous hex to the same cache key', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(product) });
+      const adapter = new CachingProductAdapter(inner);
+
+      await adapter.getByIdPrefix('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      await adapter.getByIdPrefix('ae09a3ef5f2c4f148a9ca66c63e028b4');
+
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not cache RPC failures — propagates the error to callers', async () => {
+      inner = createFakeAdapter({
+        getByIdPrefix: vi.fn().mockRejectedValueOnce(new Error('resolver RPC failed')),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      await expect(adapter.getByIdPrefix('ae09a3ef')).rejects.toThrow('resolver RPC failed');
+
+      // A subsequent call must retry the inner adapter, not return a cached null
+      inner.getByIdPrefix = vi.fn().mockResolvedValue(fakeProduct('x'));
+      const result = await adapter.getByIdPrefix('ae09a3ef');
+      expect(result).not.toBeNull();
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not share prefix cache across adapter instances (store/client isolation)', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      const inner1 = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(product) });
+      const inner2 = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(null) });
+
+      const adapter1 = new CachingProductAdapter(inner1);
+      const adapter2 = new CachingProductAdapter(inner2);
+
+      expect(await adapter1.getByIdPrefix('ae09a3ef')).not.toBeNull();
+      expect(await adapter2.getByIdPrefix('ae09a3ef')).toBeNull();
+
+      expect(inner1.getByIdPrefix).toHaveBeenCalledTimes(1);
+      expect(inner2.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-fetches after TTL expires (stale positive result)', async () => {
+      const v1 = fakeProduct('ae09a3ef-0001-4000-8000-000000000000');
+      const v2 = fakeProduct('ae09a3ef-0002-4000-8000-000000000000');
+      inner = createFakeAdapter({
+        getByIdPrefix: vi.fn()
+          .mockResolvedValueOnce(v1)
+          .mockResolvedValueOnce(v2),
+      });
+      const adapter = new CachingProductAdapter(inner, {
+        searchTtlMs: 60_000,
+        productTtlMs: 50, // very short
+        categoryTtlMs: 600_000,
+        maxSearchEntries: 200,
+        maxProductEntries: 500,
+      });
+
+      const r1 = await adapter.getByIdPrefix('ae09a3ef');
+      await new Promise((r) => setTimeout(r, 60));
+      const r2 = await adapter.getByIdPrefix('ae09a3ef');
+
+      expect(r1?.id).toBe(v1.id);
+      expect(r2?.id).toBe(v2.id);
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(2);
+    });
+
+    it('re-fetches after TTL expires (stale null / ambiguous result)', async () => {
+      inner = createFakeAdapter({
+        getByIdPrefix: vi.fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce(fakeProduct('ae09a3ef-0001-4000-8000-000000000000')),
+      });
+      const adapter = new CachingProductAdapter(inner, {
+        searchTtlMs: 60_000,
+        productTtlMs: 50,
+        categoryTtlMs: 600_000,
+        maxSearchEntries: 200,
+        maxProductEntries: 500,
+      });
+
+      expect(await adapter.getByIdPrefix('ae09a3ef')).toBeNull();
+      await new Promise((r) => setTimeout(r, 60));
+      expect(await adapter.getByIdPrefix('ae09a3ef')).not.toBeNull();
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // ─── invalidate ───────────────────────────────────────────────────────────
+
   describe('invalidate', () => {
     it('clears all caches when called with no args', async () => {
       inner = createFakeAdapter();
@@ -264,6 +412,41 @@ describe('CachingProductAdapter', () => {
 
       expect(inner.getById).toHaveBeenCalledTimes(3); // 2 initial + 1 re-fetch for 'a'
     });
+
+    it('clears all prefix cache entries when any product is invalidated', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      inner = createFakeAdapter({
+        getById: vi.fn().mockResolvedValue(product),
+        getByIdPrefix: vi.fn().mockResolvedValue(product),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      // Warm up two prefix cache entries
+      await adapter.getByIdPrefix('ae09a3ef');
+      await adapter.getByIdPrefix('deadbeef');
+
+      // Invalidate one product by ID — should also evict all prefix entries
+      adapter.invalidate({ products: [createProductId('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4')] });
+
+      // Both prefixes must trigger new upstream calls
+      await adapter.getByIdPrefix('ae09a3ef');
+      await adapter.getByIdPrefix('deadbeef');
+
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(4); // 2 warm + 2 re-fetch
+    });
+
+    it('does not evict prefix entries when only search is invalidated', async () => {
+      const product = fakeProduct('ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4');
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockResolvedValue(product) });
+      const adapter = new CachingProductAdapter(inner);
+
+      await adapter.getByIdPrefix('ae09a3ef');
+      adapter.invalidate({ search: true });
+      await adapter.getByIdPrefix('ae09a3ef');
+
+      // Prefix cache still warm — no additional upstream call
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('getStats', () => {
@@ -288,6 +471,7 @@ describe('CachingProductAdapter', () => {
       });
     });
   });
+
   describe('LRU eviction', () => {
     it('evicts oldest search entries when maxSearchEntries exceeded', async () => {
       inner = createFakeAdapter();

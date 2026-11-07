@@ -117,15 +117,56 @@ export class CachingProductAdapter implements ProductDataPort {
     return result;
   }
 
+  /**
+   * Normalize and validate a raw prefix string to a consistent cache key.
+   * Accepts:
+   *  - 4-32 contiguous hexadecimal characters (e.g. '045df58d', 'ae09a3ef5f2c4f148a9ca66c63e028b4')
+   *  - Canonical 8-4-4-4-12 UUID (e.g. 'ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4')
+   * Rejects:
+   *  - Arbitrary embedded hyphens (e.g. 'ae-09-a3-ef', 'ae09--a3ef')
+   *  - Invalid non-hex characters or control characters (e.g. 'ab!cd', 'ae09-zz-a3ef')
+   *  - Malformed UUID shapes
+   * Must match the validation performed by SupabaseProductAdapter.getByIdPrefix.
+   */
+  private static normalizePrefix(prefix: string): string | null {
+    const trimmed = prefix.trim();
+    if (!trimmed) return null;
+
+    // Check if it's a canonical 8-4-4-4-12 UUID
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(trimmed)) {
+      return trimmed.replace(/-/g, '').toLowerCase();
+    }
+
+    // Otherwise must be 4-32 contiguous hexadecimal characters (no hyphens permitted)
+    if (/^[0-9a-fA-F]{4,32}$/.test(trimmed)) {
+      return trimmed.toLowerCase();
+    }
+
+    return null;
+  }
+
   async getByIdPrefix(prefix: string): Promise<Product | null> {
-    const key = `prefix:${prefix}`;
+    const normalized = CachingProductAdapter.normalizePrefix(prefix);
+
+    // Invalid prefixes are rejected locally without touching the cache.
+    if (!normalized) return null;
+
+    const key = `prefix:${normalized}`;
     const cached = this.productCache.get(key);
 
     if (cached && cached.expiresAt > Date.now()) {
       return cached.data;
     }
 
-    const result = await this.inner.getByIdPrefix(prefix);
+    let result: Product | null;
+    try {
+      result = await this.inner.getByIdPrefix(normalized);
+    } catch (err) {
+      // Do not cache RPC failures as null results — propagate so callers can
+      // distinguish a network/DB error from a genuine prefix miss.
+      throw err;
+    }
+
     this.productCache.set(key, {
       data: result,
       expiresAt: Date.now() + this.config.productTtlMs,
@@ -155,6 +196,11 @@ export class CachingProductAdapter implements ProductDataPort {
   /**
    * Invalidate specific cache entries or all caches.
    * Call this when data changes (e.g., after admin updates).
+   *
+   * When specific product IDs are invalidated, all prefix cache entries are
+   * also cleared: a prefix may resolve to any product, so stale positive,
+   * negative and ambiguous prefix results must not persist after a product
+   * is created, activated, deactivated or deleted.
    */
   invalidate(pattern?: {
     search?: boolean;
@@ -176,6 +222,13 @@ export class CachingProductAdapter implements ProductDataPort {
     if (pattern.products) {
       for (const id of pattern.products) {
         this.productCache.delete(String(id));
+      }
+      // Clear all prefix cache entries: any product change can alter prefix
+      // resolution outcomes (new collision, removed unique match, etc.).
+      for (const key of Array.from(this.productCache.keys())) {
+        if (key.startsWith('prefix:')) {
+          this.productCache.delete(key);
+        }
       }
     }
 
