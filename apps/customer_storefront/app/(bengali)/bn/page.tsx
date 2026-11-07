@@ -1,4 +1,7 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { Header } from '../../components/updated/Header';
+import { CampaignGrid } from '../../components/CampaignGrid';
 import { HomeShell } from '../../components/HomeShell';
 import { getHomePageData } from '../../lib/products/getHomePageData';
 import { toProductSlug } from '../../lib/products/slugify';
@@ -31,8 +34,30 @@ export const metadata: Metadata = {
   },
 };
 
-/** Loads Bengali homepage data and renders structured data, the hero preload, and the home shell. */
-export default async function BengaliHomePage() {
+/** Streams the hero while live storefront data loads on the server. */
+export default function BengaliHomePage() {
+  return (
+    <Suspense fallback={<BengaliHomeFallback />}>
+      <BengaliHomeContent />
+    </Suspense>
+  );
+}
+
+function BengaliHomeFallback() {
+  return (
+    <>
+      <Header locale="bn" />
+      <main id="main-content" className="flex-1 overflow-x-clip pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="mx-auto max-w-7xl px-4 pb-4 pt-2 sm:px-6 sm:pb-8 sm:pt-4 lg:pb-10">
+          <CampaignGrid products={[]} locale="bn" />
+        </div>
+      </main>
+    </>
+  );
+}
+
+/** Loads Bengali homepage data and renders structured data and the home shell. */
+async function BengaliHomeContent() {
   const data = await getHomePageData('bn');
 
   const websiteJsonLd = {
@@ -66,7 +91,6 @@ export default async function BengaliHomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd).replace(/</g, '\\u003c') }}
       />
-      <link rel="preload" as="image" href="/images/hero-reference.webp" fetchPriority="high" />
       <HomeShell
         {...data}
         locale="bn"

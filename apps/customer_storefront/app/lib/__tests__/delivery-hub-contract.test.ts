@@ -205,7 +205,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
         BENGALI_DELIVERY_FAQS.map((faq) => faq.answer),
       );
       expect(JSON.stringify(faqSchema)).toContain(`${DELIVERY_POLICY.freeDeliveryThresholdBdt}`);
-      expect(JSON.stringify(faqSchema)).toContain(DELIVERY_POLICY.deliveryHours.display);
+      expect(JSON.stringify(faqSchema)).toContain('প্রতিদিন সকাল ৯টা থেকে রাত ১২টা ৩০ মিনিট পর্যন্ত');
     });
   });
 

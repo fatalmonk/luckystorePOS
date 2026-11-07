@@ -1,9 +1,16 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User as UserIcon, SignOut, Calendar, MapPin, Phone, Package, ArrowLeft, Heart } from '@phosphor-icons/react';
+import { User as UserIcon } from '@phosphor-icons/react/dist/csr/User';
+import { SignOut } from '@phosphor-icons/react/dist/csr/SignOut';
+import { Calendar } from '@phosphor-icons/react/dist/csr/Calendar';
+import { MapPin } from '@phosphor-icons/react/dist/csr/MapPin';
+import { Phone } from '@phosphor-icons/react/dist/csr/Phone';
+import { Package } from '@phosphor-icons/react/dist/csr/Package';
+import { ArrowLeft } from '@phosphor-icons/react/dist/csr/ArrowLeft';
+import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { useAuth } from '../../components/providers/AuthProvider';
 import { useToast } from '../../components/Toast';
 import { Button } from '../../components/ui/Button';
@@ -12,6 +19,7 @@ import { formatBdt } from '../../lib/formatPrice';
 import { getLocalWishlist } from '../../lib/wishlistHelpers';
 import { useCartContext } from '../../components/CartProvider';
 import { loadBuyAgainProducts } from './loadBuyAgainProducts';
+import { getLocaleFromPathname, withLocale } from '../../lib/i18n/config';
 
 interface OrderItem {
   id: string;
@@ -37,6 +45,8 @@ interface Order {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
   const { user, loading, status, error, ensureAuth, signOut } = useAuth();
   const { showToast } = useToast();
   const { addToCart, syncPrices } = useCartContext();
@@ -48,9 +58,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (status === 'anonymous') {
-      router.push(`/login?next=${encodeURIComponent(`/profile${window.location.hash}`)}`);
+      const profilePath = withLocale(`/profile${window.location.hash}`, locale);
+      router.replace(`${withLocale('/login', locale)}?next=${encodeURIComponent(profilePath)}`);
     }
-  }, [status, router]);
+  }, [status, router, locale]);
 
   useEffect(() => {
     const updateWishlist = () => setWishlistCount(getLocalWishlist().length);

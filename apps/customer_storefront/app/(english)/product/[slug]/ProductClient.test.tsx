@@ -109,6 +109,16 @@ describe('ProductClient Brand Linking', () => {
     expect(screen.queryByRole('button', { name: /notify/i })).not.toBeInTheDocument();
   });
 
+  it('localizes shared product-page actions and delivery content for Bengali', () => {
+    render(<ProductClient product={mockProduct} crossSell={[]} locale="bn" />);
+
+    expect(screen.getByRole('heading', { name: 'চট্টগ্রাম স্টোর থেকে পণ্য সরবরাহ' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ডেলিভারি এলাকা ও সাধারণ জিজ্ঞাসা দেখুন →' }))
+      .toHaveAttribute('href', '/bn/delivery');
+    expect(screen.getAllByRole('button', { name: 'ব্যাগে যোগ করুন' })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Add to Cart' })).not.toBeInTheDocument();
+  });
+
   it('renders brand links to dedicated brand hub in English locale', () => {
     render(<ProductClient product={mockProduct} crossSell={[]} locale="en" />);
 
@@ -189,6 +199,32 @@ describe('ProductClient Brand Linking', () => {
 
     expect(screen.queryByRole('heading', { name: 'Nutrition per 100 g' })).not.toBeInTheDocument();
     expect(screen.queryByText('Caramel: 246.23 kcal; Chocolate: 243.95 kcal')).not.toBeInTheDocument();
+  });
+
+  it('renders translated Fortune enrichment on Bengali pages without unsupported packaging claims', () => {
+    const enrichment = getEnrichedProductData('41c9ad69')!;
+    const { container } = render(
+      <ProductClient
+        product={{
+          ...mockProduct,
+          id: createProductId('41c9ad69'),
+          name: enrichment.exactName,
+          description: enrichment.exactName,
+          brand: enrichment.brand,
+          unit: enrichment.netQuantity,
+        }}
+        crossSell={[]}
+        locale="bn"
+        enrichment={enrichment}
+      />,
+    );
+
+    expect(screen.getByText(/চকবাজার, চট্টগ্রামের লাকি স্টোর থেকে Fortune Basmati Rice 1KG/)).toBeInTheDocument();
+    expect(screen.getByText('প্যাকেটের তথ্য অনুযায়ী: Fortune Basmati Rice 1KG')).toBeInTheDocument();
+    expect(screen.getByText('তাপ থেকে দূরে ঠান্ডা ও শুষ্ক স্থানে রাখুন।')).toBeInTheDocument();
+    expect(screen.getByText('চকবাজার থেকে ১ কিমি ব্যাসার্ধের মধ্যে ডেলিভারি হয়। ৳৫০০ বা তার বেশি অর্ডারে ডেলিভারি ফ্রি; এর কমে ৳৪০ চার্জ।')).toBeInTheDocument();
+    expect(container).not.toHaveTextContent(/factory-sealed|Produced and distributed by Fortune|Store in a cool, dry place/i);
+    expect(container.textContent).toContain('পেমেন্টের আগে কি Fortune Basmati Rice 1KG হাতে পেয়ে পরীক্ষা করতে পারব?');
   });
 
   it('renders brand links to dedicated brand hub in Bengali locale', () => {

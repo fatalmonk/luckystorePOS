@@ -2,7 +2,7 @@
 
 import React, { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import Link from 'next/link';
-import { CaretRight } from '@phosphor-icons/react';
+import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
 import { JsonLd } from '../seo/JsonLd';
 
 const SITE_URL = 'https://www.luckystore1947.com';

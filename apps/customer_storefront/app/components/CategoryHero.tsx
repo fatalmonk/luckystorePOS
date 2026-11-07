@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element -- Use the CDN's generated responsive srcset and AVIF sources. */
 
 import React, { useId, type ReactNode } from 'react';
-import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
+import { ArrowLeft } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
 import { Button } from './ui/Button';
 
 export interface CategoryHeroProps {

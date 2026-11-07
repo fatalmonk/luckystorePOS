@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
+const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig = {
+  // Keep Turbopack and Webpack dev artifacts separate to prevent stale/mixed
+  // client and server output when switching compilers. Production stays `.next`.
+  distDir: process.env.NEXT_DEV_DIST_DIR || '.next',
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
   devIndicators: false,
@@ -18,7 +22,16 @@ const nextConfig = {
     remotePatterns: [],
   },
   experimental: {
-    optimizePackageImports: ['@supabase/supabase-js'],
+    optimizePackageImports: ['@supabase/supabase-js', '@phosphor-icons/react'],
+    ...(isDev ? {
+      // Keep dev route graphs disk-backed and discard unreachable routes promptly.
+      turbopackFileSystemCacheForDev: true,
+      turbopackMemoryEviction: 'full',
+      turbopackGc: { rootTtlMs: 0 },
+      // Avoid loading every page entry into memory before it is requested.
+      preloadEntriesOnStart: false,
+    } : {}),
+    webpackMemoryOptimizations: true,
     inlineCss: true,
   },
   async redirects() {

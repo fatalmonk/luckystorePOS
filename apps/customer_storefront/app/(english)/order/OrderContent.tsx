@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { WhatsappLogo } from '@phosphor-icons/react';
+import { WhatsappLogo } from '@phosphor-icons/react/dist/csr/WhatsappLogo';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/Toast';
 import { formatBdt } from '../../lib/formatPrice';

@@ -59,6 +59,13 @@ describe('Header catalog filter strip', () => {
     expect(cartButtons.find((button) => button.dataset.compact === 'false')).toBeInTheDocument();
   });
 
+  it('keeps the Bengali wishlist link in the Bengali route space', () => {
+    mockPathname = '/bn';
+    render(<Header locale="bn" />);
+
+    expect(screen.getByRole('link', { name: 'পছন্দের তালিকা' })).toHaveAttribute('href', '/bn/wishlist');
+  });
+
   it('exposes the desktop category strip and quick rail on catalog routes', () => {
     render(<Header />);
 

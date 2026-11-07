@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, MagnifyingGlass, MapPin } from '@phosphor-icons/react';
+import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
+import { MapPin } from '@phosphor-icons/react/dist/csr/MapPin';
 import { MarketPanel } from './ui/MarketSurface';
 import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import type { Product } from '../lib/types';
@@ -37,6 +39,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               alt=""
               fill
               priority
+              fetchPriority="high"
               sizes="100vw"
               className="object-cover object-[82%_center] sm:object-center"
             />

@@ -51,6 +51,15 @@ describe('Product metadata identity', () => {
     expect(item.specifications).toContainEqual(expect.objectContaining({ label: 'Energy', value: '326.34 kcal per 100g' }));
   });
 
+  it('does not claim sealed packaging or seal inspection for the loose Miniket rice item', () => {
+    const item = getEnrichedProductData('0e9bc628')!;
+    expect(item.exactName).toBe('Miniket C (Nouka) Loose');
+    expect(item.highlights?.join(' ')).not.toMatch(/factory-sealed|consumer packaging/i);
+    expect(item.faqs?.[0]?.answer).not.toMatch(/packaging condition|seals/i);
+    expect(item.storageInstructions).toBe('Store in a cool, dry place away from direct heat and sunlight.');
+    expect(item.usageDirections).toBeUndefined();
+  });
+
   it('uses the confirmed half-liter quantity and a storefront badge with authentic 500ml packshot', () => {
     const item = getEnrichedProductData('eca88367')!;
     expect(item.netQuantity).toBe('500 ml');

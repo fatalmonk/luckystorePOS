@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { Heart } from '@phosphor-icons/react';
+import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { formatBdt } from '../lib/formatPrice';
 import { getDisplayProductUnit } from '../lib/products/displayProductUnit';
 import { getDiscountBadgePercentage } from '../lib/deals';

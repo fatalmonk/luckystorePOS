@@ -1,7 +1,7 @@
 'use client';
 
 import React, { type SelectHTMLAttributes, forwardRef, useId } from 'react';
-import { CaretDown } from '@phosphor-icons/react';
+import { CaretDown } from '@phosphor-icons/react/dist/csr/CaretDown';
 
 export interface SelectOption {
   value: string;

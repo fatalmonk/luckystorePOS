@@ -19,7 +19,7 @@
       "@testing-library/jest-dom"
     ],
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -40,10 +40,14 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    ".next-turbo/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
-    "next-env.d.ts",
     "dist/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "next-env.d.ts",
+    ".next-webpack/types/**/*.ts",
+    ".next-turbo/dev/types/**/*.ts",
+    ".next-webpack/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

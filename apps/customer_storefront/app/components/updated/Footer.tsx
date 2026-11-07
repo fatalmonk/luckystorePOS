@@ -1,14 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowRight,
-  Phone,
-  EnvelopeSimple,
-  FacebookLogo,
-  InstagramLogo,
-  WhatsappLogo,
-} from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+import { Phone } from '@phosphor-icons/react/dist/ssr/Phone';
+import { EnvelopeSimple } from '@phosphor-icons/react/dist/ssr/EnvelopeSimple';
+import { FacebookLogo } from '@phosphor-icons/react/dist/ssr/FacebookLogo';
+import { InstagramLogo } from '@phosphor-icons/react/dist/ssr/InstagramLogo';
+import { WhatsappLogo } from '@phosphor-icons/react/dist/ssr/WhatsappLogo';
 import { Logo } from '../ui/Logo';
 
 import type { Locale } from '../../lib/i18n/config';

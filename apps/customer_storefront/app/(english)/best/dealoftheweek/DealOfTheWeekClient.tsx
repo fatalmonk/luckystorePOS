@@ -2,7 +2,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkle, ShieldCheck, Tag, ArrowRight, ShoppingBag } from '@phosphor-icons/react';
+import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle';
+import { ShieldCheck } from '@phosphor-icons/react/dist/csr/ShieldCheck';
+import { Tag } from '@phosphor-icons/react/dist/csr/Tag';
+import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
+import { ShoppingBag } from '@phosphor-icons/react/dist/csr/ShoppingBag';
 import type { WeeklyDealProduct, WeeklyDealsDegradedReason } from '../../../lib/deals';
 import { GridProductCard } from '../../../components/GridProductCard';
 import { DealCountdown } from '../../../components/DealCountdown';

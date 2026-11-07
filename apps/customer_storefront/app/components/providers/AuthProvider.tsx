@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { usePathname } from 'next/navigation';
 import type { User, Session } from '@supabase/supabase-js';
 import type { startAuthRuntime } from './authRuntime';
+import { stripLocalePrefix } from '@/app/lib/i18n/config';
 
 type AuthStatus = 'unresolved' | 'loading' | 'authenticated' | 'anonymous' | 'error';
 interface AuthContextType {
@@ -31,6 +32,7 @@ function loadAuthRuntime() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const authPathname = pathname ? stripLocalePrefix(pathname) : pathname;
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<AuthStatus>('unresolved');
   const [error, setError] = useState<string | null>(null);
@@ -79,10 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (AUTH_ROUTES.some((route) => pathname === route || pathname?.startsWith(`${route}/`))) {
+    if (AUTH_ROUTES.some((route) => authPathname === route || authPathname?.startsWith(`${route}/`))) {
       void ensureAuth().catch(() => {});
     }
-  }, [pathname, ensureAuth]);
+  }, [authPathname, ensureAuth]);
 
   const signOut = useCallback(async () => {
     await ensureAuth();

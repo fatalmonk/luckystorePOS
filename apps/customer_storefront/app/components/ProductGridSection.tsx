@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { CaretRight } from '@phosphor-icons/react';
+import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
 import { GridProductCard } from './GridProductCard';
 import type { Product } from '../lib/types';
 import { trackViewItemList } from '../lib/analytics';

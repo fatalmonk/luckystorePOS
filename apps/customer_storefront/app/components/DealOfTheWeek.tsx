@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft } from '@phosphor-icons/react/dist/csr/CaretLeft';
+import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';

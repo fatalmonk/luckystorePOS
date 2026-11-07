@@ -87,7 +87,7 @@ export default function BengaliAboutPage() {
                 আমাদের নিজস্ব কর্মীরা দোকান থেকে {DELIVERY_POLICY.radiusKm} কিমির মধ্যে ডেলিভারি দেন। ৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ডেলিভারি ফ্রি, তার কম হলে ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}।
               </p>
               <p>
-                দোকান খোলা থাকে {DELIVERY_POLICY.deliveryHours.display}। এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়।
+                দোকান খোলা থাকে প্রতিদিন সকাল ৯টা থেকে রাত ১২টা ৩০ মিনিট পর্যন্ত। এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়।
                 পণ্য দেখে নেওয়ার পর ক্যাশ অন ডেলিভারি বা দরজায় bKash-এ টাকা দিতে পারেন।
               </p>
               <p>

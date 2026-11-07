@@ -8,7 +8,7 @@ import React, {
   type ReactNode,
   type HTMLAttributes,
 } from 'react';
-import { CaretDown } from '@phosphor-icons/react';
+import { CaretDown } from '@phosphor-icons/react/dist/csr/CaretDown';
 
 interface AccordionContextType {
   openValues: Set<string>;

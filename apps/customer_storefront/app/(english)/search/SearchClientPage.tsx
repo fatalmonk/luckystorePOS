@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
-import { MagnifyingGlass, Clock, Fire, X } from '@phosphor-icons/react';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
+import { Clock } from '@phosphor-icons/react/dist/csr/Clock';
+import { Fire } from '@phosphor-icons/react/dist/csr/Fire';
+import { X } from '@phosphor-icons/react/dist/csr/X';
 import { getCategoryIcon } from '../../components/icons/CategoryIcons';
 
 const POPULAR_SEARCHES = ['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bread', 'Ice Cream', 'Snacks', 'Tea & Coffee'];

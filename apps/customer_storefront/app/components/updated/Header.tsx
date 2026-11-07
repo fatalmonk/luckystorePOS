@@ -3,7 +3,15 @@
 import React, { useCallback, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Heart, ArrowLeft, X, CaretDown, CaretRight, List, Sun, Moon, ArrowRight } from '@phosphor-icons/react';
+import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
+import { ArrowLeft } from '@phosphor-icons/react/dist/csr/ArrowLeft';
+import { X } from '@phosphor-icons/react/dist/csr/X';
+import { CaretDown } from '@phosphor-icons/react/dist/csr/CaretDown';
+import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
+import { List } from '@phosphor-icons/react/dist/csr/List';
+import { Sun } from '@phosphor-icons/react/dist/csr/Sun';
+import { Moon } from '@phosphor-icons/react/dist/csr/Moon';
+import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
 import { motion } from 'motion/react';
 import { AppDrawer } from '../AppDrawer';
 import { DesktopQuickRail } from '../DesktopQuickRail';
@@ -307,6 +315,8 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
 
           <form onSubmit={handleSearchSubmit} className="flex-1 relative">
             <input
+              id="mobile-header-search"
+              name="q"
               type="search"
               inputMode="search"
               value={searchQuery}
@@ -496,7 +506,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
 
           {/* Wishlist Link */}
           <Link
-            href="/wishlist"
+            href={withLocale('/wishlist', currentLocale)}
             prefetch={false}
             className="hidden h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-label={dict.footer.wishlist}

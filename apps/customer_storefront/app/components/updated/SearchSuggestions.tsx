@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Fire, Clock } from '@phosphor-icons/react';
+import { Fire } from '@phosphor-icons/react/dist/csr/Fire';
+import { Clock } from '@phosphor-icons/react/dist/csr/Clock';
 
 interface SearchSuggestionsProps {
   query: string;

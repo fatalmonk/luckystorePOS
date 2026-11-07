@@ -1,24 +1,20 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextConfig from 'eslint-config-next';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 const eslintConfig = [
-  ...compat.extends('next'),
+  ...nextConfig,
   {
+    plugins: { 'react-hooks': reactHooks },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      // Preserve the existing lint contract; this newer compiler rule flags
+      // established state hydration effects across the app.
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   {
-    ignores: ['.next/**', 'node_modules/**', 'dist/**'],
+    ignores: ['.next/**', '.next-turbo/**', '.next-webpack/**', 'node_modules/**', 'dist/**'],
   },
 ];
 
