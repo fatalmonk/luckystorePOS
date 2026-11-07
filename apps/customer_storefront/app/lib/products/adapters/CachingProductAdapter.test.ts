@@ -707,6 +707,51 @@ describe('CachingProductAdapter', () => {
       expect(adapter.getStats().searchEntries).toBe(1);
     });
 
+    it('starts a fresh fetch for callers arriving after invalidate() instead of joining the stale in-flight', async () => {
+      const gate = deferred<PaginatedProducts>();
+      inner = createFakeAdapter({
+        search: vi.fn()
+          .mockReturnValueOnce(gate.promise)
+          .mockResolvedValueOnce({ products: [fakeProduct('fresh')], hasMore: false }),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const staleLeader = adapter.search({ query: 'tea' });
+      adapter.invalidate({ search: true });
+
+      // Post-invalidation caller must not join the pre-invalidation leader.
+      const postInvalidate = adapter.search({ query: 'tea' });
+      gate.resolve({ products: [fakeProduct('stale')], hasMore: false });
+
+      await expect(staleLeader).resolves.toEqual({ products: [fakeProduct('stale')], hasMore: false });
+      await expect(postInvalidate).resolves.toEqual({ products: [fakeProduct('fresh')], hasMore: false });
+      expect(inner.search).toHaveBeenCalledTimes(2);
+      // The committed entry is the fresh one, not the stale leader's result.
+      expect(adapter.getStats().searchEntries).toBe(1);
+      const cached = await adapter.search({ query: 'tea' });
+      expect(cached.products[0]?.name).toBe('Product fresh');
+      expect(inner.search).toHaveBeenCalledTimes(2);
+    });
+
+    it('propagates category invalidation to an inner adapter with its own category cache', async () => {
+      const invalidateCategoriesCache = vi.fn();
+      inner = createFakeAdapter({
+        getCategories: vi.fn().mockResolvedValue([]),
+        invalidateCategoriesCache,
+      } as Partial<ProductDataPort> as ProductDataPort);
+      const adapter = new CachingProductAdapter(inner);
+
+      adapter.invalidate({ categories: true });
+      expect(invalidateCategoriesCache).toHaveBeenCalledTimes(1);
+
+      adapter.invalidate();
+      expect(invalidateCategoriesCache).toHaveBeenCalledTimes(2);
+
+      // Unrelated domains must not touch the inner category cache.
+      adapter.invalidate({ search: true });
+      expect(invalidateCategoriesCache).toHaveBeenCalledTimes(2);
+    });
+
     it('serves subsequent calls from cache once an in-flight request settles', async () => {
       const gate = deferred<Product | null>();
       inner = createFakeAdapter({ getById: vi.fn().mockReturnValue(gate.promise) });

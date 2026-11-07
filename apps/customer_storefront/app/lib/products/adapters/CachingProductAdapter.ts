@@ -92,11 +92,25 @@ export class CachingProductAdapter implements ProductDataPort {
     const existing = this.inFlight.get(key);
     if (existing) return existing as Promise<T>;
 
-    const promise = fetch().finally(() => {
-      this.inFlight.delete(key);
+    let promise!: Promise<T>;
+    promise = fetch().finally(() => {
+      // Delete only our own entry: invalidate() may have already removed it,
+      // and a newer leader for the same key must survive.
+      if (this.inFlight.get(key) === promise) {
+        this.inFlight.delete(key);
+      }
     });
     this.inFlight.set(key, promise);
     return promise;
+  }
+
+  /** Drop in-flight entries whose keys belong to the invalidated domains. */
+  private dropInFlight(prefixes: string[]): void {
+    for (const key of Array.from(this.inFlight.keys())) {
+      if (prefixes.some((p) => key.startsWith(p))) {
+        this.inFlight.delete(key);
+      }
+    }
   }
 
   /**
@@ -251,7 +265,9 @@ export class CachingProductAdapter implements ProductDataPort {
     categories?: boolean;
   }): void {
     // Bump domain generations first so in-flight fetches started before this
-    // call cannot commit stale results into the cleared caches when they settle.
+    // call cannot commit stale results into the cleared caches when they
+    // settle, then drop the matching in-flight entries so callers arriving
+    // after invalidation start a fresh fetch instead of joining the stale one.
     if (!pattern) {
       // Invalidate all
       this.generations.search += 1;
@@ -260,12 +276,15 @@ export class CachingProductAdapter implements ProductDataPort {
       this.searchCache.clear();
       this.productCache.clear();
       this.categoryCache.clear();
+      this.dropInFlight(['search:', 'product:', 'inflight:', 'categories:']);
+      this.invalidateInnerCategoriesCache();
       return;
     }
 
     if (pattern.search) {
       this.generations.search += 1;
       this.searchCache.clear();
+      this.dropInFlight(['search:']);
     }
 
     if (pattern.products) {
@@ -282,11 +301,26 @@ export class CachingProductAdapter implements ProductDataPort {
           this.productCache.delete(key);
         }
       }
+      this.dropInFlight(['product:', 'inflight:', 'search:']);
     }
 
     if (pattern.categories) {
       this.generations.category += 1;
       this.categoryCache.clear();
+      this.dropInFlight(['categories:']);
+      this.invalidateInnerCategoriesCache();
+    }
+  }
+
+  /**
+   * Propagate category invalidation into the inner adapter when it keeps its
+   * own bounded category cache (SupabaseProductAdapter), so its 60s TTL cannot
+   * outlive the contract that invalidate({ categories: true }) implies.
+   */
+  private invalidateInnerCategoriesCache(): void {
+    const inner = this.inner as { invalidateCategoriesCache?: () => void };
+    if (typeof inner.invalidateCategoriesCache === 'function') {
+      inner.invalidateCategoriesCache();
     }
   }
 

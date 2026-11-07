@@ -114,15 +114,21 @@ export function createProductRepository(
   const brandParser = options?.brandParser ?? new RuleBasedBrandParser();
   const emojiResolver = options?.emojiResolver ?? new WordMatchEmojiResolver();
 
+  const cachingEnabled = options?.enableCache !== false;
+
   let adapter: ProductDataPort = new SupabaseProductAdapter(
     supabaseClient,
     brandParser,
-    emojiResolver
+    emojiResolver,
+    undefined,
+    // enableCache: false must mean fresh reads: disable the adapter-internal
+    // bounded category cache as well, not just the decorator.
+    cachingEnabled ? undefined : { categoriesTtlMs: 0 }
   );
 
   let cacheControl: CacheControl = NOOP_CACHE_CONTROL;
 
-  if (options?.enableCache !== false) {
+  if (cachingEnabled) {
     const cachingAdapter = new CachingProductAdapter(adapter);
     adapter = cachingAdapter;
     cacheControl = cachingAdapter;

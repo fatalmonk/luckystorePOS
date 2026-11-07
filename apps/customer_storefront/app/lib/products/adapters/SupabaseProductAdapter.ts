@@ -115,6 +115,9 @@ export class SupabaseProductAdapter implements ProductDataPort {
   private readonly now: () => number;
   private categoriesCache: { data: Category[]; expiresAt: number } | null = null;
   private categoriesInFlight: Promise<Category[]> | null = null;
+  // Bumped by invalidateCategoriesCache(); a pending fetch must not commit its
+  // pre-invalidation result into the cleared cache.
+  private categoriesGeneration = 0;
 
   constructor(
     private readonly supabase: SupabaseClient,
@@ -278,6 +281,18 @@ export class SupabaseProductAdapter implements ProductDataPort {
     return this.getById(createProductId(rawId));
   }
 
+  /**
+   * Clear the bounded category cache and any pending fetch. Called by
+   * CachingProductAdapter.invalidate({ categories: true }) so the decorator's
+   * invalidation contract also covers this adapter's internal cache; the next
+   * getCategories() performs a fresh read.
+   */
+  invalidateCategoriesCache(): void {
+    this.categoriesGeneration += 1;
+    this.categoriesCache = null;
+    this.categoriesInFlight = null;
+  }
+
   async getCategories(): Promise<Category[]> {
     // Bounded instance cache: prevents repeated identical PostgREST reads when
     // search()/getById() run multiple times per request or per warm instance.
@@ -291,17 +306,27 @@ export class SupabaseProductAdapter implements ProductDataPort {
       return this.categoriesInFlight;
     }
 
-    this.categoriesInFlight = this.fetchCategories()
+    const startedAtGeneration = this.categoriesGeneration;
+    let promise!: Promise<Category[]>;
+    promise = this.fetchCategories()
       .then((data) => {
-        this.categoriesCache = { data, expiresAt: this.now() + this.categoriesTtlMs };
+        // A concurrent invalidateCategoriesCache() must not be undone by this
+        // pre-invalidation result. Callers already waiting still receive it.
+        if (startedAtGeneration === this.categoriesGeneration) {
+          this.categoriesCache = { data, expiresAt: this.now() + this.categoriesTtlMs };
+        }
         return data;
       })
       .finally(() => {
-        // Failures are never cached: the next call retries the read.
-        this.categoriesInFlight = null;
+        // Failures are never cached: the next call retries the read. Clear only
+        // our own slot so a post-invalidation fetch is not discarded.
+        if (this.categoriesInFlight === promise) {
+          this.categoriesInFlight = null;
+        }
       });
+    this.categoriesInFlight = promise;
 
-    return this.categoriesInFlight;
+    return promise;
   }
 
   private async fetchCategories(): Promise<Category[]> {

@@ -670,5 +670,69 @@ describe('SupabaseProductAdapter', () => {
 
       expect(mock.orderCallCount()).toBe(2);
     });
+
+    it('invalidateCategoriesCache clears the warm cache and a pending fetch does not recommit stale data', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      // Warm the cache.
+      const warm = adapter.getCategories();
+      mock.settle();
+      await warm;
+      expect(mock.orderCallCount()).toBe(1);
+
+      // Start a fetch after expiry-like invalidation, then invalidate mid-flight.
+      adapter.invalidateCategoriesCache();
+      const pending = adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(2); // fresh read started, not joined stale slot
+      adapter.invalidateCategoriesCache(); // admin update lands while fetch pending
+      mock.settle();
+      // Waiting caller still receives the resolved value.
+      await expect(pending).resolves.toBeDefined();
+
+      // The stale in-flight result must not have repopulated the cache.
+      const afterInvalidate = adapter.getCategories();
+      mock.settle();
+      await afterInvalidate;
+      expect(mock.orderCallCount()).toBe(3);
+    });
+
+    it('never serves from cache with categoriesTtlMs 0 (enableCache: false path)', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 0,
+      });
+
+      const first = adapter.getCategories();
+      mock.settle();
+      await first;
+
+      const second = adapter.getCategories();
+      mock.settle();
+      await second;
+
+      expect(mock.orderCallCount()).toBe(2);
+    });
+
+    it('invalidateCategoriesCache on a warm cache forces the next call to refetch', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      const warm = adapter.getCategories();
+      mock.settle();
+      await warm;
+      await adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(1); // warm hit
+
+      adapter.invalidateCategoriesCache();
+      const refetch = adapter.getCategories();
+      mock.settle();
+      await refetch;
+      expect(mock.orderCallCount()).toBe(2);
+    });
   });
 });
