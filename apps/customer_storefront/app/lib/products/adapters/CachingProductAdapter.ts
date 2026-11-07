@@ -75,11 +75,56 @@ export class CachingProductAdapter implements ProductDataPort {
   private readonly searchCache = new Map<string, CacheEntry<PaginatedProducts>>();
   private readonly productCache = new Map<string, CacheEntry<Product | null>>();
   private readonly categoryCache = new Map<string, CacheEntry<Category[]>>();
+  // Coalesces concurrent identical misses into a single inner call. Entries are
+  // removed on settle; failures are never cached.
+  private readonly inFlight = new Map<string, Promise<unknown>>();
+  // Bumped per cache domain on invalidate(); in-flight responses captured under
+  // an older generation must not repopulate caches cleared while they were
+  // pending. Domain counters keep unrelated caches committable.
+  private readonly generations = { search: 0, product: 0, category: 0 };
 
   constructor(
     private readonly inner: ProductDataPort,
     private readonly config: CacheConfig = DEFAULT_CONFIG
   ) {}
+
+  private async deduped<T>(key: string, fetch: () => Promise<T>): Promise<T> {
+    const existing = this.inFlight.get(key);
+    if (existing) return existing as Promise<T>;
+
+    let promise!: Promise<T>;
+    promise = fetch().finally(() => {
+      // Delete only our own entry: invalidate() may have already removed it,
+      // and a newer leader for the same key must survive.
+      if (this.inFlight.get(key) === promise) {
+        this.inFlight.delete(key);
+      }
+    });
+    this.inFlight.set(key, promise);
+    return promise;
+  }
+
+  /** Drop in-flight entries whose keys belong to the invalidated domains. */
+  private dropInFlight(prefixes: string[]): void {
+    for (const key of Array.from(this.inFlight.keys())) {
+      if (prefixes.some((p) => key.startsWith(p))) {
+        this.inFlight.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Guard a cache write against invalidation races: commit only when no
+   * invalidate() touching this domain ran between the inner fetch starting and
+   * settling. The value is still returned to the waiting callers either way.
+   */
+  private commitIfCurrent(
+    domain: keyof typeof this.generations,
+    startedAtGeneration: number,
+    commit: () => void
+  ): void {
+    if (startedAtGeneration === this.generations[domain]) commit();
+  }
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const key = hashCriteria(criteria);
@@ -89,14 +134,18 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.search(criteria);
-    this.searchCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.searchTtlMs,
+    const startedAtGeneration = this.generations.search;
+    return this.deduped(`search:${key}`, async () => {
+      const result = await this.inner.search(criteria);
+      this.commitIfCurrent('search', startedAtGeneration, () => {
+        this.searchCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.searchTtlMs,
+        });
+        evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
+      });
+      return result;
     });
-    evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
-
-    return result;
   }
 
   async getById(id: ProductId): Promise<Product | null> {
@@ -107,14 +156,18 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.getById(id);
-    this.productCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.productTtlMs,
+    const startedAtGeneration = this.generations.product;
+    return this.deduped(`product:${key}`, async () => {
+      const result = await this.inner.getById(id);
+      this.commitIfCurrent('product', startedAtGeneration, () => {
+        this.productCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.productTtlMs,
+        });
+        evictIfNeeded(this.productCache, this.config.maxProductEntries);
+      });
+      return result;
     });
-    evictIfNeeded(this.productCache, this.config.maxProductEntries);
-
-    return result;
   }
 
   /**
@@ -158,22 +211,22 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    let result: Product | null;
-    try {
-      result = await this.inner.getByIdPrefix(normalized);
-    } catch (err) {
-      // Do not cache RPC failures as null results — propagate so callers can
-      // distinguish a network/DB error from a genuine prefix miss.
-      throw err;
-    }
+    const startedAtGeneration = this.generations.product;
+    return this.deduped(`inflight:${key}`, async () => {
+      // RPC failures propagate and are never cached as null results, so
+      // callers can distinguish a network/DB error from a genuine prefix miss.
+      const result = await this.inner.getByIdPrefix(normalized);
 
-    this.productCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.productTtlMs,
+      this.commitIfCurrent('product', startedAtGeneration, () => {
+        this.productCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.productTtlMs,
+        });
+        evictIfNeeded(this.productCache, this.config.maxProductEntries);
+      });
+
+      return result;
     });
-    evictIfNeeded(this.productCache, this.config.maxProductEntries);
-
-    return result;
   }
 
   async getCategories(): Promise<Category[]> {
@@ -184,13 +237,17 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.getCategories();
-    this.categoryCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.categoryTtlMs,
+    const startedAtGeneration = this.generations.category;
+    return this.deduped('categories:all', async () => {
+      const result = await this.inner.getCategories();
+      this.commitIfCurrent('category', startedAtGeneration, () => {
+        this.categoryCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.categoryTtlMs,
+        });
+      });
+      return result;
     });
-
-    return result;
   }
 
   /**
@@ -207,19 +264,33 @@ export class CachingProductAdapter implements ProductDataPort {
     products?: ProductId[];
     categories?: boolean;
   }): void {
+    // Bump domain generations first so in-flight fetches started before this
+    // call cannot commit stale results into the cleared caches when they
+    // settle, then drop the matching in-flight entries so callers arriving
+    // after invalidation start a fresh fetch instead of joining the stale one.
     if (!pattern) {
       // Invalidate all
+      this.generations.search += 1;
+      this.generations.product += 1;
+      this.generations.category += 1;
       this.searchCache.clear();
       this.productCache.clear();
       this.categoryCache.clear();
+      this.dropInFlight(['search:', 'product:', 'inflight:', 'categories:']);
+      this.invalidateInnerCategoriesCache();
       return;
     }
 
     if (pattern.search) {
+      this.generations.search += 1;
       this.searchCache.clear();
+      this.dropInFlight(['search:']);
     }
 
     if (pattern.products) {
+      // Product changes can also alter search result composition.
+      this.generations.product += 1;
+      this.generations.search += 1;
       for (const id of pattern.products) {
         this.productCache.delete(String(id));
       }
@@ -230,10 +301,26 @@ export class CachingProductAdapter implements ProductDataPort {
           this.productCache.delete(key);
         }
       }
+      this.dropInFlight(['product:', 'inflight:', 'search:']);
     }
 
     if (pattern.categories) {
+      this.generations.category += 1;
       this.categoryCache.clear();
+      this.dropInFlight(['categories:']);
+      this.invalidateInnerCategoriesCache();
+    }
+  }
+
+  /**
+   * Propagate category invalidation into the inner adapter when it keeps its
+   * own bounded category cache (SupabaseProductAdapter), so its 60s TTL cannot
+   * outlive the contract that invalidate({ categories: true }) implies.
+   */
+  private invalidateInnerCategoriesCache(): void {
+    const inner = this.inner as { invalidateCategoriesCache?: () => void };
+    if (typeof inner.invalidateCategoriesCache === 'function') {
+      inner.invalidateCategoriesCache();
     }
   }
 

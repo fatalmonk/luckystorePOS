@@ -547,4 +547,192 @@ describe('SupabaseProductAdapter', () => {
       expect(resolverCalls).toHaveLength(1);
     });
   });
+
+  describe('getCategories bounded cache', () => {
+    function createDeferredCategoriesMock() {
+      let resolveCategories: (v: { data: any[]; error: any }) => void = () => {};
+      const categories = [
+        { id: 'cat-1', name: 'Tea & Coffee', slug: 'tea-and-coffee', emoji: '☕', parent_id: null, display_order: 1, active: true },
+      ];
+      const orderCalls: number[] = [];
+      const client: any = {
+        from: vi.fn((table: string) => {
+          if (table === 'categories') {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              order: vi.fn(() => {
+                orderCalls.push(Date.now());
+                return new Promise((res) => { resolveCategories = res; });
+              }),
+            };
+          }
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn() };
+        }),
+        rpc: vi.fn(),
+      };
+      return {
+        client,
+        categories,
+        orderCallCount: () => orderCalls.length,
+        settle: (result?: { data?: any[]; error?: any }) =>
+          resolveCategories({ data: result?.data ?? categories, error: result?.error ?? null }),
+      };
+    }
+
+    it('serves warm reads from cache without a second PostgREST call (cold→warm)', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      const first = adapter.getCategories();
+      mock.settle();
+      const cold = await first;
+
+      const warm = await adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(1);
+      expect(warm).toEqual(cold);
+    });
+
+    it('coalesces concurrent cold requests into a single RPC', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      const [a, b, c] = [adapter.getCategories(), adapter.getCategories(), adapter.getCategories()];
+      mock.settle();
+      const results = await Promise.all([a, b, c]);
+
+      expect(mock.orderCallCount()).toBe(1);
+      expect(results[0]).toEqual(results[1]);
+      expect(results[1]).toEqual(results[2]);
+    });
+
+    it('refetches after the TTL expires', async () => {
+      const mock = createDeferredCategoriesMock();
+      let clock = 1_000_000;
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 500,
+        now: () => clock,
+      });
+
+      const first = adapter.getCategories();
+      mock.settle();
+      await first;
+      expect(mock.orderCallCount()).toBe(1);
+
+      clock += 501;
+      const second = adapter.getCategories();
+      mock.settle();
+      await second;
+      expect(mock.orderCallCount()).toBe(2);
+    });
+
+    it('does not cache failures and recovers on the next call', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      const failing = adapter.getCategories();
+      mock.settle({ error: { message: 'network down' } });
+      await expect(failing).rejects.toThrow('Failed to fetch categories');
+
+      // Recovery: next call retries and succeeds, and the result is cached.
+      const retry = adapter.getCategories();
+      mock.settle();
+      const recovered = await retry;
+      expect(mock.orderCallCount()).toBe(2);
+      expect(recovered).toHaveLength(1);
+
+      await adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(2);
+    });
+
+    it('keeps caches isolated between adapter instances (store boundary)', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapterA = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, 'store-a', {
+        categoriesTtlMs: 60_000,
+      });
+      const adapterB = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, 'store-b', {
+        categoriesTtlMs: 60_000,
+      });
+
+      const first = adapterA.getCategories();
+      mock.settle();
+      await first;
+
+      const second = adapterB.getCategories();
+      mock.settle();
+      await second;
+
+      expect(mock.orderCallCount()).toBe(2);
+    });
+
+    it('invalidateCategoriesCache clears the warm cache and a pending fetch does not recommit stale data', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      // Warm the cache.
+      const warm = adapter.getCategories();
+      mock.settle();
+      await warm;
+      expect(mock.orderCallCount()).toBe(1);
+
+      // Start a fetch after expiry-like invalidation, then invalidate mid-flight.
+      adapter.invalidateCategoriesCache();
+      const pending = adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(2); // fresh read started, not joined stale slot
+      adapter.invalidateCategoriesCache(); // admin update lands while fetch pending
+      mock.settle();
+      // Waiting caller still receives the resolved value.
+      await expect(pending).resolves.toBeDefined();
+
+      // The stale in-flight result must not have repopulated the cache.
+      const afterInvalidate = adapter.getCategories();
+      mock.settle();
+      await afterInvalidate;
+      expect(mock.orderCallCount()).toBe(3);
+    });
+
+    it('never serves from cache with categoriesTtlMs 0 (enableCache: false path)', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 0,
+      });
+
+      const first = adapter.getCategories();
+      mock.settle();
+      await first;
+
+      const second = adapter.getCategories();
+      mock.settle();
+      await second;
+
+      expect(mock.orderCallCount()).toBe(2);
+    });
+
+    it('invalidateCategoriesCache on a warm cache forces the next call to refetch', async () => {
+      const mock = createDeferredCategoriesMock();
+      const adapter = new SupabaseProductAdapter(mock.client, fakeBrandParser, fakeEmojiResolver, undefined, {
+        categoriesTtlMs: 60_000,
+      });
+
+      const warm = adapter.getCategories();
+      mock.settle();
+      await warm;
+      await adapter.getCategories();
+      expect(mock.orderCallCount()).toBe(1); // warm hit
+
+      adapter.invalidateCategoriesCache();
+      const refetch = adapter.getCategories();
+      mock.settle();
+      await refetch;
+      expect(mock.orderCallCount()).toBe(2);
+    });
+  });
 });

@@ -96,13 +96,39 @@ function mapRowToCategory(row: CategoryRow, emojiResolver?: EmojiResolver): Cate
   };
 }
 
+export interface SupabaseProductAdapterOptions {
+  /**
+   * TTL in ms for the instance-level category cache used by internal
+   * search()/getById() emoji resolution. Default: 60_000 (60s).
+   * The cache is per adapter instance, so store/tenant boundaries follow the
+   * adapter's own storeId and Supabase client.
+   */
+  categoriesTtlMs?: number;
+  /** Injectable clock for tests. Default: Date.now */
+  now?: () => number;
+}
+
+const DEFAULT_CATEGORIES_TTL_MS = 60_000;
+
 export class SupabaseProductAdapter implements ProductDataPort {
+  private readonly categoriesTtlMs: number;
+  private readonly now: () => number;
+  private categoriesCache: { data: Category[]; expiresAt: number } | null = null;
+  private categoriesInFlight: Promise<Category[]> | null = null;
+  // Bumped by invalidateCategoriesCache(); a pending fetch must not commit its
+  // pre-invalidation result into the cleared cache.
+  private categoriesGeneration = 0;
+
   constructor(
     private readonly supabase: SupabaseClient,
     private readonly brandParser: BrandParser,
     private readonly emojiResolver: EmojiResolver,
-    private readonly storeId: string = STOREFRONT_STORE_ID
-  ) {}
+    private readonly storeId: string = STOREFRONT_STORE_ID,
+    options?: SupabaseProductAdapterOptions
+  ) {
+    this.categoriesTtlMs = options?.categoriesTtlMs ?? DEFAULT_CATEGORIES_TTL_MS;
+    this.now = options?.now ?? Date.now;
+  }
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const { limit, offset } = resolveProductSearchPagination(criteria);
@@ -255,7 +281,55 @@ export class SupabaseProductAdapter implements ProductDataPort {
     return this.getById(createProductId(rawId));
   }
 
+  /**
+   * Clear the bounded category cache and any pending fetch. Called by
+   * CachingProductAdapter.invalidate({ categories: true }) so the decorator's
+   * invalidation contract also covers this adapter's internal cache; the next
+   * getCategories() performs a fresh read.
+   */
+  invalidateCategoriesCache(): void {
+    this.categoriesGeneration += 1;
+    this.categoriesCache = null;
+    this.categoriesInFlight = null;
+  }
+
   async getCategories(): Promise<Category[]> {
+    // Bounded instance cache: prevents repeated identical PostgREST reads when
+    // search()/getById() run multiple times per request or per warm instance.
+    // Scoped to this adapter instance, so storeId/client tenant boundaries hold.
+    if (this.categoriesCache && this.categoriesCache.expiresAt > this.now()) {
+      return this.categoriesCache.data;
+    }
+
+    // Coalesce concurrent fetches into a single RPC round-trip.
+    if (this.categoriesInFlight) {
+      return this.categoriesInFlight;
+    }
+
+    const startedAtGeneration = this.categoriesGeneration;
+    let promise!: Promise<Category[]>;
+    promise = this.fetchCategories()
+      .then((data) => {
+        // A concurrent invalidateCategoriesCache() must not be undone by this
+        // pre-invalidation result. Callers already waiting still receive it.
+        if (startedAtGeneration === this.categoriesGeneration) {
+          this.categoriesCache = { data, expiresAt: this.now() + this.categoriesTtlMs };
+        }
+        return data;
+      })
+      .finally(() => {
+        // Failures are never cached: the next call retries the read. Clear only
+        // our own slot so a post-invalidation fetch is not discarded.
+        if (this.categoriesInFlight === promise) {
+          this.categoriesInFlight = null;
+        }
+      });
+    this.categoriesInFlight = promise;
+
+    return promise;
+  }
+
+  private async fetchCategories(): Promise<Category[]> {
     const { data, error } = await this.supabase
       .from('categories')
       .select('id, slug, name, emoji, parent_id, display_order, active')
