@@ -7,6 +7,7 @@ import { getCachedCategories } from '../../../../lib/products/getCachedCategorie
 import { getBrandBySlug, isProductOfBrand } from '../../../../lib/brandsData';
 import { supabase } from '../../../../lib/supabase';
 import { searchAllPages } from '../../../../lib/products/searchAllPages';
+import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,20 +99,12 @@ export default async function BengaliBrandPage({
   const allProducts = Array.from(rawProductsMap.values());
   const matchedProducts = allProducts.filter((p) => isProductOfBrand(p, brand));
 
-  // Overlay published Bengali translations
-  const productIds = matchedProducts.map((p) => p.id);
-  const { data: translations } = productIds.length
-    ? await (supabase as any)
-        .from('item_translations')
-        .select('item_id, name, description')
-        .in('item_id', productIds)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published')
-    : { data: [] };
-
-  const translationMap = new Map((translations ?? []).map((t: any) => [t.item_id, t]));
+  // Overlay Bengali translations. Products from the shared search overlay
+  // already carry bengaliName/bengaliDescription in memory; only products
+  // without them trigger a batched DB read (see resolveBengaliOverlays).
+  const translationMap = await resolveBengaliOverlays(supabase, matchedProducts);
   const products = matchedProducts.map((product) => {
-    const translation: any = translationMap.get(product.id);
+    const translation = translationMap.get(String(product.id));
     return translation
       ? {
           ...product,

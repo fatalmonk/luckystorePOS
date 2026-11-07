@@ -9,6 +9,7 @@ import { getSingleParam } from '../../../lib/utils';
 import { normalizeCategorySlug } from '../../../lib/types';
 import { BENGALI_CATEGORY_NAMES, CATALOG_SNAPSHOT_PRODUCTS } from '../../../lib/products/getHomePageData';
 import { loadCategoryCatalogProducts } from '../../../lib/categoryRouteData';
+import { resolveBengaliOverlays } from '../../../lib/products/bengaliOverlay';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,26 +102,12 @@ export default async function BengaliCategoryRootPage({
   const rawProducts = catalog.products;
   if (catalog.error) console.error('Failed to fetch Bengali category catalog:', catalog.error);
 
-  // Overlay Bengali translations
-  const productIds = (rawProducts ?? []).map((p) => p.id);
-  let translations: any[] = [];
-  try {
-    const { data } = productIds.length
-      ? await (supabase as any)
-          .from('item_translations')
-          .select('item_id, name, description')
-          .in('item_id', productIds)
-          .eq('locale', 'bn')
-          .eq('review_status', 'published')
-      : { data: [] };
-    translations = data ?? [];
-  } catch {
-    // Keep the base-language catalog visible if translations are unavailable.
-  }
-
-  const translationMap = new Map(translations.map((t: any) => [t.item_id, t]));
+  // Overlay Bengali translations. Products from the shared search overlay
+  // already carry bengaliName/bengaliDescription in memory; only products
+  // without them trigger a batched DB read (see resolveBengaliOverlays).
+  const translationMap = await resolveBengaliOverlays(supabase, rawProducts ?? []);
   const products = (rawProducts ?? []).map((p) => {
-    const trans: any = translationMap.get(p.id);
+    const trans = translationMap.get(String(p.id));
     return trans
       ? { ...p, name: trans.name?.trim() || p.name, description: trans.description?.trim() || p.description }
       : p;
