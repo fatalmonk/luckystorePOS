@@ -8,6 +8,7 @@ export const APPROVED_TEST_PROJECT_REF = 'grxxenvdhfwzafzyykgo';
 export type EgressCacheResult = 'unknown' | 'hit' | 'miss' | 'bypass';
 
 export type EgressObservationRecord = {
+  runId: string;
   operation: string;
   rpcVersion: string | null;
   sourceSurface: string;
@@ -24,6 +25,7 @@ export type EgressObservationRecord = {
 };
 
 export type EgressObservationContext = {
+  runId?: string;
   sourceSurface?: string;
   routeFamily?: string;
   deploymentSha?: string;
@@ -62,11 +64,17 @@ export class EgressBudgetExceeded extends Error {
  * preventing further requests, not an OS or network-socket level packet ceiling.
  */
 export class EgressBenchmarkBudget {
+  runId: string;
   requestsReserved = 0;
   requestsCompleted = 0;
+  requestsFailed = 0;
   bytes = 0;
   scenarios = 0;
   blocked: BudgetCap | null = null;
+
+  constructor(runId?: string) {
+    this.runId = runId || `bench_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  }
 
   beforeRequest(): void {
     if (this.blocked) throw new EgressBudgetExceeded(this.blocked);
@@ -98,10 +106,8 @@ export class EgressBenchmarkBudget {
   }
 
   onFetchFailed(): void {
-    // If request failed at network level, release reservation so budget stays consistent
-    if (this.requestsReserved > this.requestsCompleted) {
-      this.requestsReserved -= 1;
-    }
+    this.requestsFailed += 1;
+    // Keep requestsReserved counted or aligned with attempted requests
   }
 
   openScenario(): void {
@@ -114,15 +120,19 @@ export class EgressBenchmarkBudget {
   }
 }
 
+/**
+ * Validates Supabase URLs and extracts the project reference.
+ * Requires HTTPS scheme before approving a Supabase URL to prevent plaintext credential forwarding.
+ */
 export function extractSupabaseProjectRef(rawUrl?: string): string | null {
   if (!rawUrl) return null;
   try {
     const parsed = new URL(rawUrl);
+    if (parsed.protocol !== 'https:') return null;
     if (!parsed.hostname.endsWith('.supabase.co')) return null;
     return parsed.hostname.split('.')[0] || null;
   } catch {
-    const match = /https?:\/\/([a-z0-9_-]+)\.supabase\.co/i.exec(rawUrl);
-    return match?.[1] || null;
+    return null;
   }
 }
 
@@ -146,7 +156,7 @@ export function isExplicitStagingEnvironment(env: Record<string, string | undefi
 
   // Verified staging indicators:
   // 1. Vercel preview deployment
-  // 2. Explicit staging/preview/test environment (e.g. APP_ENV=staging even if NODE_ENV=production in container/server build)
+  // 2. Explicit staging/preview/test environment
   // 3. Local/test runners (NODE_ENV=test or development)
   const isVercelPreview = vercelEnv === 'preview';
   const isStagingEnv = appEnv === 'staging' || appEnv === 'preview' || appEnv === 'test';
@@ -156,12 +166,12 @@ export function isExplicitStagingEnvironment(env: Record<string, string | undefi
     return false;
   }
 
-  // Target validation: Must target approved test project ref
+  // Target validation: Must target approved test project ref via HTTPS
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_URL ?? '';
   const projectRef = extractSupabaseProjectRef(supabaseUrl);
   if (!projectRef) return false;
   if (projectRef === PRODUCTION_PROJECT_REF) return false;
-  if (projectRef !== APPROVED_TEST_PROJECT_REF && !env.ALLOW_CUSTOM_TEST_SUPABASE_REF) {
+  if (projectRef !== APPROVED_TEST_PROJECT_REF) {
     return false;
   }
 
@@ -173,14 +183,16 @@ export function isProductionEgressTarget(input: {
   appHost?: string;
   vercelEnv?: string;
   nodeEnv?: string;
+  appEnv?: string;
 }): boolean {
   const supabaseUrl = input.supabaseUrl?.toLowerCase() ?? '';
   const appHost = input.appHost?.toLowerCase().split(':')[0] ?? '';
   const vercelEnv = input.vercelEnv?.toLowerCase() ?? '';
+  const appEnv = input.appEnv?.toLowerCase() ?? '';
 
   if (supabaseUrl.includes(PRODUCTION_PROJECT_REF)) return true;
   if (appHost === 'luckystore1947.com' || appHost.endsWith('.luckystore1947.com')) return true;
-  if (vercelEnv === 'production') return true;
+  if (vercelEnv === 'production' || appEnv === 'production') return true;
   return false;
 }
 
@@ -189,14 +201,24 @@ export function assertEgressBenchmarkAllowed(input: {
   appHost?: string;
   vercelEnv?: string;
   nodeEnv?: string;
+  appEnv?: string;
 }): void {
   if (isProductionEgressTarget(input)) {
     throw new EgressProductionRefusal('Egress benchmark refused: production target detected');
   }
 
+  // Benchmark authorization requires verified non-production environment:
+  // Rejects NODE_ENV=production unless APP_ENV=staging or VERCEL_ENV=preview
+  const nodeEnv = input.nodeEnv?.toLowerCase();
+  const vercelEnv = input.vercelEnv?.toLowerCase();
+  const appEnv = input.appEnv?.toLowerCase();
+  if (nodeEnv === 'production' && vercelEnv !== 'preview' && appEnv !== 'staging' && appEnv !== 'preview' && appEnv !== 'test') {
+    throw new EgressProductionRefusal('Egress benchmark refused: unverified production environment');
+  }
+
   const projectRef = extractSupabaseProjectRef(input.supabaseUrl);
   if (!projectRef || projectRef !== APPROVED_TEST_PROJECT_REF) {
-    throw new EgressProductionRefusal('Egress benchmark refused: target must be the approved test Supabase project');
+    throw new EgressProductionRefusal('Egress benchmark refused: target must be the approved test Supabase project via HTTPS');
   }
 }
 
@@ -261,6 +283,25 @@ function resolveSafeProcessId(): string {
   return 'edge-or-browser';
 }
 
+// Global in-memory observation collector for shared-client logging
+const observationBuffer: EgressObservationRecord[] = [];
+export function getCollectedObservations(): readonly EgressObservationRecord[] {
+  return observationBuffer;
+}
+export function clearCollectedObservations(): void {
+  observationBuffer.length = 0;
+}
+
+export function defaultObservationSink(record: EgressObservationRecord): void {
+  if (observationBuffer.length < 1000) {
+    observationBuffer.push(record);
+  }
+  if (typeof process !== 'undefined' && process.env?.EGRESS_DEBUG_LOG === '1') {
+    // Redacted structured log
+    console.log(`[EGRESS_OBSERVATION] op=${record.operation} status=${record.status} bytes=${record.responseBytes} lat=${record.latencyMs}ms`);
+  }
+}
+
 export function createObservedFetch(
   inner: typeof fetch,
   options: {
@@ -270,6 +311,7 @@ export function createObservedFetch(
     appHost?: string;
     vercelEnv?: string;
     nodeEnv?: string;
+    appEnv?: string;
     sink?: (record: EgressObservationRecord) => void;
     now?: () => number;
     context?: () => EgressObservationContext;
@@ -277,18 +319,44 @@ export function createObservedFetch(
     processId?: string;
   },
 ): typeof fetch {
+  const activeBudget = options.benchmark
+    ? (options.budget ?? new EgressBenchmarkBudget())
+    : undefined;
+
+  const activeSink = options.sink ?? defaultObservationSink;
+
   return async (input, init) => {
-    const url = requestUrl(input);
-    const targetCheck = {
-      supabaseUrl: `${options.supabaseUrl} ${url}`,
+    const rawReqUrl = requestUrl(input);
+
+    // Validate configured supabaseUrl separately from request URL
+    const configuredTargetCheck = {
+      supabaseUrl: options.supabaseUrl,
       appHost: options.appHost,
       vercelEnv: options.vercelEnv,
       nodeEnv: options.nodeEnv,
+      appEnv: options.appEnv,
     };
 
-    if (isProductionEgressTarget(targetCheck)) {
+    if (isProductionEgressTarget(configuredTargetCheck)) {
       if (options.benchmark) throw new EgressProductionRefusal();
       return inner(input, init);
+    }
+
+    // Validate request URL separately: must match approved project origin if absolute URL
+    let reqProjectRef: string | null = null;
+    try {
+      if (rawReqUrl.startsWith('http://') || rawReqUrl.startsWith('https://')) {
+        reqProjectRef = extractSupabaseProjectRef(rawReqUrl);
+        if (reqProjectRef === PRODUCTION_PROJECT_REF) {
+          if (options.benchmark) throw new EgressProductionRefusal();
+          return inner(input, init);
+        }
+        if (options.benchmark && reqProjectRef !== APPROVED_TEST_PROJECT_REF) {
+          throw new EgressProductionRefusal('Egress benchmark refused: request URL does not target approved test project via HTTPS');
+        }
+      }
+    } catch (e) {
+      if (e instanceof EgressProductionRefusal) throw e;
     }
 
     if (!options.enabled && !options.benchmark) {
@@ -296,8 +364,8 @@ export function createObservedFetch(
     }
 
     if (options.benchmark) {
-      assertEgressBenchmarkAllowed(targetCheck);
-      options.budget?.beforeRequest();
+      assertEgressBenchmarkAllowed(configuredTargetCheck);
+      activeBudget?.beforeRequest();
     }
 
     const started = options.now?.() ?? Date.now();
@@ -306,7 +374,7 @@ export function createObservedFetch(
       response = await inner(input, init);
     } catch (err) {
       if (options.benchmark) {
-        options.budget?.onFetchFailed();
+        activeBudget?.onFetchFailed();
       }
       throw err;
     }
@@ -323,7 +391,8 @@ export function createObservedFetch(
       measureResponse(clonedResponse).then((measured) => {
         const context = options.context?.() ?? {};
         const record: EgressObservationRecord = {
-          ...classifyOperation(url),
+          runId: context.runId ?? activeBudget?.runId ?? 'shared-client',
+          ...classifyOperation(rawReqUrl),
           sourceSurface: context.sourceSurface ?? 'unknown',
           routeFamily: context.routeFamily ?? 'unknown',
           deploymentSha: context.deploymentSha ?? 'unknown',
@@ -336,9 +405,9 @@ export function createObservedFetch(
           latencyMs: Math.max(0, (options.now?.() ?? Date.now()) - started),
           responseBytes: measured.bytes,
         };
-        options.sink?.(record);
+        activeSink(record);
         if (options.benchmark) {
-          options.budget?.afterResponse(measured.bytes);
+          activeBudget?.afterResponse(measured.bytes);
         }
       }).catch(() => {
         // Measurement error must never affect the caller
@@ -432,7 +501,10 @@ export function buildSupabaseClientOptions(env: ObservationEnv = process.env): {
         appHost,
         vercelEnv: env.VERCEL_ENV,
         nodeEnv: env.NODE_ENV,
+        appEnv: env.APP_ENV ?? env.ENVIRONMENT,
+        sink: defaultObservationSink,
         context: () => ({
+          runId: getActiveCallerContext().runId ?? 'storefront-client',
           sourceSurface: 'storefront',
           routeFamily: getActiveCallerContext().routeFamily ?? 'unknown',
           deploymentSha: env.EGRESS_DEPLOYMENT_SHA ?? env.VERCEL_GIT_COMMIT_SHA ?? 'unknown',
