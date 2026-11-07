@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- PR #596 review repair: 16 findings assessed; fixed actionable storefront policy, evidence, loading, locale navigation, and tooling issues. Full suite 745/745, lint, typecheck, and diff checks pass. Push final follow-up; no merge or deployment.
+- PR #596 review repair: 14 unique findings fixed across storefront policy, evidence, loading, locale navigation, and tooling; duplicate comments were already fixed. Commit `e23e251` is pushed; full suite 745/745, lint, and typecheck pass. Addressed review threads resolved; no merge or deployment.
 ## Decisions
 - Older decisions: untangle-codebase follow-up and PRs #592-595; branch cleanup, Vercel/Supabase environment audits, and PR #584 fixes are recorded in Git history and their referenced docs.
 - 20261106-egress: PR #592 deployed (`42171216215`), focused 93/93; one-process category reads coalesced 20→1. PR #593 merged as `7a0789e`. Phase 3 test-store comparison kept the same 9 IDs while catalog+translation reads fell 2→1 and JSON text 4,954→3,648 bytes; production/billing impact remains unknown. Report commit `4e16adc7` preserved on `local/phase3-audit-report`.
@@ -47,4 +47,4 @@
 - 20261105-e2e-followup: PR #584 commit `498617e` aligned earlier quick-view tests; CI lint/typecheck passed and E2E had 30 passed, 7 skipped, 1 timed-out isolated order test. Current review fixes guard Buy again, refresh existing cart prices, correct Bengali nav/labels/currency and dialog focus, and align image/wishlist selectors. Focused tests: 21 passed; typecheck passed. Follow-up pushed to PR as `8bbabc8`; checkout E2E now asserts the API response before `/order`, with root cause pending CI.
 - 20261106-pr594-contrast: PR #594 border contrast finding valid; replaced 40% alpha with opaque `#315039` (8.40:1 control, 7.71:1 hero). Committed/pushed `3cc9562f`; review reply posted and thread resolved.
 ## Next
-- PR #596 (`https://github.com/fatalmonk/luckystorePOS/pull/596`) is open from `codex/storefront-audit-fixes-20261107` to `main`; validated Webpack build, lint, 740 tests, typecheck, and secret scan pass. No merge or production deploy.
+- PR #596 (`https://github.com/fatalmonk/luckystorePOS/pull/596`) is open from `codex/storefront-audit-fixes-20261107` to `main`; latest code checks pass, with the storefront Vercel status pending. No merge or production deploy.
