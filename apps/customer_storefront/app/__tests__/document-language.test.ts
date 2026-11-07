@@ -16,9 +16,13 @@ vi.mock('../components/Toast', () => ({ ToastProvider: ({ children }: { children
 vi.mock('../components/CartProvider', () => ({ CartProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('../components/providers/CartSheetProvider', () => ({ CartSheetProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('../components/WebMCPInit', () => ({ WebMCPInit: () => null }));
+vi.mock('../components/PullToRefresh', () => ({ PullToRefresh: () => null }));
 vi.mock('../components/providers/AuthProvider', () => ({ AuthProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('../components/providers/ThemeProvider', () => ({ ThemeProvider: ({ children }: { children: React.ReactNode }) => children }));
-vi.mock('../lib/deliveryData', () => ({ getDeliveryShippingServiceSchema: () => ({}) }));
+vi.mock('../lib/deliveryData', () => ({
+  getDeliveryShippingServiceSchema: () => ({}),
+  getMerchantReturnPolicies: () => [],
+}));
 
 import EnglishRootLayout from '../(english)/layout';
 import BengaliRootLayout from '../(bengali)/layout';

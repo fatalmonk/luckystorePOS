@@ -106,7 +106,7 @@ export default function BengaliTermsPage() {
               <ul className="list-disc pl-4 space-y-1">
                 <li>৳{DELIVERY_POLICY.freeDeliveryThresholdBdt} বা তার বেশি অর্ডারে ফ্রি</li>
                 <li>৳{DELIVERY_POLICY.freeDeliveryThresholdBdt}-এর কম অর্ডারে ৳{DELIVERY_POLICY.standardDeliveryFeeBdt}</li>
-                <li>খোলা থাকে {DELIVERY_POLICY.deliveryHours.display}</li>
+                <li>খোলা থাকে প্রতিদিন সকাল ৯টা থেকে রাত ১২টা ৩০ মিনিট পর্যন্ত</li>
                 <li>এই সময়ে দেওয়া অর্ডার সেই দিনেই পাঠানো হয়</li>
               </ul>
             </PolicySection>

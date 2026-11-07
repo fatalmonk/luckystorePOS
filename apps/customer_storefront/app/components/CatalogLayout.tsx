@@ -3,7 +3,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Funnel, X, Check, ArrowDown, ArrowUp, Sparkle, Tag, MagnifyingGlass } from '@phosphor-icons/react';
+import { Funnel } from '@phosphor-icons/react/dist/csr/Funnel';
+import { X } from '@phosphor-icons/react/dist/csr/X';
+import { Check } from '@phosphor-icons/react/dist/csr/Check';
+import { ArrowDown } from '@phosphor-icons/react/dist/csr/ArrowDown';
+import { ArrowUp } from '@phosphor-icons/react/dist/csr/ArrowUp';
+import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle';
+import { Tag } from '@phosphor-icons/react/dist/csr/Tag';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
 import { GridProductCard } from './GridProductCard';
 import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
@@ -71,6 +78,7 @@ interface CatalogLayoutProps {
   searchParams: Record<string, string | string[] | undefined>;
   locale?: Locale;
   headingLevel?: 'h1' | 'h2' | 'h3';
+  hideBreadcrumb?: boolean;
   brandName?: string;
   brandSlug?: string;
 }
@@ -86,6 +94,7 @@ export function CatalogLayout({
   searchParams,
   locale,
   headingLevel,
+  hideBreadcrumb = false,
   brandName,
   brandSlug,
 }: CatalogLayoutProps) {
@@ -100,6 +109,7 @@ export function CatalogLayout({
   const urlParams = useSearchParams();
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [renderedAt] = useState(() => Date.now());
 
   // Extract active query params
   const activePriceParam = (urlParams.get('price') || searchParams?.price || '') as string;
@@ -123,9 +133,6 @@ export function CatalogLayout({
   const activeSort = (urlParams.get('sort') || sort || 'best') as string;
   const searchQuery = (urlParams.get('q') || searchParams?.q || '') as string;
 
-  // Filter calculation
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-
   // Derive unique brands from current dataset
   const { brandCounts, availableBrands } = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -142,7 +149,7 @@ export function CatalogLayout({
   // Apply filters in-memory for catalog view
   const filtered = useMemo(() => {
     let result = [...products];
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = renderedAt - 30 * 24 * 60 * 60 * 1000;
 
     if (theme === 'deals') {
       result = result.filter((p) => p.originalPrice && p.originalPrice > p.price);
@@ -191,7 +198,7 @@ export function CatalogLayout({
     }
 
     return result;
-  }, [products, theme, activeAvailabilities, activePrices, activeBrands, activeSort]);
+  }, [products, theme, activeAvailabilities, activePrices, activeBrands, activeSort, renderedAt]);
 
   // Count active filters
   const totalActiveFilterCount =
@@ -319,6 +326,7 @@ export function CatalogLayout({
       <div className="bg-warm-bg border border-warm-border dark:border-transparent rounded-warm-panel p-2 sm:p-4 shadow-warm-panel flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         {/* Results summary & query tags */}
         <div className="space-y-1">
+          {!hideBreadcrumb && (
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-warm-muted">
             <Link href={withLocale('/', effectiveLocale)} className="hover:text-warm-fg transition-colors py-1 px-1.5 rounded inline-flex items-center min-h-[44px]">
                   {dict.catalog.home}
@@ -351,6 +359,7 @@ export function CatalogLayout({
               </>
             )}
           </nav>
+          )}
 
           <div className="flex items-center gap-2">
             {(() => {
@@ -671,7 +680,10 @@ export function CatalogLayout({
                     onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
                     className="min-h-[44px] px-8 py-3 rounded-full bg-warm-surface border border-warm-border text-warm-fg font-extrabold text-xs hover:bg-warm-bg hover:border-warm-accent transition-all shadow-warm-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                   >
-                    Load More Products ({filtered.length - visibleCount} remaining)
+                    {dict.catalog.loadMore.replace(
+                      '{count}',
+                      (filtered.length - visibleCount).toLocaleString(effectiveLocale === 'bn' ? 'bn-BD' : 'en-US'),
+                    )}
                   </button>
                 </div>
               )}
@@ -792,7 +804,10 @@ export function CatalogLayout({
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="min-h-11 flex-1 rounded-warm-control bg-warm-fg py-3 text-xs font-black uppercase tracking-wider text-warm-accent shadow-warm-sm transition-colors hover:bg-warm-fg-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
-                Apply ({filtered.length})
+                {dict.catalog.applyFilters.replace(
+                  '{count}',
+                  filtered.length.toLocaleString(effectiveLocale === 'bn' ? 'bn-BD' : 'en-US'),
+                )}
               </button>
             </div>
           </div>

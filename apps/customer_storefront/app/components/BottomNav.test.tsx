@@ -33,6 +33,11 @@ describe('BottomNav', () => {
     expect(screen.queryByRole('link', { name: /WhatsApp/ })).not.toBeInTheDocument();
   });
 
+  it('keeps the profile destination in Bengali when the Bengali navigation is shown', () => {
+    render(<BottomNav locale="bn" />);
+    expect(screen.getAllByRole('link')[4]).toHaveAttribute('href', '/bn/profile');
+  });
+
   it('squeezes 30% smaller on scroll down and expands on scroll up', () => {
     let rafCallback: FrameRequestCallback = () => {};
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {

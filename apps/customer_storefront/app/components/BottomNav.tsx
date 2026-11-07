@@ -77,7 +77,7 @@ export function BottomNav({ locale }: { locale?: Locale }) {
           hideLabel={isSqueezed}
         />
         <ActiveLink
-          href="/profile"
+          href={withLocale('/profile', currentLocale)}
           icon={<UserIcon size={20} />}
           label={dict.bottomNav.profile}
           hideLabel={isSqueezed}

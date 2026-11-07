@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { ArrowRight, MagnifyingGlass, Fire, Star, Package } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
+import { Fire } from '@phosphor-icons/react/dist/ssr/Fire';
+import { Star } from '@phosphor-icons/react/dist/ssr/Star';
+import { Package } from '@phosphor-icons/react/dist/ssr/Package';
 import { CATEGORY_GROUPS, type CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import type { Locale } from '../lib/i18n/config';

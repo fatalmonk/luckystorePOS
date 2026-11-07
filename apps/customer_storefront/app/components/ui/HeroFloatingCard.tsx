@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
 import { ProductImage } from '../product/ProductImage';
 import { getCategoryIcon } from '../icons/CategoryIcons';
 import { formatBdt } from '../../lib/formatPrice';

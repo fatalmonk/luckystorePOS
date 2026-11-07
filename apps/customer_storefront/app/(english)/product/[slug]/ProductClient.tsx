@@ -20,7 +20,6 @@ import { TrustStrip } from '../../../components/product/TrustStrip';
 import { ProductCarousel } from '../../../components/product/ProductCarousel';
 import { ProductImageGallery } from '../../../components/product/ProductImageGallery';
 import { trackViewItem } from '../../../lib/analytics';
-import { DELIVERY_POLICY } from '../../../lib/deliveryData';
 import { getBrandHref } from '../../../lib/brandsData';
 import { getDictionary } from '../../../lib/i18n/dictionaries';
 import { getDisplayProductUnit } from '../../../lib/products/displayProductUnit';
@@ -57,7 +56,10 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
   const isBn = locale === 'bn';
   const dict = getDictionary(locale);
-  const displayName = (isBn && product.name) ? product.name : (enrichment?.exactName || product.name);
+  const displayEnrichment = isBn && enrichment?.localizedContent?.bn
+    ? { ...enrichment, ...enrichment.localizedContent.bn }
+    : enrichment;
+  const displayName = (isBn && product.name) ? product.name : (displayEnrichment?.exactName || product.name);
 
   const stockStatus = product.availabilityUnknown
     ? { text: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable', color: 'text-warm-muted', bg: 'bg-warm-image-well', aria: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable' }
@@ -86,21 +88,22 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   };
 
   const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
-  const overviewText = (isBn && product.description) ? product.description : (enrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`);
-  const productBrand = enrichment?.brand || product.brand;
+  const localizedSummary = isBn ? enrichment?.localizedContent?.bn?.summary : undefined;
+  const overviewText = localizedSummary || ((isBn && product.description) ? product.description : (displayEnrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`));
+  const productBrand = displayEnrichment?.brand || product.brand;
   const brandHref = getBrandHref(productBrand, locale);
   const galleryImages = providedGalleryImages !== undefined
     ? providedGalleryImages
-    : enrichment?.galleryImages !== undefined
-      ? enrichment.galleryImages
+    : displayEnrichment?.galleryImages !== undefined
+      ? displayEnrichment.galleryImages
       : product.image_url
         ? [{ url: product.image_url, alt: displayName }]
         : [];
 
   // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
-  const displayUnit = getDisplayProductUnit(displayName, enrichment?.netQuantity || product.unit);
+  const displayUnit = getDisplayProductUnit(displayName, displayEnrichment?.netQuantity || product.unit);
   const genericUnit = /^(?:pc|pcs|piece|pieces)$/i.test(product.unit?.trim() || '');
-  const productSpecifications = enrichment?.specifications || [
+  const productSpecifications = displayEnrichment?.specifications || [
     ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
     ...(product.category ? [{ label: 'Category', value: product.category }] : []),
     ...(displayUnit ? [{ label: 'Net Quantity', value: displayUnit }] : []),
@@ -118,8 +121,8 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
 
   return (
     <>
-      {enrichment?.faqs && enrichment.faqs.length > 0 && (
-        <FaqJsonLd items={enrichment.faqs} />
+      {displayEnrichment?.faqs && displayEnrichment.faqs.length > 0 && (
+        <FaqJsonLd items={displayEnrichment.faqs} />
       )}
       <Header />
 
@@ -275,11 +278,11 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
             </p>
           </section>
 
-          {locale === 'en' && (enrichment?.nutrition || product.nutrition) && (
+          {locale === 'en' && (displayEnrichment?.nutrition || product.nutrition) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.nutrition}{enrichment?.nutrition?.basis ? ` ${enrichment.nutrition.basis}` : ''}</h2>
+              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.nutrition}{displayEnrichment?.nutrition?.basis ? ` ${displayEnrichment.nutrition.basis}` : ''}</h2>
               <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
-                {enrichment?.nutrition?.text || product.nutrition}
+                {displayEnrichment?.nutrition?.text || product.nutrition}
               </p>
             </section>
           )}
@@ -306,6 +309,9 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                           {spec.label === 'Store SKU' ? dict.productPage.storeSku
                             : spec.label === 'Brand' ? dict.productPage.brand
                               : spec.label === 'Category' ? dict.productPage.category
+                                : spec.label === 'Catalog Category' ? dict.productPage.catalogCategory
+                                  : spec.label === 'Manufacturer' ? dict.productPage.manufacturer
+                                    : spec.label === 'Storage Guidance' ? dict.productPage.storageGuidance
                                 : spec.label === 'Net Quantity' ? dict.productPage.netQuantity
                                   : spec.label === 'Fulfillment' ? dict.productPage.fulfillment
                                     : spec.label === 'Inspection Guarantee' ? dict.productPage.inspectionGuarantee
@@ -332,11 +338,11 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           </section>
 
           {/* Section 3: Highlights & Guidance (if available) */}
-          {enrichment?.highlights && enrichment.highlights.length > 0 && (
+          {displayEnrichment?.highlights && displayEnrichment.highlights.length > 0 && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-3 text-warm-fg">Key Features</h2>
+              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.keyFeatures}</h2>
               <ul className="space-y-2 max-w-3xl text-sm text-warm-muted">
-                {enrichment.highlights.map((highlight) => (
+                {displayEnrichment.highlights.map((highlight) => (
                   <li key={highlight} className="flex items-start gap-2.5">
                     <span className="text-warm-accent font-bold mt-0.5" aria-hidden="true">✓</span>
                     <span>{highlight}</span>
@@ -346,22 +352,22 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
             </section>
           )}
 
-          {(enrichment?.usageDirections || enrichment?.storageInstructions) && (
+          {(displayEnrichment?.usageDirections || displayEnrichment?.storageInstructions) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
               <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
-                {enrichment.usageDirections && (
+                {displayEnrichment.usageDirections && (
                   <div>
-                    <h3 className="text-sm font-bold text-warm-fg mb-1.5">Usage & Preparation</h3>
+                    <h3 className="text-sm font-bold text-warm-fg mb-1.5">{dict.productPage.usagePreparation}</h3>
                     <p className="text-xs sm:text-sm text-warm-muted leading-relaxed">
-                      {enrichment.usageDirections}
+                      {displayEnrichment.usageDirections}
                     </p>
                   </div>
                 )}
-                {enrichment.storageInstructions && (
+                {displayEnrichment.storageInstructions && (
                   <div>
-                    <h3 className="text-sm font-bold text-warm-fg mb-1.5">Storage Instructions</h3>
+                    <h3 className="text-sm font-bold text-warm-fg mb-1.5">{dict.productPage.storageInstructions}</h3>
                     <p className="text-xs sm:text-sm text-warm-muted leading-relaxed">
-                      {enrichment.storageInstructions}
+                      {displayEnrichment.storageInstructions}
                     </p>
                   </div>
                 )}
@@ -381,23 +387,23 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-warm-fg mb-1">
-                    Direct Chattogram Store Fulfillment
+                    {dict.productPage.fulfillmentTitle}
                   </h3>
                   <p className="text-xs sm:text-sm text-warm-muted leading-relaxed mb-3">
-                    Dispatched from our Chawkbazar store strictly within our verified {DELIVERY_POLICY.radiusLabel}. Orders ৳500+ receive <strong>FREE delivery</strong> (৳40 flat below ৳500). Delivery hours: {DELIVERY_POLICY.deliveryHours.display}.
+                    {dict.productPage.fulfillmentDescription}
                   </p>
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-warm-fg">
                     <span className="flex items-center gap-1.5">
-                      <span className="text-warm-accent">✓</span> 100% Doorstep Inspection
+                      <span className="text-warm-accent">✓</span> {dict.productPage.doorstepInspectionBenefit}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="text-warm-accent">✓</span> Cash on Delivery & bKash
+                      <span className="text-warm-accent">✓</span> {dict.productPage.paymentMethods}
                     </span>
                     <Link
-                      href="/delivery"
+                      href={withLocale('/delivery', locale)}
                       className="text-warm-accent hover:underline inline-flex items-center gap-1"
                     >
-                      View Delivery Boundaries & FAQs →
+                      {dict.productPage.deliveryBoundaries}
                     </Link>
                   </div>
                 </div>
@@ -406,11 +412,11 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           </section>
 
           {/* Section 5: Factual Product Q&A */}
-          {enrichment?.faqs && enrichment.faqs.length > 0 && (
+          {displayEnrichment?.faqs && displayEnrichment.faqs.length > 0 && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-4 text-warm-fg">Frequently Asked Questions</h2>
+              <h2 className="text-base font-bold mb-4 text-warm-fg">{dict.productPage.faqs}</h2>
               <div className="space-y-3 max-w-3xl">
-                {enrichment.faqs.map((faq) => (
+                {displayEnrichment.faqs.map((faq) => (
                   <details
                     key={faq.question}
                     className="group rounded-warm-panel border border-warm-border bg-warm-bg p-4 [&_summary::-webkit-details-marker]:hidden"
@@ -451,7 +457,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           )}
 
           {/* Section 6: Cross-Sell Carousel */}
-          <ProductCarousel title="More to explore" products={crossSell} />
+          <ProductCarousel title={dict.productPage.moreToExplore} products={crossSell} />
         </div>
       </main>
 
@@ -491,7 +497,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
               disabled={product.stock <= 0 || product.availabilityUnknown === true}
               className="px-5 py-2.5 h-11 min-h-[44px] rounded-warm-control bg-warm-accent text-warm-accent-text font-extrabold text-xs shadow-warm-card-hover hover:opacity-90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
             >
-              {product.availabilityUnknown ? (isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable') : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+              {product.availabilityUnknown ? (isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable') : product.stock <= 0 ? dict.productPage.outOfStock : dict.productPage.addToCart}
             </button>
           )}
         </div>

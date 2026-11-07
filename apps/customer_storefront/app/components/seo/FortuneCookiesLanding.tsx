@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { ArrowRight, Cookie, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+import { Cookie } from '@phosphor-icons/react/dist/ssr/Cookie';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { BottomNav } from '../BottomNav';
 import { Footer } from '../updated/Footer';
 import { Header } from '../updated/Header';

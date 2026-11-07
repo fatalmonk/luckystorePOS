@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, X } from '@phosphor-icons/react';
+import { Download } from '@phosphor-icons/react/dist/csr/Download';
+import { X } from '@phosphor-icons/react/dist/csr/X';
 import { type Locale } from '../lib/i18n/config';
 import {
   type BeforeInstallPromptEvent,

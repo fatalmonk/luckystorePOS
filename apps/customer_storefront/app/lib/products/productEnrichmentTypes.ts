@@ -67,6 +67,22 @@ export interface ProductFieldEvidence {
   storageInstructions?: string[];
 }
 
+export interface ProductLocalizedFieldEvidence {
+  summary?: string[];
+  highlights?: string[][];
+  usageDirections?: string[];
+  storageInstructions?: string[];
+}
+
+export interface ProductEnrichmentLocaleContent {
+  summary?: string;
+  specifications?: ProductSpecification[];
+  highlights?: string[];
+  usageDirections?: string;
+  storageInstructions?: string;
+  faqs?: ProductFaq[];
+}
+
 export interface ProductEnrichment {
   /** 8-character UUID hex prefix matching slug suffix */
   slugPrefix: string;
@@ -94,6 +110,10 @@ export interface ProductEnrichment {
   storageInstructions?: string;
   /** Concise factual product Q&As [PACKAGING/MANUFACTURER/LUCKY_STORE_POLICY/CALCULATED] */
   faqs: ProductFaq[];
+  /** Optional locale-specific equivalents for editorial copy and structured details. */
+  localizedContent?: Partial<Record<'bn', ProductEnrichmentLocaleContent>>;
+  /** Evidence mappings for localized fields not covered by their inline evidence refs. */
+  localizedFieldEvidence?: Partial<Record<'bn', ProductLocalizedFieldEvidence>>;
   /** Normalized evidence manifest for referential integrity */
   evidenceManifest: Record<string, EvidenceRecord>;
   /** Field-level provenance mappings to evidenceManifest keys */

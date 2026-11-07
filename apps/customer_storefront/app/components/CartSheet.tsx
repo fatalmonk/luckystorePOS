@@ -1,7 +1,7 @@
 'use client'; // cart modal dialog with useRef, useEffect, router, and cart context
 
 import { useEffect, useRef, useState } from 'react';
-import { X } from '@phosphor-icons/react';
+import { X } from '@phosphor-icons/react/dist/csr/X';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCartContext } from './CartProvider';

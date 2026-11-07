@@ -1,19 +1,40 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { getLocalWishlist } from '../../lib/wishlistHelpers';
 import { createProductRepository, createProductId } from '../../lib/products/index';
-import { supabase } from '../../lib/supabase';
+import { createClient as createBrowserSupabaseClient } from '../../lib/supabase/client';
 import { toProductSlug } from '../../lib/products/slugify';
 import { formatBdt } from '../../lib/formatPrice';
 import type { Product } from '../../lib/types';
-import { Heart, ArrowRight } from '@phosphor-icons/react';
+import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
+import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
 import { ProductImage } from '../../components/product/ProductImage';
+import { getLocaleFromPathname, withLocale } from '../../lib/i18n/config';
 
 export default function WishlistPage() {
+  const locale = getLocaleFromPathname(usePathname());
+  const copy = locale === 'bn'
+    ? {
+        title: 'আপনার পছন্দের তালিকা',
+        emptyTitle: 'আপনার পছন্দের তালিকা খালি',
+        emptyDescription: 'আপনার পছন্দের পণ্যগুলো এখানে রাখুন, পরবর্তী অর্ডারের জন্য সহজে পাবেন।',
+        startShopping: 'কেনাকাটা শুরু করুন',
+        remove: 'তালিকা থেকে সরান',
+        savings: 'সাশ্রয়',
+      }
+    : {
+        title: 'Your Wishlist',
+        emptyTitle: 'Your wishlist is empty',
+        emptyDescription: "Save items you love and we'll keep them here for your next order.",
+        startShopping: 'Start Shopping',
+        remove: 'Remove',
+        savings: 'Save',
+      };
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [removedIds, setRemovedIds] = useState<string[]>([]);
@@ -26,7 +47,13 @@ export default function WishlistPage() {
       return;
     }
 
-    const { repo } = createProductRepository(supabase);
+    const client = createBrowserSupabaseClient();
+    if (!client) {
+      setLoading(false);
+      return;
+    }
+
+    const { repo } = createProductRepository(client);
 
     Promise.all(ids.map((id) => repo.getById(createProductId(id))))
       .then((products) => {
@@ -57,12 +84,12 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-warm-bg">
-      <Header />
+      <Header locale={locale} />
       <main className="max-w-5xl mx-auto px-3 sm:px-4 pt-24 pb-32">
         <div className="flex items-center gap-3 mb-6">
           <Heart weight="fill" size={24} className="text-red-500" />
           <h1 className="text-2xl sm:text-3xl font-black text-warm-fg font-display tracking-tight">
-            Your Wishlist
+            {copy.title}
           </h1>
         </div>
 
@@ -80,15 +107,15 @@ export default function WishlistPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warm-bg flex items-center justify-center text-warm-muted">
               <Heart weight="bold" size={28} />
             </div>
-            <h2 className="text-lg font-bold text-warm-fg mb-2">Your wishlist is empty</h2>
+            <h2 className="text-lg font-bold text-warm-fg mb-2">{copy.emptyTitle}</h2>
             <p className="text-sm text-warm-muted mb-6 max-w-md mx-auto">
-              Save items you love and we&apos;ll keep them here for your next order.
+              {copy.emptyDescription}
             </p>
             <Link
-              href="/"
+              href={withLocale('/', locale)}
               className="inline-flex items-center gap-2 bg-warm-accent hover:bg-warm-accent-hover text-warm-fg font-bold text-sm px-5 py-3 rounded-full transition-colors"
             >
-              Start Shopping <ArrowRight weight="bold" size={16} />
+              {copy.startShopping} <ArrowRight weight="bold" size={16} />
             </Link>
           </div>
         ) : (
@@ -98,7 +125,7 @@ export default function WishlistPage() {
                 key={product.id}
                 className={`group bg-warm-surface border border-warm-border rounded-[20px] overflow-hidden transition-all duration-300 card-hover ${removedIds.includes(product.id) ? 'opacity-0 scale-95' : ''}`}
               >
-                <Link href={`/product/${toProductSlug(product.name, product.id)}`} className="block">
+                <Link href={withLocale(`/product/${toProductSlug(product.name, product.id)}`, locale)} className="block">
                   <div className="relative w-full aspect-[4/3] bg-warm-bg flex items-center justify-center overflow-hidden">
                     <ProductImage
                       src={product.image_url}
@@ -113,7 +140,7 @@ export default function WishlistPage() {
                     <p className="text-lg font-black text-warm-fg font-display tracking-tight">{formatBdt(product.price)}</p>
                     {product.originalPrice && product.originalPrice > product.price && (
                       <p className="text-[10px] font-bold text-red-600 leading-none mt-0.5">
-                        Save {formatBdt(product.originalPrice - product.price)}
+                        {copy.savings} {formatBdt(product.originalPrice - product.price)}
                       </p>
                     )}
                     <h3 className="text-[13px] font-semibold text-warm-fg line-clamp-2 mt-1.5 leading-snug">{product.name}</h3>
@@ -126,7 +153,7 @@ export default function WishlistPage() {
                     onClick={() => handleRemove(product.id)}
                     className="w-full h-9 rounded-full border border-warm-border text-warm-muted text-xs font-bold hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    Remove
+                    {copy.remove}
                   </button>
                 </div>
               </div>
@@ -134,7 +161,7 @@ export default function WishlistPage() {
           </div>
         )}
       </main>
-      <BottomNav />
+      <BottomNav locale={locale} />
     </div>
   );
 }

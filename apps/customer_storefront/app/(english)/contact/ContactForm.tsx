@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { PaperPlaneTilt, CheckCircle, Warning } from '@phosphor-icons/react';
+import { PaperPlaneTilt } from '@phosphor-icons/react/dist/csr/PaperPlaneTilt';
+import { CheckCircle } from '@phosphor-icons/react/dist/csr/CheckCircle';
+import { Warning } from '@phosphor-icons/react/dist/csr/Warning';
 import { GoogleMapEmbed } from './GoogleMapEmbed';
 import { RETURN_RULES } from '../../lib/deliveryData';
 import { Select } from '../../components/ui/Select';

@@ -8,6 +8,8 @@ if (mutationSafety.requested && !mutationSafety.allowed) {
 }
 
 const hasIsolatedPreview = mutationSafety.allowed;
+const E2E_PORT = 3001;
+const E2E_BASE_URL = `http://localhost:${E2E_PORT}`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,7 +29,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || E2E_BASE_URL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -44,9 +46,9 @@ export default defineConfig({
     ? undefined
     : {
         command: process.env.CI
-          ? 'node -e "const fs=require(\'fs\'), cp=require(\'child_process\'); const standalone=\'.next/standalone/apps/customer_storefront/server.js\'; if(fs.existsSync(standalone)){ cp.execSync(\'node \' + standalone, {stdio:\'inherit\'}); } else if(fs.existsSync(\'.next\')){ cp.execSync(\'npx next start -p 3000\', {stdio:\'inherit\'}); } else { cp.execSync(\'npm run dev\', {stdio:\'inherit\'}); }"'
-          : 'npm run dev',
-        url: 'http://localhost:3000',
+          ? `node -e "const fs=require('fs'), cp=require('child_process'); const standalone='.next/standalone/apps/customer_storefront/server.js'; if(fs.existsSync(standalone)){ cp.execSync('PORT=${E2E_PORT} node ' + standalone, {stdio:'inherit'}); } else if(fs.existsSync('.next')){ cp.execSync('npx next start -p ${E2E_PORT}', {stdio:'inherit'}); } else { cp.execSync('npm run dev -- --port ${E2E_PORT}', {stdio:'inherit'}); }"`
+          : `npm run dev -- --port ${E2E_PORT}`,
+        url: E2E_BASE_URL,
         reuseExistingServer: !process.env.CI,
       },
 });

@@ -222,6 +222,18 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(radhuni?.netQuantity).toBe('100g');
     });
 
+    it('maps every displayed Aarong Liquid Milk highlight to evidence and omits unsupported usage directions', () => {
+      const aarong = getEnrichedProductData('444bc290');
+      expect(aarong).toBeDefined();
+      expect(aarong!.fieldEvidence.highlights).toHaveLength(aarong!.highlights!.length);
+      expect(aarong?.fieldEvidence.highlights).toEqual([
+        ['PACK_FRONT'],
+        ['PACK_FRONT'],
+        ['MFR_SPEC'],
+      ]);
+      expect(aarong?.usageDirections).toBeUndefined();
+    });
+
     it('normalizes legacy enrichment lookup inputs', () => {
       expect(getEnrichedProductData('  B8A7C6C6  ')).toBe(PRODUCT_ENRICHMENTS.b8a7c6c6);
       expect(getEnrichedProductData('legacy-b8a7c6c6-product')).toBe(PRODUCT_ENRICHMENTS.b8a7c6c6);
@@ -342,6 +354,31 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
             for (const ref of group) {
               expect(manifestKeys).toContain(ref);
             }
+          }
+        }
+
+        for (const [locale, content] of Object.entries(item.localizedContent ?? {})) {
+          const localizedEvidence = item.localizedFieldEvidence?.[locale as 'bn'];
+          for (const field of ['summary', 'highlights', 'usageDirections', 'storageInstructions'] as const) {
+            if (!content[field]) continue;
+            const groups = localizedEvidence?.[field];
+            expect(groups, `${item.slugPrefix}.${locale}.${field} evidence`).toBeDefined();
+            const refs = field === 'highlights'
+              ? (groups as string[][]).flat()
+              : (groups as string[]);
+            expect(refs.length).toBeGreaterThan(0);
+            for (const ref of refs) expect(manifestKeys).toContain(ref);
+            if (field === 'highlights') {
+              expect((groups as string[][])).toHaveLength(content.highlights?.length ?? 0);
+            }
+          }
+          for (const specification of content.specifications ?? []) {
+            expect(specification.evidenceRefs.length).toBeGreaterThan(0);
+            for (const ref of specification.evidenceRefs) expect(manifestKeys).toContain(ref);
+          }
+          for (const faq of content.faqs ?? []) {
+            expect(faq.evidenceRefs.length).toBeGreaterThan(0);
+            for (const ref of faq.evidenceRefs) expect(manifestKeys).toContain(ref);
           }
         }
       }

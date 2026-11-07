@@ -188,6 +188,15 @@ const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
 
 export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
   const { repo } = createProductRepository(supabase);
+  let campaignLoadFailed = false;
+  let campaignLoadError: unknown;
+  // The campaign query is independent of the catalogue and translations, so
+  // start it now instead of adding another network round trip to their chain.
+  const campaignRowsPromise = loadCurrentStorefrontDealCampaign(supabase, new Date()).catch((error: unknown) => {
+    campaignLoadFailed = true;
+    campaignLoadError = error;
+    return [];
+  });
   let rawProducts: Product[] = [];
   let nestleSearchResults: Product[] = [];
   let rawCategories: any[] = [];
@@ -241,25 +250,40 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   if (locale === 'bn') {
     const productIds = products.map((p) => p.id);
     try {
-      const { data: translations } = await (supabase as any)
-        .from('item_translations')
-        .select('item_id, name, description')
-        .in('item_id', productIds)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published');
-
-      if (translations && translations.length > 0) {
-        const transMap = new Map(translations.map((t: any) => [t.item_id, t]));
-        products = products.map((p) => {
-          const trans: any = transMap.get(p.id);
-          if (!trans) return p;
-          return {
-            ...p,
-            originalName: p.originalName || p.name,
-            name: trans.name?.trim() || p.name,
-            description: trans.description?.trim() || p.description,
-          };
+      const batchSize = 100;
+      const batches = await Promise.all(
+        Array.from({ length: Math.ceil(productIds.length / batchSize) }, (_, batchIndex) =>
+          (supabase as any)
+            .from('item_translations')
+            .select('item_id, name, description')
+            .in('item_id', productIds.slice(batchIndex * batchSize, (batchIndex + 1) * batchSize))
+            .eq('locale', 'bn')
+            .eq('review_status', 'published'),
+        ),
+      );
+      const failedBatchIndex = batches.findIndex(({ error }) => error);
+      if (failedBatchIndex !== -1) {
+        const error = batches[failedBatchIndex].error;
+        console.error('[homepage-translations] request failed', {
+          batchIndex: failedBatchIndex,
+          errorCode: typeof error.code === 'string' ? error.code : undefined,
+          errorName: typeof error.name === 'string' ? error.name : 'SupabaseQueryError',
         });
+      } else {
+        const translations = batches.flatMap(({ data }) => data ?? []);
+        if (translations.length > 0) {
+          const transMap = new Map(translations.map((t: any) => [t.item_id, t]));
+          products = products.map((p) => {
+            const trans: any = transMap.get(p.id);
+            if (!trans) return p;
+            return {
+              ...p,
+              originalName: p.originalName || p.name,
+              name: trans.name?.trim() || p.name,
+              description: trans.description?.trim() || p.description,
+            };
+          });
+        }
       }
     } catch {
       // In case of network/db failure, fall back to base products
@@ -280,7 +304,8 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
   let weeklyEditionUnavailable = false;
   try {
     const now = new Date();
-    const campaignRows = await loadCurrentStorefrontDealCampaign(supabase, now);
+    const campaignRows = await campaignRowsPromise;
+    if (campaignLoadFailed) throw campaignLoadError;
     const activeRows = getActiveWeeklyDealEdition(campaignRows, now);
     if (activeRows.length > 0) {
       weeklyEditionActive = true;

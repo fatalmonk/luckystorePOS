@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShoppingCartSimple } from '@phosphor-icons/react';
+import { ShoppingCartSimple } from '@phosphor-icons/react/dist/csr/ShoppingCartSimple';
 import { useCartSheet } from '../hooks/useCartSheet';
 import { formatBdt } from '../lib/formatPrice';
 import { useCartContext } from './CartProvider';

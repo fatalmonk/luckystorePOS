@@ -3,14 +3,12 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  Fire,
-  House,
-  Package,
-  Storefront,
-  UserCircle,
-  UserPlus,
-} from '@phosphor-icons/react';
+import { Fire } from '@phosphor-icons/react/dist/csr/Fire';
+import { House } from '@phosphor-icons/react/dist/csr/House';
+import { Package } from '@phosphor-icons/react/dist/csr/Package';
+import { Storefront } from '@phosphor-icons/react/dist/csr/Storefront';
+import { UserCircle } from '@phosphor-icons/react/dist/csr/UserCircle';
+import { UserPlus } from '@phosphor-icons/react/dist/csr/UserPlus';
 import type { Icon } from '@phosphor-icons/react';
 import { useAuth } from './providers/AuthProvider';
 import { getLocaleFromPathname, stripLocalePrefix, withLocale } from '../lib/i18n/config';

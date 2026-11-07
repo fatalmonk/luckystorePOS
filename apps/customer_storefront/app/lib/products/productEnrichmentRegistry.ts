@@ -6395,8 +6395,6 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       "Standard factory-sealed 1L consumer packaging",
       "Produced and distributed by BRAC Dairy & Food Project",
     ],
-    usageDirections:
-      "Use as indicated on physical product packaging for optimal quality and freshness.",
     storageInstructions:
       "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
     faqs: [
@@ -6465,7 +6463,6 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       category: ["CATALOG_RECORD"],
       summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
       highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
-      usageDirections: ["PACK_FRONT"],
       storageInstructions: ["PACK_STORAGE"],
     },
   },
@@ -17312,18 +17309,12 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Brand", value: "Fortune", evidenceRefs: ["PACK_FRONT"] },
       { label: "Net Quantity", value: "1KG", evidenceRefs: ["PACK_FRONT"] },
       { label: "Catalog Category", value: "Rice", evidenceRefs: ["CATALOG_RECORD"] },
-      { label: "Manufacturer", value: "Fortune Ltd.", evidenceRefs: ["MFR_SPEC"] },
-      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from heat", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
       "Authentic on-pack Fortune specification: Fortune Basmati Rice 1KG",
-      "Standard factory-sealed 1KG consumer packaging",
-      "Produced and distributed by Fortune Ltd.",
     ],
-    usageDirections:
-      "Use as indicated on physical product packaging for optimal quality and freshness.",
-    storageInstructions:
-      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+    storageInstructions: "Store in a cool, dry place away from heat.",
     faqs: [
       {
         question: "Can I inspect Fortune Basmati Rice 1KG at my doorstep before payment?",
@@ -17338,6 +17329,39 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
         evidenceRefs: ["STORE_DELIVERY_POLICY"],
       },
     ],
+    localizedContent: {
+      bn: {
+        summary:
+          "চকবাজার, চট্টগ্রামের লাকি স্টোর থেকে Fortune Basmati Rice 1KG নিন। পেমেন্টের আগে পণ্য হাতে পেয়ে পরীক্ষা করতে পারবেন।",
+        specifications: [
+          { label: "ব্র্যান্ড", value: "Fortune", evidenceRefs: ["PACK_FRONT"] },
+          { label: "নেট পরিমাণ", value: "1KG", evidenceRefs: ["PACK_FRONT"] },
+          { label: "পণ্যের শ্রেণি", value: "চাল", evidenceRefs: ["CATALOG_RECORD"] },
+          { label: "সংরক্ষণের নির্দেশনা", value: "তাপ থেকে দূরে ঠান্ডা ও শুষ্ক স্থানে রাখুন", evidenceRefs: ["PACK_STORAGE"] },
+        ],
+        highlights: ["প্যাকেটের তথ্য অনুযায়ী: Fortune Basmati Rice 1KG"],
+        storageInstructions: "তাপ থেকে দূরে ঠান্ডা ও শুষ্ক স্থানে রাখুন।",
+        faqs: [
+          {
+            question: "পেমেন্টের আগে কি Fortune Basmati Rice 1KG হাতে পেয়ে পরীক্ষা করতে পারব?",
+            answer: "হ্যাঁ। লাকি স্টোরে পণ্য হাতে পাওয়ার পর পেমেন্টের আগে পরীক্ষা করা যায়।",
+            evidenceRefs: ["STORE_INSPECTION_POLICY"],
+          },
+          {
+            question: "Fortune পণ্যের জন্য লাকি স্টোরের ডেলিভারি এলাকা কতটুকু?",
+            answer: "চকবাজার থেকে ১ কিমি ব্যাসার্ধের মধ্যে ডেলিভারি হয়। ৳৫০০ বা তার বেশি অর্ডারে ডেলিভারি ফ্রি; এর কমে ৳৪০ চার্জ।",
+            evidenceRefs: ["STORE_DELIVERY_POLICY"],
+          },
+        ],
+      },
+    },
+    localizedFieldEvidence: {
+      bn: {
+        summary: ["PACK_FRONT", "STORE_INSPECTION_POLICY"],
+        highlights: [["PACK_FRONT"]],
+        storageInstructions: ["PACK_STORAGE"],
+      },
+    },
     evidenceManifest: {
       PACK_FRONT: {
         source: "PACKAGING",
@@ -17385,12 +17409,11 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     },
     fieldEvidence: {
       exactName: ["PACK_FRONT", "CATALOG_RECORD"],
-      brand: ["PACK_FRONT", "MFR_SPEC"],
+      brand: ["PACK_FRONT"],
       netQuantity: ["PACK_FRONT"],
       category: ["CATALOG_RECORD"],
-      summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
-      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
-      usageDirections: ["PACK_FRONT"],
+      summary: ["PACK_FRONT", "STORE_INSPECTION_POLICY"],
+      highlights: [["PACK_FRONT"]],
       storageInstructions: ["PACK_STORAGE"],
     },
   },
@@ -30613,22 +30636,19 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       { label: "Net Quantity", value: "1kg", evidenceRefs: ["PACK_FRONT"] },
       { label: "Catalog Category", value: "Rice", evidenceRefs: ["CATALOG_RECORD"] },
       { label: "Manufacturer", value: "Lucky Store Commodity Sourcing", evidenceRefs: ["MFR_SPEC"] },
-      { label: "Storage Guidance", value: "Store in a cool, dry place away from direct heat and sunlight", evidenceRefs: ["PACK_STORAGE"] },
+      { label: "Storage Guidance", value: "Store in a cool, dry place away from heat", evidenceRefs: ["PACK_STORAGE"] },
     ],
     highlights: [
       "Authentic on-pack Lucky Store Fresh specification: Miniket C (Nouka) Loose",
-      "Standard factory-sealed 1kg consumer packaging",
       "Produced and distributed by Lucky Store Commodity Sourcing",
     ],
-    usageDirections:
-      "Use as indicated on physical product packaging for optimal quality and freshness.",
     storageInstructions:
-      "Keep in a cool and dry location. Reseal tightly after each use to protect freshness.",
+      "Store in a cool, dry place away from heat.",
     faqs: [
       {
         question: "Can I inspect Miniket C (Nouka) Loose at my doorstep before payment?",
         answer:
-          "Yes. Lucky Store offers 100% doorstep inspection so you can examine packaging condition, net weight, and seals before paying.",
+          "Yes. Lucky Store's doorstep inspection policy lets you inspect your order before paying.",
         evidenceRefs: ["STORE_INSPECTION_POLICY"],
       },
       {
@@ -30689,8 +30709,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       netQuantity: ["PACK_FRONT"],
       category: ["CATALOG_RECORD"],
       summary: ["PACK_FRONT", "MFR_SPEC", "STORE_INSPECTION_POLICY"],
-      highlights: [["PACK_FRONT"], ["PACK_FRONT"], ["MFR_SPEC"]],
-      usageDirections: ["PACK_FRONT"],
+      highlights: [["PACK_FRONT"], ["MFR_SPEC"]],
       storageInstructions: ["PACK_STORAGE"],
     },
   },

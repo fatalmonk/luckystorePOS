@@ -17,7 +17,7 @@ interface ProductImageGalleryProps {
 }
 
 export function ProductImageGallery({ images, productName, category, sizes }: ProductImageGalleryProps) {
-  const autoplay = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
+  const autoplay = React.useMemo(() => Autoplay({ delay: 2000, stopOnInteraction: true }), []);
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
 
@@ -50,7 +50,7 @@ export function ProductImageGallery({ images, productName, category, sizes }: Pr
       <Carousel
         setApi={setApi}
         opts={{ containScroll: 'trimSnaps', loop: false }}
-        plugins={images.length > 1 ? [autoplay.current] : []}
+        plugins={images.length > 1 ? [autoplay] : []}
         aria-label={`${productName} product images`}
       >
         <CarouselContent>

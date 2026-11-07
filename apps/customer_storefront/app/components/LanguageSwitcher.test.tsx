@@ -4,8 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const mockPush = vi.fn();
+const mockPathname = vi.hoisted(() => ({ value: '/' }));
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
+  usePathname: () => mockPathname.value,
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: mockPush,
@@ -15,6 +16,7 @@ vi.mock('next/navigation', () => ({
 describe('LanguageSwitcher', () => {
   beforeEach(() => {
     mockPush.mockClear();
+    mockPathname.value = '/';
     vi.restoreAllMocks();
   });
 
@@ -40,6 +42,19 @@ describe('LanguageSwitcher', () => {
     fireEvent.click(screen.getByRole('link'));
 
     expect(mockPush).toHaveBeenCalledWith('/bn', { scroll: false });
+  });
+
+  it('offers Bengali on English routes', () => {
+    mockPathname.value = '/category/ice-cream';
+    render(<LanguageSwitcher />);
+    expect(screen.getByRole('link')).toHaveTextContent('বাংলা');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/bn/category/ice-cream');
+  });
+
+  it.each(['/login', '/signup', '/profile'])('offers the Bengali account route from %s', (pathname) => {
+    mockPathname.value = pathname;
+    render(<LanguageSwitcher />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', `/bn${pathname}`);
   });
 
   it('does not navigate on modified clicks (meta, ctrl, shift, alt)', () => {

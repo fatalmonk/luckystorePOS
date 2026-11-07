@@ -46,4 +46,21 @@ describe('CatalogLayout breadcrumb', () => {
     expect(within(breadcrumb).getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/category');
     expect(within(breadcrumb).getByText('Ice-Cream')).toHaveAttribute('aria-current', 'page');
   });
+
+  it('can hide its generic trail when the page already renders a category breadcrumb', () => {
+    render(
+      <CatalogLayout
+        products={[product]}
+        categorySlug="ice-cream"
+        categories={[{ id: 'ice-cream', slug: 'ice-cream', name: 'Ice-Cream', emoji: '🍨' }]}
+        theme=""
+        sort="best"
+        searchParams={{}}
+        locale="en"
+        hideBreadcrumb
+      />,
+    );
+
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).not.toBeInTheDocument();
+  });
 });

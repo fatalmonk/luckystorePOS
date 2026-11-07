@@ -5,7 +5,7 @@ import { useCart } from '../../hooks/useCart';
 import type { Product } from '../types';
 
 const mockSupabaseFrom = vi.hoisted(() => vi.fn());
-vi.mock('../supabase', () => ({ supabase: { from: mockSupabaseFrom } }));
+vi.mock('../supabase/client', () => ({ createClient: () => ({ from: mockSupabaseFrom }) }));
 
 const mockProduct: Product = {
   id: 'prod-1',

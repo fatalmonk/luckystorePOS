@@ -5,7 +5,10 @@ import type { FormEvent } from 'react';
 import { useAuth } from '../../components/providers/AuthProvider';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Minus, Money, Plus, WarningCircle } from '@phosphor-icons/react';
+import { Minus } from '@phosphor-icons/react/dist/csr/Minus';
+import { Money } from '@phosphor-icons/react/dist/csr/Money';
+import { Plus } from '@phosphor-icons/react/dist/csr/Plus';
+import { WarningCircle } from '@phosphor-icons/react/dist/csr/WarningCircle';
 import { Header } from '../../components/updated/Header';
 import { useToast } from '../../components/Toast';
 import { useCartContext } from '../../components/CartProvider';
@@ -146,6 +149,16 @@ function CheckoutContent() {
     checkoutTrackedRef.current = analyticsTracked || metaTracked;
   }, [cart, effectivePrice, isLoaded, total]);
 
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    notes: '',
+    deliverySlot: 'morning' as 'morning' | 'evening',
+    paymentMethod: 'cod' as 'cod' | 'bkash',
+    trxId: '',
+  });
+
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -162,16 +175,6 @@ function CheckoutContent() {
       router.replace(withLocale('/cart', locale));
     }
   }, [cart.length, isLoaded, isPlacing, locale, router]);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    notes: '',
-    deliverySlot: 'morning' as 'morning' | 'evening',
-    paymentMethod: 'cod' as 'cod' | 'bkash',
-    trxId: '',
-  });
 
   const [errors, setErrors] = useState<FormErrors>({});
 

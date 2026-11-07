@@ -38,6 +38,12 @@ describe('deferred auth', () => {
     view.unmount();
     expect(mocks.dispose).toHaveBeenCalledTimes(1);
   });
+  it.each(['/bn/login', '/bn/signup', '/bn/profile', '/bn/checkout'])('initializes auth on localized route %s', async (path) => {
+    mocks.path = path;
+    render(<AuthProvider><Consumer /></AuthProvider>);
+    await screen.findByText('anonymous');
+    expect(mocks.start).toHaveBeenCalledTimes(1);
+  });
   it('keeps session updates across public navigation and clears them on sign-out', async () => {
     let publish!: (session: any) => void;
     mocks.path = '/login';

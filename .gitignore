@@ -70,6 +70,8 @@ coverage/
 .parcel-cache/
 .turbo/
 .next/
+apps/customer_storefront/.next-turbo/
+apps/customer_storefront/.next-webpack/
 .expo/
 .nuxt/
 .svelte-kit/

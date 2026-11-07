@@ -268,7 +268,7 @@ describe('Bengali Homepage & Seamless Switching Contract', () => {
     const footerLogo = footerContainer.querySelector('img[src*="logo-bangla.svg"]');
     expect(footerLogo).not.toBeNull();
     expect(screen.getByRole('link', { name: 'যোগাযোগ' })).toHaveAttribute('href', '/contact');
-    expect(screen.getByRole('link', { name: 'পছন্দের তালিকা' })).toHaveAttribute('href', '/wishlist');
+    expect(screen.getByRole('link', { name: 'পছন্দের তালিকা' })).toHaveAttribute('href', '/bn/wishlist');
     expect(screen.getByRole('link', { name: 'গোপনীয়তা নীতি' })).toHaveAttribute('href', '/privacy');
   });
 });

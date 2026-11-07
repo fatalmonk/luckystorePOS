@@ -1,6 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bicycle, Gift, HandCoins, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+import { Bicycle } from '@phosphor-icons/react/dist/ssr/Bicycle';
+import { Gift } from '@phosphor-icons/react/dist/ssr/Gift';
+import { HandCoins } from '@phosphor-icons/react/dist/ssr/HandCoins';
+import { ShieldCheck } from '@phosphor-icons/react/dist/ssr/ShieldCheck';
 import { DELIVERY_POLICY } from '../lib/deliveryData';
 import { withLocale, type Locale } from '../lib/i18n/config';
 
