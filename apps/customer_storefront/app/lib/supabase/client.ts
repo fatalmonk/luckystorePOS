@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { buildSupabaseClientOptions } from '../observability/egressObservation';
 
 let browserClient: SupabaseClient | null | undefined;
 
@@ -13,6 +14,6 @@ export function createClient() {
     return browserClient;
   }
 
-  browserClient = createBrowserClient(url, key);
+  browserClient = createBrowserClient(url, key, buildSupabaseClientOptions());
   return browserClient;
 }

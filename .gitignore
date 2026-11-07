@@ -401,6 +401,10 @@ data/catalog/templates/*
 /system-docs/audits/2026-11-06-supabase-egress-phase2-measurement.md
 /system-docs/audits/2026-11-06-supabase-egress-phase3-results.md
 /system-docs/audits/2026-11-06-supabase-egress-phase4-report.md
+/system-docs/audits/lucky-store-phase-5-supabase-egress.md
+/system-docs/audits/lucky-store-supabase-egress-implementation-plan.md
+/system-docs/audits/luckystore-health-and-audit-2026-11-07.md
+/system-docs/audits/2026-11-07-egress-pr-0a-caller-census.md
 /system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
 /social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
 /googlesearchconsole.txt.rtf
