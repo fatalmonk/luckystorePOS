@@ -7,6 +7,12 @@ export interface BengaliOverlaySource {
   /** Populated by the shared search overlay when a published bn row exists. */
   bengaliName?: string;
   bengaliDescription?: string;
+  /**
+   * Set by the shared search overlay when the published-translation lookup for
+   * this product completed successfully — including when no row exists. Never
+   * set after a failed or partial lookup.
+   */
+  bengaliTranslationResolved?: boolean;
 }
 
 /** Resolved Bengali copy for a product id, when a published translation exists. */
@@ -41,14 +47,20 @@ export async function resolveBengaliOverlays(
     const id = String(product.id ?? '');
     if (!id) continue;
 
-    // A defined bengali field means the shared search overlay already saw a
-    // published bn row for this product (even if the value is an empty string).
-    if (product.bengaliName !== undefined || product.bengaliDescription !== undefined) {
-      overlays.set(id, {
-        name: product.bengaliName,
-        description: product.bengaliDescription,
-      });
+    if (product.bengaliTranslationResolved === true) {
+      // The shared search overlay already completed a successful published-
+      // translation lookup for this product. Reuse the in-memory result —
+      // including the "no published translation" case, which must NOT trigger
+      // another read.
+      if (product.bengaliName !== undefined || product.bengaliDescription !== undefined) {
+        overlays.set(id, {
+          name: product.bengaliName,
+          description: product.bengaliDescription,
+        });
+      }
     } else {
+      // Not verified: snapshot/fallback rows, products from a path that never
+      // ran the search overlay, or products whose lookup failed. Query the DB.
       missingIds.push(id);
     }
   }

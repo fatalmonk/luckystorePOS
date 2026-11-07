@@ -56,6 +56,14 @@ export interface Product {
   bengaliName?: string;
   bengaliDescription?: string;
   searchTerms?: string[];
+  /**
+   * True when a published Bengali translation lookup for this product completed
+   * successfully (including when no published row exists). Serializable so it
+   * survives Next Data Cache round-trips; lets downstream overlays skip
+   * redundant item_translations reads. Never set when the lookup failed or the
+   * translations table is unavailable.
+   */
+  bengaliTranslationResolved?: boolean;
 }
 
 // Search criteria value object

@@ -257,7 +257,10 @@ async function searchStorefrontProductsUncached({
           console.error('Failed to query item translations for search overlay:', batchError);
           translationDegraded = true;
         }
-      } else if (allTranslations.length > 0) {
+        // Conservative: on any batch error (including a missing translations
+        // table) no product is marked resolved, so downstream overlays keep
+        // their own DB fallback for genuinely unverified products.
+      } else {
         const translationMap = new Map<string, any>();
         for (const t of allTranslations) {
           translationMap.set(String(t.item_id), t);
@@ -270,6 +273,9 @@ async function searchStorefrontProductsUncached({
             item.bengaliDescription = trans.description;
             item.searchTerms = trans.search_terms;
           }
+          // The full id set was queried successfully; products without a row
+          // are verified to have no published Bengali translation.
+          item.bengaliTranslationResolved = true;
         }
       }
     } catch (err) {

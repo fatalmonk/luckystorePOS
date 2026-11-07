@@ -28,8 +28,8 @@ describe('resolveBengaliOverlays', () => {
   it('reuses in-memory bengali fields without any database call', async () => {
     const supabase = createMockSupabase();
     const products = [
-      { id: 'p1', bengaliName: 'চা', bengaliDescription: 'তাজা চা' },
-      { id: 'p2', bengaliName: 'কফি', bengaliDescription: undefined },
+      { id: 'p1', bengaliName: 'চা', bengaliDescription: 'তাজা চা', bengaliTranslationResolved: true },
+      { id: 'p2', bengaliName: 'কফি', bengaliDescription: undefined, bengaliTranslationResolved: true },
     ];
 
     const overlays = await resolveBengaliOverlays(supabase, products);
@@ -39,13 +39,14 @@ describe('resolveBengaliOverlays', () => {
     expect(overlays.get('p2')).toEqual({ name: 'কফি', description: undefined });
   });
 
-  it('queries only products missing in-memory translations', async () => {
+  it('queries only products whose translation status is unknown', async () => {
     const supabase = createMockSupabase([
       { item_id: 'p3', name: 'দুধ', description: 'খাঁটি দুধ' },
     ]);
     const products = [
-      { id: 'p1', bengaliName: 'চা' },
-      { id: 'p2' },
+      { id: 'p1', bengaliName: 'চা', bengaliTranslationResolved: true },
+      // Verified as having NO published translation: must not be re-queried.
+      { id: 'p2', bengaliTranslationResolved: true },
       { id: 'p3' },
     ];
 
@@ -53,11 +54,37 @@ describe('resolveBengaliOverlays', () => {
 
     expect(supabase.inCalls).toHaveBeenCalledTimes(1);
     const requestedIds = supabase.inCalls.mock.calls[0][1];
-    expect(requestedIds).toEqual(['p2', 'p3']);
+    expect(requestedIds).toEqual(['p3']);
     expect(overlays.get('p1')).toEqual({ name: 'চা', description: undefined });
     expect(overlays.get('p3')).toEqual({ name: 'দুধ', description: 'খাঁটি দুধ' });
-    // Missing translation: no entry, caller keeps base-language content.
+    // Verified-untranslated and missing translation: no entry, caller keeps
+    // base-language content.
     expect(overlays.has('p2')).toBe(false);
+  });
+
+  it('triggers ZERO database calls when every product is resolved without translations', async () => {
+    const supabase = createMockSupabase();
+    const products = Array.from({ length: 50 }, (_, i) => ({
+      id: `p${i}`,
+      bengaliTranslationResolved: true,
+    }));
+
+    const overlays = await resolveBengaliOverlays(supabase, products);
+
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(overlays.size).toBe(0);
+  });
+
+  it('queries products with bengali fields but no resolved flag (failed lookup upstream)', async () => {
+    const supabase = createMockSupabase([{ item_id: 'p1', name: 'চা' }]);
+    // bengaliName present but lookup not marked resolved (e.g. stale snapshot
+    // data): conservatively re-verify via DB.
+    const products = [{ id: 'p1', bengaliName: 'চা' }];
+
+    const overlays = await resolveBengaliOverlays(supabase, products);
+
+    expect(supabase.inCalls).toHaveBeenCalledTimes(1);
+    expect(overlays.get('p1')).toEqual({ name: 'চা', description: undefined });
   });
 
   it('batches missing ids in chunks of 100', async () => {
@@ -75,7 +102,10 @@ describe('resolveBengaliOverlays', () => {
     const supabase = createMockSupabase([{ item_id: 'p2', name: 'কফি' }]);
 
     const [a, b] = await Promise.all([
-      resolveBengaliOverlays(supabase, [{ id: 'p1', bengaliName: 'চা' }, { id: 'p2' }]),
+      resolveBengaliOverlays(supabase, [
+        { id: 'p1', bengaliName: 'চা', bengaliTranslationResolved: true },
+        { id: 'p2' },
+      ]),
       resolveBengaliOverlays(supabase, [{ id: 'p2' }, { id: 'p3' }]),
     ]);
 
@@ -87,7 +117,10 @@ describe('resolveBengaliOverlays', () => {
   it('degrades gracefully on a DB error for missing ids', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const supabase = createMockSupabase([], { error: { message: 'timeout' } });
-    const products = [{ id: 'p1', bengaliName: 'চা' }, { id: 'p2' }];
+    const products = [
+      { id: 'p1', bengaliName: 'চা', bengaliTranslationResolved: true },
+      { id: 'p2' },
+    ];
 
     const overlays = await resolveBengaliOverlays(supabase, products);
 
