@@ -606,6 +606,107 @@ describe('CachingProductAdapter', () => {
       expect(inner.getByIdPrefix).toHaveBeenCalledTimes(2);
     });
 
+    it('does not repopulate an invalidated cache when an in-flight search settles after invalidate()', async () => {
+      const gate = deferred<PaginatedProducts>();
+      inner = createFakeAdapter({
+        search: vi.fn()
+          .mockReturnValueOnce(gate.promise)
+          .mockResolvedValueOnce({ products: [fakeProduct('fresh')], hasMore: false }),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const pending = adapter.search({ query: 'tea' });
+      adapter.invalidate({ search: true });
+      gate.resolve({ products: [fakeProduct('stale')], hasMore: false });
+      // The waiting caller still receives its resolved value.
+      await expect(pending).resolves.toEqual({ products: [fakeProduct('stale')], hasMore: false });
+
+      // Cache must be empty: the stale response was not committed.
+      expect(adapter.getStats().searchEntries).toBe(0);
+
+      // A later search refetches and caches fresh data.
+      const fresh = await adapter.search({ query: 'tea' });
+      expect(inner.search).toHaveBeenCalledTimes(2);
+      expect(fresh.products[0]?.name).toBe('Product fresh');
+      expect(adapter.getStats().searchEntries).toBe(1);
+    });
+
+    it('does not repopulate an invalidated cache when an in-flight getById settles after full invalidate()', async () => {
+      const gate = deferred<Product | null>();
+      inner = createFakeAdapter({
+        getById: vi.fn()
+          .mockReturnValueOnce(gate.promise)
+          .mockResolvedValueOnce(fakeProduct('fresh')),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const pending = adapter.getById(createProductId('1'));
+      adapter.invalidate(); // full clear bumps all domains
+      gate.resolve(fakeProduct('stale'));
+      await expect(pending).resolves.toEqual(fakeProduct('stale'));
+
+      expect(adapter.getStats().productEntries).toBe(0);
+      const fresh = await adapter.getById(createProductId('1'));
+      expect(fresh).toEqual(fakeProduct('fresh'));
+      expect(inner.getById).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not commit an in-flight prefix result after product invalidation', async () => {
+      const gate = deferred<Product | null>();
+      inner = createFakeAdapter({
+        getByIdPrefix: vi.fn()
+          .mockReturnValueOnce(gate.promise)
+          .mockResolvedValueOnce(fakeProduct('fresh')),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const pending = adapter.getByIdPrefix('ae09a3ef');
+      adapter.invalidate({ products: [createProductId('other')] });
+      gate.resolve(fakeProduct('stale'));
+      await expect(pending).resolves.toEqual(fakeProduct('stale'));
+
+      expect(adapter.getStats().productEntries).toBe(0);
+      await adapter.getByIdPrefix('ae09a3ef');
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not commit in-flight categories after category invalidation but leaves search cache intact', async () => {
+      const catGate = deferred<Category[]>();
+      inner = createFakeAdapter({
+        getCategories: vi.fn()
+          .mockReturnValueOnce(catGate.promise)
+          .mockResolvedValueOnce([]),
+        search: vi.fn().mockResolvedValue({ products: [fakeProduct('1')], hasMore: false }),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      await adapter.search({ query: 'tea' }); // populate search cache
+      const pending = adapter.getCategories();
+      adapter.invalidate({ categories: true });
+      catGate.resolve([]);
+      await pending;
+
+      expect(adapter.getStats().categoryEntries).toBe(0);
+      // Unrelated search cache survives a category-only invalidation.
+      expect(adapter.getStats().searchEntries).toBe(1);
+
+      await adapter.getCategories();
+      expect(inner.getCategories).toHaveBeenCalledTimes(2);
+    });
+
+    it('commits normally when invalidation targets an unrelated domain', async () => {
+      const gate = deferred<PaginatedProducts>();
+      inner = createFakeAdapter({ search: vi.fn().mockReturnValue(gate.promise) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const pending = adapter.search({ query: 'tea' });
+      adapter.invalidate({ categories: true }); // unrelated domain
+      gate.resolve({ products: [fakeProduct('1')], hasMore: false });
+      await pending;
+
+      expect(adapter.getStats().searchEntries).toBe(1);
+    });
+
     it('serves subsequent calls from cache once an in-flight request settles', async () => {
       const gate = deferred<Product | null>();
       inner = createFakeAdapter({ getById: vi.fn().mockReturnValue(gate.promise) });

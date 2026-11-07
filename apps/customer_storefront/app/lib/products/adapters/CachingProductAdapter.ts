@@ -78,6 +78,10 @@ export class CachingProductAdapter implements ProductDataPort {
   // Coalesces concurrent identical misses into a single inner call. Entries are
   // removed on settle; failures are never cached.
   private readonly inFlight = new Map<string, Promise<unknown>>();
+  // Bumped per cache domain on invalidate(); in-flight responses captured under
+  // an older generation must not repopulate caches cleared while they were
+  // pending. Domain counters keep unrelated caches committable.
+  private readonly generations = { search: 0, product: 0, category: 0 };
 
   constructor(
     private readonly inner: ProductDataPort,
@@ -95,6 +99,19 @@ export class CachingProductAdapter implements ProductDataPort {
     return promise;
   }
 
+  /**
+   * Guard a cache write against invalidation races: commit only when no
+   * invalidate() touching this domain ran between the inner fetch starting and
+   * settling. The value is still returned to the waiting callers either way.
+   */
+  private commitIfCurrent(
+    domain: keyof typeof this.generations,
+    startedAtGeneration: number,
+    commit: () => void
+  ): void {
+    if (startedAtGeneration === this.generations[domain]) commit();
+  }
+
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const key = hashCriteria(criteria);
     const cached = this.searchCache.get(key);
@@ -103,13 +120,16 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
+    const startedAtGeneration = this.generations.search;
     return this.deduped(`search:${key}`, async () => {
       const result = await this.inner.search(criteria);
-      this.searchCache.set(key, {
-        data: result,
-        expiresAt: Date.now() + this.config.searchTtlMs,
+      this.commitIfCurrent('search', startedAtGeneration, () => {
+        this.searchCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.searchTtlMs,
+        });
+        evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
       });
-      evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
       return result;
     });
   }
@@ -122,13 +142,16 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
+    const startedAtGeneration = this.generations.product;
     return this.deduped(`product:${key}`, async () => {
       const result = await this.inner.getById(id);
-      this.productCache.set(key, {
-        data: result,
-        expiresAt: Date.now() + this.config.productTtlMs,
+      this.commitIfCurrent('product', startedAtGeneration, () => {
+        this.productCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.productTtlMs,
+        });
+        evictIfNeeded(this.productCache, this.config.maxProductEntries);
       });
-      evictIfNeeded(this.productCache, this.config.maxProductEntries);
       return result;
     });
   }
@@ -174,16 +197,19 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
+    const startedAtGeneration = this.generations.product;
     return this.deduped(`inflight:${key}`, async () => {
       // RPC failures propagate and are never cached as null results, so
       // callers can distinguish a network/DB error from a genuine prefix miss.
       const result = await this.inner.getByIdPrefix(normalized);
 
-      this.productCache.set(key, {
-        data: result,
-        expiresAt: Date.now() + this.config.productTtlMs,
+      this.commitIfCurrent('product', startedAtGeneration, () => {
+        this.productCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.productTtlMs,
+        });
+        evictIfNeeded(this.productCache, this.config.maxProductEntries);
       });
-      evictIfNeeded(this.productCache, this.config.maxProductEntries);
 
       return result;
     });
@@ -197,11 +223,14 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
+    const startedAtGeneration = this.generations.category;
     return this.deduped('categories:all', async () => {
       const result = await this.inner.getCategories();
-      this.categoryCache.set(key, {
-        data: result,
-        expiresAt: Date.now() + this.config.categoryTtlMs,
+      this.commitIfCurrent('category', startedAtGeneration, () => {
+        this.categoryCache.set(key, {
+          data: result,
+          expiresAt: Date.now() + this.config.categoryTtlMs,
+        });
       });
       return result;
     });
@@ -221,8 +250,13 @@ export class CachingProductAdapter implements ProductDataPort {
     products?: ProductId[];
     categories?: boolean;
   }): void {
+    // Bump domain generations first so in-flight fetches started before this
+    // call cannot commit stale results into the cleared caches when they settle.
     if (!pattern) {
       // Invalidate all
+      this.generations.search += 1;
+      this.generations.product += 1;
+      this.generations.category += 1;
       this.searchCache.clear();
       this.productCache.clear();
       this.categoryCache.clear();
@@ -230,10 +264,14 @@ export class CachingProductAdapter implements ProductDataPort {
     }
 
     if (pattern.search) {
+      this.generations.search += 1;
       this.searchCache.clear();
     }
 
     if (pattern.products) {
+      // Product changes can also alter search result composition.
+      this.generations.product += 1;
+      this.generations.search += 1;
       for (const id of pattern.products) {
         this.productCache.delete(String(id));
       }
@@ -247,6 +285,7 @@ export class CachingProductAdapter implements ProductDataPort {
     }
 
     if (pattern.categories) {
+      this.generations.category += 1;
       this.categoryCache.clear();
     }
   }
