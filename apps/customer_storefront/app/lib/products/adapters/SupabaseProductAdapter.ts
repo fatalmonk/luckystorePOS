@@ -208,46 +208,51 @@ export class SupabaseProductAdapter implements ProductDataPort {
   }
 
   async getByIdPrefix(prefix: string): Promise<Product | null> {
-    const cleanPrefix = prefix.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
-    if (!cleanPrefix || cleanPrefix.length < 4) return null;
+    const trimmed = prefix.trim();
+    if (!trimmed) return null;
 
-    // Paginate full active catalog to resolve slug prefix without truncation
-    const pageSize = 500;
-    let offset = 0;
-    const matches: any[] = [];
-
-    while (true) {
-      const { data: rpcData, error: rpcError } = await this.supabase.rpc('search_storefront_catalog', {
-        p_store_id: this.storeId,
-        p_query: '',
-        p_category_id: null,
-        p_limit: pageSize,
-        p_offset: offset,
-      });
-
-      if (rpcError) throw new Error(`getByIdPrefix RPC failed: ${rpcError.message}`);
-
-      const rows = (rpcData ?? []) as unknown[];
-      if (rows.length === 0) break;
-
-      for (const row of rows as any[]) {
-        const rowId = ((row.id ?? row.item_id) as string)?.replace(/-/g, '').toLowerCase();
-        if (rowId?.startsWith(cleanPrefix)) {
-          matches.push(row);
-        }
-      }
-
-      if (rows.length < pageSize) break;
-      offset += pageSize;
+    let normalized: string;
+    // Canonical 8-4-4-4-12 UUID
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(trimmed)) {
+      normalized = trimmed.replace(/-/g, '').toLowerCase();
+    } else if (/^[0-9a-fA-F]{4,32}$/.test(trimmed)) {
+      // 4-32 contiguous hexadecimal characters (no arbitrary hyphens permitted)
+      normalized = trimmed.toLowerCase();
+    } else {
+      // Reject arbitrary embedded hyphens, invalid characters, control characters
+      return null;
     }
 
-    // Fail closed: require exactly 1 unique match; reject ambiguous collisions (>1) or 0 matches
-    if (matches.length !== 1) return null;
+    // Single bounded RPC — returns at most 2 candidate IDs using a UUID range
+    // scan on the existing items primary-key B-tree. Never calls
+    // search_storefront_catalog or loops over catalog pages.
+    const { data: rpcData, error: rpcError } = await this.supabase.rpc(
+      'resolve_storefront_item_prefix_v1',
+      { p_store_id: this.storeId, p_prefix: normalized },
+    );
 
-    const fullId = String((matches[0] as any).id ?? (matches[0] as any).item_id);
+    if (rpcError) {
+      // Propagate RPC failures through existing error-handling contracts.
+      // Never silently fall back to the old full-catalog scan.
+      throw new Error(`getByIdPrefix resolver RPC failed: ${rpcError.message}`);
+    }
 
-    // Delegate to getById for complete storefront product projection (including description)
-    return this.getById(createProductId(fullId));
+    const candidates = (rpcData ?? []) as Array<{ item_id: string }>;
+
+    // 0 matches → no product found.
+    // 2 matches → ambiguous prefix; fail closed.
+    // Any other count is defensive: treat as ambiguous.
+    if (candidates.length !== 1) return null;
+
+    const rawId = candidates[0]?.item_id;
+    // Validate that the returned value is a well-formed UUID before delegating.
+    if (!rawId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(rawId)) {
+      return null;
+    }
+
+    // Delegate to the existing authoritative getById for the full product
+    // projection (description, stock, categories, Bengali content, etc.).
+    return this.getById(createProductId(rawId));
   }
 
   async getCategories(): Promise<Category[]> {
