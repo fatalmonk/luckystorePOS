@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { buildSupabaseClientOptions } from './observability/egressObservation';
 
 let client: SupabaseClient | null = null;
 
@@ -12,7 +13,7 @@ function getClient(): SupabaseClient {
     client = createClient(
       url || 'https://placeholder.supabase.co',
       anon || 'placeholder',
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false }, ...buildSupabaseClientOptions() }
     );
   }
   return client;
