@@ -517,4 +517,107 @@ describe('CachingProductAdapter', () => {
       expect(inner.getById).toHaveBeenCalledTimes(4);
     });
   });
+
+  describe('request deduplication (in-flight coalescing)', () => {
+    function deferred<T>() {
+      let resolve!: (v: T) => void;
+      let reject!: (e: unknown) => void;
+      const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+      return { promise, resolve, reject };
+    }
+
+    it('coalesces concurrent identical search calls into one inner call', async () => {
+      const gate = deferred<PaginatedProducts>();
+      inner = createFakeAdapter({ search: vi.fn().mockReturnValue(gate.promise) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const [a, b] = [adapter.search({ query: 'tea' }), adapter.search({ query: 'tea' })];
+      gate.resolve({ products: [fakeProduct('1')], hasMore: false });
+      const results = await Promise.all([a, b]);
+
+      expect(inner.search).toHaveBeenCalledTimes(1);
+      expect(results[0]).toEqual(results[1]);
+    });
+
+    it('does not coalesce searches with different criteria', async () => {
+      const gate1 = deferred<PaginatedProducts>();
+      const gate2 = deferred<PaginatedProducts>();
+      inner = createFakeAdapter({
+        search: vi.fn()
+          .mockReturnValueOnce(gate1.promise)
+          .mockReturnValueOnce(gate2.promise),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const a = adapter.search({ query: 'tea' });
+      const b = adapter.search({ query: 'coffee' });
+      gate1.resolve({ products: [], hasMore: false });
+      gate2.resolve({ products: [], hasMore: false });
+      await Promise.all([a, b]);
+
+      expect(inner.search).toHaveBeenCalledTimes(2);
+    });
+
+    it('coalesces concurrent identical getByIdPrefix calls', async () => {
+      const gate = deferred<Product | null>();
+      inner = createFakeAdapter({ getByIdPrefix: vi.fn().mockReturnValue(gate.promise) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const [a, b] = [adapter.getByIdPrefix('ae09a3ef'), adapter.getByIdPrefix('ae09a3ef')];
+      gate.resolve(fakeProduct('1'));
+      const results = await Promise.all([a, b]);
+
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+      expect(results[0]).toEqual(results[1]);
+    });
+
+    it('coalesces concurrent getCategories calls', async () => {
+      const gate = deferred<Category[]>();
+      inner = createFakeAdapter({ getCategories: vi.fn().mockReturnValue(gate.promise) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const [a, b] = [adapter.getCategories(), adapter.getCategories()];
+      gate.resolve([]);
+      await Promise.all([a, b]);
+
+      expect(inner.getCategories).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not cache or coalesce after an inner failure — next call retries', async () => {
+      const gate = deferred<Product | null>();
+      inner = createFakeAdapter({
+        getByIdPrefix: vi.fn()
+          .mockReturnValueOnce(gate.promise)
+          .mockResolvedValueOnce(fakeProduct('1')),
+      });
+      const adapter = new CachingProductAdapter(inner);
+
+      const first = adapter.getByIdPrefix('ae09a3ef');
+      const second = adapter.getByIdPrefix('ae09a3ef');
+      gate.reject(new Error('resolver RPC failed'));
+
+      await expect(first).rejects.toThrow('resolver RPC failed');
+      await expect(second).rejects.toThrow('resolver RPC failed');
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(1);
+
+      // Failure was not cached: a later call hits the inner adapter again and succeeds.
+      const recovered = await adapter.getByIdPrefix('ae09a3ef');
+      expect(recovered).not.toBeNull();
+      expect(inner.getByIdPrefix).toHaveBeenCalledTimes(2);
+    });
+
+    it('serves subsequent calls from cache once an in-flight request settles', async () => {
+      const gate = deferred<Product | null>();
+      inner = createFakeAdapter({ getById: vi.fn().mockReturnValue(gate.promise) });
+      const adapter = new CachingProductAdapter(inner);
+
+      const pending = adapter.getById(createProductId('1'));
+      gate.resolve(fakeProduct('1'));
+      await pending;
+
+      await adapter.getById(createProductId('1'));
+      expect(inner.getById).toHaveBeenCalledTimes(1);
+      expect(adapter.getStats().productEntries).toBe(1);
+    });
+  });
 });

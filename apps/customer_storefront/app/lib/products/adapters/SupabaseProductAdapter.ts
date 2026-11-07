@@ -96,13 +96,36 @@ function mapRowToCategory(row: CategoryRow, emojiResolver?: EmojiResolver): Cate
   };
 }
 
+export interface SupabaseProductAdapterOptions {
+  /**
+   * TTL in ms for the instance-level category cache used by internal
+   * search()/getById() emoji resolution. Default: 60_000 (60s).
+   * The cache is per adapter instance, so store/tenant boundaries follow the
+   * adapter's own storeId and Supabase client.
+   */
+  categoriesTtlMs?: number;
+  /** Injectable clock for tests. Default: Date.now */
+  now?: () => number;
+}
+
+const DEFAULT_CATEGORIES_TTL_MS = 60_000;
+
 export class SupabaseProductAdapter implements ProductDataPort {
+  private readonly categoriesTtlMs: number;
+  private readonly now: () => number;
+  private categoriesCache: { data: Category[]; expiresAt: number } | null = null;
+  private categoriesInFlight: Promise<Category[]> | null = null;
+
   constructor(
     private readonly supabase: SupabaseClient,
     private readonly brandParser: BrandParser,
     private readonly emojiResolver: EmojiResolver,
-    private readonly storeId: string = STOREFRONT_STORE_ID
-  ) {}
+    private readonly storeId: string = STOREFRONT_STORE_ID,
+    options?: SupabaseProductAdapterOptions
+  ) {
+    this.categoriesTtlMs = options?.categoriesTtlMs ?? DEFAULT_CATEGORIES_TTL_MS;
+    this.now = options?.now ?? Date.now;
+  }
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const { limit, offset } = resolveProductSearchPagination(criteria);
@@ -256,6 +279,32 @@ export class SupabaseProductAdapter implements ProductDataPort {
   }
 
   async getCategories(): Promise<Category[]> {
+    // Bounded instance cache: prevents repeated identical PostgREST reads when
+    // search()/getById() run multiple times per request or per warm instance.
+    // Scoped to this adapter instance, so storeId/client tenant boundaries hold.
+    if (this.categoriesCache && this.categoriesCache.expiresAt > this.now()) {
+      return this.categoriesCache.data;
+    }
+
+    // Coalesce concurrent fetches into a single RPC round-trip.
+    if (this.categoriesInFlight) {
+      return this.categoriesInFlight;
+    }
+
+    this.categoriesInFlight = this.fetchCategories()
+      .then((data) => {
+        this.categoriesCache = { data, expiresAt: this.now() + this.categoriesTtlMs };
+        return data;
+      })
+      .finally(() => {
+        // Failures are never cached: the next call retries the read.
+        this.categoriesInFlight = null;
+      });
+
+    return this.categoriesInFlight;
+  }
+
+  private async fetchCategories(): Promise<Category[]> {
     const { data, error } = await this.supabase
       .from('categories')
       .select('id, slug, name, emoji, parent_id, display_order, active')

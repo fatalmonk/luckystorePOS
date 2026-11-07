@@ -75,11 +75,25 @@ export class CachingProductAdapter implements ProductDataPort {
   private readonly searchCache = new Map<string, CacheEntry<PaginatedProducts>>();
   private readonly productCache = new Map<string, CacheEntry<Product | null>>();
   private readonly categoryCache = new Map<string, CacheEntry<Category[]>>();
+  // Coalesces concurrent identical misses into a single inner call. Entries are
+  // removed on settle; failures are never cached.
+  private readonly inFlight = new Map<string, Promise<unknown>>();
 
   constructor(
     private readonly inner: ProductDataPort,
     private readonly config: CacheConfig = DEFAULT_CONFIG
   ) {}
+
+  private async deduped<T>(key: string, fetch: () => Promise<T>): Promise<T> {
+    const existing = this.inFlight.get(key);
+    if (existing) return existing as Promise<T>;
+
+    const promise = fetch().finally(() => {
+      this.inFlight.delete(key);
+    });
+    this.inFlight.set(key, promise);
+    return promise;
+  }
 
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const key = hashCriteria(criteria);
@@ -89,14 +103,15 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.search(criteria);
-    this.searchCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.searchTtlMs,
+    return this.deduped(`search:${key}`, async () => {
+      const result = await this.inner.search(criteria);
+      this.searchCache.set(key, {
+        data: result,
+        expiresAt: Date.now() + this.config.searchTtlMs,
+      });
+      evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
+      return result;
     });
-    evictIfNeeded(this.searchCache, this.config.maxSearchEntries);
-
-    return result;
   }
 
   async getById(id: ProductId): Promise<Product | null> {
@@ -107,14 +122,15 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.getById(id);
-    this.productCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.productTtlMs,
+    return this.deduped(`product:${key}`, async () => {
+      const result = await this.inner.getById(id);
+      this.productCache.set(key, {
+        data: result,
+        expiresAt: Date.now() + this.config.productTtlMs,
+      });
+      evictIfNeeded(this.productCache, this.config.maxProductEntries);
+      return result;
     });
-    evictIfNeeded(this.productCache, this.config.maxProductEntries);
-
-    return result;
   }
 
   /**
@@ -158,22 +174,19 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    let result: Product | null;
-    try {
-      result = await this.inner.getByIdPrefix(normalized);
-    } catch (err) {
-      // Do not cache RPC failures as null results — propagate so callers can
-      // distinguish a network/DB error from a genuine prefix miss.
-      throw err;
-    }
+    return this.deduped(`inflight:${key}`, async () => {
+      // RPC failures propagate and are never cached as null results, so
+      // callers can distinguish a network/DB error from a genuine prefix miss.
+      const result = await this.inner.getByIdPrefix(normalized);
 
-    this.productCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.productTtlMs,
+      this.productCache.set(key, {
+        data: result,
+        expiresAt: Date.now() + this.config.productTtlMs,
+      });
+      evictIfNeeded(this.productCache, this.config.maxProductEntries);
+
+      return result;
     });
-    evictIfNeeded(this.productCache, this.config.maxProductEntries);
-
-    return result;
   }
 
   async getCategories(): Promise<Category[]> {
@@ -184,13 +197,14 @@ export class CachingProductAdapter implements ProductDataPort {
       return cached.data;
     }
 
-    const result = await this.inner.getCategories();
-    this.categoryCache.set(key, {
-      data: result,
-      expiresAt: Date.now() + this.config.categoryTtlMs,
+    return this.deduped('categories:all', async () => {
+      const result = await this.inner.getCategories();
+      this.categoryCache.set(key, {
+        data: result,
+        expiresAt: Date.now() + this.config.categoryTtlMs,
+      });
+      return result;
     });
-
-    return result;
   }
 
   /**
