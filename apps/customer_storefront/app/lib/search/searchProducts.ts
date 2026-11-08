@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache';
 import { supabase as defaultSupabase } from '../supabase';
+import { isAnonymousStorefrontClient } from '../supabase/anonymousStorefront';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '../products/types';
 import { createProductId, resolveProductSearchPagination } from '../products/types';
@@ -79,8 +80,15 @@ export async function searchStorefrontProducts(options: SearchOptions = {}): Pro
   };
 
   // Test and custom callers may provide a distinct client; keep those isolated
-  // from the shared production catalog cache.
-  if (options.supabaseClient && options.supabaseClient !== defaultSupabase) {
+  // from the shared production catalog cache. The dedicated anonymous storefront
+  // client is not isolated — it reads the same public catalog over the same URL
+  // and credentials as the default client — so it must keep sharing the Data
+  // Cache rather than forcing an uncached read on every render.
+  if (
+    options.supabaseClient &&
+    options.supabaseClient !== defaultSupabase &&
+    !isAnonymousStorefrontClient(options.supabaseClient)
+  ) {
     try {
       return await searchStorefrontProductsUncached({ ...cacheOptions, supabaseClient: options.supabaseClient });
     } catch (err) {
