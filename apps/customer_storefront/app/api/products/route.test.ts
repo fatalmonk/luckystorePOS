@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   getById: vi.fn(),
   createRepository: vi.fn(() => ({ repo: { search: mocks.search, getById: mocks.getById } })),
+  createAnonymousRepository: vi.fn(() => ({ repo: { search: mocks.search, getById: mocks.getById } })),
   snapshot: [{
     id: 'snapshot-product-id',
     name: 'Snapshot Product',
@@ -20,6 +21,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../../lib/products/index', () => ({
   createProductRepository: mocks.createRepository,
+  createAnonymousStorefrontProductRepository: mocks.createAnonymousRepository,
   createProductId: vi.fn((id: string) => id),
 }));
 vi.mock('../../lib/supabase', () => ({ supabase: {} }));
@@ -114,6 +116,6 @@ describe('GET /api/products pagination', () => {
     const response = await GET(new NextRequest('https://store.test/api/products?id=live-product-id&fresh=1'));
 
     expect(response.status).toBe(200);
-    expect(mocks.createRepository).toHaveBeenCalledWith({}, { enableCache: false });
+    expect(mocks.createAnonymousRepository).toHaveBeenCalledWith({ enableCache: false });
   });
 });

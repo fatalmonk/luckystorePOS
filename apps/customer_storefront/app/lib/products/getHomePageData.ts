@@ -1,4 +1,4 @@
-import { createProductRepository, RuleBasedBrandParser } from './index';
+import { createAnonymousStorefrontProductRepository, RuleBasedBrandParser } from './index';
 import { supabase } from '../supabase';
 import { getCategoryGroup, normalizeCategorySlug, BENGALI_CATEGORY_NAMES } from '../types';
 import type { Product } from '../types';
@@ -188,7 +188,7 @@ const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
 ];
 
 export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
-  const { repo } = createProductRepository(supabase);
+  const { repo } = createAnonymousStorefrontProductRepository();
   let campaignLoadFailed = false;
   let campaignLoadError: unknown;
   // The campaign query is independent of the catalogue and translations, so

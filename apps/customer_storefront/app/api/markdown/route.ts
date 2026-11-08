@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProductRepository, createProductId } from '../../lib/products/index';
+import { createAnonymousStorefrontProductRepository, createProductId } from '../../lib/products/index';
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
 import { toProductSlug, extractIdFromSlug, isBareUuid } from '../../lib/products/slugify';
@@ -479,7 +479,7 @@ export async function GET(req: NextRequest) {
   const path = searchParams.get('path') || '/';
 
   let markdown = '';
-  const { repo } = createProductRepository(supabase);
+  const { repo } = createAnonymousStorefrontProductRepository();
 
   try {
     if (path === '/' || path === '') {

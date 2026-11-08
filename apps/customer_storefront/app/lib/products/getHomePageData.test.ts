@@ -12,6 +12,7 @@ vi.mock('../supabase', () => ({ supabase: { from: supabaseFrom } }));
 
 vi.mock('./index', () => ({
   createProductRepository: vi.fn(() => ({ repo: { search, getCategories, getById: vi.fn() } })),
+  createAnonymousStorefrontProductRepository: vi.fn(() => ({ repo: { search, getCategories, getById: vi.fn() } })),
   RuleBasedBrandParser: vi.fn().mockImplementation(function (this: { parse: (value: string) => string }) {
     this.parse = (value: string) => value;
   }),

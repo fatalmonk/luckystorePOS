@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProductRepository, createProductId } from '../../lib/products/index';
+import { createAnonymousStorefrontProductRepository, createProductId } from '../../lib/products/index';
 import { CATALOG_SNAPSHOT_PRODUCTS } from '../../lib/products/getHomePageData';
-import { supabase } from '../../lib/supabase';
 import { toProductSlug } from '../../lib/products/slugify';
 
 export const dynamic = 'force-dynamic';
@@ -35,8 +34,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const { repo } = requireFreshProduct
-      ? createProductRepository(supabase, { enableCache: false })
-      : createProductRepository(supabase);
+      ? createAnonymousStorefrontProductRepository({ enableCache: false })
+      : createAnonymousStorefrontProductRepository();
 
     if (id) {
       const product = await repo.getById(createProductId(id));
