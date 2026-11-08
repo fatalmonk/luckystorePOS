@@ -13,19 +13,25 @@
  *
  * Pure helpers are exported for tests. CLI modes:
  *   manifest --commit <sha> --out <file> [--migrations <version:name:path,...>] [--no-migration-change --reason <text>] [--rpcs <file>]
- *   verify-history --manifest <file> --expected-commit <sha> --expected-ref <ref> --local-versions <file> --project-evidence <file> [--schema-evidence <file>] [--out <file>]
- *   check (compat) --manifest <file> --commit <sha> --expected-ref <ref> --local-versions <file> --project-evidence <file>
+ *   verify-history --manifest <file> --expected-commit <sha> --expected-ref <ref> --local-versions <file> [--access-token-env <ENV>] [--schema-evidence <file>] [--out <file>]
+ *   check --manifest <file> --commit <sha> --expected-ref <ref> --local-versions <file> [--access-token-env <ENV>]
  *   verify-provenance --expected-sha <sha> --health-url <url>
  */
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import http from 'node:http';
-import { PROJECT_HISTORY_EVIDENCE_SCHEMA } from './collect-release-evidence.mjs';
+import {
+  collectProjectMigrationEvidence,
+  PROJECT_HISTORY_EVIDENCE_SCHEMA,
+} from './collect-release-evidence.mjs';
 
 export const MANIFEST_SCHEMA = 'luckystore.release-migrations/v1';
 export const HISTORY_SCHEMA = 'luckystore.release-migration-history/v1';
+const PROJECT_EVIDENCE_MAX_AGE_MS = 15 * 60 * 1000;
+const SCHEMA_EVIDENCE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export function sha256(content) {
   return createHash('sha256').update(content).digest('hex');
@@ -38,6 +44,38 @@ function assertCommitSha(commitSha, label = 'commit SHA') {
   return String(commitSha).toLowerCase();
 }
 
+export function createGitCommitFileReader(commitSha, { execFile = execFileSync } = {}) {
+  const normalizedCommit = assertCommitSha(commitSha, 'reviewed commit SHA');
+  let resolvedCommit;
+  try {
+    resolvedCommit = String(execFile(
+      'git',
+      ['rev-parse', '--verify', `${normalizedCommit}^{commit}`],
+      { encoding: 'utf8' },
+    )).trim().toLowerCase();
+  } catch {
+    throw new Error(`Reviewed commit is not available in this repository: ${normalizedCommit}.`);
+  }
+  if (resolvedCommit !== normalizedCommit) {
+    throw new Error(`Reviewed commit did not resolve exactly: expected ${normalizedCommit}, got ${resolvedCommit || '(missing)'}.`);
+  }
+  return (file, encoding = 'utf8') => {
+    const repositoryPath = String(file || '').replaceAll('\\', '/');
+    if (!repositoryPath || path.isAbsolute(repositoryPath) || repositoryPath.split('/').includes('..')) {
+      throw new Error(`Reviewed migration path must be repository-relative: ${file ?? '(missing)'}.`);
+    }
+    try {
+      return execFile(
+        'git',
+        ['show', `${resolvedCommit}:${repositoryPath}`],
+        { encoding, maxBuffer: 10 * 1024 * 1024 },
+      );
+    } catch {
+      throw new Error(`Reviewed migration file is unavailable at commit ${resolvedCommit}: ${repositoryPath}.`);
+    }
+  };
+}
+
 function parseMigrationFilename(file) {
   if (typeof file !== 'string' || !file.trim()) throw new Error(`Migration filename/path is required: ${file ?? '(missing)'}`);
   const base = path.basename(file);
@@ -48,9 +86,12 @@ function parseMigrationFilename(file) {
 
 function normalizeReviewedMigrations(migrations = [], readFile = fs.readFileSync) {
   const seen = new Set();
-  return migrations.map((migration) => {
+  return migrations.map((migration, index) => {
+    if (!migration || typeof migration !== 'object') {
+      throw new Error(`Migration entry is invalid at index ${index}.`);
+    }
     const rawPath = migration.path ?? migration.file;
-    if (!rawPath) throw new Error(`Migration entry requires path/file: ${JSON.stringify(migration)}`);
+    if (!rawPath) throw new Error(`Migration entry requires path/file at index ${index}.`);
     const parsed = parseMigrationFilename(rawPath);
     const version = migration.version ? String(migration.version) : parsed.version;
     const name = migration.name ? String(migration.name) : parsed.name;
@@ -125,9 +166,9 @@ export function validateManifestAgainstFiles(manifest, { commitSha, readFile = f
   }
 
   const seen = new Set();
-  for (const migration of migrations) {
+  for (const [index, migration] of migrations.entries()) {
     if (!migration || typeof migration !== 'object') {
-      errors.push(`Invalid reviewed migration entry: ${JSON.stringify(migration)}`);
+      errors.push(`Invalid reviewed migration entry at index ${index}.`);
       continue;
     }
     const pathValue = migration.path;
@@ -156,7 +197,6 @@ export function validateManifestAgainstFiles(manifest, { commitSha, readFile = f
   const normalizedCommit = expectedCommit && /^[0-9a-f]{40}$/i.test(expectedCommit) ? expectedCommit.toLowerCase() : null;
   return {
     ok: errors.length === 0,
-    status: errors.length === 0 ? 'PASS' : 'FAIL',
     errors,
     reviewedCommitSha: normalizedCommit,
     reviewedMigrations: migrations.map(({ version, name, filename, path: migrationPath, sha256: hash }) => ({ version, name, filename, path: migrationPath, sha256: hash })),
@@ -237,29 +277,43 @@ function validIsoTimestamp(value) {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
 
-function normalizeSchemaEvidence(schemaEvidence, expectedRef, errors, blockers) {
-  if (schemaEvidence == null) return { records: [], supplied: false };
+function evidenceIsFresh(value, now, maxAgeMs) {
+  if (!validIsoTimestamp(value)) return false;
+  const checkedAt = Date.parse(value);
+  return checkedAt <= now + 5 * 60 * 1000 && now - checkedAt <= maxAgeMs;
+}
+
+function normalizeSchemaEvidence(schemaEvidence, expectedRef, errors, blockers, now) {
+  if (schemaEvidence == null) return { records: [], supplied: false, valid: false };
+  const initialErrorCount = errors.length;
+  const initialBlockerCount = blockers.length;
   if (!schemaEvidence || typeof schemaEvidence !== 'object' || Array.isArray(schemaEvidence)) {
     blockers.push('Schema evidence must be a luckystore.migration-schema-evidence/v1 object.');
-    return { records: [], supplied: true };
+    return { records: [], supplied: true, valid: false };
   }
   if (schemaEvidence.schema !== 'luckystore.migration-schema-evidence/v1') {
     blockers.push(`Schema evidence schema is missing or unsupported: ${schemaEvidence.schema ?? '(missing)'}.`);
   }
   if (!schemaEvidence.projectRef || !schemaEvidence.method || !validIsoTimestamp(schemaEvidence.checkedAt)) {
     blockers.push('Schema evidence is incomplete: projectRef, method, and a parseable checkedAt are required.');
+  } else if (!evidenceIsFresh(schemaEvidence.checkedAt, now, SCHEMA_EVIDENCE_MAX_AGE_MS)) {
+    blockers.push(`Schema evidence is stale: checkedAt ${schemaEvidence.checkedAt} exceeds the 24-hour verification window.`);
   }
   if (expectedRef && schemaEvidence.projectRef && schemaEvidence.projectRef !== expectedRef) {
-    errors.push(`Schema evidence contradicts the target: references project ${schemaEvidence.projectRef}, expected ${expectedRef}.`);
+    blockers.push(`Schema evidence project ${schemaEvidence.projectRef} does not match the target ${expectedRef}.`);
   }
   if (!Array.isArray(schemaEvidence.records)) {
     blockers.push('Schema evidence records must be an array.');
-    return { records: [], supplied: true };
+    return { records: [], supplied: true, valid: false };
   }
-  return { records: schemaEvidence.records, supplied: true };
+  return {
+    records: schemaEvidence.records,
+    supplied: true,
+    valid: blockers.length === initialBlockerCount && errors.length === initialErrorCount,
+  };
 }
 
-function resolveProjectEvidence({ projectEvidence, expectedRef, targetRef, errors, blockers, evidence }) {
+function resolveProjectEvidence({ projectEvidence, expectedRef, targetRef, errors, blockers, evidence, now }) {
   let identity = null;
   let remoteInput = null;
   let bundleValid = false;
@@ -275,6 +329,8 @@ function resolveProjectEvidence({ projectEvidence, expectedRef, targetRef, error
       }
       if (projectEvidence.source !== 'supabase-management-api' || !validIsoTimestamp(projectEvidence.checkedAt)) {
         blockers.push('Project evidence requires source=supabase-management-api and a parseable checkedAt.');
+      } else if (!evidenceIsFresh(projectEvidence.checkedAt, now, PROJECT_EVIDENCE_MAX_AGE_MS)) {
+        blockers.push(`Project evidence is stale: checkedAt ${projectEvidence.checkedAt} exceeds the 15-minute verification window.`);
       }
       identity = projectEvidence.identity;
       remoteInput = projectEvidence.history?.rows;
@@ -285,13 +341,19 @@ function resolveProjectEvidence({ projectEvidence, expectedRef, targetRef, error
       }
       if (identity?.source !== 'supabase-management-api' || identity?.method !== 'GET /v1/projects/{ref}' || !validIsoTimestamp(identity?.checkedAt)) {
         blockers.push('Project identity evidence is incomplete or was not fetched from GET /v1/projects/{ref}.');
+      } else if (!evidenceIsFresh(identity.checkedAt, now, PROJECT_EVIDENCE_MAX_AGE_MS)) {
+        blockers.push(`Project identity evidence is stale: checkedAt ${identity.checkedAt} exceeds the 15-minute verification window.`);
       }
-      if (projectEvidence.history && (
-        projectEvidence.history.source !== 'supabase-management-api'
-        || projectEvidence.history.method !== 'GET /v1/projects/{ref}/database/migrations'
-        || !validIsoTimestamp(projectEvidence.history.checkedAt)
-      )) {
-        blockers.push('Remote migration history evidence is incomplete or was not fetched from the Management API history endpoint.');
+      if (projectEvidence.history) {
+        if (
+          projectEvidence.history.source !== 'supabase-management-api'
+          || projectEvidence.history.method !== 'GET /v1/projects/{ref}/database/migrations'
+          || !validIsoTimestamp(projectEvidence.history.checkedAt)
+        ) {
+          blockers.push('Remote migration history evidence is incomplete or was not fetched from the Management API history endpoint.');
+        } else if (!evidenceIsFresh(projectEvidence.history.checkedAt, now, PROJECT_EVIDENCE_MAX_AGE_MS)) {
+          blockers.push(`Remote migration history evidence is stale: checkedAt ${projectEvidence.history.checkedAt} exceeds the 15-minute verification window.`);
+        }
       }
       bundleValid = blockers.length === initialBlockerCount && errors.length === initialErrorCount;
     }
@@ -345,12 +407,15 @@ export function verifyReleaseMigrationHistory({
   projectEvidence,
   schemaEvidence,
   readFile = fs.readFileSync,
+  now = Date.now(),
 } = {}) {
   const evidence = [];
   const errors = [];
   const blockers = [];
   const warnings = [];
   const findings = [];
+  const checkedNow = now instanceof Date ? now.getTime() : Number(now);
+  if (!Number.isFinite(checkedNow)) throw new Error('Verification time must be a finite timestamp.');
 
   const manifestValidation = validateManifestAgainstFiles(manifest, { commitSha, readFile });
   errors.push(...manifestValidation.errors);
@@ -365,9 +430,9 @@ export function verifyReleaseMigrationHistory({
     try { local = normalizeVersions(localVersions, 'Local'); }
     catch (e) { blockers.push(e.message); }
   }
-  const project = resolveProjectEvidence({ projectEvidence, expectedRef: expected, targetRef, errors, blockers, evidence });
+  const project = resolveProjectEvidence({ projectEvidence, expectedRef: expected, targetRef, errors, blockers, evidence, now: checkedNow });
   const { identity, identityVerified, remote, remoteHistoryAvailable } = project;
-  const normalizedSchemaEvidence = normalizeSchemaEvidence(schemaEvidence, expected, errors, blockers);
+  const normalizedSchemaEvidence = normalizeSchemaEvidence(schemaEvidence, expected, errors, blockers, checkedNow);
 
   const reviewed = manifestValidation.reviewedMigrations ?? [];
   const localSet = new Set(local ?? []);
@@ -375,7 +440,7 @@ export function verifyReleaseMigrationHistory({
   const reviewedSet = new Set(reviewed.map((m) => m.version));
 
   const schemaBy = new Map();
-  for (const rec of normalizedSchemaEvidence.records) {
+  for (const rec of normalizedSchemaEvidence.valid ? normalizedSchemaEvidence.records : []) {
     if (rec && typeof rec === 'object' && typeof rec.version === 'string' && !schemaBy.has(rec.version)) schemaBy.set(rec.version, rec);
   }
 
@@ -428,7 +493,7 @@ export function verifyReleaseMigrationHistory({
     if (remoteEntry.name != null && remoteEntry.name !== migration.name) {
       driftReviewed.push(v);
       appliedProvenance[v] = 'history-name-contradiction';
-      errors.push(`Remote history name for ${v} is ${remoteEntry.name}, expected reviewed name ${migration.name}.`);
+      errors.push(`Remote history name for ${v} does not match reviewed name ${migration.name}.`);
       migrationStates.push({ version: v, filename: migration.filename, state: 'DRIFT', provenance: 'history-name-contradiction' });
       continue;
     }
@@ -450,7 +515,7 @@ export function verifyReleaseMigrationHistory({
     historyMetadataIncomplete.push({
       version: v,
       provenance,
-      name: remoteEntry.name,
+      namePresent: remoteEntry.name != null,
       statementsPresent: remoteEntry.statementsPresent,
       reviewedName: migration.name,
     });
@@ -463,13 +528,20 @@ export function verifyReleaseMigrationHistory({
       continue;
     }
     if (rec.projectRef && expected && rec.projectRef !== expected) {
-      appliedProvenance[v] = 'schema-evidence-target-contradiction';
-      driftReviewed.push(v);
-      errors.push(`Schema evidence for ${v} contradicts the target: references project ${rec.projectRef}, expected ${expected}.`);
-      migrationStates.push({ version: v, filename: migration.filename, state: 'DRIFT', provenance: 'schema-evidence-target-contradiction' });
+      appliedProvenance[v] = 'schema-evidence-target-unverified';
+      unverifiedReviewed.push(v);
+      blockers.push(`Schema evidence for ${v} does not match the target project ${expected}.`);
+      migrationStates.push({ version: v, filename: migration.filename, state: 'UNVERIFIED', provenance: 'schema-evidence-target-unverified' });
       continue;
     }
-    if (typeof rec.reviewedFileSha256 === 'string' && rec.reviewedFileSha256.toLowerCase() !== migration.sha256.toLowerCase()) {
+    if (typeof rec.reviewedFileSha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(rec.reviewedFileSha256)) {
+      appliedProvenance[v] = `${provenance}-evidence-incomplete`;
+      unverifiedReviewed.push(v);
+      blockers.push(`Schema evidence for ${v} requires a valid reviewedFileSha256.`);
+      migrationStates.push({ version: v, filename: migration.filename, state: 'UNVERIFIED', provenance: `${provenance}-evidence-incomplete` });
+      continue;
+    }
+    if (rec.reviewedFileSha256.toLowerCase() !== migration.sha256.toLowerCase()) {
       appliedProvenance[v] = 'schema-evidence-hash-contradiction';
       driftReviewed.push(v);
       errors.push(`Schema evidence for ${v} does not match the reviewed SQL SHA-256 (evidence ${rec.reviewedFileSha256}, manifest ${migration.sha256}).`);
@@ -504,8 +576,13 @@ export function verifyReleaseMigrationHistory({
     for (const entry of remote) if (!localSet.has(entry.version)) unexplainedRemoteDrift.push(entry.version);
     for (const v of (local ?? [])) {
       if (!remoteBy.has(v) && !reviewedSet.has(v)) {
-        unreleasedLocal.push(v);
-        warnings.push(`Local migration ${v} is not on the target and is not in the reviewed manifest; treating it as unreleased repo work, not release scope.`);
+        if (manifestValidation.noMigrationChange) {
+          unexplainedLocalDrift.push(v);
+          errors.push(`No-migration manifest does not account for local migration ${v}, which is absent from the target history.`);
+        } else {
+          unreleasedLocal.push(v);
+          warnings.push(`Local migration ${v} is not on the target and is not in the reviewed manifest; treating it as unreleased repo work, not release scope.`);
+        }
       }
     }
   }
@@ -513,13 +590,13 @@ export function verifyReleaseMigrationHistory({
   for (const v of unexplainedRemoteDrift) errors.push(`Remote migration ${v} exists on target but is missing locally/review manifest.`);
 
   const manifestUnverified = !manifestValidation.ok;
-  const knownDrift = unexplainedRemoteDrift.length > 0 || driftReviewed.length > 0 || reviewedMissingLocally.length > 0;
+  const knownDrift = unexplainedRemoteDrift.length > 0 || unexplainedLocalDrift.length > 0 || driftReviewed.length > 0 || reviewedMissingLocally.length > 0;
   const unverified = manifestUnverified || errors.length > 0 || blockers.length > 0 || !identityVerified || !remoteHistoryAvailable || unverifiedReviewed.length > 0;
-  const status = knownDrift ? 'DRIFT' : (unverified ? 'UNVERIFIED' : (reviewedPending.length > 0 ? 'PENDING' : 'APPLIED'));
+  const status = manifestUnverified ? 'UNVERIFIED' : (knownDrift ? 'DRIFT' : (unverified ? 'UNVERIFIED' : (reviewedPending.length > 0 ? 'PENDING' : 'APPLIED')));
 
   return {
     schema: HISTORY_SCHEMA,
-    checkedAt: new Date().toISOString(),
+    checkedAt: new Date(checkedNow).toISOString(),
     status,
     classification: status,
     ok: status === 'APPLIED',
@@ -533,7 +610,12 @@ export function verifyReleaseMigrationHistory({
     noMigrationChange: manifestValidation.noMigrationChange,
     localVersions: local,
     remoteVersions: remote ? remote.map((e) => e.version) : null,
-    remoteEntries: remote,
+    remoteEntries: remote ? remote.map((entry) => ({
+      version: entry.version,
+      namePresent: entry.name != null,
+      statementsPresent: entry.statementsPresent,
+      sqlSha256Present: entry.sqlSha256 != null,
+    })) : null,
     remoteHistoryAvailable,
     migrationStates,
     recordedReviewed,
@@ -554,6 +636,31 @@ export function verifyReleaseMigrationHistory({
     blockers,
     errors,
   };
+}
+
+export async function verifyLiveProjectMigrationHistory({
+  manifest,
+  commitSha,
+  expectedRef,
+  localVersions,
+  accessToken,
+  schemaEvidence,
+  readFile = fs.readFileSync,
+  now = Date.now(),
+  collectEvidence = collectProjectMigrationEvidence,
+} = {}) {
+  if (!accessToken) throw new Error('Supabase access token is required for live project verification.');
+  const projectEvidence = await collectEvidence({ projectRef: expectedRef, accessToken });
+  return verifyReleaseMigrationHistory({
+    manifest,
+    commitSha,
+    expectedRef,
+    localVersions,
+    projectEvidence,
+    schemaEvidence,
+    readFile,
+    now,
+  });
 }
 
 // Backward-compatible export name used by existing tests/CLI.
@@ -757,7 +864,8 @@ async function main(argv = process.argv.slice(2)) {
       return { version, name, path: file };
     });
     const requiredRpcContracts = rpcsArg ? readJson(rpcsArg) : [];
-    const manifest = buildMigrationManifest({ commitSha, migrations, requiredRpcContracts, noMigrationChange, reason });
+    const readFile = createGitCommitFileReader(commitSha);
+    const manifest = buildMigrationManifest({ commitSha, migrations, requiredRpcContracts, noMigrationChange, reason, readFile });
     writeJson(out, manifest);
     console.log(`Wrote migration manifest for ${manifest.commitSha} to ${out}`);
     return;
@@ -767,17 +875,20 @@ async function main(argv = process.argv.slice(2)) {
     const manifest = readJson(requiredArg(argv, '--manifest'));
     const expectedCommit = requiredArg(argv, '--expected-commit');
     const expectedRef = requiredArg(argv, '--expected-ref');
-    const projectEvidence = readJson(requiredArg(argv, '--project-evidence'));
     const schemaEvidence = readOptionalJson(argValue(argv, '--schema-evidence'));
     const localVersions = readJson(requiredArg(argv, '--local-versions'));
+    const accessTokenEnv = argValue(argv, '--access-token-env') || 'SUPABASE_ACCESS_TOKEN';
+    const accessToken = process.env[accessTokenEnv];
     const out = argValue(argv, '--out');
-    const result = verifyReleaseMigrationHistory({
+    const readFile = createGitCommitFileReader(expectedCommit);
+    const result = await verifyLiveProjectMigrationHistory({
       manifest,
       commitSha: expectedCommit,
       expectedRef,
       localVersions,
-      projectEvidence,
+      accessToken,
       schemaEvidence,
+      readFile,
     });
     if (out) writeJson(out, result);
     printResult(result);
@@ -790,7 +901,8 @@ async function main(argv = process.argv.slice(2)) {
     const commitSha = requiredArg(argv, '--commit');
     const expectedRef = requiredArg(argv, '--expected-ref');
     const localVersions = readJson(requiredArg(argv, '--local-versions'));
-    const projectEvidence = readJson(requiredArg(argv, '--project-evidence'));
+    const accessTokenEnv = argValue(argv, '--access-token-env') || 'SUPABASE_ACCESS_TOKEN';
+    const accessToken = process.env[accessTokenEnv];
     const gateMode = argValue(argv, '--gate-mode') || 'promote';
     const testValidationPassed = argValue(argv, '--test-validation');
     const rpcContracts = argValue(argv, '--rpc-contracts-file') ? readJson(argValue(argv, '--rpc-contracts-file')) : null;
@@ -802,9 +914,18 @@ async function main(argv = process.argv.slice(2)) {
     if (artifactProvenance === true) artifactProvenance = { ok: true, errors: [] };
     if (artifactProvenance === false) artifactProvenance = { ok: false, errors: ['Artifact provenance evidence reported failure.'] };
 
+    const readFile = createGitCommitFileReader(commitSha);
+    const remoteValidation = await verifyLiveProjectMigrationHistory({
+      manifest,
+      commitSha,
+      expectedRef,
+      localVersions,
+      accessToken,
+      readFile,
+    });
     const result = evaluateReleaseGate({
-      manifestValidation: validateManifestAgainstFiles(manifest, { commitSha }),
-      remoteValidation: validateRemoteMigrationState({ expectedRef, manifest, localVersions, projectEvidence }),
+      manifestValidation: validateManifestAgainstFiles(manifest, { commitSha, readFile }),
+      remoteValidation,
       rpcValidation: validateRpcContracts({ manifest, rpcContracts, rpcEvidence }),
       testValidationPassed,
       provenanceValidation: artifactProvenance,

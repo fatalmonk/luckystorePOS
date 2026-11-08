@@ -4,7 +4,9 @@ import test from 'node:test';
 import fs from 'node:fs';
 import {
   buildMigrationManifest,
+  createGitCommitFileReader,
   verifyReleaseMigrationHistory,
+  verifyLiveProjectMigrationHistory,
   validateManifestAgainstFiles,
   validateRemoteMigrationState,
   validateRpcContracts,
@@ -58,7 +60,7 @@ test('validateManifestAgainstFiles fails when expected commit is changed, or SQL
   const manifest = manifestFixture();
   const implied = validateManifestAgainstFiles(manifest, { readFile: () => migrationSql('prefix') });
   assert.equal(implied.ok, true);
-  assert.equal(implied.status, 'PASS');
+  assert.equal('status' in implied, false);
   assert.equal(implied.reviewedCommitSha, manifest.commitSha);
   const mismatch = validateManifestAgainstFiles(manifest, {
     commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
@@ -145,6 +147,7 @@ test('evaluateSmokeHealth requires expected SHA and parseable health body', () =
 
 const V = '20261107230000';
 const COMMIT = 'e6c1b1bdd35d837ee157323ffb85d61c377edf02';
+const MIGRATION_PATH = `supabase/migrations/${V}_add_storefront_prefix_resolver.sql`;
 const TEST_REF = 'grxxenvdhfwzafzyykgo';
 const PROD_REF = 'hvmyxyccfnkrbxqbhlnm';
 
@@ -177,7 +180,7 @@ const richEntry = (version, opts = {}) => ({
 
 const realManifest = (commitSha = COMMIT) => buildMigrationManifest({
   commitSha,
-  migrations: [{ version: V, name: 'add_storefront_prefix_resolver', path: `supabase/migrations/${V}_add_storefront_prefix_resolver.sql` }],
+  migrations: [{ version: V, name: 'add_storefront_prefix_resolver', path: MIGRATION_PATH }],
 });
 
 const verify = (overrides = {}) => verifyReleaseMigrationHistory({
@@ -186,7 +189,23 @@ const verify = (overrides = {}) => verifyReleaseMigrationHistory({
   expectedRef: TEST_REF,
   localVersions: [V],
   projectEvidence: projectEvidenceOk(),
+  now: Date.parse('2026-11-08T20:05:00Z'),
   ...overrides,
+});
+
+const schemaEvidenceOk = (manifest = realManifest()) => ({
+  schema: 'luckystore.migration-schema-evidence/v1',
+  projectRef: TEST_REF,
+  method: 'read-only catalog introspection',
+  checkedAt: '2026-11-08T19:13:00Z',
+  records: [{
+    version: V,
+    reviewedFileSha256: manifest.migrations[0].sha256,
+    projectRef: TEST_REF,
+    definitionEquivalent: true,
+    method: 'read-only catalog introspection',
+    checkedAt: '2026-11-08T19:13:00Z',
+  }],
 });
 
 test('verified reviewed SQL and identity classify the migration as APPLIED', () => {
@@ -220,6 +239,14 @@ test('explicit no-migration release is valid; unauthorized empty manifest throws
   assert.equal(manifest.noMigrationChange, true);
   const r = verify({ manifest, commitSha: manifest.commitSha, localVersions: ['20261106000000'], projectEvidence: projectEvidenceOk([richEntry('20261106000000')]) });
   assert.equal(r.status, 'APPLIED');
+  const unaccountedLocal = verify({
+    manifest,
+    commitSha: manifest.commitSha,
+    localVersions: ['20261106000000', '20261107000000'],
+    projectEvidence: projectEvidenceOk([richEntry('20261106000000')]),
+  });
+  assert.equal(unaccountedLocal.status, 'DRIFT');
+  assert.deepEqual(unaccountedLocal.unexplainedLocalDrift, ['20261107000000']);
   assert.equal(r.noMigrationChange ?? manifest.noMigrationChange, true);
   assert.throws(() => buildMigrationManifest({ commitSha: COMMIT, migrations: [] }), /explicitly list reviewed migrations or set noMigrationChange/);
   assert.throws(() => buildMigrationManifest({ commitSha: COMMIT, migrations: [], noMigrationChange: true }), /requires an explicit reason/);
@@ -312,18 +339,22 @@ test('reviewed schema evidence resolves metadata-incomplete history to APPLIED; 
   assert.equal(badSha.status, 'DRIFT');
   assert.match(badSha.errors.join('\n'), /does not match the reviewed SQL SHA-256/);
   const wrongRef = verify({ manifest, projectEvidence: projectEvidenceOk([{ version: V, name: null, statementsPresent: null }]), schemaEvidence: { ...evidence, projectRef: PROD_REF, records: [{ ...evidence.records[0], projectRef: PROD_REF }] } });
-  assert.equal(wrongRef.status, 'DRIFT');
-  assert.match(wrongRef.errors.join('\n'), /contradicts the target/);
+  assert.equal(wrongRef.status, 'UNVERIFIED');
+  assert.match(wrongRef.blockers.join('\n'), /does not match the target|contradicts the target/);
+  const invalidHash = verify({ manifest, projectEvidence: projectEvidenceOk([{ version: V, name: null, statementsPresent: null }]), schemaEvidence: { ...evidence, records: [{ ...evidence.records[0], reviewedFileSha256: {} }] } });
+  assert.equal(invalidHash.status, 'UNVERIFIED');
+  assert.match(invalidHash.blockers.join('\n'), /valid reviewedFileSha256/i);
 });
 
 test('matching version and name without SQL equivalence remains UNVERIFIED; wrong name is DRIFT', () => {
   const nameOnly = verify({ projectEvidence: projectEvidenceOk([{ version: V, name: 'add_storefront_prefix_resolver', statementsPresent: null }]) });
   assert.equal(nameOnly.status, 'UNVERIFIED');
   assert.equal(nameOnly.migrationStates[0].state, 'UNVERIFIED');
-  const wrongName = verify({ projectEvidence: projectEvidenceOk([{ version: V, name: 'different_migration', statementsPresent: true }]) });
+  const wrongName = verify({ projectEvidence: projectEvidenceOk([{ version: V, name: 'sensitive-remote-name', statementsPresent: true }]) });
   assert.equal(wrongName.status, 'DRIFT');
   assert.equal(wrongName.migrationStates[0].state, 'DRIFT');
   assert.match(wrongName.errors.join('\n'), /history name/i);
+  assert.equal(JSON.stringify(wrongName).includes('sensitive-remote-name'), false);
 });
 
 test('malformed project history fails closed without echoing untrusted statement content', () => {
@@ -331,6 +362,67 @@ test('malformed project history fails closed without echoing untrusted statement
   const malformed = verify({ projectEvidence: projectEvidenceOk([{ version: 'invalid', statements: [marker] }]) });
   assert.equal(malformed.status, 'UNVERIFIED');
   assert.equal(JSON.stringify(malformed).includes(marker), false);
+  const malformedManifest = {
+    ...realManifest(),
+    migrations: [{ secret: marker }],
+  };
+  const manifestResult = verify({ manifest: malformedManifest });
+  assert.equal(manifestResult.status, 'UNVERIFIED');
+  assert.equal(JSON.stringify(manifestResult).includes(marker), false);
+});
+
+test('stale project or schema evidence remains UNVERIFIED', () => {
+  const manifest = realManifest();
+  const staleProject = projectEvidenceOk();
+  staleProject.checkedAt = '2001-01-01T00:00:00Z';
+  staleProject.identity.checkedAt = '2001-01-01T00:00:00Z';
+  staleProject.history.checkedAt = '2001-01-01T00:00:00Z';
+  const staleHistory = verify({ manifest, projectEvidence: staleProject, schemaEvidence: schemaEvidenceOk(manifest) });
+  assert.equal(staleHistory.status, 'UNVERIFIED');
+  assert.match(staleHistory.blockers.join('\n'), /stale/i);
+  const staleSchema = schemaEvidenceOk(manifest);
+  staleSchema.checkedAt = '2001-01-01T00:00:00Z';
+  staleSchema.records[0].checkedAt = '2001-01-01T00:00:00Z';
+  const staleDefinition = verify({ manifest, schemaEvidence: staleSchema });
+  assert.equal(staleDefinition.status, 'UNVERIFIED');
+  assert.equal(staleDefinition.migrationStates[0].state, 'UNVERIFIED');
+  assert.match(staleDefinition.blockers.join('\n'), /schema evidence.*stale/i);
+});
+
+test('verifyLiveProjectMigrationHistory always collects the target before verification', async () => {
+  const manifest = realManifest();
+  const calls = [];
+  const result = await verifyLiveProjectMigrationHistory({
+    manifest,
+    commitSha: COMMIT,
+    expectedRef: TEST_REF,
+    localVersions: [V],
+    accessToken: 'test-token',
+    schemaEvidence: schemaEvidenceOk(manifest),
+    collectEvidence: async (options) => {
+      calls.push(options);
+      return projectEvidenceOk();
+    },
+    now: Date.parse('2026-11-08T20:05:00Z'),
+  });
+  assert.equal(result.status, 'APPLIED');
+  assert.deepEqual(calls, [{ projectRef: TEST_REF, accessToken: 'test-token' }]);
+});
+
+test('createGitCommitFileReader resolves the reviewed commit and reads that object, not the worktree', () => {
+  const calls = [];
+  const execFile = (_command, args) => {
+    calls.push(args);
+    if (args[0] === 'rev-parse') return `${COMMIT}\n`;
+    if (args[0] === 'show') return migrationSql('prefix');
+    throw new Error('unexpected git command');
+  };
+  const readFile = createGitCommitFileReader(COMMIT, { execFile });
+  assert.equal(readFile(MIGRATION_PATH, 'utf8'), migrationSql('prefix'));
+  assert.deepEqual(calls, [
+    ['rev-parse', '--verify', `${COMMIT}^{commit}`],
+    ['show', `${COMMIT}:${MIGRATION_PATH}`],
+  ]);
 });
 
 test('recorded 20261107230000 schema-verification artifact binds the real reviewed file to the observed test-project state', () => {
