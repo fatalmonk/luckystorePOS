@@ -21,6 +21,7 @@ import { RuleBasedBrandParser } from './parsers/BrandParser';
 import { WordMatchEmojiResolver } from './parsers/EmojiResolver';
 import { SupabaseProductAdapter } from './adapters/SupabaseProductAdapter';
 import { CachingProductAdapter } from './adapters/CachingProductAdapter';
+import { getAnonymousStorefrontClient } from '../supabase/anonymousStorefront';
 
 /**
  * Cache control handle returned by the factory.
@@ -40,7 +41,15 @@ const NOOP_CACHE_CONTROL: CacheControl = { invalidate: () => {} };
 
 // Reuse the default repository bundle across requests handled by this Node.js
 // process so the adapter's bounded TTL caches actually reduce Supabase reads.
-const defaultRepositoryBundles = new WeakMap<SupabaseClient, ProductRepositoryBundle>();
+type RepositoryMode = 'default' | 'anonymous-storefront';
+type CachedRepositoryBundles = Partial<Record<RepositoryMode, ProductRepositoryBundle>>;
+const defaultRepositoryBundles = new WeakMap<SupabaseClient, CachedRepositoryBundles>();
+
+export interface ProductRepositoryOptions {
+  brandParser?: BrandParser;
+  emojiResolver?: EmojiResolver;
+  enableCache?: boolean;
+}
 
 /**
  * Return type from createProductRepository.
@@ -100,14 +109,25 @@ export class ProductRepository implements IProductRepository {
  */
 export function createProductRepository(
   supabaseClient: SupabaseClient,
-  options?: {
-    brandParser?: BrandParser;
-    emojiResolver?: EmojiResolver;
-    enableCache?: boolean;
-  }
+  options?: ProductRepositoryOptions,
+): ProductRepositoryBundle {
+  return createRepositoryBundle(supabaseClient, options, 'default');
+}
+
+/** Product reads through this factory always use an isolated public anon client. */
+export function createAnonymousStorefrontProductRepository(
+  options?: ProductRepositoryOptions,
+): ProductRepositoryBundle {
+  return createRepositoryBundle(getAnonymousStorefrontClient(), options, 'anonymous-storefront');
+}
+
+function createRepositoryBundle(
+  supabaseClient: SupabaseClient,
+  options: ProductRepositoryOptions | undefined,
+  mode: RepositoryMode,
 ): ProductRepositoryBundle {
   if (options === undefined) {
-    const existing = defaultRepositoryBundles.get(supabaseClient);
+    const existing = defaultRepositoryBundles.get(supabaseClient)?.[mode];
     if (existing) return existing;
   }
 
@@ -123,7 +143,10 @@ export function createProductRepository(
     undefined,
     // enableCache: false must mean fresh reads: disable the adapter-internal
     // bounded category cache as well, not just the decorator.
-    cachingEnabled ? undefined : { categoriesTtlMs: 0 }
+    {
+      ...(cachingEnabled ? {} : { categoriesTtlMs: 0 }),
+      ...(mode === 'anonymous-storefront' ? { stockReadMode: 'catalog' as const } : {}),
+    }
   );
 
   let cacheControl: CacheControl = NOOP_CACHE_CONTROL;
@@ -140,7 +163,9 @@ export function createProductRepository(
   };
 
   if (options === undefined) {
-    defaultRepositoryBundles.set(supabaseClient, bundle);
+    const bundles = defaultRepositoryBundles.get(supabaseClient) ?? {};
+    bundles[mode] = bundle;
+    defaultRepositoryBundles.set(supabaseClient, bundles);
   }
 
   return bundle;

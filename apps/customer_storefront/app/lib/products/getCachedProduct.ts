@@ -1,6 +1,5 @@
 import { cache } from 'react';
-import { supabase } from '../supabase';
-import { createProductRepository, createProductId } from './index';
+import { createAnonymousStorefrontProductRepository, createProductId } from './index';
 import { extractIdFromSlug, isBareUuid, toProductSlug } from './slugify';
 import { CATALOG_SNAPSHOT_PRODUCTS, FALLBACK_PRODUCTS } from './getHomePageData';
 import type { Product } from './types';
@@ -13,7 +12,7 @@ import type { Product } from './types';
 export const getCachedProductBySlug = cache(async (slug: string): Promise<Product | null> => {
   const prefix = extractIdFromSlug(slug).toLowerCase();
   try {
-    const { repo } = createProductRepository(supabase);
+    const { repo } = createAnonymousStorefrontProductRepository();
 
     if (isBareUuid(slug)) {
       const prod = await repo.getById(createProductId(slug));

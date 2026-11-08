@@ -27,8 +27,10 @@ export { createProductId } from './types';
 export {
   ProductRepository,
   createProductRepository,
+  createAnonymousStorefrontProductRepository,
   type CacheControl,
   type ProductRepositoryBundle,
+  type ProductRepositoryOptions,
 } from './repository';
 
 // Parsers

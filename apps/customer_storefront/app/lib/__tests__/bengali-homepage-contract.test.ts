@@ -61,6 +61,29 @@ vi.mock('../products/index', () => ({
       ]),
     },
   })),
+  createAnonymousStorefrontProductRepository: vi.fn(() => ({
+    repo: {
+      search: vi.fn().mockResolvedValue({
+        products: [
+          {
+            id: 'p-tea-1',
+            name: 'Ispahani Mirzapore Tea',
+            emoji: '🍵',
+            price: 180,
+            originalPrice: 200,
+            unit: '500g',
+            category: 'tea-and-coffee',
+            stock: 50,
+            brand: 'Ispahani',
+            description: 'Fresh black tea.',
+          },
+        ],
+      }),
+      getCategories: vi.fn().mockResolvedValue([
+        { id: 'cat-1', slug: 'tea-and-coffee', name: 'Tea & Coffee', emoji: '☕' },
+      ]),
+    },
+  })),
   RuleBasedBrandParser: vi.fn().mockImplementation(function (this: { parse: (str: string) => string }) {
     this.parse = vi.fn((str: string) => str);
   }),

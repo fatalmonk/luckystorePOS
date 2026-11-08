@@ -1,7 +1,7 @@
 import { getCachedProductBySlug } from '../products/getCachedProduct';
 import { getCachedCrossSellProducts, prepareCrossSell } from '../products/getCachedCrossSell';
 import { getEnrichedProductData } from '../products/productEnrichment';
-import { createProductRepository, createProductId } from '../products/index';
+import { createAnonymousStorefrontProductRepository, createProductId } from '../products/index';
 import type { Product } from '../products/types';
 import { supabase } from '../supabase';
 
@@ -77,8 +77,8 @@ export async function getMobileProductDetail(
   let product: Product | null = null;
 
   if (UUID_PATTERN.test(idOrSlug)) {
-    const { repo } = createProductRepository(supabase);
     try {
+      const { repo } = createAnonymousStorefrontProductRepository();
       product = await repo.getById(createProductId(idOrSlug));
     } catch (err) {
       console.error(`[mobile/product] Failed to fetch product by id ${idOrSlug}:`, err);

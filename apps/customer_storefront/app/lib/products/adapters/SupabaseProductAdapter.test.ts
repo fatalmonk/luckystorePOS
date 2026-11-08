@@ -217,6 +217,90 @@ describe('SupabaseProductAdapter', () => {
       });
     });
 
+    it('skips the unusable stock read for an anonymous storefront and uses the exact catalog projection', async () => {
+      const itemId = '169e4ac0-80cf-4dc7-8266-f8cad832eb9b';
+      const createProductClient = () => createMockSupabase({
+        itemsRow: {
+          id: itemId,
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          mrp: 60,
+          category_id: 'cat-1',
+          description: 'Mango drink',
+        },
+        stockRow: null,
+        v2Rows: [{
+          id: itemId,
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          mrp: 60,
+          category: 'Tea & Coffee',
+          category_id: 'cat-1',
+          description: 'Mango drink',
+          qty_on_hand: 10,
+          sellable_qty: 4,
+        }],
+      });
+      const baselineSupabase = createProductClient();
+      const baselineAdapter = new SupabaseProductAdapter(baselineSupabase, fakeBrandParser, fakeEmojiResolver);
+      const baselineProduct = await baselineAdapter.getById(createProductId(itemId));
+      const baselineRequestCount = baselineSupabase.from.mock.calls.length + baselineSupabase.rpc.mock.calls.length;
+
+      const supabase = createProductClient();
+      const adapter = new SupabaseProductAdapter(
+        supabase,
+        fakeBrandParser,
+        fakeEmojiResolver,
+        undefined,
+        { stockReadMode: 'catalog' },
+      );
+
+      const product = await adapter.getById(createProductId(itemId));
+      const optimizedRequestCount = supabase.from.mock.calls.length + supabase.rpc.mock.calls.length;
+
+      expect(baselineProduct).toMatchObject({ price: 48, originalPrice: 60, stock: 4 });
+      expect(baselineRequestCount).toBe(4);
+      expect(product).toMatchObject({ price: 48, originalPrice: 60, stock: 4 });
+      expect((supabase.from.mock.calls as Array<[string]>).map(([table]) => table)).toEqual(['items', 'categories']);
+      expect(supabase.rpc).toHaveBeenCalledTimes(1);
+      expect(supabase.rpc).toHaveBeenCalledWith('search_storefront_catalog_v2', {
+        p_store_id: expect.any(String),
+        p_query: '',
+        p_category_id: null,
+        p_item_ids: [itemId],
+        p_limit: 1,
+        p_offset: 0,
+      });
+      expect(optimizedRequestCount).toBe(3);
+    });
+
+    it('fails closed at zero stock when the anonymous catalog projection fails', async () => {
+      const itemId = '169e4ac0-80cf-4dc7-8266-f8cad832eb9b';
+      const supabase = createMockSupabase({
+        itemsRow: {
+          id: itemId,
+          name: 'Savoy Ekdom Aam',
+          price: 48,
+          category_id: 'cat-1',
+          description: null,
+        },
+        v2Error: { message: 'temporary RPC failure' },
+      });
+      const adapter = new SupabaseProductAdapter(
+        supabase,
+        fakeBrandParser,
+        fakeEmojiResolver,
+        undefined,
+        { stockReadMode: 'catalog' },
+      );
+
+      const product = await adapter.getById(createProductId(itemId));
+
+      expect(product).toMatchObject({ id: itemId, price: 48, stock: 0 });
+      expect((supabase.from.mock.calls as Array<[string]>).map(([table]) => table)).toEqual(['items', 'categories']);
+      expect(supabase.rpc).toHaveBeenCalledTimes(1);
+    });
+
     it('keeps the product available with zero stock when the stock projection RPC fails', async () => {
       const itemId = '169e4ac0-80cf-4dc7-8266-f8cad832eb9b';
       const supabase = createMockSupabase({

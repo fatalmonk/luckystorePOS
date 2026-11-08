@@ -97,6 +97,8 @@ function mapRowToCategory(row: CategoryRow, emojiResolver?: EmojiResolver): Cate
 }
 
 export interface SupabaseProductAdapterOptions {
+  /** Use the catalog projection as stock authority for a dedicated anon client. */
+  stockReadMode?: 'direct' | 'catalog';
   /**
    * TTL in ms for the instance-level category cache used by internal
    * search()/getById() emoji resolution. Default: 60_000 (60s).
@@ -111,6 +113,7 @@ export interface SupabaseProductAdapterOptions {
 const DEFAULT_CATEGORIES_TTL_MS = 60_000;
 
 export class SupabaseProductAdapter implements ProductDataPort {
+  private readonly stockReadMode: 'direct' | 'catalog';
   private readonly categoriesTtlMs: number;
   private readonly now: () => number;
   private categoriesCache: { data: Category[]; expiresAt: number } | null = null;
@@ -126,6 +129,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
     private readonly storeId: string = STOREFRONT_STORE_ID,
     options?: SupabaseProductAdapterOptions
   ) {
+    this.stockReadMode = options?.stockReadMode ?? 'direct';
     this.categoriesTtlMs = options?.categoriesTtlMs ?? DEFAULT_CATEGORIES_TTL_MS;
     this.now = options?.now ?? Date.now;
   }
@@ -179,20 +183,24 @@ export class SupabaseProductAdapter implements ProductDataPort {
       const categoryEmojiMap = new Map(categories.map(c => [c.id, c.emoji]));
       const categoryNameMap = new Map(categories.map(c => [c.id, c.name]));
 
-      const { data: stockData, error: stockError } = await this.supabase
-        .from('stock_levels')
-        .select('qty, reserved, qty_reserved_online')
-        .eq('item_id', data.id)
-        .eq('store_id', this.storeId)
-        .maybeSingle();
+      let resolvedStock: number | null = null;
+      let shouldUseCatalogStock = this.stockReadMode === 'catalog';
+      if (!shouldUseCatalogStock) {
+        const { data: stockData, error: stockError } = await this.supabase
+          .from('stock_levels')
+          .select('qty, reserved, qty_reserved_online')
+          .eq('item_id', data.id)
+          .eq('store_id', this.storeId)
+          .maybeSingle();
 
-      // The public storefront may not be granted direct stock_levels reads.
-      // Fall back to the authoritative storefront catalogue projection so detail
-      // pages retain the same stock state used by the homepage cards.
-      let resolvedStock = stockData
-        ? Math.max(0, Number(stockData.qty ?? 0) - Number(stockData.reserved ?? 0) - Number(stockData.qty_reserved_online ?? 0))
-        : null;
-      if (stockError || resolvedStock === null) {
+        resolvedStock = stockData
+          ? Math.max(0, Number(stockData.qty ?? 0) - Number(stockData.reserved ?? 0) - Number(stockData.qty_reserved_online ?? 0))
+          : null;
+        shouldUseCatalogStock = Boolean(stockError) || resolvedStock === null;
+      }
+
+      // The catalog projection computes sellable stock under the store's tenant scope.
+      if (shouldUseCatalogStock) {
         try {
           const projectedRows = await fetchStorefrontCatalogItemsByIds(this.supabase, this.storeId, [data.id]);
           const projected = projectedRows.find((row) => (row.id ?? row.item_id) === data.id) as any;
