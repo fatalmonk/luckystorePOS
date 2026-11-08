@@ -407,6 +407,7 @@ export function verifyReleaseMigrationHistory({
   projectEvidence,
   schemaEvidence,
   readFile = fs.readFileSync,
+  authorizedTestOnlyLedgerPath = 'scripts/ci/authorized-test-only-migrations.json',
   now = Date.now(),
 } = {}) {
   const evidence = [];
@@ -444,6 +445,11 @@ export function verifyReleaseMigrationHistory({
     if (rec && typeof rec === 'object' && typeof rec.version === 'string' && !schemaBy.has(rec.version)) schemaBy.set(rec.version, rec);
   }
 
+  // Load authorized test-only migration ledger (evidence source: Security Tests project audit)
+  const authorizedTestOnlyLedger = authorizedTestOnlyLedgerPath && fs.existsSync(authorizedTestOnlyLedgerPath)
+    ? JSON.parse(fs.readFileSync(authorizedTestOnlyLedgerPath, 'utf8'))
+    : null;
+
   const recordedReviewed = [];
   const alreadyAppliedReviewed = [];
   const reviewedPending = [];
@@ -455,6 +461,7 @@ export function verifyReleaseMigrationHistory({
   const appliedProvenance = {};
   const unexplainedRemoteDrift = [];
   const unexplainedLocalDrift = []; // legacy field: retained, now always informational via unreleasedLocal
+  const authorizedTestOnly = [];
   const migrationStates = [];
 
   for (const migration of reviewed) {
@@ -572,8 +579,24 @@ export function verifyReleaseMigrationHistory({
   // Never assume all migrations in supabase/migrations belong to the current release: local-only
   // non-reviewed versions are unreleased repo work, reported as information, not failure.
   const unreleasedLocal = [];
+  function isAuthorizedTestOnly(version) {
+    if (!authorizedTestOnlyLedger || !authorizedTestOnlyLedger.targetProjectRef) return false;
+    if (authorizedTestOnlyLedger.targetProjectRef !== expected) return false;
+    return Array.isArray(authorizedTestOnlyLedger.authorized)
+      ? authorizedTestOnlyLedger.authorized.some((a) => String(a.version) === String(version))
+      : false;
+  }
   if (local && remoteHistoryAvailable) {
-    for (const entry of remote) if (!localSet.has(entry.version)) unexplainedRemoteDrift.push(entry.version);
+    for (const entry of remote) {
+      if (!localSet.has(entry.version)) {
+        if (isAuthorizedTestOnly(entry.version)) {
+          authorizedTestOnly.push(entry.version);
+          evidence.push(`Remote migration ${entry.version} is explicitly authorized test-only on ${expected}; excluded from release drift.`);
+        } else {
+          unexplainedRemoteDrift.push(entry.version);
+        }
+      }
+    }
     for (const v of (local ?? [])) {
       if (!remoteBy.has(v) && !reviewedSet.has(v)) {
         if (manifestValidation.noMigrationChange) {
@@ -629,6 +652,7 @@ export function verifyReleaseMigrationHistory({
     appliedProvenance,
     unexplainedRemoteDrift,
     unexplainedLocalDrift,
+    authorizedTestOnly,
     unreleasedLocal,
     evidence,
     warnings,

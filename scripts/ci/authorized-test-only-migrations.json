@@ -1,0 +1,210 @@
+{
+  "schema": "luckystore.authorized-test-only-migration-ledger/v1",
+  "source": "Supabase Security Tests migration audit",
+  "targetProjectRef": "grxxenvdhfwzafzyykgo",
+  "authorized": [
+    {
+      "version": "20261015182509",
+      "name": "stabilize_storefront_catalog_pagination",
+      "reason": "Historical duplicate of local 20261015090000; safe for catalog parity but not production scope.",
+      "classification": "authorized_duplicate",
+      "evidence": "Records in Security Tests project with identical name to a previously applied migration but different version.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261015182521",
+      "name": "bound_storefront_catalog_search",
+      "reason": "Historical duplicate of local 20261015165958; part of test-project historical reconciliation.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history records show this version with same name as a local migration.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261015184514",
+      "name": "ensure_online_stock_reservation_column",
+      "reason": "Historical duplicate of local 20261015080000; safe but not production.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history version + name matches a previous local version.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261015185642",
+      "name": "restore_guest_order_tracking_wrapper",
+      "reason": "Historical duplicate of local 20261015190000; needed for test parity.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote version and name match local migration but are applied only to test project.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261015202313",
+      "name": "expose_sellable_storefront_stock",
+      "reason": "Historical duplicate of local 20261016100000; required for test parity.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history version exists with same name as a later local migration.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261019003234",
+      "name": "fix_storefront_catalog_v2_item_filter",
+      "reason": "Historical duplicate of local 20261017100000; not production.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history shows duplicate version with same name as local migration.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261019003253",
+      "name": "enhance_bilingual_competitor_matcher",
+      "reason": "Historical duplicate of local 20261018222800; part of test-project reconciliation.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history version and name match local migration but with different timestamp.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261028155952",
+      "name": "unified_catalog_import_pipeline",
+      "reason": "Historical duplicate of local 20261028213829; authorized for test-only parity.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history version and name match earlier local version with same name.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261028160012",
+      "name": "catalog_image_cas_tenant_scope",
+      "reason": "Historical duplicate of local 20261028213842; not production.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history version exists with same name as local migration.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261106011758",
+      "name": "update_mobile_catalog_visibility_and_offset_guards",
+      "reason": "Historical duplicate of local 20261106000000; test-only justification.",
+      "classification": "authorized_duplicate",
+      "evidence": "Remote history shows duplicate version with same name as local migration.",
+      "approvalSource": "Migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261106024618",
+      "name": "restrict_preview_image_cas_to_test_tenant",
+      "reason": "Security-test-only migration: rejects preview-host publication for other tenants.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261106024841",
+      "name": "fix_catalog_import_null_stock_mode_test",
+      "reason": "Security-test-only migration: null stock mode rejection, matching production SQL body.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261106025141",
+      "name": "conservative_competitor_matching_test",
+      "reason": "Security-test-only migration: brings conservative matcher functions to test parity.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261106025547",
+      "name": "restrict_preview_image_trigger_to_cas_test",
+      "reason": "Security-test-only migration: rejects direct preview URL inserts and non-test-tenant URLs.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261106030019",
+      "name": "guard_preview_host_variants_test",
+      "reason": "Security-test-only migration: matches mixed-case preview hostnames and default HTTPS port.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261106040500",
+      "name": "preserve_preview_image_key_on_unrelated_update",
+      "reason": "Security-test-only migration: preserves image_key on unrelated updates, rejects empty-port variants.",
+      "classification": "security_test_only",
+      "evidence": "Listed in `supabase/test-only-migrations/` and documented in README.",
+      "approvalSource": "Supabase Security Tests migration ledger (test-only-migrations/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261015182616",
+      "name": "create_private_hermes_model_performance",
+      "reason": "Security-test-only ledger snapshot: legacy analytics table for model invocation telemetry; not production.",
+      "classification": "ledger_snapshot_only",
+      "evidence": "Part of ledger-snapshots documentation; no source migration in repo.",
+      "approvalSource": "Supabase Security Tests migration ledger (ledger-snapshots/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261015183610",
+      "name": "storefront_item_promotions_e2e_schema",
+      "reason": "Security-test-only ledger snapshot: test-project storefront_item_promotions table schema; not production.",
+      "classification": "ledger_snapshot_only",
+      "evidence": "Part of ledger-snapshots documentation; no source migration in repo.",
+      "approvalSource": "Supabase Security Tests migration ledger (ledger-snapshots/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261015224451",
+      "name": "test_week_one_promotion_checkout_core",
+      "reason": "Security-test-only ledger snapshot: test checkout core functionality and promotion logic; not production.",
+      "classification": "ledger_snapshot_only",
+      "evidence": "Part of ledger-snapshots documentation; no source migration in repo.",
+      "approvalSource": "Supabase Security Tests migration ledger (ledger-snapshots/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261019031539",
+      "name": "harden_testing_rate_limits_and_stock_views",
+      "reason": "Security-test-only ledger snapshot: rate limits hardening and stock view security; not production.",
+      "classification": "ledger_snapshot_only",
+      "evidence": "Part of ledger-snapshots documentation; no source migration in repo.",
+      "approvalSource": "Supabase Security Tests migration ledger (ledger-snapshots/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261019031628",
+      "name": "restrict_internal_privileged_maintenance_rpcs",
+      "reason": "Security-test-only ledger snapshot: internal RPC restriction for maintenance; not production.",
+      "classification": "ledger_snapshot_only",
+      "evidence": "Part of ledger-snapshots documentation; no source migration in repo.",
+      "approvalSource": "Supabase Security Tests migration ledger (ledger-snapshots/README.md)",
+      "approvalMethod": "Migration audit",
+      "exemptFromProductionVerification": true
+    }
+  ],
+  "unauthorizedRemoteDrift": [],
+  "notes": "These test-only authorized versions are valid only for the Security Tests project (grxxenvdhfwzafzyykgo). Production verification (hvmyxyccfnkrbxqbhlnm) treats any remote-only as DRIFT.",
+  "generatedAt": "2026-11-08T20:31:19Z"
+}

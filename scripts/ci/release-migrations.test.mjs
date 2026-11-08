@@ -75,6 +75,7 @@ test('validateRemoteMigrationState fails on wrong target, missing remote migrati
   const result = validateRemoteMigrationState({
     targetRef: 'wrong', expectedRef: 'grxxenvdhfwzafzyykgo', manifest,
     localVersions: ['20261107230000'], projectEvidence: projectEvidenceOk(['20261107230000', '20990101000000']),
+    now: Date.parse('2026-11-08T20:05:00Z'),
   });
   assert.equal(result.ok, false);
   assert.match(result.errors.join('\n'), /Target project ref is unverified/);
@@ -82,12 +83,14 @@ test('validateRemoteMigrationState fails on wrong target, missing remote migrati
   const missingRemote = validateRemoteMigrationState({
     targetRef: 'grxxenvdhfwzafzyykgo', expectedRef: 'grxxenvdhfwzafzyykgo', manifest,
     localVersions: ['20261107230000'], projectEvidence: projectEvidenceOk([]),
+    now: Date.parse('2026-11-08T20:05:00Z'),
   });
   assert.equal(missingRemote.ok, false);
   assert.match(missingRemote.errors.join('\n'), /not present on the target/);
   const missingHistory = validateRemoteMigrationState({
     targetRef: 'grxxenvdhfwzafzyykgo', expectedRef: 'grxxenvdhfwzafzyykgo', manifest,
     localVersions: null, projectEvidence: projectEvidenceOk(['20261107230000']),
+    now: Date.parse('2026-11-08T20:05:00Z'),
   });
   assert.equal(missingHistory.ok, false);
   assert.equal(missingHistory.status, 'UNVERIFIED');
