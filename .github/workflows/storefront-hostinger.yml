@@ -114,9 +114,10 @@ jobs:
           fi
 
       - name: Assemble Standalone Deployment Package
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
           node scripts/deploy/package-standalone.mjs storefront-release.zip
-          echo "${{ github.sha }}" > apps/customer_storefront/.next/standalone/build_sha.txt
 
       - name: Upload Immutable Release Artifact
         uses: actions/upload-artifact@v4
@@ -146,7 +147,7 @@ jobs:
 
   # ── Step 4: Comprehensive Staging Test Suite ───────────────
   test-staging:
-    name: Validate Staging (Smoke, E2E & Load)
+    name: Validate Staging (Smoke Only — see migration-parity-gate for schema/release gates)
     needs: [resolve-context, deploy-staging]
     runs-on: ubuntu-latest
     steps:
@@ -166,9 +167,21 @@ jobs:
             --expected-sha ${{ github.sha }} \
             $ALLOW_SNAPSHOT
 
+      # TODO(E6-R): run Playwright E2E + load tests against staging before production promotion.
+      # These are separate from smoke and required by release plan; credentials/runners must be wired.
+
+  # ── Step 4b: Migration & Release Parity Gate ─────────────────
+  # DELIBERATELY REMOVED FROM ACTIVE HOSTINGER WORKFLOW (2026-11-08).
+  # The gate was identified as incomplete, non-authoritative, and a release
+  # blocker: it disconnected from promotion, trusted caller-supplied evidence,
+  # permitted missing histories/remote migrations, and had no exact-reviewed
+  # apply/RPC-role path. Keeping scripts/ci/release-migrations.mjs as dormant
+  # reference tooling. Release parity execution is deferred until the migration
+  # gate is rebuilt with verified history, evidence, RPC, and apply paths.
+
   # ── Step 5: Production Deployment Gate ─────────────────────
   deploy-production:
-    name: Deploy to Production (After Staging Validation)
+    name: Deploy to Production
     needs: [resolve-context, test-staging]
     if: needs.resolve-context.outputs.promote_to == 'production'
     runs-on: ubuntu-latest

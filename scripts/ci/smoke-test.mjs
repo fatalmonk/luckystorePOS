@@ -9,6 +9,44 @@
 
 import https from 'node:https';
 import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export function evaluateSmokeHealth({
+  statusCode,
+  body,
+  expectedSha = null,
+  now = Date.now(),
+  maxAgeMs = 5 * 60 * 1000,
+  requireTimestamp = false,
+}) {
+  if (statusCode !== 200) return { ok: false, error: `Expected 200, got ${statusCode}` };
+  let data;
+  try {
+    data = typeof body === 'string' ? JSON.parse(body) : body;
+  } catch {
+    return { ok: false, error: `Health response was not valid JSON: ${String(body).slice(0, 120)}` };
+  }
+  if (data?.status !== 'ok') return { ok: false, error: `Expected status 'ok', got: ${JSON.stringify(data)}` };
+  if (expectedSha) {
+    const actualSha = data?.buildSha ?? data?.commitSha ?? data?.sha ?? null;
+    if (!actualSha) return { ok: false, error: 'Health response did not include build SHA for provenance verification.' };
+    if (String(actualSha) !== String(expectedSha)) {
+      return { ok: false, error: `Deployed build SHA ${actualSha} does not match expected reviewed commit ${expectedSha}.` };
+    }
+  }
+  const hasTimestamp = data?.timestamp != null && data.timestamp !== '';
+  if (requireTimestamp || hasTimestamp) {
+    if (typeof data?.timestamp !== 'string' || Number.isNaN(Date.parse(data.timestamp))) {
+      return { ok: false, error: 'Health response missing parseable timestamp.' };
+    }
+    if (Math.abs(now - Date.parse(data.timestamp)) > maxAgeMs) {
+      return { ok: false, error: `Health timestamp is stale (>${Math.round(maxAgeMs / 60000)} minutes).` };
+    }
+  }
+  const detail = data?.buildSha ? `Status 200 OK (build ${data.buildSha})` : 'Status 200 OK';
+  return { ok: true, detail, data };
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -75,6 +113,10 @@ function request(targetUrl, options = {}, redirectCount = 0) {
 
 async function run() {
   const { url: baseUrl, expectedSha, allowCatalogSnapshotFallback } = parseArgs();
+  if (expectedSha && !baseUrl.startsWith('https://')) {
+    console.error('FATAL: Provenance smoke checks require HTTPS when --expected-sha is provided.');
+    process.exit(1);
+  }
   console.log(`\n======================================================`);
   console.log(`🔍 Running Storefront Smoke Tests against: ${baseUrl}`);
   if (expectedSha) console.log(`🎯 Expected Commit SHA: ${expectedSha}`);
@@ -88,10 +130,14 @@ async function run() {
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             const res = await request(`${baseUrl}/api/health`);
-            if (res.statusCode !== 200) throw new Error(`Expected 200, got ${res.statusCode}`);
-            const data = JSON.parse(res.body);
-            if (data.status !== 'ok') throw new Error(`Expected status 'ok', got: ${res.body}`);
-            return `Status 200 OK${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
+            const result = evaluateSmokeHealth({
+              statusCode: res.statusCode,
+              body: res.body,
+              expectedSha,
+              requireTimestamp: Boolean(expectedSha),
+            });
+            if (!result.ok) throw new Error(result.error);
+            return `${result.detail}${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
           } catch (err) {
             lastErr = err;
             if (attempt < 3) {
@@ -190,7 +236,10 @@ async function run() {
   }
 }
 
-run().catch(err => {
-  console.error('Fatal error during smoke test:', err);
-  process.exit(1);
-});
+const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMainModule) {
+  run().catch(err => {
+    console.error('Fatal error during smoke test:', err);
+    process.exit(1);
+  });
+}
