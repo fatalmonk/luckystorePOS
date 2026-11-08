@@ -147,7 +147,7 @@ jobs:
 
   # ── Step 4: Comprehensive Staging Test Suite ───────────────
   test-staging:
-    name: Validate Staging (Smoke, E2E & Load)
+    name: Validate Staging (Smoke Only — see migration-parity-gate for schema/release gates)
     needs: [resolve-context, deploy-staging]
     runs-on: ubuntu-latest
     steps:
@@ -167,10 +167,90 @@ jobs:
             --expected-sha ${{ github.sha }} \
             $ALLOW_SNAPSHOT
 
+      # TODO(E6-R): run Playwright E2E + load tests against staging before production promotion.
+      # These are separate from smoke and required by release plan; credentials/runners must be wired.
+
+  # ── Step 4b: Migration & Release Parity Gate ─────────────────
+  migration-parity-gate:
+    name: Migration & Release Parity Gate
+    needs: [resolve-context, build-artifact]
+    runs-on: ubuntu-latest
+    if: needs.resolve-context.outputs.promote_to == 'production'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Collect local migration versions
+        run: node scripts/ci/collect-release-evidence.mjs local-versions --out /tmp/local-versions.json
+
+      - name: Collect remote migration versions (fail-closed)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          node scripts/ci/collect-release-evidence.mjs remote-versions \
+            --project-ref ${{ secrets.SUPABASE_PRODUCTION_PROJECT_REF }} \
+            --access-token-env SUPABASE_ACCESS_TOKEN \
+            --out /tmp/remote-versions.json
+
+      - name: Build migration manifest for reviewed commit
+        run: |
+          node scripts/ci/release-migrations.mjs manifest \
+            --commit ${{ github.sha }} \
+            --migrations "" \
+            --out /tmp/migration-manifest.json
+
+      - name: Require explicit test-validation evidence
+        run: |
+          if [ ! -f "$GITHUB_WORKSPACE/.ci/test-validation.json" ]; then
+            echo "FATAL: Missing .ci/test-validation.json. Test validation evidence must be produced by CI, not inferred." >&2
+            exit 1
+          fi
+          node scripts/ci/collect-release-evidence.mjs test-validation --source "$GITHUB_WORKSPACE/.ci/test-validation.json" --out /tmp/test-validation.json
+
+      - name: Verify artifact provenance from staging health (HTTPS required)
+        env:
+          STAGING_HEALTH_URL: ${{ secrets.STAGING_HEALTH_URL }}
+        run: |
+          if [ -z "$STAGING_HEALTH_URL" ]; then
+            echo "FATAL: STAGING_HEALTH_URL secret required for artifact provenance verification." >&2
+            exit 1
+          fi
+          node scripts/ci/release-migrations.mjs verify-provenance \
+            --expected-sha ${{ github.sha }} \
+            --health-url "$STAGING_HEALTH_URL"
+
+      - name: Require RPC contract evidence file (fail-closed)
+        run: |
+          if [ ! -f "$GITHUB_WORKSPACE/.ci/rpc-contracts.json" ]; then
+            echo "FATAL: Missing .ci/rpc-contracts.json. RPC contract evidence (definition/owner/search_path/grants) must be produced by approved introspection." >&2
+            exit 1
+          fi
+
+      - name: Run migration & release parity gate (promote)
+        env:
+          SUPABASE_PRODUCTION_PROJECT_REF: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_REF }}
+        run: |
+          node scripts/ci/release-migrations.mjs check \
+            --manifest /tmp/migration-manifest.json \
+            --commit ${{ github.sha }} \
+            --target-ref "$SUPABASE_PRODUCTION_PROJECT_REF" \
+            --expected-ref "$SUPABASE_PRODUCTION_PROJECT_REF" \
+            --local-versions /tmp/local-versions.json \
+            --remote-versions /tmp/remote-versions.json \
+            --test-validation "$(cat /tmp/test-validation.json)" \
+            --rpc-contracts true \
+            --rpc-contracts-file "$GITHUB_WORKSPACE/.ci/rpc-contracts.json" \
+            --artifact-provenance true \
+            --gate-mode promote
+
   # ── Step 5: Production Deployment Gate ─────────────────────
   deploy-production:
-    name: Deploy to Production (After Staging Validation)
-    needs: [resolve-context, test-staging]
+    name: Deploy to Production
+    needs: [resolve-context, test-staging, migration-parity-gate]
     if: needs.resolve-context.outputs.promote_to == 'production'
     runs-on: ubuntu-latest
     environment: hostinger-production
