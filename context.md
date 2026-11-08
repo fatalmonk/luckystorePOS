@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261108-e6r-phase2: finish a focused draft PR for explicit reviewed migration manifests and read-only test/production history verification. No migration application, history repair, workflow change, RPC framework, or deployment.
+- 20261108-e6r-phase2: draft PR #605 is open with independent review findings remediated and required checks green. No migration application, history repair, workflow change, RPC framework, or deployment.
 ## Decisions
 - 20261108-e6r-phase2-contract: manifests read migration bytes from the reviewed Git commit and bind commit, version, filename, and SQL SHA-256, with an explicit reason for no-migration releases. The verifier CLI fetches project identity before history and enforces fresh evidence; caller refs/history files alone cannot pass.
 - 20261108-e6r-phase2-states: results are exactly `APPLIED`, `PENDING`, `DRIFT`, or `UNVERIFIED`. A recorded version or matching history name without SQL/schema equivalence remains `UNVERIFIED`.
@@ -22,5 +22,5 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Commit/push the focused Phase 2 branch, open a draft PR, and run an independent final review.
-- Keep migration/release approval blocked on test-history reconciliation and production SQL-equivalence evidence. Secret scan remains failed on 19 ignored `.next-turbo` artifacts.
+- Owner review draft PR #605; keep it draft until the recorded migration-history blockers are accepted or resolved.
+- Keep migration/release approval blocked on test-history reconciliation and production SQL-equivalence evidence. Local secret scan remains failed on 19 ignored `.next-turbo` artifacts; PR `secret_scan` is green.
