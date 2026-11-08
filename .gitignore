@@ -183,6 +183,8 @@ temp/
 .continue/
 .trae/
 skills-lock.json
+/.kilo/kilo.jsonc
+/.kilo/skills/
 
 # Databricks AI Dev Kit (project-local generated state)
 .ai-dev-kit/
@@ -404,3 +406,8 @@ data/catalog/templates/*
 /system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
 /social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
 /googlesearchconsole.txt.rtf
+
+# Local agent-generated audits and one-off planning artifacts.
+/system-docs/audits/*.md
+/*plan*.md
+/production-preflight-analysis.md

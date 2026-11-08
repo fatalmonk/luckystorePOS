@@ -21,6 +21,8 @@
     "build:storefront": "npm run build --workspace=customer_storefront",
     "build:admin": "npm run build --workspace=admin_web",
     "dev": "turbo run dev",
+    "dev:storefront": "turbo run dev --filter=customer_storefront",
+    "dev:admin": "turbo run dev --filter=admin_web",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "tsc --noEmit && turbo run typecheck",
