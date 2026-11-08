@@ -67,34 +67,42 @@ export async function resolveBengaliOverlays(
 
   if (missingIds.length === 0) return overlays;
 
+  // Run all batches concurrently (bounded by chunk count) and merge whatever
+  // each batch contributes; a failed batch never blocks the others.
+  const chunks: string[][] = [];
   for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
-    const chunk = missingIds.slice(i, i + BATCH_SIZE);
-    try {
-      const { data, error } = await (supabase as any)
-        .from('item_translations')
-        .select('item_id, name, description')
-        .in('item_id', chunk)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published');
-
-      if (error) {
-        // Preserve existing graceful-degradation contract: a missing table is
-        // expected in environments where the migration has not landed.
-        if (!isMissingItemTranslationsTableError(error)) {
-          console.error('Failed to load Bengali translations for overlay:', error);
-        }
-        continue;
-      }
-
-      for (const row of (data ?? []) as Array<{ item_id: string; name?: string; description?: string }>) {
-        const id = String(row.item_id ?? '');
-        if (!id) continue;
-        overlays.set(id, { name: row.name, description: row.description });
-      }
-    } catch (err) {
-      console.error('Unexpected error loading Bengali translations for overlay:', err);
-    }
+    chunks.push(missingIds.slice(i, i + BATCH_SIZE));
   }
+
+  await Promise.all(
+    chunks.map(async (chunk) => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('item_translations')
+          .select('item_id, name, description')
+          .in('item_id', chunk)
+          .eq('locale', 'bn')
+          .eq('review_status', 'published');
+
+        if (error) {
+          // Preserve existing graceful-degradation contract: a missing table is
+          // expected in environments where the migration has not landed.
+          if (!isMissingItemTranslationsTableError(error)) {
+            console.error('Failed to load Bengali translations for overlay:', error);
+          }
+          return;
+        }
+
+        for (const row of (data ?? []) as Array<{ item_id: string; name?: string; description?: string }>) {
+          const id = String(row.item_id ?? '');
+          if (!id) continue;
+          overlays.set(id, { name: row.name, description: row.description });
+        }
+      } catch (err) {
+        console.error('Unexpected error loading Bengali translations for overlay:', err);
+      }
+    }),
+  );
 
   return overlays;
 }
