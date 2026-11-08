@@ -114,9 +114,10 @@ jobs:
           fi
 
       - name: Assemble Standalone Deployment Package
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
           node scripts/deploy/package-standalone.mjs storefront-release.zip
-          echo "${{ github.sha }}" > apps/customer_storefront/.next/standalone/build_sha.txt
 
       - name: Upload Immutable Release Artifact
         uses: actions/upload-artifact@v4

@@ -9,6 +9,28 @@
 
 import https from 'node:https';
 import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export function evaluateSmokeHealth({ statusCode, body, expectedSha = null }) {
+  if (statusCode !== 200) return { ok: false, error: `Expected 200, got ${statusCode}` };
+  let data;
+  try {
+    data = typeof body === 'string' ? JSON.parse(body) : body;
+  } catch {
+    return { ok: false, error: `Health response was not valid JSON: ${String(body).slice(0, 120)}` };
+  }
+  if (data?.status !== 'ok') return { ok: false, error: `Expected status 'ok', got: ${JSON.stringify(data)}` };
+  if (expectedSha) {
+    const actualSha = data?.buildSha ?? data?.commitSha ?? data?.sha ?? null;
+    if (!actualSha) return { ok: false, error: 'Health response did not include build SHA for provenance verification.' };
+    if (String(actualSha) !== String(expectedSha)) {
+      return { ok: false, error: `Deployed build SHA ${actualSha} does not match expected reviewed commit ${expectedSha}.` };
+    }
+  }
+  const detail = data?.buildSha ? `Status 200 OK (build ${data.buildSha})` : 'Status 200 OK';
+  return { ok: true, detail, data };
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -88,10 +110,9 @@ async function run() {
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             const res = await request(`${baseUrl}/api/health`);
-            if (res.statusCode !== 200) throw new Error(`Expected 200, got ${res.statusCode}`);
-            const data = JSON.parse(res.body);
-            if (data.status !== 'ok') throw new Error(`Expected status 'ok', got: ${res.body}`);
-            return `Status 200 OK${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
+            const result = evaluateSmokeHealth({ statusCode: res.statusCode, body: res.body, expectedSha });
+            if (!result.ok) throw new Error(result.error);
+            return `${result.detail}${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
           } catch (err) {
             lastErr = err;
             if (attempt < 3) {
@@ -190,7 +211,10 @@ async function run() {
   }
 }
 
-run().catch(err => {
-  console.error('Fatal error during smoke test:', err);
-  process.exit(1);
-});
+const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMainModule) {
+  run().catch(err => {
+    console.error('Fatal error during smoke test:', err);
+    process.exit(1);
+  });
+}

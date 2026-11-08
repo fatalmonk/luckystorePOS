@@ -2,5 +2,6 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
-  return Response.json({ status: 'ok', service: 'customer-storefront' });
+  const buildSha = process.env.NEXT_PUBLIC_BUILD_SHA?.trim() || null;
+  return Response.json({ status: 'ok', service: 'customer-storefront', buildSha });
 }
