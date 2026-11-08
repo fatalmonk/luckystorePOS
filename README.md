@@ -69,7 +69,7 @@
 | **SSLCommerz Cards** | Integrated card + mobile banking gateway | Separate terminal required | May support, generic |
 | **Bluetooth Label Printing** | MHT-P29L TSPL, Code128 barcodes, 40x30mm labels | Manual price tagging | Not supported |
 | **Bangla Interface** | English + Bangla with HindSiliguri font throughout | English-only | English-only |
-| **Competitor Price Monitoring** | AI-powered scraping of Shwapno, Chaldal, AamaderBazar | Not available | Not available |
+| **Competitor Price Monitoring** | AI-powered scraping of Shwapno, Chaldal | Not available | Not available |
 | **Multi-Tenant Security** | Supabase RLS with tenant isolation per store | Basic auth only | Basic auth only |
 | **Deployment** | Hostinger storefront, Vercel admin/previews, APK sideload | Complex server setup | Vendor lock-in |
 | **Cost** | Free & Open Source (Apache 2.0) | License fees + hardware | Monthly SaaS fees |
@@ -368,11 +368,7 @@
 - **Puppeteer-based scraping** of major Bangladeshi retailers:
   - **Shwapno** — Bangladesh's largest retail chain
   - **Chaldal** — leading online grocery (per-category: biscuits, chocolates, beverages, noodles, etc.)
-  - **AamaderBazar** — competitive pricing data
-  - **Unilever Bangladesh** — brand-level pricing
-- **Price comparison generation** (`generate-price-mapping.js`)
 - Data stored in Supabase for reporting and competitive analysis
-- Run: `cd apps/scraper && npm run update-prices`
 
 </details>
 
@@ -459,7 +455,7 @@ luckystorePOS/
 │   ├── mobile_app/          # Flutter POS app (141 Dart files, 13 feature modules)
 │   ├── admin_web/           # React + Vite admin dashboard (19 features, 26 routes)
 │   ├── customer_storefront/   # Next.js 15 e-commerce — LIVE at luckystore1947.com (16 pages, 9 API routes)
-│   └── scraper/             # Puppeteer competitor price scraper (Shwapno, Chaldal, AamaderBazar, Unilever)
+│   └── scraper/             # Puppeteer competitor price scraper (Shwapno, Chaldal)
 ├── supabase/
 │   ├── migrations/          # 162 SQL migration files
 │   ├── functions/           # 10 Deno edge functions
