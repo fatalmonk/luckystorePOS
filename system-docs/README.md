@@ -75,7 +75,9 @@ This ignores all `.md` files in `system-docs/audits/`. The two tracked audits we
 
 ### Audit Register
 
-See [`audits/README.md`](audits/README.md) for the complete register with status, outcomes, and unresolved findings.
+See [`audit-register.md`](audit-register.md) for the complete register with status, outcomes, and unresolved findings. This file is **tracked in Git** and accessible to remote reviewers.
+
+The local-only register at `audits/README.md` (gitignored per policy) contains the same classification plus raw finding lists from each investigation audit.
 
 ---
 
