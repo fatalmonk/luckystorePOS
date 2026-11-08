@@ -2,12 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Product } from '../types';
 import { RuleBasedBrandParser } from './index';
 
-const { search, getCategories } = vi.hoisted(() => ({
+const { search, getCategories, supabaseFrom } = vi.hoisted(() => ({
   search: vi.fn(),
   getCategories: vi.fn(),
+  supabaseFrom: vi.fn(),
 }));
 
-vi.mock('../supabase', () => ({ supabase: {} }));
+vi.mock('../supabase', () => ({ supabase: { from: supabaseFrom } }));
 
 vi.mock('./index', () => ({
   createProductRepository: vi.fn(() => ({ repo: { search, getCategories, getById: vi.fn() } })),
@@ -38,6 +39,7 @@ describe('getHomePageData catalogue diagnostics', () => {
   beforeEach(() => {
     search.mockReset();
     getCategories.mockReset();
+    supabaseFrom.mockReset();
     getCategories.mockResolvedValue([
       { id: 'category-rice', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾' },
     ]);
@@ -96,4 +98,107 @@ describe('getHomePageData catalogue diagnostics', () => {
     );
   });
 
+});
+
+describe('getHomePageData Bengali overlay (PR 2B defect fix)', () => {
+  beforeEach(() => {
+    search.mockReset();
+    getCategories.mockReset();
+    supabaseFrom.mockReset();
+    getCategories.mockResolvedValue([
+      { id: 'category-rice', slug: 'rice-and-grain', name: 'Rice & Grain', emoji: '🌾' },
+    ]);
+    vi.mocked(RuleBasedBrandParser).mockImplementation(function (this: { parse: (value: string) => string }) {
+      this.parse = (value: string) => value;
+    } as never);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('issues ZERO item_translations requests when the search overlay resolved every product (even with no translations)', async () => {
+    // Live-catalog response: translation lookup already completed successfully
+    // in the shared search overlay; none of the products have a bn row.
+    const liveProducts = [
+      { ...product, id: 'p1', stock: 5, bengaliTranslationResolved: true },
+      { ...product, id: 'p2', name: 'Other Rice', stock: 3, bengaliTranslationResolved: true },
+    ];
+    search
+      .mockResolvedValueOnce({ products: liveProducts, hasMore: false })
+      .mockResolvedValueOnce({ products: [], hasMore: false });
+
+    const data = await getHomePageData('bn');
+
+    expect(supabaseFrom).not.toHaveBeenCalled();
+    // Bengali fallback preserved: base-language names remain.
+    expect(data.inStock.map((p) => p.name)).toEqual(['Test Rice', 'Other Rice']);
+  });
+
+  it('applies in-memory Bengali names without a DB read when resolved with translations', async () => {
+    const liveProducts = [
+      {
+        ...product, id: 'p1', stock: 5,
+        bengaliName: 'টেস্ট রাইস', bengaliDescription: 'বিবরণ',
+        bengaliTranslationResolved: true,
+      },
+    ];
+    search
+      .mockResolvedValueOnce({ products: liveProducts, hasMore: false })
+      .mockResolvedValueOnce({ products: [], hasMore: false });
+
+    const data = await getHomePageData('bn');
+
+    expect(supabaseFrom).not.toHaveBeenCalled();
+    expect(data.inStock[0].name).toBe('টেস্ট রাইস');
+    expect(data.inStock[0].originalName).toBe('Test Rice');
+  });
+
+  it('falls back to a DB read for unresolved (snapshot/unqueried) products only', async () => {
+    const mixed = [
+      { ...product, id: 'p1', stock: 5, bengaliTranslationResolved: true },
+      { ...product, id: 'p2', name: 'Snapshot Rice', stock: 2 },
+    ];
+    search
+      .mockResolvedValueOnce({ products: mixed, hasMore: false })
+      .mockResolvedValueOnce({ products: [], hasMore: false });
+
+    const inFn = vi.fn().mockReturnThis();
+    supabaseFrom.mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      in: inFn,
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [{ item_id: 'p2', name: 'স্ন্যাপশট রাইস', description: null }], error: null }),
+      }),
+    }));
+
+    const data = await getHomePageData('bn');
+
+    expect(supabaseFrom).toHaveBeenCalledWith('item_translations');
+    // Only the unresolved product is queried — never the resolved one.
+    expect(inFn).toHaveBeenCalledWith('item_id', ['p2']);
+    const names = new Map(data.inStock.map((p) => [p.id, p.name]));
+    expect(names.get('p1')).toBe('Test Rice');
+    expect(names.get('p2')).toBe('স্ন্যাপশট রাইস');
+  });
+
+  it('degrades to base-language content when the fallback translation read fails', async () => {
+    const unresolved = [{ ...product, id: 'p1', stock: 5 }];
+    search
+      .mockResolvedValueOnce({ products: unresolved, hasMore: false })
+      .mockResolvedValueOnce({ products: [], hasMore: false });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    supabaseFrom.mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }),
+      }),
+    }));
+
+    const data = await getHomePageData('bn');
+
+    expect(data.inStock[0].name).toBe('Test Rice');
+    errorSpy.mockRestore();
+  });
 });

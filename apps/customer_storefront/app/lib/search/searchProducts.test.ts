@@ -350,4 +350,85 @@ describe('searchStorefrontProducts', () => {
     expect(products[0].id).toBe('item-1');
     expect(products[0].bengaliName).toBeUndefined();
   });
+
+  it('marks every product bengaliTranslationResolved when the overlay lookup succeeds with an empty result set', async () => {
+    const { products } = await searchStorefrontProducts({
+      limit: 10,
+      supabaseClient: {
+        rpc: vi.fn(() => Promise.resolve({
+          data: [
+            { item_id: 'untranslated-1', name: 'Plain Rice', price: 50, sellable_qty: 4 },
+            { item_id: 'untranslated-2', name: 'Plain Dal', price: 30, sellable_qty: 2 },
+          ],
+          error: null,
+        })),
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+
+    expect(products).toHaveLength(2);
+    for (const p of products) {
+      expect(p.bengaliTranslationResolved).toBe(true);
+      expect(p.bengaliName).toBeUndefined();
+    }
+  });
+
+  it('marks products bengaliTranslationResolved alongside bengali fields on a successful lookup', async () => {
+    const mockTranslations = [{ item_id: 'bn-item', name: 'বাংলা নাম', description: 'বিবরণ', search_terms: ['t'] }];
+    const { products } = await searchStorefrontProducts({
+      limit: 10,
+      supabaseClient: {
+        rpc: vi.fn(() => Promise.resolve({
+          data: [
+            { item_id: 'bn-item', name: 'Bengali Item', price: 50, sellable_qty: 4 },
+            { item_id: 'en-item', name: 'English Item', price: 60, sellable_qty: 3 },
+          ],
+          error: null,
+        })),
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: mockTranslations, error: null }),
+          }),
+        })),
+      } as any,
+    });
+
+    const bn = products.find((p) => p.id === 'bn-item');
+    const en = products.find((p) => p.id === 'en-item');
+    expect(bn?.bengaliName).toBe('বাংলা নাম');
+    expect(bn?.bengaliTranslationResolved).toBe(true);
+    // Verified-untranslated products are still marked resolved.
+    expect(en?.bengaliName).toBeUndefined();
+    expect(en?.bengaliTranslationResolved).toBe(true);
+  });
+
+  it('does NOT mark products resolved when the overlay lookup fails (conservative partial failure)', async () => {
+    const { products } = await searchStorefrontProducts({
+      limit: 10,
+      supabaseClient: {
+        rpc: vi.fn(() => Promise.resolve({
+          data: [{ item_id: 'item-x', name: 'Item X', price: 50, sellable_qty: 4 }],
+          error: null,
+        })),
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: null, error: { message: 'timeout', code: '57014' } }),
+        })),
+      } as any,
+    });
+
+    // Degraded path returns products without the resolved flag so downstream
+    // overlays retry via their own DB fallback.
+    expect(products).toHaveLength(1);
+    expect(products[0].bengaliTranslationResolved).toBeUndefined();
+  });
 });
