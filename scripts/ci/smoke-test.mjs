@@ -12,7 +12,14 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export function evaluateSmokeHealth({ statusCode, body, expectedSha = null }) {
+export function evaluateSmokeHealth({
+  statusCode,
+  body,
+  expectedSha = null,
+  now = Date.now(),
+  maxAgeMs = 5 * 60 * 1000,
+  requireTimestamp = false,
+}) {
   if (statusCode !== 200) return { ok: false, error: `Expected 200, got ${statusCode}` };
   let data;
   try {
@@ -26,6 +33,15 @@ export function evaluateSmokeHealth({ statusCode, body, expectedSha = null }) {
     if (!actualSha) return { ok: false, error: 'Health response did not include build SHA for provenance verification.' };
     if (String(actualSha) !== String(expectedSha)) {
       return { ok: false, error: `Deployed build SHA ${actualSha} does not match expected reviewed commit ${expectedSha}.` };
+    }
+  }
+  const hasTimestamp = data?.timestamp != null && data.timestamp !== '';
+  if (requireTimestamp || hasTimestamp) {
+    if (typeof data?.timestamp !== 'string' || Number.isNaN(Date.parse(data.timestamp))) {
+      return { ok: false, error: 'Health response missing parseable timestamp.' };
+    }
+    if (Math.abs(now - Date.parse(data.timestamp)) > maxAgeMs) {
+      return { ok: false, error: `Health timestamp is stale (>${Math.round(maxAgeMs / 60000)} minutes).` };
     }
   }
   const detail = data?.buildSha ? `Status 200 OK (build ${data.buildSha})` : 'Status 200 OK';
@@ -97,6 +113,10 @@ function request(targetUrl, options = {}, redirectCount = 0) {
 
 async function run() {
   const { url: baseUrl, expectedSha, allowCatalogSnapshotFallback } = parseArgs();
+  if (expectedSha && !baseUrl.startsWith('https://')) {
+    console.error('FATAL: Provenance smoke checks require HTTPS when --expected-sha is provided.');
+    process.exit(1);
+  }
   console.log(`\n======================================================`);
   console.log(`🔍 Running Storefront Smoke Tests against: ${baseUrl}`);
   if (expectedSha) console.log(`🎯 Expected Commit SHA: ${expectedSha}`);
@@ -110,7 +130,12 @@ async function run() {
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             const res = await request(`${baseUrl}/api/health`);
-            const result = evaluateSmokeHealth({ statusCode: res.statusCode, body: res.body, expectedSha });
+            const result = evaluateSmokeHealth({
+              statusCode: res.statusCode,
+              body: res.body,
+              expectedSha,
+              requireTimestamp: Boolean(expectedSha),
+            });
             if (!result.ok) throw new Error(result.error);
             return `${result.detail}${attempt > 1 ? ` (attempt ${attempt})` : ''}`;
           } catch (err) {
