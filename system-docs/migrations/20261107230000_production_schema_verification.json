@@ -1,0 +1,67 @@
+{
+  "schema": "luckystore.migration-schema-evidence/v2",
+  "projectRef": "hvmyxyccfnkrbxqbhlnm",
+  "environment": "Supabase production",
+  "method": "live read-only catalog verification through the connected Supabase integration; no DDL, DML, migration replay, or history mutation",
+  "checkedAt": "2026-11-08T21:45:29Z",
+  "migrationHistoryCount": 276,
+  "classification": "function-body-and-contract-verified, history-metadata-complete",
+  "scope": "Only migration 20261107230000 and public.resolve_storefront_item_prefix_v1(uuid,text) are schema-verified. The other 275 recorded migration versions are version-history observations, not SQL-equivalence certifications.",
+  "project": {
+    "status": "ACTIVE_HEALTHY",
+    "migrationCount": 276,
+    "versionParityStatus": "UNVERIFIED",
+    "versionParityReason": "The supplied live result includes the production count and resolver row, but this artifact does not persist the complete 276-version production set for commit-bound equality comparison."
+  },
+  "reviewedFile": {
+    "path": "supabase/migrations/20261107230000_add_storefront_prefix_resolver.sql",
+    "sha256": "463c85f5b704d2753a81f2a3167655ca8b1debe7d5e51d5fbe467b1aa3adb10f"
+  },
+  "remoteHistoryRow": {
+    "version": "20261107230000",
+    "name": "add_storefront_prefix_resolver",
+    "statementsPresent": true
+  },
+  "installedFunction": {
+    "object": "function public.resolve_storefront_item_prefix_v1(uuid,text)",
+    "resultType": "TABLE(item_id uuid)",
+    "language": "plpgsql",
+    "volatility": "stable",
+    "securityDefiner": true,
+    "owner": "postgres",
+    "searchPath": "",
+    "grants": ["postgres EXECUTE", "anon EXECUTE", "authenticated EXECUTE", "service_role EXECUTE"],
+    "bodyHash": {
+      "algorithm": "luckystore.plpgsql-prosrc-utf8-lf-ascii-trim-sha256/v1",
+      "source": "pg_proc.prosrc",
+      "sha256": "c409155d8f78931d904b08c040730565e3ad01852319710ff0bd9268e407a791"
+    }
+  },
+  "records": [
+    {
+      "version": "20261107230000",
+      "name": "add_storefront_prefix_resolver",
+      "reviewedFileSha256": "463c85f5b704d2753a81f2a3167655ca8b1debe7d5e51d5fbe467b1aa3adb10f",
+      "projectRef": "hvmyxyccfnkrbxqbhlnm",
+      "function": {
+        "schema": "public",
+        "name": "resolve_storefront_item_prefix_v1",
+        "argTypes": ["uuid", "text"],
+        "resultType": "TABLE(item_id uuid)",
+        "language": "plpgsql",
+        "volatility": "stable",
+        "securityDefiner": true,
+        "owner": "postgres",
+        "searchPath": "",
+        "grants": ["postgres EXECUTE", "anon EXECUTE", "authenticated EXECUTE", "service_role EXECUTE"]
+      },
+      "bodyHash": {
+        "algorithm": "luckystore.plpgsql-prosrc-utf8-lf-ascii-trim-sha256/v1",
+        "source": "pg_proc.prosrc",
+        "sha256": "c409155d8f78931d904b08c040730565e3ad01852319710ff0bd9268e407a791"
+      },
+      "method": "connected Supabase integration read-only catalog query",
+      "checkedAt": "2026-11-08T21:45:29Z"
+    }
+  ]
+}
