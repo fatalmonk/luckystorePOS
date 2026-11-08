@@ -7,9 +7,7 @@
   "main": "scrape-shwapno.js",
   "scripts": {
     "start": "node scrape-shwapno.js",
-    "scrape": "node scrape-shwapno.js",
-    "map": "node generate-price-mapping.js",
-    "update-prices": "npm run scrape && npm run map"
+    "scrape": "node scrape-shwapno.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
