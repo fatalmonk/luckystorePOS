@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261108-e6r-phase2: PR #605 remediation is pushed and all checks pass. Production resolver body/contract is verified; full production version-set parity remains `UNVERIFIED`, and nine test-project local-only versions remain `PENDING`. No database write, history repair, workflow activation, deployment, or merge.
+- 20261108-e6r-phase2: PR #605 remediation is pushed and all checks pass. Seven reported findings are fixed and replied to; five addressed threads remain unresolved only because the available GitHub token lacks thread-resolution permission. No database write, history repair, workflow activation, deployment, or merge.
 ## Decisions
 - 20261108-e6r-phase2-contract: manifests read migration bytes from the reviewed Git commit and bind commit, version, filename, and SQL SHA-256, with an explicit reason for no-migration releases. The verifier CLI fetches project identity before history and enforces fresh evidence; caller refs/history files alone cannot pass.
 - 20261108-e6r-phase2-states: results are exactly `APPLIED`, `PENDING`, `DRIFT`, or `UNVERIFIED`. A recorded version or matching history name without SQL/schema equivalence remains `UNVERIFIED`.
@@ -24,6 +24,7 @@
 - 20261108-e6r-test-local-only: nine local-only migrations are outside the reviewed manifest, so test-project version parity remains `PENDING`.
 - 20261108-committed-db-secret: `scripts/db/backup_db.mjs` contains a committed production database connection string. Treat it as exposed and handle removal plus credential rotation as separate security remediation.
 - 20261108-local-secret-scan: the full scan fails on 25 non-staged findings (6 scanner fixture strings in an unrelated untracked `.kilo` worktree and 19 ignored `.next-turbo` artifacts); the scoped staged-addition scan found no suspicious credential patterns.
+- 20261108-review-thread-resolution: five fixed/replied Cubic threads remain unresolved. GraphQL `resolveReviewThread` returns `FORBIDDEN`, and the browser session is unauthenticated; code and regression verification are complete.
 ## Resolved
 - 20261108-e6r-access: owner-supplied connected Supabase evidence resolved resolver verification without requesting credentials; GitHub access works through the configured keychain after ignoring a stale environment token.
 - 20261108-e6r-phase2-tests: 43 focused CI tests and 1,013 app tests pass; typecheck passes; lint passes with 3 existing React Compiler warnings. Final independent standards/spec/security review reports no findings, and all PR checks pass.
@@ -31,4 +32,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Owner review PR #605. Keep merge and migration/release execution blocked until review requirements and recorded parity limitations are accepted or resolved.
+- Owner resolve/approve the five addressed PR #605 threads. Keep merge and migration/release execution blocked until review requirements and recorded parity limitations are accepted or resolved.
