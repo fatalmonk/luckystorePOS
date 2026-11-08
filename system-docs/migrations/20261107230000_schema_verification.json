@@ -1,5 +1,5 @@
 {
-  "schema": "luckystore.migration-schema-evidence/v1",
+  "schema": "luckystore.migration-schema-evidence/v2",
   "projectRef": "grxxenvdhfwzafzyykgo",
   "environment": "Supabase Security Tests (dedicated disposable test project)",
   "method": "read-only psql catalog introspection: SELECT from pg_proc/pg_namespace/pg_language, pg_get_functiondef(), pg_proacl/aclexplode, information_schema.routine_privileges, supabase_migrations.schema_migrations, plus RPC invalid-input counts. No DDL, no DML, no migration replay, no history mutation.",
@@ -10,7 +10,7 @@
     "method": "authorized disposable DB URL (host db.grxxenvdhfwzafzyykgo.supabase.co / pooler user postgres.grxxenvdhfwzafzyykgo) with PGAPPNAME codex-readonly-grxxenvdhfwzafzyykgo",
     "checkedAt": "2026-11-08T19:13:00Z"
   },
-  "classification": "schema-verified, history-metadata-incomplete",
+  "classification": "function-body-and-contract-verified, history-metadata-incomplete",
   "disposition": "Do not replay migration 20261107230000 and do not repair its history row. The metadata gap has no demonstrated effect on application behavior; a history mutation would be an unmotivated database write. E6-R Phase 2 must classify this state explicitly, never as a missing migration.",
   "reviewedFile": {
     "path": "supabase/migrations/20261107230000_add_storefront_prefix_resolver.sql",
@@ -40,11 +40,16 @@
     "securityDefiner": true,
     "owner": "postgres",
     "proconfig": ["search_path=\"\""],
+    "searchPath": "",
     "grants": ["anon EXECUTE", "authenticated EXECUTE", "service_role EXECUTE"],
-    "installedBodySha256": "5df6b76d79d622fdae38faeab95253836ea090a7569c15c415a13e347096f8b2",
+    "installedBodyObservedSha256": "5df6b76d79d622fdae38faeab95253836ea090a7569c15c415a13e347096f8b2",
+    "bodyHash": {
+      "algorithm": "luckystore.plpgsql-prosrc-utf8-lf-ascii-trim-sha256/v1",
+      "source": "pg_proc.prosrc",
+      "sha256": "c409155d8f78931d904b08c040730565e3ad01852319710ff0bd9268e407a791"
+    },
     "pgGetFunctiondefCanonicalSha256": "6ea1ab56a1f524463619b55ff3006ee26fad56b6af4441d87a44bfbbce1e7dcc",
-    "definitionEquivalent": true,
-    "equivalenceMethod": "prosrc body byte-equal to the reviewed migration body after line-ending/trim normalization (identical SHA-256); pg_get_functiondef differs from the file only by PostgreSQL canonical formatting.",
+    "equivalenceMethod": "Hash pg_proc.prosrc after CRLF/lone-CR to LF conversion and removal of boundary ASCII whitespace bytes 0x09-0x0d and 0x20; preserve internal bytes, perform no Unicode normalization, then SHA-256 the UTF-8 bytes. The earlier 5df6... digest retained one trailing LF; removing both delimiter-boundary newlines produces c409... without changing internal function text. pg_get_functiondef is diagnostic reconstructed SQL and is not equivalence evidence.",
     "behaviorChecks": {
       "scope": "invalid-input guards only",
       "observed": "null store, blank prefix, short prefix (<4 hex), non-hex prefix, and nonexistent store all returned 0 rows via SELECT count(*) over the RPC",
@@ -60,7 +65,23 @@
       "name": "add_storefront_prefix_resolver",
       "reviewedFileSha256": "463c85f5b704d2753a81f2a3167655ca8b1debe7d5e51d5fbe467b1aa3adb10f",
       "projectRef": "grxxenvdhfwzafzyykgo",
-      "definitionEquivalent": true,
+      "function": {
+        "schema": "public",
+        "name": "resolve_storefront_item_prefix_v1",
+        "argTypes": ["uuid", "text"],
+        "resultType": "TABLE(item_id uuid)",
+        "language": "plpgsql",
+        "volatility": "stable",
+        "securityDefiner": true,
+        "owner": "postgres",
+        "searchPath": "",
+        "grants": ["anon EXECUTE", "authenticated EXECUTE", "service_role EXECUTE"]
+      },
+      "bodyHash": {
+        "algorithm": "luckystore.plpgsql-prosrc-utf8-lf-ascii-trim-sha256/v1",
+        "source": "pg_proc.prosrc",
+        "sha256": "c409155d8f78931d904b08c040730565e3ad01852319710ff0bd9268e407a791"
+      },
       "method": "read-only psql catalog introspection on grxxenvdhfwzafzyykgo",
       "checkedAt": "2026-11-08T19:13:00Z"
     }

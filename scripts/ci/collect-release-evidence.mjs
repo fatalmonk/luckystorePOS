@@ -62,8 +62,15 @@ export function normalizeMigrationHistoryRows(data) {
   return [...byVersion.values()].sort((a, b) => a.version.localeCompare(b.version));
 }
 
-async function fetchManagementJson(url, label, { accessToken, fetchImpl }) {
-  const response = await fetchImpl(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+async function fetchManagementJson(url, label, { accessToken, fetchImpl, method = 'GET', body }) {
+  const response = await fetchImpl(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
   if (!response.ok) throw new Error(`Failed to query ${label}: HTTP ${response.status}.`);
   return response.json();
 }
@@ -108,6 +115,69 @@ export async function collectProjectMigrationEvidence({
   };
 }
 
+export async function collectProjectFunctionEvidence({
+  projectRef,
+  accessToken,
+  functionContract,
+  fetchImpl = fetch,
+  now = () => new Date(),
+} = {}) {
+  if (!/^[a-z]{20}$/.test(String(projectRef || ''))) throw new Error(`Invalid Supabase project ref: ${projectRef ?? '(missing)'}`);
+  if (!accessToken) throw new Error('Supabase access token is required for live function evidence.');
+  const { schema, name, argTypes } = functionContract ?? {};
+  if (!/^[a-z_][a-z0-9_]*$/.test(String(schema || '')) || !/^[a-z_][a-z0-9_]*$/.test(String(name || ''))) {
+    throw new Error('Function evidence requires safe lowercase schema and function identifiers.');
+  }
+  if (!Array.isArray(argTypes) || argTypes.length === 0 || argTypes.some((type) => !/^[a-z_][a-z0-9_ ]*(?:\[\])?$/.test(String(type || '')))) {
+    throw new Error('Function evidence requires safe PostgreSQL argument types.');
+  }
+
+  const signature = `${schema}.${name}(${argTypes.join(',')})`;
+  const query = `select pg_catalog.pg_get_function_identity_arguments(p.oid) as identity_args, p.prosrc as body, pg_catalog.pg_get_function_result(p.oid) as result_type, l.lanname as language, case p.provolatile when 'i' then 'immutable' when 's' then 'stable' else 'volatile' end as volatility, p.prosecdef as security_definer, pg_catalog.pg_get_userbyid(p.proowner) as owner, coalesce(p.proconfig, array[]::text[]) as proconfig, coalesce((select array_agg((case when acl.grantee = 0 then 'PUBLIC' else pg_catalog.pg_get_userbyid(acl.grantee) end) || ' ' || acl.privilege_type order by acl.grantee, acl.privilege_type) from pg_catalog.aclexplode(coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))) acl), array[]::text[]) as grants from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace join pg_catalog.pg_language l on l.oid = p.prolang where p.oid = pg_catalog.to_regprocedure('${signature}')`;
+  const url = `${SUPABASE_MANAGEMENT_API}/projects/${projectRef}/database/query/read-only`;
+  const rows = await fetchManagementJson(url, 'read-only function catalog evidence', {
+    accessToken,
+    fetchImpl,
+    method: 'POST',
+    body: { query },
+  });
+  if (!Array.isArray(rows) || rows.length !== 1 || typeof rows[0]?.body !== 'string') {
+    throw new Error(`Read-only function catalog query returned ${Array.isArray(rows) ? rows.length : 'an invalid response'} rows; expected exactly one.`);
+  }
+  const row = rows[0];
+  const searchPathSetting = Array.isArray(row.proconfig)
+    ? row.proconfig.find((value) => typeof value === 'string' && value.startsWith('search_path='))
+    : null;
+  const configuredSearchPath = searchPathSetting ? searchPathSetting.slice('search_path='.length) : null;
+  const searchPath = configuredSearchPath === '""' ? '' : configuredSearchPath;
+  return {
+    source: 'supabase-management-api-read-only',
+    projectRef,
+    method: 'POST /v1/projects/{ref}/database/query/read-only',
+    checkedAt: now().toISOString(),
+    function: {
+      schema,
+      name,
+      argTypes,
+      identityArgs: typeof row.identity_args === 'string' ? row.identity_args : null,
+      body: row.body,
+      resultType: row.result_type,
+      language: row.language,
+      volatility: row.volatility,
+      securityDefiner: row.security_definer,
+      owner: row.owner,
+      searchPath,
+      grants: Array.isArray(row.grants) ? row.grants : [],
+    },
+  };
+}
+
+export function projectHistoryOutputForMode(mode, evidence) {
+  if (mode === 'project-history') return evidence;
+  if (mode === 'remote-versions') return evidence.history.rows.map(({ version }) => version);
+  throw new Error(`Unsupported project history output mode: ${mode}`);
+}
+
 async function main(argv = process.argv.slice(2)) {
   const [cmd] = argv;
   if (cmd === 'local-versions') {
@@ -123,7 +193,7 @@ async function main(argv = process.argv.slice(2)) {
     const projectRef = req('--project-ref', argv);
     if (!token) throw new Error(`Remote migration history requires ${tokenEnv}. Refusing to emit inferred history.`);
     const evidence = await collectProjectMigrationEvidence({ projectRef, accessToken: token });
-    writeJson(req('--out', argv), cmd === 'project-history' ? evidence : evidence.history.rows);
+    writeJson(req('--out', argv), projectHistoryOutputForMode(cmd, evidence));
     return;
   }
   if (cmd === 'rpc-contracts') {

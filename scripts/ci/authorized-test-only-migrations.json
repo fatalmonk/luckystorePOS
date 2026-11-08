@@ -2,6 +2,9 @@
   "schema": "luckystore.authorized-test-only-migration-ledger/v1",
   "source": "Supabase Security Tests migration audit",
   "targetProjectRef": "grxxenvdhfwzafzyykgo",
+  "observedRemoteOnlyCount": 23,
+  "observedAt": "2026-11-08T20:15:52Z",
+  "observationEvidence": "system-docs/migrations/test_project_migration_reconciliation.json persists the exact 23-version remote-only set from fresh read-only Management API evidence.",
   "authorized": [
     {
       "version": "20261015182509",
@@ -92,6 +95,26 @@
       "evidence": "Remote history shows duplicate version with same name as local migration.",
       "approvalSource": "Migration ledger audit on 2026-11-06",
       "approvalMethod": "Read-only chart of test project schema_migrations"
+    },
+    {
+      "version": "20261028193249",
+      "name": "allow_preview_image_host_for_cas",
+      "reason": "Security-test-only migration: allowed the preview image Worker host for the dedicated Security Tests tenant; never production scope.",
+      "classification": "security_test_only",
+      "evidence": "Recorded in the Security Tests migration history and documented in test-only-migrations/README.md; the exact applied SQL is preserved as an inert ledger snapshot.",
+      "approvalSource": "Supabase Security Tests migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only migration-history reconciliation",
+      "exemptFromProductionVerification": true
+    },
+    {
+      "version": "20261028194416",
+      "name": "allow_preview_image_metadata_for_test_tenant",
+      "reason": "Security-test-only migration: allowed preview image metadata only for the dedicated Security Tests tenant; never production scope.",
+      "classification": "security_test_only",
+      "evidence": "Recorded in the Security Tests migration history and documented in test-only-migrations/README.md; the exact applied SQL is preserved as an inert ledger snapshot.",
+      "approvalSource": "Supabase Security Tests migration ledger audit on 2026-11-06",
+      "approvalMethod": "Read-only migration-history reconciliation",
+      "exemptFromProductionVerification": true
     },
     {
       "version": "20261106024618",
@@ -206,5 +229,6 @@
   ],
   "unauthorizedRemoteDrift": [],
   "notes": "These test-only authorized versions are valid only for the Security Tests project (grxxenvdhfwzafzyykgo). Production verification (hvmyxyccfnkrbxqbhlnm) treats any remote-only as DRIFT.",
-  "generatedAt": "2026-11-08T20:31:19Z"
+  "generatedAt": "2026-11-08T20:31:19Z",
+  "reconciledAt": "2026-11-08T21:53:34Z"
 }
