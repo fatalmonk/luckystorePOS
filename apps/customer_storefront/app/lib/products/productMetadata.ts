@@ -1,5 +1,6 @@
 import { formatBdt } from '../formatPrice';
 import { toBengaliNumerals } from '../i18n/config';
+import { buildProductAlternateLanguages } from '../seo/productAlternates';
 import type { Metadata } from 'next';
 
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
@@ -23,6 +24,8 @@ export interface ProductMetadataInput {
   images?: Array<{ url: string; alt: string }>;
   brand?: string;
   category?: string;
+  canonicalBnUrl: string;
+  isBengaliIndexable: boolean;
 }
 
 export function formatBengaliProductMetaDescription(name: string, price: number): string {
@@ -69,11 +72,11 @@ export function buildProductMetadata(input: ProductMetadataInput): Metadata {
     keywords: buildProductMetaKeywords(input.name, input.brand, input.category),
     alternates: {
       canonical: input.canonicalUrl,
-      languages: {
-        'en-BD': input.canonicalUrl,
-        'bn-BD': input.canonicalUrl.replace('/product/', '/bn/product/'),
-        'x-default': input.canonicalUrl,
-      },
+      languages: buildProductAlternateLanguages({
+        canonicalEnUrl: input.canonicalUrl,
+        canonicalBnUrl: input.canonicalBnUrl,
+        isBengaliIndexable: input.isBengaliIndexable,
+      }),
     },
     openGraph: {
       // Next.js 15 rejects `product` as an Open Graph type; Product JSON-LD below

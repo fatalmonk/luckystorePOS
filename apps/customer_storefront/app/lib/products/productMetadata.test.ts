@@ -114,6 +114,8 @@ describe('Product metadata identity', () => {
       images: [{ url: '/products/polar/chocolate-cup-front.webp', alt: 'Chocolate cup package' }],
       brand: 'Polar',
       category: 'Ice-Cream',
+      canonicalBnUrl: 'https://www.luckystore1947.com/bn/product/polar-chocolate-cup--f6d581d5',
+      isBengaliIndexable: true,
     });
 
     expect(metadata.title).toEqual({ absolute: expect.stringContaining('Polar Chocolate Cup') });

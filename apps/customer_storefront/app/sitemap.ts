@@ -9,6 +9,7 @@ import { getPublishedGuides } from './lib/buying-guides/service';
 import { guideUrl } from './lib/buying-guides/model';
 import { getSeoPosts } from '../lib/notfair-client';
 import { getBlogCanonicalUrl, getBlogPublicationDate } from '../lib/blog-seo';
+import { buildProductAlternateLanguages } from './lib/seo/productAlternates';
 
 const BASE_URL = 'https://www.luckystore1947.com';
 const STORE_ID = '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd';
@@ -422,6 +423,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : {};
 
     const hasPublishedBn = publishedBnItemIds.has(product.id);
+    const languages = buildProductAlternateLanguages({
+      canonicalEnUrl: url,
+      canonicalBnUrl: bnUrl,
+      isBengaliIndexable: hasPublishedBn,
+    });
 
     productEntries.push({
       url,
@@ -429,16 +435,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.8,
       alternates: {
-        languages: hasPublishedBn
-          ? {
-              'en-BD': url,
-              'bn-BD': bnUrl,
-              'x-default': url,
-            }
-          : {
-              'en-BD': url,
-              'x-default': url,
-            },
+        languages,
       },
     });
 
@@ -449,11 +446,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'daily',
         priority: 0.8,
         alternates: {
-          languages: {
-            'en-BD': url,
-            'bn-BD': bnUrl,
-            'x-default': url,
-          },
+          languages,
         },
       });
     }

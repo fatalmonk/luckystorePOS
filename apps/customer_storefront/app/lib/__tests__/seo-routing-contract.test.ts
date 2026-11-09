@@ -3,6 +3,8 @@ import { NextRequest } from 'next/server';
 import { isProductSitemapEligible } from '../../sitemap';
 import { getCanonicalCategorySlug } from '../types';
 
+const mockTranslationMaybeSingle = vi.hoisted(() => vi.fn());
+
 const mockUpdateSession = vi.fn(async () => new Response(null, { status: 200 }));
 
 vi.mock('../supabase/middleware', () => ({
@@ -41,16 +43,23 @@ vi.mock('next/font/google', () => ({
 
 // Mock Supabase
 vi.mock('../supabase', () => {
-  const query = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
-    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+  const createQuery = () => {
+    const filters: Record<string, unknown> = {};
+    const query = {
+      select: vi.fn(() => query),
+      eq: vi.fn((column: string, value: unknown) => {
+        filters[column] = value;
+        return query;
+      }),
+      in: vi.fn(() => query),
+      maybeSingle: vi.fn(() => mockTranslationMaybeSingle(filters)),
+    };
+    return query;
   };
 
   return {
     supabase: {
-      from: vi.fn(() => query),
+      from: vi.fn(() => createQuery()),
       rpc: vi.fn(),
     },
   };
@@ -75,6 +84,12 @@ const mockProduct = {
   image_url: 'https://images.luckystore1947.com/turmeric.jpg',
   unit: '100gm',
   stock: 20,
+};
+
+const mockUntranslatedProduct = {
+  ...mockProduct,
+  id: '7ddf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
+  name: 'Untranslated Active Item',
 };
 
 const mockCategories = [
@@ -111,6 +126,7 @@ vi.mock('../products/getCachedCategories', () => ({
 vi.mock('../products/getCachedProduct', () => ({
   getCachedProductBySlug: vi.fn(async (slug: string) => {
     if (slug.includes('029b62d8')) return mockProduct;
+    if (slug.includes('7ddf0fb2')) return mockUntranslatedProduct;
     return null;
   }),
 }));
@@ -123,6 +139,20 @@ vi.mock('../products/getCachedCrossSell', () => ({
 describe('SEO & Routing Contract Tests (Phase 2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTranslationMaybeSingle.mockImplementation(async (filters: Record<string, unknown>) => {
+      const published = filters.locale === 'bn' && filters.review_status === 'published';
+      return {
+        data: published
+          ? {
+              item_id: filters.item_id,
+              name: 'রাঁধুনি হলুদ গুঁড়া ১০০ গ্রাম',
+              description: 'বিশুদ্ধ হলুদের গুঁড়া',
+              origin: 'বাংলাদেশ',
+            }
+          : null,
+        error: null,
+      };
+    });
   });
 
   describe('HTTP named product canonical redirects', () => {
@@ -325,6 +355,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         expect(languages?.['bn-BD']).toBe(expectedBnCanonical);
         expect(languages?.['en-BD']).toBe(expectedEnCanonical);
         expect(languages?.['x-default']).toBe(expectedEnCanonical);
+        expect(meta.robots).toBeUndefined();
       });
 
       it('English and Bengali hreflang alternates are reciprocal', async () => {
@@ -379,20 +410,32 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         expect(mockNotFound).not.toHaveBeenCalled();
       });
 
-      it('does not emit canonical or hreflang for noindex/404 route metadata', async () => {
-        const { generateMetadata } = await import('../../(bengali)/bn/product/[slug]/page');
-        const meta = await generateMetadata({
-          params: Promise.resolve({ slug: 'radhuni-holud-gura-100gm--029b62d8' }),
+      it('keeps an untranslated Bengali fallback self-canonical but noindex and omits the absent bn-BD partner', async () => {
+        mockTranslationMaybeSingle.mockResolvedValue({ data: null, error: null });
+        const slug = 'untranslated-active-item--7ddf0fb2';
+        const enCanonical = `https://www.luckystore1947.com/product/${slug}`;
+        const bnCanonical = `https://www.luckystore1947.com/bn/product/${slug}`;
+
+        const enMeta = await (await import('../../(english)/product/[slug]/page')).generateMetadata({
+          params: Promise.resolve({ slug }),
+        });
+        const bnMeta = await (await import('../../(bengali)/bn/product/[slug]/page')).generateMetadata({
+          params: Promise.resolve({ slug }),
         });
 
-        // The Bengali product metadata is always indexable for valid products.
-        // The noindex/404 path is reached via middleware/page validation for nonexistent
-        // slugs, not via generateMetadata for valid products; assert robots is not set by product metadata
-        // (default is index,follow) and alternates are present for valid canonical slugs.
-        expect((meta as any).robots).toBeUndefined();
-        expect(meta.alternates?.canonical).toBe(
-          'https://www.luckystore1947.com/bn/product/radhuni-holud-gura-100gm--029b62d8',
-        );
+        expect(enMeta.alternates).toEqual({
+          canonical: enCanonical,
+          languages: {
+            'en-BD': enCanonical,
+            'x-default': enCanonical,
+          },
+        });
+        expect(bnMeta.alternates).toEqual({
+          canonical: bnCanonical,
+        });
+        expect(bnMeta.robots).toEqual({ index: false, follow: true });
+        expect(mockNotFound).not.toHaveBeenCalled();
+        expect(mockPermanentRedirect).not.toHaveBeenCalled();
       });
     });
 

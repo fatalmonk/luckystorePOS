@@ -7,6 +7,7 @@ import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
 import { formatBengaliProductMetaDescription, formatBengaliProductMetaTitle } from '../../../../lib/products/productMetadata';
+import { buildProductAlternateLanguages } from '../../../../lib/seo/productAlternates';
 import { isMissingItemTranslationsTableError } from '../../../../lib/translationErrors';
 import { getEnrichedProductData } from '../../../../lib/products/productEnrichment';
 import { getProductGalleryImages } from '../../../../lib/products/productGalleryRegistry';
@@ -66,6 +67,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
   const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
+  const canonicalEnUrl = `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
   const galleryImages = enrichment?.galleryImages?.length
     ? enrichment.galleryImages
@@ -82,13 +84,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: { absolute: title },
     description,
+    ...(localized.translated ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical: canonicalUrl,
-      languages: {
-        'bn-BD': canonicalUrl,
-        'en-BD': `https://www.luckystore1947.com/product/${canonicalSlug}`,
-        'x-default': `https://www.luckystore1947.com/product/${canonicalSlug}`,
-      },
+      ...(localized.translated
+        ? {
+            languages: buildProductAlternateLanguages({
+              canonicalEnUrl,
+              canonicalBnUrl: canonicalUrl,
+              isBengaliIndexable: true,
+            }),
+          }
+        : {}),
     },
     openGraph: {
       type: 'website',
