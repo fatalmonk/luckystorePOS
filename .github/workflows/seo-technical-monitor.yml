@@ -30,7 +30,7 @@ jobs:
       - name: Audit production website
         id: audit
         continue-on-error: true
-        run: python scripts/seo/technical_monitor.py --output seo/reports/technical/latest.json --summary "$GITHUB_STEP_SUMMARY"
+        run: python scripts/seo/technical_monitor.py --output seo/reports/technical/latest.json --summary "$GITHUB_STEP_SUMMARY" --evidence-dir seo/reports/technical/raw
       - name: Ensure audit report exists
         if: always()
         run: |
@@ -46,6 +46,15 @@ jobs:
           path: seo/reports/technical/latest.json
           retention-days: 90
           if-no-files-found: error
+      - name: Upload bounded raw response evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-technical-raw-${{ github.run_attempt }}
+          path: seo/reports/technical/raw
+          retention-days: 14
+          compression-level: 9
+          if-no-files-found: warn
       - name: Classify and reconcile GitHub incident
         if: always() && github.ref == 'refs/heads/main'
         uses: actions/github-script@v7
