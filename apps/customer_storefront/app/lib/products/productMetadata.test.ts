@@ -3,6 +3,7 @@ import {
   buildProductMetaKeywords,
   buildProductMetadata,
   formatBengaliProductMetaDescription,
+  formatBengaliProductMetaTitle,
   formatProductMetaDescription,
   formatProductMetaTitle,
 } from './productMetadata';
@@ -11,6 +12,13 @@ import { getEnrichedProductData } from './productEnrichment';
 describe('Product metadata identity', () => {
   it('builds a Bengali product-description fallback with the product name and localized price', () => {
     expect(formatBengaliProductMetaDescription('Nahar Laban', 45)).toBe('Nahar Laban – ৳৪৫ | লাকি স্টোর');
+  });
+
+  it('builds a Bengali product title bounded between 30 and 60 chars', () => {
+    const title = formatBengaliProductMetaTitle('বসুন্ধরা কিচেন টাওয়েল', 120);
+    expect(title).toBe('বসুন্ধরা কিচেন টাওয়েল – ৳১২০ | লাকি স্টোর');
+    expect(title.length).toBeGreaterThanOrEqual(30);
+    expect(title.length).toBeLessThanOrEqual(60);
   });
 
   it.each([

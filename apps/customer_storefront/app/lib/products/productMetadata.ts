@@ -18,6 +18,23 @@ export function formatBengaliProductMetaDescription(name: string, price: number)
   return `${name} – ${toBengaliNumerals(formatBdt(price))} | লাকি স্টোর`;
 }
 
+export function formatBengaliProductMetaTitle(name: string, price: number, unit?: string): string {
+  const priceStr = toBengaliNumerals(formatBdt(price));
+  const unitSuffix = unit && unit !== 'pc' ? `/${unit}` : '';
+  const candidate = `${name} – ${priceStr}${unitSuffix} | লাকি স্টোর`;
+  if (candidate.length <= 60) return candidate;
+  const suffixWithBrand = `… – ${priceStr}${unitSuffix} | লাকি স্টোর`;
+  const maxNameLenWithBrand = 60 - suffixWithBrand.length;
+  if (maxNameLenWithBrand >= 5) {
+    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+  }
+  const noBrand = `${name} – ${priceStr}${unitSuffix}`;
+  if (noBrand.length <= 60) return noBrand;
+  const suffix = `… – ${priceStr}${unitSuffix}`;
+  const maxNameLen = Math.max(0, 60 - suffix.length);
+  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
+}
+
 export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {
   const productType = category?.trim().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').toLocaleLowerCase();
 
