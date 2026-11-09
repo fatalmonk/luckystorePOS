@@ -5,6 +5,7 @@ import {
   type APIResponse,
   type Browser,
   type Page,
+  type TestInfo,
 } from '@playwright/test';
 
 const PUBLIC_ORIGIN = 'https://www.luckystore1947.com';
@@ -123,11 +124,66 @@ function canonicalLinkHeaderUrls(values: string[], responseUrl: string) {
   });
 }
 
-function skipForLimitation(reason: string): never {
+type HttpDisposition = 'ok' | 'limitation' | 'contract_failure';
+
+function classifyHttpStatus(status: number): HttpDisposition {
+  if (status === 200) return 'ok';
+  if (status === 429) return 'limitation';
+  return 'contract_failure';
+}
+
+function failForLimitation(
+  reason: string,
+  annotations: TestInfo['annotations'] = test.info().annotations,
+): never {
   const message = `SEO verification limitation: ${reason}`;
-  test.info().annotations.push({ type: 'limitation', description: message });
-  test.skip(true, message);
+  annotations.push({ type: 'limitation', description: message });
   throw new Error(message);
+}
+
+function assertExpectedHttp200(
+  status: number,
+  label: string,
+  annotations?: TestInfo['annotations'],
+) {
+  const disposition = classifyHttpStatus(status);
+  if (disposition === 'limitation') {
+    return failForLimitation(
+      `${label} was rate limited with HTTP 429; no SEO conclusion was made`,
+      annotations,
+    );
+  }
+  if (disposition === 'contract_failure') {
+    throw new Error(`SEO response contract failure: ${label} returned HTTP ${status}; expected HTTP 200`);
+  }
+}
+
+function isLocalBaseUrl(baseUrl: URL) {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(baseUrl.hostname);
+}
+
+function requireExpectedBuildSha(baseUrl: URL, candidate: string | undefined) {
+  const expectedBuildSha = candidate?.trim() || null;
+  if (!isLocalBaseUrl(baseUrl) && !expectedBuildSha) {
+    throw new Error(
+      `Deployment provenance contract failure: EXPECTED_BUILD_SHA is required for ${baseUrl.origin}`,
+    );
+  }
+  return expectedBuildSha;
+}
+
+function configuredBaseUrl(testInfo: TestInfo) {
+  const baseUrl = testInfo.project.use.baseURL;
+  if (typeof baseUrl !== 'string') {
+    throw new Error('SEO response contract failure: Playwright baseURL must be configured');
+  }
+  return new URL(baseUrl);
+}
+
+function assertFinalLocation(actualUrl: string, baseUrl: URL, path: string, label: string) {
+  const finalUrl = new URL(actualUrl);
+  expect(finalUrl.origin, `${label}: final origin`).toBe(baseUrl.origin);
+  expect(finalUrl.pathname, `${label}: final pathname`).toBe(path);
 }
 
 async function getCompleteRawDocument(request: APIRequestContext, route: RouteContract) {
@@ -141,26 +197,21 @@ async function getCompleteRawDocument(request: APIRequestContext, route: RouteCo
       },
     });
   } catch (error) {
-    return skipForLimitation(`${route.label} raw request failed: ${String(error)}`);
+    return failForLimitation(`${route.label} raw request failed: ${String(error)}`);
   }
 
-  if (response.status() !== 200) {
-    const reason = response.status() === 429
-      ? 'was rate limited with HTTP 429; no SEO conclusion was made'
-      : `returned HTTP ${response.status()} instead of a complete 200 response`;
-    return skipForLimitation(`${route.label} ${reason}`);
-  }
+  assertExpectedHttp200(response.status(), `${route.label} raw response`);
 
   let html: string;
   try {
     html = await response.text();
   } catch (error) {
-    return skipForLimitation(`${route.label} response body was incomplete: ${String(error)}`);
+    return failForLimitation(`${route.label} response body was incomplete: ${String(error)}`);
   }
 
   const document = splitCompleteDocument(html);
   if (!document) {
-    return skipForLimitation(`${route.label} response was partial HTML without a complete head and body`);
+    return failForLimitation(`${route.label} response was partial HTML without a complete head and body`);
   }
 
   return { ...document, response };
@@ -205,20 +256,20 @@ function assertRawSeoContract(
   ).toEqual(canonicalHeaders.length === 0 ? [] : [route.canonical]);
 }
 
-async function assertBrowserSeoContract(page: Page, route: RouteContract) {
+async function assertBrowserSeoContract(page: Page, route: RouteContract, baseUrl: URL) {
   let response;
   try {
     response = await page.goto(route.path, { waitUntil: 'load' });
   } catch (error) {
-    return skipForLimitation(`${route.label} browser navigation failed: ${String(error)}`);
+    return failForLimitation(`${route.label} browser navigation failed: ${String(error)}`);
   }
 
-  if (!response || response.status() !== 200) {
-    const status = response?.status() ?? 'no response';
-    return skipForLimitation(`${route.label} browser navigation returned ${status}, not HTTP 200`);
+  if (!response) {
+    return failForLimitation(`${route.label} browser navigation returned no response`);
   }
+  assertExpectedHttp200(response.status(), `${route.label} browser response`);
 
-  expect(new URL(page.url()).pathname, `${route.label}: browser final pathname`).toBe(route.path);
+  assertFinalLocation(page.url(), baseUrl, route.path, `${route.label}: browser`);
   const canonical = page.locator('head link[rel~="canonical"]');
   const alternates = page.locator('head link[rel~="alternate"]');
   await expect(canonical, `${route.label}: DOM head canonical count`).toHaveCount(1);
@@ -238,62 +289,127 @@ async function assertBrowserSeoContract(page: Page, route: RouteContract) {
   await expect(page.locator('body link[rel~="alternate"]'), `${route.label}: DOM body alternate count`).toHaveCount(0);
 }
 
-test.describe('raw response and browser DOM SEO contract', () => {
+test.describe('SEO response contract semantics', () => {
   test.beforeEach(({}, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'SEO metadata is viewport-independent');
   });
 
-  test.beforeAll(async ({ request }) => {
-    const expectedBuildSha = process.env.EXPECTED_BUILD_SHA?.trim();
-    if (!expectedBuildSha) return;
-
-    let response: APIResponse;
-    try {
-      response = await request.get('/api/health', { failOnStatusCode: false });
-    } catch (error) {
-      throw new Error(`Build provenance verification limitation: health request failed: ${String(error)}`);
-    }
-
-    if (response.status() !== 200) {
-      throw new Error(`Build provenance verification limitation: /api/health returned HTTP ${response.status()}`);
-    }
-
-    const health = await response.json() as { status?: unknown; buildSha?: unknown };
-    expect(health.status, 'health status').toBe('ok');
-    expect(health.buildSha, 'reviewed deployment build SHA').toBe(expectedBuildSha);
+  test('[semantics] limitations annotate and throw while unexpected statuses fail the contract', () => {
+    const annotations: TestInfo['annotations'] = [];
+    expect(() => assertExpectedHttp200(429, 'fixture route', annotations)).toThrow(
+      'SEO verification limitation: fixture route was rate limited with HTTP 429',
+    );
+    expect(annotations).toEqual([{
+      type: 'limitation',
+      description: expect.stringContaining('HTTP 429'),
+    }]);
+    expect(() => assertExpectedHttp200(404, 'fixture route')).toThrow(
+      'SEO response contract failure: fixture route returned HTTP 404',
+    );
+    expect(() => assertExpectedHttp200(500, 'fixture route')).toThrow(
+      'SEO response contract failure: fixture route returned HTTP 500',
+    );
   });
 
-  test('Link relation parser does not classify discovery relations as canonical', () => {
+  test('[semantics] non-local targets require provenance while localhost may omit it', () => {
+    expect(requireExpectedBuildSha(new URL('http://localhost:3000'), undefined)).toBeNull();
+    expect(requireExpectedBuildSha(new URL('http://127.0.0.1:3000'), undefined)).toBeNull();
+    expect(() => requireExpectedBuildSha(new URL('https://next.luckystore1947.com'), undefined)).toThrow(
+      'EXPECTED_BUILD_SHA is required',
+    );
+    expect(
+      requireExpectedBuildSha(new URL('https://next.luckystore1947.com'), '18fbc3ac'),
+    ).toBe('18fbc3ac');
+  });
+
+  test('[semantics] final location must retain configured origin and pathname', () => {
+    const baseUrl = new URL('https://next.luckystore1947.com');
+    expect(() => assertFinalLocation(
+      `https://www.luckystore1947.com${PRODUCT_PATH}`,
+      baseUrl,
+      PRODUCT_PATH,
+      'fixture route',
+    )).toThrow('fixture route: final origin');
+    expect(() => assertFinalLocation(
+      `${baseUrl.origin}${PRODUCT_PATH}`,
+      baseUrl,
+      PRODUCT_PATH,
+      'fixture route',
+    )).not.toThrow();
+  });
+
+  test('[raw] Link relation parser does not classify discovery relations as canonical', () => {
     const headers = [
       '</_next/static/app.css>; rel=preload; as=style, </sitemap.xml>; rel=sitemap',
       '<https://www.luckystore1947.com/api>; rel="service discovery"',
     ];
     expect(canonicalLinkHeaderUrls(headers, PUBLIC_ORIGIN)).toEqual([]);
   });
+});
 
-  test('raw route matrix keeps canonical metadata in head', async ({ request }) => {
-    for (const route of routes) {
-      const { head, body, response } = await getCompleteRawDocument(request, route);
-      expect(new URL(response.url()).pathname, `${route.label}: raw final pathname`).toBe(route.path);
-      assertRawSeoContract(route, { head, body }, response);
-    }
+test.describe('raw response and browser DOM SEO contract', () => {
+  test.beforeEach(({}, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'SEO metadata is viewport-independent');
   });
 
-  test('browser route matrix matches the raw SEO contract', async ({ playwright }, testInfo) => {
-    let browser: Browser;
+  test.beforeAll(async ({ request }, testInfo) => {
+    const baseUrl = configuredBaseUrl(testInfo);
+    const expectedBuildSha = requireExpectedBuildSha(
+      baseUrl,
+      process.env.EXPECTED_BUILD_SHA,
+    );
+    if (!expectedBuildSha) return;
+
+    let response: APIResponse;
     try {
-      browser = await playwright.chromium.launch();
+      response = await request.get('/api/health', { failOnStatusCode: false });
     } catch (error) {
-      return skipForLimitation(`Chromium could not launch: ${String(error)}`);
+      return failForLimitation(
+        `build provenance health request failed: ${String(error)}`,
+        testInfo.annotations,
+      );
     }
 
+    assertExpectedHttp200(response.status(), 'build provenance /api/health', testInfo.annotations);
+    assertFinalLocation(response.url(), baseUrl, '/api/health', 'build provenance health response');
+
+    let health: { status?: unknown; buildSha?: unknown };
     try {
-      const page = await browser.newPage({ baseURL: testInfo.project.use.baseURL });
-      for (const route of routes) {
-        await assertBrowserSeoContract(page, route);
-      }
-    } finally {
-      await browser.close();
+      health = await response.json() as { status?: unknown; buildSha?: unknown };
+    } catch (error) {
+      throw new Error(`Build provenance contract failure: /api/health returned invalid JSON: ${String(error)}`);
     }
+
+    expect(health.status, 'health status').toBe('ok');
+    expect(health.buildSha, 'reviewed deployment build SHA').toBe(expectedBuildSha);
   });
+
+  for (const route of routes) {
+    test(`[raw] ${route.label} keeps canonical metadata in head`, async ({ request }, testInfo) => {
+      const baseUrl = configuredBaseUrl(testInfo);
+      const { head, body, response } = await getCompleteRawDocument(request, route);
+      assertFinalLocation(response.url(), baseUrl, route.path, `${route.label}: raw response`);
+      assertRawSeoContract(route, { head, body }, response);
+    });
+
+    test(`[browser] ${route.label} matches the raw SEO contract`, async ({ playwright }, testInfo) => {
+      const baseUrl = configuredBaseUrl(testInfo);
+      let browser: Browser;
+      try {
+        browser = await playwright.chromium.launch();
+      } catch (error) {
+        return failForLimitation(
+          `${route.label} Chromium could not launch: ${String(error)}`,
+          testInfo.annotations,
+        );
+      }
+
+      try {
+        const page = await browser.newPage({ baseURL: baseUrl.href });
+        await assertBrowserSeoContract(page, route, baseUrl);
+      } finally {
+        await browser.close();
+      }
+    });
+  }
 });
