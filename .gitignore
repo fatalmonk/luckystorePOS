@@ -405,6 +405,8 @@ data/catalog/templates/*
 /googlesearchconsole.txt.rtf
 
 # Local agent-generated audits and one-off planning artifacts.
+/docs-local/
+/docs/SEO Optimization/
 /system-docs/audits/*.md
 /system-docs/plans/
 /*plan*.md
