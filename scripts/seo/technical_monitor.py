@@ -192,6 +192,10 @@ class PageParser(HTMLParser):
         self._title_section = None
         self._hidden_depth = 0
         self._element_stack = []
+        self._stream_segment_depths = {}
+        self._stream_segment_text = {}
+        self._react_script = False
+        self._react_script_parts = []
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
@@ -206,10 +210,16 @@ class PageParser(HTMLParser):
             or "hidden" in a
             or (a.get("aria-hidden") or "").strip().lower() == "true"
         )
+        segment_id = a.get("id") if tag == "div" and "hidden" in a else None
+        if not segment_id or not re.fullmatch(r"S:\d+", segment_id):
+            segment_id = None
         if tag not in _HTML_VOID_TAGS:
-            self._element_stack.append((tag, hides_content))
+            self._element_stack.append((tag, hides_content, segment_id))
             if hides_content:
                 self._hidden_depth += 1
+            if segment_id:
+                self._stream_segment_depths[segment_id] = self._hidden_depth
+                self._stream_segment_text[segment_id] = []
         if tag == "title":
             self._title = True
             self._title_parts = []
@@ -231,16 +241,32 @@ class PageParser(HTMLParser):
         if tag == "script" and (a.get("type") or "").lower() == "application/ld+json":
             self._script = True
             self._parts = []
+        elif tag == "script" and not a.get("src"):
+            self._react_script = True
+            self._react_script_parts = []
 
     def handle_data(self, data):
         if self._script:
             self._parts.append(data)
+        if self._react_script:
+            self._react_script_parts.append(data)
         if self._title:
             self._title_parts.append(data)
-        if self._section == "body" and self._hidden_depth == 0:
-            text = " ".join(data.split())
-            if text:
-                self.visible_text.append(text)
+        segment_id = next(
+            (segment for _, _, segment in reversed(self._element_stack) if segment),
+            None,
+        )
+        text = " ".join(data.split())
+        if (
+            text
+            and self._section == "body"
+            and segment_id
+            and self._hidden_depth == self._stream_segment_depths.get(segment_id)
+            and not self._react_script
+        ):
+            self._stream_segment_text[segment_id].append(text)
+        elif text and self._section == "body" and self._hidden_depth == 0:
+            self.visible_text.append(text)
 
     def handle_endtag(self, tag):
         if tag == "title" and self._title:
@@ -258,13 +284,27 @@ class PageParser(HTMLParser):
                 self.jsonld.append({"valid": False, "error": "invalid JSON"})
             self._script = False
             self._parts = []
+        if tag == "script" and self._react_script:
+            raw = "".join(self._react_script_parts)
+            completed = re.findall(
+                r"\$RC\(\s*[\"']B:\d+[\"']\s*,\s*[\"']S:(\d+)[\"']\s*\)",
+                raw,
+            )
+            for segment_number in completed:
+                segment_id = f"S:{segment_number}"
+                parts = self._stream_segment_text.pop(segment_id, None)
+                self._stream_segment_depths.pop(segment_id, None)
+                if parts:
+                    self.visible_text.append(" ".join(parts))
+            self._react_script = False
+            self._react_script_parts = []
         for index in range(len(self._element_stack) - 1, -1, -1):
             if self._element_stack[index][0] == tag:
                 closed = self._element_stack[index:]
                 del self._element_stack[index:]
                 self._hidden_depth = max(
                     0,
-                    self._hidden_depth - sum(1 for _, hides_content in closed if hides_content),
+                    self._hidden_depth - sum(1 for _, hides_content, _ in closed if hides_content),
                 )
                 break
         if tag == "head":

@@ -33,17 +33,18 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
   // migration has not reached an environment yet, keep the product usable
   // with its canonical English content instead of failing the route.
   if (error) {
-    if (!isMissingItemTranslationsTableError(error)) {
-      console.error('Failed to load Bengali product translation', {
-        itemId: product.id,
-        error,
-      });
-    }
-    return {
+    const fallback = {
       sourceName: product.name,
       translated: false,
       product,
     };
+    if (isMissingItemTranslationsTableError(error)) return fallback;
+
+    console.error('Failed to load Bengali product translation', {
+      itemId: product.id,
+      error,
+    });
+    throw error;
   }
 
   return {

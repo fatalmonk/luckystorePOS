@@ -31,10 +31,9 @@ const hasPublishedBengaliTranslation = React.cache(async (itemId: string): Promi
     .maybeSingle();
 
   if (error) {
-    if (!isMissingItemTranslationsTableError(error)) {
-      console.error('Failed to resolve Bengali product publication status', { itemId, error });
-    }
-    return false;
+    if (isMissingItemTranslationsTableError(error)) return false;
+    console.error('Failed to resolve Bengali product publication status', { itemId, error });
+    throw error;
   }
 
   return Boolean(data);
