@@ -106,5 +106,449 @@
       ],
       "repoFixCommitted": "e9caafa3 but not effective on production"
     }
+  },
+  "postMergeCurrentProductionVerificationV1": {
+    "schemaVersion": 1,
+    "evidenceId": "task1-current-production-18fbc3ac-20261109T171602594Z",
+    "assembledAt": "2026-11-09T17:37:07Z",
+    "manifestProvenance": {
+      "branch": "codex/perfbee-post-608",
+      "parentCommit": "55162f9b6f145ddc0c8d7c135d28aa9227b0b1a7"
+    },
+    "historicalEvidenceBoundary": {
+      "preservedTopLevelEvidence": true,
+      "historicalBuildSha": "e6c1b1bdd35d837ee157323ffb85d61c377edf02",
+      "currentBuildSha": "18fbc3acd32951c55c36bde45406768d56bd794e",
+      "interpretation": "The original top-level capture remains the pre-PR-608 historical observation. This versioned block records a separate post-merge production verification and does not rewrite the earlier findings."
+    },
+    "deploymentProvenance": {
+      "deployedRevision": "18fbc3acd32951c55c36bde45406768d56bd794e",
+      "pullRequest": 608,
+      "workflowRun": {
+        "id": "42565359547",
+        "url": "https://github.com/fatalmonk/luckystorePOS/actions/runs/42565359547",
+        "conclusion": "success",
+        "observedStages": {
+          "immutableBuild": "success",
+          "stagingDeploy": "success",
+          "stagingSmoke": "success",
+          "productionDeploy": "success"
+        }
+      },
+      "productionHealth": {
+        "url": "https://www.luckystore1947.com/api/health",
+        "observedAt": "2026-11-09T17:16:02.594Z",
+        "transport": "production HTTPS JSON GET",
+        "status": "ok",
+        "buildSha": "18fbc3acd32951c55c36bde45406768d56bd794e",
+        "exactRevisionMatch": true
+      }
+    },
+    "scope": {
+      "environment": "current production",
+      "baseUrl": "https://www.luckystore1947.com",
+      "sampleType": "bounded six-route representative sample",
+      "routeCount": 6,
+      "fullSiteVerified": false,
+      "perfBeeDashboardVerdict": false,
+      "perfBeeUrlToIssueExport": {
+        "status": "blocked",
+        "reason": "unauthenticated dashboard request returned 401/login",
+        "checklistItemComplete": false
+      }
+    },
+    "rawHttp": {
+      "transport": "literal server response HTML from production HTTPS GET requests; browser DOM was not used for these counts",
+      "observedAt": null,
+      "timestampLimitation": "The exact health-check timestamp is retained above, but per-route raw GET timestamps were not retained.",
+      "requestCount": 6,
+      "responseTimeMetric": "single-request elapsed milliseconds as supplied; TTFB was not retained",
+      "actualTagCountingRule": "Only parsed tag elements count. Flight script text containing the string hreflang= is excluded.",
+      "unrecordedPerRouteFields": [
+        "redirect chain",
+        "Content-Type",
+        "raw HTML SHA-256",
+        "head close offset",
+        "JSON-LD presence",
+        "extractor word count",
+        "TTFB"
+      ],
+      "routes": [
+        {
+          "id": "home",
+          "requestedUrl": "https://www.luckystore1947.com/",
+          "finalUrl": "https://www.luckystore1947.com/",
+          "status": 200,
+          "responseBytes": 905053,
+          "responseTimeMs": 888,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        },
+        {
+          "id": "englishProduct",
+          "requestedUrl": "https://www.luckystore1947.com/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "finalUrl": "https://www.luckystore1947.com/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "status": 200,
+          "responseBytes": 492067,
+          "responseTimeMs": 1412,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        },
+        {
+          "id": "bengaliProduct",
+          "requestedUrl": "https://www.luckystore1947.com/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "finalUrl": "https://www.luckystore1947.com/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "status": 200,
+          "responseBytes": 410130,
+          "responseTimeMs": 1551,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        },
+        {
+          "id": "doveBrand",
+          "requestedUrl": "https://www.luckystore1947.com/brand/dove",
+          "finalUrl": "https://www.luckystore1947.com/brand/dove",
+          "status": 200,
+          "responseBytes": 544208,
+          "responseTimeMs": 1189,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        },
+        {
+          "id": "deals",
+          "requestedUrl": "https://www.luckystore1947.com/best/dealoftheweek",
+          "finalUrl": "https://www.luckystore1947.com/best/dealoftheweek",
+          "status": 200,
+          "responseBytes": 589410,
+          "responseTimeMs": 1684,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        },
+        {
+          "id": "dairyAndEggsCategory",
+          "requestedUrl": "https://www.luckystore1947.com/category/dairy-and-eggs",
+          "finalUrl": "https://www.luckystore1947.com/category/dairy-and-eggs",
+          "status": 200,
+          "responseBytes": 626144,
+          "responseTimeMs": null,
+          "responseTimeLimitation": "Elapsed timing was not retained for this route; no replacement timing was inferred.",
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ],
+          "canonicalLinkResponseHeaderUrls": [],
+          "securityHeaders": {
+            "x-frame-options": "SAMEORIGIN",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "x-content-type-options": "nosniff"
+          }
+        }
+      ]
+    },
+    "browserDom": {
+      "transport": "real production browser DOM after page load; these observations are independent of raw server HTML",
+      "observedAt": null,
+      "timestampLimitation": "Per-route browser observation timestamps and browser version were not retained.",
+      "htmlLangCoverage": "Only the Bengali product html lang value was retained in this observation set.",
+      "routeCount": 6,
+      "routes": [
+        {
+          "id": "home",
+          "finalUrl": "https://www.luckystore1947.com/",
+          "canonicalUrl": "https://www.luckystore1947.com/",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        },
+        {
+          "id": "englishProduct",
+          "finalUrl": "https://www.luckystore1947.com/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "canonicalUrl": "https://www.luckystore1947.com/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        },
+        {
+          "id": "bengaliProduct",
+          "finalUrl": "https://www.luckystore1947.com/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "htmlLang": "bn",
+          "canonicalUrl": "https://www.luckystore1947.com/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        },
+        {
+          "id": "doveBrand",
+          "finalUrl": "https://www.luckystore1947.com/brand/dove",
+          "canonicalUrl": "https://www.luckystore1947.com/brand/dove",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        },
+        {
+          "id": "deals",
+          "finalUrl": "https://www.luckystore1947.com/best/dealoftheweek",
+          "canonicalUrl": "https://www.luckystore1947.com/best/dealoftheweek",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        },
+        {
+          "id": "dairyAndEggsCategory",
+          "finalUrl": "https://www.luckystore1947.com/category/dairy-and-eggs",
+          "canonicalUrl": "https://www.luckystore1947.com/category/dairy-and-eggs",
+          "canonicalResolvesToFinalUrl": true,
+          "metadataTagCounts": {
+            "head": {
+              "title": 1,
+              "canonical": 1,
+              "description": 1,
+              "alternateHreflang": 3
+            },
+            "body": {
+              "title": 0,
+              "canonical": 0,
+              "description": 0,
+              "alternateHreflang": 0
+            }
+          },
+          "alternateHreflangValues": [
+            "en-BD",
+            "bn-BD",
+            "x-default"
+          ]
+        }
+      ]
+    },
+    "sampleConclusion": {
+      "rawHttp": "All six sampled routes returned 200 and had exactly one title, canonical and description plus three actual hreflang alternate link tags in head, with zero corresponding metadata tag elements in body.",
+      "browserDom": "The independently observed browser DOM matched the raw placement counts for the same six routes; each canonical resolved to its final route and the Bengali product document language was bn.",
+      "effectiveHeaders": "All six raw responses exposed SAMEORIGIN, strict-origin-when-cross-origin and nosniff, with no Link response-header relation carrying a canonical URL.",
+      "verdictBoundary": "These results apply only to this build and bounded sample. They are not a full-site, indexing, ranking or PerfBee-dashboard verdict."
+    },
+    "limitations": [
+      "The exact PerfBee dashboard URL-to-issue export remains unavailable without authentication (401/login), so that Task 1 checklist item remains incomplete.",
+      "This is a six-route sample on one deployed revision; uninspected routes and future responses remain unverified.",
+      "Raw HTML and browser DOM are separate transports recorded independently; agreement in this sample does not make them interchangeable.",
+      "Only the listed response-header subset and absence of a canonical Link relation were retained; full response headers were not archived in this block.",
+      "The supplied raw capture did not retain redirect chains, Content-Type, raw HTML hashes, head close offsets, JSON-LD presence, extractor word counts or TTFB.",
+      "Elapsed response times are single observations, not a performance benchmark; the dairy-and-eggs timing was not retained.",
+      "Browser observation timestamps and browser version were not retained."
+    ]
   }
 }
