@@ -371,10 +371,7 @@ data/catalog/templates/*
 !data/catalog/templates/catalog-import-v1.csv
 
 # Keep local consolidation planning documents out of Git.
-/tasks/inventory-catalog-consolidation/plan.md
-/tasks/inventory-catalog-consolidation/todo.md
-/tasks/inventory-catalog-consolidation/production-readiness.md
-/tasks/archived/
+/tasks/
 
 # Local-only image candidate manifest utility.
 /scripts/catalog/build_catalog_image_candidate_manifest.py
@@ -408,6 +405,11 @@ data/catalog/templates/*
 /googlesearchconsole.txt.rtf
 
 # Local agent-generated audits and one-off planning artifacts.
+/docs-local/
+/docs/SEO Optimization/
 /system-docs/audits/*.md
+/system-docs/plans/
 /*plan*.md
+/seo/plan-brief.md
+/docs/archive/*-PLAN.md
 /production-preflight-analysis.md
