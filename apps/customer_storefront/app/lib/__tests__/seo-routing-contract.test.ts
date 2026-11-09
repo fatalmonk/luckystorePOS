@@ -437,6 +437,34 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         expect(mockNotFound).not.toHaveBeenCalled();
         expect(mockPermanentRedirect).not.toHaveBeenCalled();
       });
+
+      it('keeps the noindex self-canonical fallback when the optional translation table is missing', async () => {
+        mockTranslationMaybeSingle.mockResolvedValue({
+          data: null,
+          error: { code: 'PGRST205', message: "Could not find the table 'public.item_translations' in the schema cache" },
+        });
+        const { generateMetadata } = await import('../../(bengali)/bn/product/[slug]/page');
+        const meta = await generateMetadata({
+          params: Promise.resolve({ slug: 'radhuni-holud-gura-100gm--029b62d8' }),
+        });
+
+        expect(meta.alternates).toEqual({
+          canonical: 'https://www.luckystore1947.com/bn/product/radhuni-holud-gura-100gm--029b62d8',
+        });
+        expect(meta.robots).toEqual({ index: false, follow: true });
+      });
+
+      it('propagates genuine Bengali translation query failures', async () => {
+        const queryError = { code: '08006', message: 'connection failure' };
+        mockTranslationMaybeSingle.mockResolvedValue({ data: null, error: queryError });
+        const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const { generateMetadata } = await import('../../(bengali)/bn/product/[slug]/page');
+
+        await expect(generateMetadata({
+          params: Promise.resolve({ slug: 'radhuni-holud-gura-100gm--029b62d8' }),
+        })).rejects.toBe(queryError);
+        log.mockRestore();
+      });
     });
 
     it('triggers notFound() in ProductPage component for missing product', async () => {

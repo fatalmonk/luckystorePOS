@@ -102,6 +102,19 @@ class MonitorTests(unittest.TestCase):
         ))
         self.assertEqual(" ".join(p.visible_text), "Visible storefront copy")
 
+    def test_only_completed_react_stream_segments_count_as_visible_once(self):
+        p = PageParser()
+        p.feed('''<html><body><main>
+<div hidden id="S:1">Completed product description</div>
+<div hidden id="S:2">Incomplete stream content</div>
+<div hidden>Genuinely hidden fallback content</div>
+<script>$RC("B:1","S:1");$RC("B:1","S:1")</script>
+</main></body></html>''')
+
+        self.assertEqual(p.visible_text, ["Completed product description"])
+        self.assertNotIn("Incomplete stream content", " ".join(p.visible_text))
+        self.assertNotIn("Genuinely hidden fallback content", " ".join(p.visible_text))
+
     def test_robots_does_not_infer_allow(self):
         data = robots_summary('User-agent: *\nDisallow: /private\n')
         self.assertFalse(data['tracked_agents']['GPTBot']['explicit_group'])
