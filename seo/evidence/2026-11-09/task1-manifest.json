@@ -1,0 +1,72 @@
+{
+  "capturedAt": "2026-11-09T03:17:00Z",
+  "method": "curl GET -sS -L -D headers -o body",
+  "notes": [
+    "Production GET evidence captured; no deployment performed.",
+    "Production /api/health buildSha=e6c1b1bdd35d837ee157323ffb85d61c377edf02 differs from local repo state.",
+    "Raw HTML shows SEO tags in body for Bengali product and deals on production and in local current-build probe; English product keeps canonical in head. Root cause not yet fixed.",
+    "Production missing X-Frame-Options and Referrer-Policy; X-Content-Type-Options present. cloudflare/workers/agent headers are a different service."
+  ],
+  "production": {
+    "home": {
+      "url": "https://www.luckystore1947.com/",
+      "status": 200,
+      "ttfb": 0.52861,
+      "total": 0.863744,
+      "bytes": 905220,
+      "canonHead": 1,
+      "canonBody": 0
+    },
+    "englishProduct": {
+      "url": "https://www.luckystore1947.com/product/aarong-standardized-milk-500-ml--3d7c76cf",
+      "status": 200,
+      "ttfb": 1.49987,
+      "total": 2.103633,
+      "bytes": 492441,
+      "canonHead": 1,
+      "canonBody": 0
+    },
+    "bengaliProduct": {
+      "url": "https://www.luckystore1947.com/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+      "status": 200,
+      "ttfb": 0.04927,
+      "total": 2.082642,
+      "bytes": 410648,
+      "canonHead": 0,
+      "canonBody": 1,
+      "titleHead": 0,
+      "titleBody": 1,
+      "metaDescriptionBody": 1,
+      "hreflangInBody": 5
+    },
+    "deals": {
+      "url": "https://www.luckystore1947.com/best/dealoftheweek",
+      "status": 200,
+      "ttfb": 1.346166,
+      "total": 1.728995,
+      "bytes": 589855,
+      "canonHead": 0,
+      "canonBody": 1,
+      "titleHead": 0,
+      "titleBody": 1,
+      "metaDescriptionBody": 1,
+      "robotsInBody": 1
+    }
+  },
+  "localCurrentBuildProbe": {
+    "bengaliProduct": {
+      "status": 200,
+      "canonHead": 0,
+      "canonBody": 1,
+      "titleHead": 0,
+      "titleBody": 1
+    },
+    "deals": {
+      "status": 200,
+      "canonHead": 0,
+      "canonBody": 1,
+      "titleHead": 0,
+      "titleBody": 1
+    }
+  }
+}
