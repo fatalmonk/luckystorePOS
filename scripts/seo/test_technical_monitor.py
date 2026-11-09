@@ -23,6 +23,7 @@ SECURITY_HEADERS = [
     ("X-Content-Type-Options", "nosniff"),
 ]
 WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/seo-technical-monitor.yml"
+TASK1_MANIFEST_PATH = Path(__file__).resolve().parents[2] / "seo/evidence/2026-11-09/task1-manifest.json"
 
 
 def valid_html(url, lang="en", robots="index,follow", visible_text=None):
@@ -87,6 +88,19 @@ class MonitorTests(unittest.TestCase):
         p = PageParser()
         p.feed('<script type="application/ld+json">{broken}</script>')
         self.assertFalse(p.jsonld[0]['valid'])
+
+    def test_hidden_and_aria_hidden_body_text_is_not_visible_content(self):
+        p = PageParser()
+        p.feed('''<html><body><main>
+<div hidden>{hidden}</div>
+<section aria-hidden="true">{aria_hidden}</section>
+<input hidden>
+<p>Visible storefront copy</p>
+</main></body></html>'''.format(
+            hidden="concealed " * 30,
+            aria_hidden="screen-reader-hidden " * 30,
+        ))
+        self.assertEqual(" ".join(p.visible_text), "Visible storefront copy")
 
     def test_robots_does_not_infer_allow(self):
         data = robots_summary('User-agent: *\nDisallow: /private\n')
@@ -314,6 +328,15 @@ class MonitorTests(unittest.TestCase):
             page = inspect_page(url)
         self.assertEqual(page.get("canonical_header_urls"), [])
         self.assertNotIn("canonical_header_tag_mismatch", page["issues"])
+
+    def test_canonical_link_header_without_target_is_malformed(self):
+        url = "https://www.luckystore1947.com/delivery"
+        with patch("technical_monitor.fetch", return_value=page_response(
+            url, headers=[("Link", 'rel="canonical"')]
+        )):
+            page = inspect_page(url)
+        self.assertEqual(page.get("canonical_header_urls"), [])
+        self.assertIn("canonical_header_malformed", page["issues"])
 
     def test_malformed_html_canonical_is_scoped_and_run_continues(self):
         base = "https://www.luckystore1947.com"
@@ -552,6 +575,28 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(report["status"], "incomplete")
         self.assertEqual(report["checks"]["sitemap"]["failures"][0]["classification"], "unverified")
         self.assertIn("robots_unavailable", report["limitations"])
+
+    def test_partial_robots_and_sitemap_are_unverified_not_confirmed_defects(self):
+        def partial(url):
+            return {"status": 206, "url": url, "body": "partial", "response_headers": []}
+        with patch("technical_monitor.fetch", side_effect=partial):
+            report = run(sample_limit=0)
+        self.assertEqual(report["issues"], [])
+        self.assertEqual(report["status"], "incomplete")
+        self.assertEqual(report["checks"]["sitemap"]["failures"][0]["classification"], "unverified")
+        self.assertIn("robots_unavailable", report["limitations"])
+
+    def test_task1_manifest_marks_route_revisions_as_health_bracket_only(self):
+        manifest = json.loads(TASK1_MANIFEST_PATH.read_text(encoding="utf-8"))
+        current = manifest["postMergeCurrentProductionVerificationV2"]
+        bracket = current["rawHttpCapture"]["healthBracket"]
+        self.assertNotIn("captureValid", bracket)
+        self.assertEqual(bracket["revisionBinding"], "health_bracket_only")
+        self.assertFalse(bracket["perRouteRevisionBound"])
+        self.assertIn(
+            "individual route responses did not expose build identity",
+            current["sampleConclusions"]["rawHttp"],
+        )
 
     def test_run_writes_a_bounded_redacted_raw_evidence_manifest(self):
         self.assertIn("evidence_dir", inspect.signature(run).parameters)

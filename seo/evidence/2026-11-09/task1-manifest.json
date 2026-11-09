@@ -570,7 +570,7 @@
       "corrections": [
         "Fresh raw canonical hrefs and normalized resolutions are retained for cross-transport comparison.",
         "Response Link relations are parsed independently from HTML tags and summarized by relation and target class.",
-        "The raw six-route capture is bounded by exact matching health SHAs before and after.",
+        "The raw six-route capture is bounded by exact matching health SHAs before and after, but individual route responses did not expose build identity.",
         "Entity-body byte semantics are explicit.",
         "Overall Task 1 status is bounded and partial, not complete."
       ]
@@ -640,8 +640,10 @@
           "serverTimestamp": "2026-11-09T17:47:11.139Z"
         },
         "expectedBuildSha": "18fbc3acd32951c55c36bde45406768d56bd794e",
-        "shaStableForExpectedBuild": true,
-        "captureValid": true,
+        "shaStableAtHealthEndpoints": true,
+        "revisionBinding": "health_bracket_only",
+        "perRouteRevisionBound": false,
+        "captureTransportValid": true,
         "validationErrors": []
       },
       "responseLinkHeaderCommonRelations": {
@@ -1126,7 +1128,7 @@
       ]
     },
     "sampleConclusions": {
-      "rawHttp": "The exact six raw route responses are valid for build 18fbc3acd32951c55c36bde45406768d56bd794e within the before/after health bracket. Each returned 200 with one head title, canonical and description, three actual head alternate links, zero corresponding body tags, a canonical matching the normalized final URL, and the expected security headers.",
+      "rawHttp": "The exact six raw route responses were captured while the before/after health endpoints both reported build 18fbc3acd32951c55c36bde45406768d56bd794e, but individual route responses did not expose build identity and are not revision-bound. Each returned 200 with one head title, canonical and description, three actual head alternate links, zero corresponding body tags, a canonical matching the normalized final URL, and the expected security headers.",
       "responseLinkHeaders": "Independent parsing observed discovery, service, sitemap and preconnect relations on every route, preload relations on Dove and dairy-and-eggs, and no canonical relation on any sampled response.",
       "browserComparison": "Controller-supplied browser canonical values equal the fresh raw canonical values after normalization, but the observations are non-coeval and the browser set is not independently SHA-bracketed.",
       "overall": "Task 1 evidence is bounded and partial; it is not a full-site or PerfBee-dashboard verdict."
@@ -1136,6 +1138,7 @@
       "Only six routes were refetched once; there was no broad crawl or second pass.",
       "Raw bodies and raw header values were not archived in this block; body hashes and secret-free parsed header relation summaries are retained.",
       "The browser observations are controller-supplied, approximate in time, non-coeval with the raw capture, and not independently SHA-bracketed.",
+      "The raw route responses are health-bracketed but did not expose a per-response build identity, so exact route revision binding remains unverified.",
       "The browser user agent was confirmed once after the route observations, not per route.",
       "Dynamic response sizes and hashes apply only to this timestamped sample.",
       "Uninspected routes, indexing, ranking and future deployments remain unverified."

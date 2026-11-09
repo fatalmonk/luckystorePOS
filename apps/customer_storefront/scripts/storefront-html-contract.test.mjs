@@ -58,7 +58,7 @@ function alternateLinks(head) {
 
 function productJsonLd(html) {
   const scripts = Array.from(
-    html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi),
+    html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi),
     (match) => ({ attributes: match[1], content: match[2] }),
   );
   return scripts
@@ -218,4 +218,11 @@ test('production HTML stays within budget with loadable styles and integrated pr
     stylesheetHrefs: productStylesheets,
     hydrationScriptCount: scriptSources.length,
   }));
+});
+
+test('Product JSON-LD parser accepts whitespace before a script end tag', () => {
+  const schema = productJsonLd(
+    '<script type="application/ld+json">{"@type":"Product","name":"Fixture"}</script >',
+  );
+  assert.equal(schema?.name, 'Fixture');
 });

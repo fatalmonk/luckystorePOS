@@ -206,7 +206,23 @@ async function runViaServiceRoleClient(url, key) {
   const { error: iErr } = await supabase.from('items').upsert(products, { onConflict: 'id' });
   if (iErr) throw iErr;
 
-  // 5. Stock levels
+  // 5. Published Bengali translation used by the hreflang E2E contract.
+  const itemTranslations = [
+    {
+      item_id: 'a0740002-0000-0000-0000-000000000002',
+      tenant_id: TENANT_ID,
+      locale: 'bn',
+      name: 'আরং ডেইরি বিশুদ্ধ তরল দুধ',
+      description: 'নির্ধারিত স্টোরফ্রন্ট E2E ফিক্সচার।',
+      review_status: 'published',
+    },
+  ];
+  const { error: translationErr } = await supabase
+    .from('item_translations')
+    .upsert(itemTranslations, { onConflict: 'item_id,locale' });
+  if (translationErr) throw translationErr;
+
+  // 6. Stock levels
   const stockLevels = products.map((p) => ({
     store_id: STORE_ID,
     item_id: p.id,

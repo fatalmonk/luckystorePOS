@@ -9,7 +9,7 @@ import {
 } from '@playwright/test';
 
 const PUBLIC_ORIGIN = 'https://www.luckystore1947.com';
-const PRODUCT_PATH = '/product/aarong-standardized-milk-500-ml--3d7c76cf';
+const PRODUCT_PATH = '/product/aarong-dairy-pure-liquid-milk--a0740002';
 const BENGALI_PRODUCT_PATH = `/bn${PRODUCT_PATH}`;
 
 type RouteContract = {

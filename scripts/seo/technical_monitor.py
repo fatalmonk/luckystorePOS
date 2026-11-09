@@ -160,6 +160,13 @@ def parse_sitemap(xml):
             entries.append(loc)
     return kind, entries
 
+_HIDDEN_CONTENT_TAGS = {"script", "style", "template", "noscript"}
+_HTML_VOID_TAGS = {
+    "area", "base", "br", "col", "embed", "hr", "img", "input",
+    "link", "meta", "param", "source", "track", "wbr",
+}
+
+
 class PageParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -184,6 +191,7 @@ class PageParser(HTMLParser):
         self._title_parts = []
         self._title_section = None
         self._hidden_depth = 0
+        self._element_stack = []
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
@@ -193,8 +201,15 @@ class PageParser(HTMLParser):
             self._section = "head"
         elif tag == "body":
             self._section = "body"
-        if tag in {"script", "style", "template", "noscript"}:
-            self._hidden_depth += 1
+        hides_content = (
+            tag in _HIDDEN_CONTENT_TAGS
+            or "hidden" in a
+            or (a.get("aria-hidden") or "").strip().lower() == "true"
+        )
+        if tag not in _HTML_VOID_TAGS:
+            self._element_stack.append((tag, hides_content))
+            if hides_content:
+                self._hidden_depth += 1
         if tag == "title":
             self._title = True
             self._title_parts = []
@@ -243,8 +258,15 @@ class PageParser(HTMLParser):
                 self.jsonld.append({"valid": False, "error": "invalid JSON"})
             self._script = False
             self._parts = []
-        if tag in {"script", "style", "template", "noscript"} and self._hidden_depth:
-            self._hidden_depth -= 1
+        for index in range(len(self._element_stack) - 1, -1, -1):
+            if self._element_stack[index][0] == tag:
+                closed = self._element_stack[index:]
+                del self._element_stack[index:]
+                self._hidden_depth = max(
+                    0,
+                    self._hidden_depth - sum(1 for _, hides_content in closed if hides_content),
+                )
+                break
         if tag == "head":
             self.head_closed = True
             self._section = None
@@ -280,10 +302,13 @@ def canonical_link_analysis(headers, base_url):
         for part in split_link_header(value):
             target = re.match(r"\s*<([^>]+)>", part)
             relation = re.search(r"(?:^|;)\s*rel\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^;\s,]+))", part, re.IGNORECASE)
-            if not target or not relation:
+            if not relation:
                 continue
             rels = set(next(group for group in relation.groups() if group is not None).lower().split())
             if "canonical" in rels:
+                if not target:
+                    malformed += 1
+                    continue
                 try:
                     urls.append(urllib.parse.urljoin(base_url, target.group(1)))
                 except (TypeError, ValueError):
@@ -633,7 +658,7 @@ def run(base=BASE, sample_limit=3, evidence_dir=None, evidence_max_bytes=MAX_EVI
         report["checks"]["robots"] = {"http_status": 200, **robots_summary(robots["body"])}
     else:
         report["checks"]["robots"] = {"http_status": robots["status"], "error": robots.get("error")}
-        report["limitations" if robots["status"] in (None, 429) else "issues"].append("robots_unavailable")
+        report["limitations" if robots["status"] in (None, 206, 429) else "issues"].append("robots_unavailable")
     queue = [base + "/sitemap.xml"]
     seen = set()
     urls = []
@@ -649,7 +674,7 @@ def run(base=BASE, sample_limit=3, evidence_dir=None, evidence_max_bytes=MAX_EVI
             continue
         res = fetch(url)
         if res["status"] != 200:
-            unverified = res["status"] in (None, 429)
+            unverified = res["status"] in (None, 206, 429)
             sitemap_failures.append({"url": url, "http_status": res["status"], "classification": "unverified" if unverified else "issue", "error": res.get("error", "non_200")})
             continue
         try:

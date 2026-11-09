@@ -222,7 +222,25 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url,
   description = EXCLUDED.description;
 
--- 5. Stock Levels for Store 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
+-- 6. Published Bengali translation used by the hreflang E2E contract.
+INSERT INTO public.item_translations (
+  item_id, tenant_id, locale, name, description, review_status
+)
+VALUES (
+  'a0740002-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000001',
+  'bn',
+  'আরং ডেইরি বিশুদ্ধ তরল দুধ',
+  'নির্ধারিত স্টোরফ্রন্ট E2E ফিক্সচার।',
+  'published'
+)
+ON CONFLICT (item_id, locale) DO UPDATE SET
+  tenant_id = EXCLUDED.tenant_id,
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  review_status = EXCLUDED.review_status;
+
+-- 7. Stock Levels for Store 4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd
 INSERT INTO public.stock_levels (store_id, item_id, qty, reserved, qty_reserved_online)
 VALUES
   ('4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd', 'a0740001-0000-0000-0000-000000000001', 50, 0, 0),
