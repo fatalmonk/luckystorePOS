@@ -36,3 +36,11 @@ describe('next.config.js security headers', () => {
     expect(xcto).toEqual({ key: 'X-Content-Type-Options', value: 'nosniff' });
   });
 });
+
+describe('next.config.js HTML payload budget', () => {
+  it('keeps shared CSS external instead of duplicating it in HTML and Flight', () => {
+    const experimental = (nextConfig as { experimental?: { inlineCss?: boolean } }).experimental;
+
+    expect(experimental?.inlineCss).not.toBe(true);
+  });
+});
