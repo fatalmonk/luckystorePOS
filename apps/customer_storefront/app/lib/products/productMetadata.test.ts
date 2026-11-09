@@ -35,6 +35,18 @@ describe('Product metadata identity', () => {
     expect(title.length).toBeLessThanOrEqual(60);
   });
 
+  it('keeps Bengali title truncation on a complete Bangla grapheme', () => {
+    const title = formatBengaliProductMetaTitle(`${'ক'.repeat(37)}ক্ষতি`, 120);
+
+    expect(title).toBe(`${'ক'.repeat(37)}… – ৳১২০ | লাকি স্টোর`);
+  });
+
+  it('keeps English title truncation on a complete Bangla grapheme', () => {
+    const title = formatProductMetaTitle(`${'ক'.repeat(36)}ক্ষ${'ক'.repeat(10)}`, 120);
+
+    expect(title).toBe(`${'ক'.repeat(36)}… – ৳120 | Lucky Store`);
+  });
+
   it.each([
     ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml'],
     ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml'],
@@ -190,4 +202,3 @@ describe('Product metadata identity', () => {
     expect(title.length).toBeLessThanOrEqual(60);
   });
 });
-

@@ -76,4 +76,18 @@ describe('Brand Hub & Link Resolution Contract', () => {
       }
     }
   });
+
+  it.each([
+    ['bashundhara', /Bashundhara.*Tissue.*Paper/],
+    ['dettol', /Dettol.*Antiseptic.*Soap/],
+    ['dove', /Dove.*Beauty Bars.*Shampoo/],
+    ['pran', /Pran.*Spices.*Snacks.*Pantry/],
+  ])('keeps flagged %s brand titles descriptive and within 60 characters', (slug, identityPattern) => {
+    const brand = POPULAR_BRANDS.find((candidate) => candidate.slug === slug)!;
+
+    expect(brand.titleEn).toMatch(identityPattern);
+    expect(brand.titleEn).toContain('Chattogram');
+    expect(brand.titleEn).toContain('Lucky Store');
+    expect(brand.titleEn.length).toBeLessThanOrEqual(60);
+  });
 });

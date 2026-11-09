@@ -2,6 +2,17 @@ import { formatBdt } from '../formatPrice';
 import { toBengaliNumerals } from '../i18n/config';
 import type { Metadata } from 'next';
 
+const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+function truncateToGraphemeBoundary(value: string, maxCodeUnits: number): string {
+  let result = '';
+  for (const { segment } of graphemeSegmenter.segment(value)) {
+    if (result.length + segment.length > maxCodeUnits) break;
+    result += segment;
+  }
+  return result;
+}
+
 export interface ProductMetadataInput {
   name: string;
   price: number;
@@ -26,13 +37,13 @@ export function formatBengaliProductMetaTitle(name: string, price: number, unit?
   const suffixWithBrand = `… – ${priceStr}${unitSuffix} | লাকি স্টোর`;
   const maxNameLenWithBrand = 60 - suffixWithBrand.length;
   if (maxNameLenWithBrand >= 5) {
-    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+    return `${truncateToGraphemeBoundary(name, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
   }
   const noBrand = `${name} – ${priceStr}${unitSuffix}`;
   if (noBrand.length <= 60) return noBrand;
   const suffix = `… – ${priceStr}${unitSuffix}`;
   const maxNameLen = Math.max(0, 60 - suffix.length);
-  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
+  return `${truncateToGraphemeBoundary(name, maxNameLen).trim()}${suffix}`;
 }
 
 export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {
@@ -98,13 +109,13 @@ export function formatProductMetaTitle(name: string, price: number, unit?: strin
   const suffixWithBrand = `… – ${priceStr}${unitSuffix} | Lucky Store`;
   const maxNameLenWithBrand = 60 - suffixWithBrand.length;
   if (maxNameLenWithBrand >= 5) {
-    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+    return `${truncateToGraphemeBoundary(name, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
   }
   const noBrand = `${name} – ${priceStr}${unitSuffix}`;
   if (noBrand.length <= 60) return noBrand;
   const suffix = `… – ${priceStr}${unitSuffix}`;
   const maxNameLen = Math.max(0, 60 - suffix.length);
-  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
+  return `${truncateToGraphemeBoundary(name, maxNameLen).trim()}${suffix}`;
 }
 
 /**
