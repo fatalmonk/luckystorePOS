@@ -4,9 +4,11 @@ import copy
 import datetime as dt
 import hashlib
 import http.client
+import io
 import inspect
 import json
 import tempfile
+import urllib.error
 import urllib.parse
 from email.message import Message
 from pathlib import Path
@@ -20,6 +22,7 @@ SECURITY_HEADERS = [
     ("Referrer-Policy", "strict-origin-when-cross-origin"),
     ("X-Content-Type-Options", "nosniff"),
 ]
+WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/seo-technical-monitor.yml"
 
 
 def valid_html(url, lang="en", robots="index,follow", visible_text=None):
@@ -138,6 +141,39 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(result.get("redirect_chain"), [])
         self.assertIsInstance(result.get("ttfb_ms"), float)
 
+    def test_http_error_ttfb_stops_before_body_download(self):
+        url = "https://www.luckystore1947.com/delivery"
+        clock = [10.0]
+
+        class SlowErrorBody(io.BytesIO):
+            def read(self, *args, **kwargs):
+                clock[0] = 15.0
+                return super().read(*args, **kwargs)
+
+        headers = Message()
+        headers["Content-Type"] = "text/html"
+        error = urllib.error.HTTPError(url, 503, "Unavailable", headers, SlowErrorBody(b"error"))
+        with patch("technical_monitor.urllib.request.build_opener") as build_opener, patch(
+            "technical_monitor.time.perf_counter", side_effect=lambda: clock[0]
+        ):
+            build_opener.return_value.open.side_effect = error
+            result = fetch(url)
+        self.assertEqual(result["ttfb_ms"], 0.0)
+
+    def test_oversized_http_error_body_is_truncated_and_marked(self):
+        url = "https://www.luckystore1947.com/delivery"
+        headers = Message()
+        headers["Content-Type"] = "text/html"
+        error = urllib.error.HTTPError(url, 503, "Unavailable", headers, io.BytesIO(b"12345"))
+        with patch("technical_monitor.MAX_BYTES", 4), patch(
+            "technical_monitor.urllib.request.build_opener"
+        ) as build_opener:
+            build_opener.return_value.open.side_effect = error
+            result = fetch(url)
+        self.assertEqual(result["_raw_body"], b"1234")
+        self.assertEqual(result["body_bytes"], 4)
+        self.assertTrue(result["response_truncated"])
+
     def test_unsafe_redirect_is_classified_as_confirmed_page_issue(self):
         with patch("technical_monitor.urllib.request.build_opener") as build_opener:
             opener = build_opener.return_value
@@ -216,6 +252,22 @@ class MonitorTests(unittest.TestCase):
         self.assertIn("partial_html_response; metadata placement unverified", page["limitations"])
         self.assertEqual(page["issues"], [])
 
+    def test_http_206_is_a_partial_response_limitation(self):
+        url = "https://www.luckystore1947.com/delivery"
+        with patch("technical_monitor.fetch", return_value=page_response(url, status=206)):
+            page = inspect_page(url)
+        self.assertIn("partial_content_206", page["limitations"])
+        self.assertEqual(page["issues"], [])
+
+    def test_truncated_200_after_head_is_a_limitation_not_a_pass(self):
+        url = "https://www.luckystore1947.com/delivery"
+        truncated = valid_html(url).replace("</body></html>", "")
+        with patch("technical_monitor.fetch", return_value=page_response(url, truncated)):
+            page = inspect_page(url)
+        self.assertEqual(page.get("document_closed"), False)
+        self.assertIn("partial_html_response; document not closed", page["limitations"])
+        self.assertEqual(page["issues"], [])
+
     def test_empty_title_and_description_fail_the_head_contract(self):
         url = "https://www.luckystore1947.com/delivery"
         html = valid_html(url).replace(
@@ -242,6 +294,18 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(page.get("canonical_header_urls"), [other])
         self.assertIn("canonical_header_tag_mismatch", page["issues"])
 
+    def test_sitemap_url_wrong_same_site_canonical_is_an_issue(self):
+        url = "https://www.luckystore1947.com/delivery"
+        other = "https://www.luckystore1947.com/other"
+        html = valid_html(url).replace(
+            f'<link rel="canonical" href="{url}">',
+            f'<link rel="canonical" href="{other}">',
+        )
+        with patch("technical_monitor.fetch", return_value=page_response(url, html)):
+            page = inspect_page(url, sitemap_eligible=True)
+        self.assertIn("sitemap_url_canonical_mismatch", page["issues"])
+        self.assertNotIn("canonical_differs_from_final_url_check_intent", page["warnings"])
+
     def test_discovery_link_header_is_not_a_canonical_signal(self):
         url = "https://www.luckystore1947.com/delivery"
         with patch("technical_monitor.fetch", return_value=page_response(
@@ -250,6 +314,41 @@ class MonitorTests(unittest.TestCase):
             page = inspect_page(url)
         self.assertEqual(page.get("canonical_header_urls"), [])
         self.assertNotIn("canonical_header_tag_mismatch", page["issues"])
+
+    def test_malformed_html_canonical_is_scoped_and_run_continues(self):
+        base = "https://www.luckystore1947.com"
+        malformed_url = base + "/delivery"
+
+        def fake_fetch(url):
+            if url.endswith("/robots.txt"):
+                return {"status": 200, "url": url, "body": "User-agent: *\nAllow: /"}
+            if url.endswith("/sitemap.xml"):
+                return {"status": 200, "url": url, "body": f"<urlset><url><loc>{malformed_url}</loc></url></urlset>"}
+            response = valid_page_response(url)
+            if url == malformed_url:
+                response["body"] = valid_html(url).replace(
+                    f'<link rel="canonical" href="{url}">',
+                    '<link rel="canonical" href="https://[invalid">',
+                )
+            return response
+
+        with patch("technical_monitor.fetch", side_effect=fake_fetch):
+            try:
+                report = run(base=base, sample_limit=0)
+            except ValueError as exc:
+                self.fail(f"malformed page canonical aborted run: {exc}")
+        self.assertEqual(len(report["pages"]), 4)
+        self.assertIn(f"{malformed_url}: canonical_malformed", report["issues"])
+
+    def test_malformed_link_header_canonical_is_scoped_to_page(self):
+        url = "https://www.luckystore1947.com/delivery"
+        response = page_response(url, headers=[("Link", '<https://[invalid>; rel="canonical"')])
+        with patch("technical_monitor.fetch", return_value=response):
+            try:
+                page = inspect_page(url)
+            except ValueError as exc:
+                self.fail(f"malformed Link canonical aborted page inspection: {exc}")
+        self.assertIn("canonical_header_malformed", page["issues"])
 
     def test_missing_effective_security_headers_are_issues(self):
         url = "https://www.luckystore1947.com/delivery"
@@ -264,6 +363,20 @@ class MonitorTests(unittest.TestCase):
         ):
             with self.subTest(issue=issue):
                 self.assertIn(issue, page["issues"])
+
+    def test_duplicate_conflicting_security_headers_are_not_reduced_to_last_value(self):
+        url = "https://www.luckystore1947.com/delivery"
+        response = page_response(url, headers=[
+            ("X-Frame-Options", "DENY"),
+            ("X-Frame-Options", "SAMEORIGIN"),
+        ])
+        with patch("technical_monitor.fetch", return_value=response):
+            page = inspect_page(url)
+        self.assertEqual(page.get("security_header_values", {}).get("x-frame-options"), [
+            "SAMEORIGIN", "DENY", "SAMEORIGIN",
+        ])
+        self.assertIn("security_header_x_frame_options_duplicate_or_conflicting", page["issues"])
+        self.assertIn("security_header_x_frame_options_missing_or_unexpected", page["issues"])
 
     def test_429_is_a_limitation_and_other_non_200_classes_are_distinct(self):
         url = "https://www.luckystore1947.com/delivery"
@@ -308,6 +421,14 @@ class MonitorTests(unittest.TestCase):
         self.assertIn("sitemap_url_noindex", page["issues"])
         self.assertIn("html_lang_mismatch", page["issues"])
         self.assertIn("insufficient_visible_content", page["issues"])
+
+    def test_sitemap_x_robots_tag_noindex_is_an_issue(self):
+        url = "https://www.luckystore1947.com/delivery"
+        response = page_response(url, headers=[("X-Robots-Tag", "noindex, nofollow")])
+        with patch("technical_monitor.fetch", return_value=response):
+            page = inspect_page(url, sitemap_eligible=True)
+        self.assertEqual(page.get("x_robots_tag"), ["noindex, nofollow"])
+        self.assertIn("sitemap_url_noindex", page["issues"])
 
     def test_oversized_response_is_runner_limitation(self):
         with patch("technical_monitor.urllib.request.build_opener") as build_opener:
@@ -441,13 +562,15 @@ class MonitorTests(unittest.TestCase):
                 return {"status": 200, "url": url, "body": "User-agent: *\nAllow: /"}
             if url.endswith("/sitemap.xml"):
                 return {"status": 200, "url": url, "body": "<urlset></urlset>"}
-            response = valid_page_response(url)
+            path = urllib.parse.urlsplit(url).path
+            lang = "bn" if path == "/bn" or path.startswith("/bn/") else "en"
+            response = page_response(url, valid_html(url, lang=lang, visible_text="evidence " * 5000))
             response["response_headers"].append(("Set-Cookie", "private-session-value"))
             return response
 
         with tempfile.TemporaryDirectory() as directory:
             with patch("technical_monitor.fetch", side_effect=fake_fetch):
-                report = run(base=base, sample_limit=0, evidence_dir=directory, evidence_max_bytes=600)
+                report = run(base=base, sample_limit=0, evidence_dir=directory, evidence_max_bytes=50_000)
             manifest_path = Path(directory) / "sampled-urls.json"
             self.assertTrue(manifest_path.is_file())
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -457,21 +580,33 @@ class MonitorTests(unittest.TestCase):
             self.assertEqual(report["coverage"]["sampled_urls"], [
                 base + "/", base + "/bn", base + "/delivery", base + "/bn/delivery",
             ])
-            self.assertLessEqual(manifest["saved_bytes"], 600)
             self.assertTrue(manifest["budget_exhausted"])
             self.assertEqual(manifest["redacted_header_names"], ["set-cookie"])
             evidence_bytes = sum(
                 path.stat().st_size
                 for path in Path(directory).iterdir()
-                if path.name != "sampled-urls.json"
             )
-            self.assertLessEqual(evidence_bytes, 600)
+            self.assertLessEqual(evidence_bytes, 50_000)
+            self.assertEqual(manifest["saved_bytes"], evidence_bytes)
+            self.assertEqual(manifest["manifest_bytes"], manifest_path.stat().st_size)
             headers = "\n".join(
                 path.read_text(encoding="utf-8")
                 for path in Path(directory).glob("*.headers.txt")
             )
             self.assertNotIn("private-session-value", headers)
             self.assertIn("Set-Cookie: [REDACTED]", headers)
+
+    def test_workflow_requires_raw_evidence_before_incident_recovery(self):
+        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        raw_upload = workflow.split("- name: Upload bounded raw response evidence", 1)[1].split(
+            "- name: Classify and reconcile GitHub incident", 1
+        )[0]
+        incident = workflow.split("- name: Classify and reconcile GitHub incident", 1)[1]
+        self.assertIn("id: raw_evidence", raw_upload)
+        self.assertIn("if-no-files-found: error", raw_upload)
+        self.assertIn("RAW_EVIDENCE_OUTCOME: ${{ steps.raw_evidence.outcome }}", incident)
+        self.assertIn("const evidenceFailed = process.env.RAW_EVIDENCE_OUTCOME !== 'success';", incident)
+        self.assertIn("const isIncident = failed || evidenceFailed ||", incident)
 
 
 class AuditInputTests(unittest.TestCase):

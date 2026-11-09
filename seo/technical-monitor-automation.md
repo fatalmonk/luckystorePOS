@@ -7,7 +7,7 @@ The canonical daily monitor is `.github/workflows/seo-technical-monitor.yml`. It
 1. Run the offline Python monitor tests.
 2. Fetch production robots.txt, sitemap XML and a small deterministic sample of pages with raw GET requests.
 3. Always upload the JSON evidence as a GitHub Actions artifact retained for 90 days.
-4. Upload the sampled response headers, bodies and URL manifest as a separate artifact retained for 14 days. The monitor caps these files at 12 MB uncompressed per run and redacts cookie and authorization header values.
+4. Upload the sampled response headers, bodies and URL manifest as a separate artifact retained for 14 days. The monitor caps the complete artifact payload, including its manifest, at 12 MB uncompressed per run and redacts cookie and authorization header values. A missing or failed raw-evidence upload is an incident condition and cannot close a recovered incident.
 5. Open a single GitHub incident when there are monitor issues, verification limitations or an audit execution failure.
 6. Update the existing incident on subsequent failing runs; do not create daily duplicates.
 7. Close the incident only after a successful report with zero issues and zero limitations.

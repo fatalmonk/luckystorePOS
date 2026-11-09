@@ -24,6 +24,7 @@ TIMEOUT = 20
 MAX_BYTES = 8_000_000
 MAX_SITEMAP_URLS = 50000
 MAX_EVIDENCE_BYTES = 12_000_000
+MAX_EVIDENCE_MANIFEST_BYTES = 16_000
 MIN_VISIBLE_TEXT_CHARS = 80
 TRACKED_BOTS = ("GPTBot", "PerplexityBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "cohere-ai")
 SECURITY_HEADER_EXPECTATIONS = {
@@ -95,6 +96,7 @@ def fetch(url):
                 "body": body.decode("utf-8", errors="replace"),
                 "body_sha256": hashlib.sha256(body).hexdigest(),
                 "body_bytes": len(body),
+                "response_truncated": False,
                 "ttfb_ms": ttfb_ms,
                 "redirect_chain": redirect_handler.redirect_chain,
                 "response_headers": headers,
@@ -105,12 +107,15 @@ def fetch(url):
     except UnsafeRedirectError as exc:
         return {"status": 0, "url": url, "redirect_chain": redirect_handler.redirect_chain, "error": str(exc)}
     except urllib.error.HTTPError as exc:
+        ttfb_ms = round((time.perf_counter() - started) * 1000, 1)
         headers = header_items(exc.headers)
+        response_truncated = False
         try:
             body = exc.read(MAX_BYTES + 1)
             if len(body) > MAX_BYTES:
-                raise ValueError("response exceeds 8 MB limit")
-        except (http.client.HTTPException, OSError, ValueError):
+                body = body[:MAX_BYTES]
+                response_truncated = True
+        except (http.client.HTTPException, OSError):
             body = b""
         return {
             "status": exc.code,
@@ -119,7 +124,8 @@ def fetch(url):
             "body": body.decode("utf-8", errors="replace"),
             "body_sha256": hashlib.sha256(body).hexdigest(),
             "body_bytes": len(body),
-            "ttfb_ms": round((time.perf_counter() - started) * 1000, 1),
+            "response_truncated": response_truncated,
+            "ttfb_ms": ttfb_ms,
             "redirect_chain": redirect_handler.redirect_chain,
             "response_headers": headers,
             "_raw_body": body,
@@ -162,6 +168,7 @@ class PageParser(HTMLParser):
         self.jsonld = []
         self.html_lang = None
         self.head_closed = False
+        self.document_closed = False
         self.metadata = {
             "canonical": {"head": [], "body": []},
             "title": {"head": [], "body": []},
@@ -243,6 +250,8 @@ class PageParser(HTMLParser):
             self._section = None
         elif tag == "body":
             self._section = None
+        elif tag == "html":
+            self.document_closed = True
 
 
 def split_link_header(value):
@@ -264,8 +273,9 @@ def split_link_header(value):
     return [part for part in parts if part]
 
 
-def canonical_link_urls(headers, base_url):
+def canonical_link_analysis(headers, base_url):
     urls = []
+    malformed = 0
     for value in header_values(headers, "Link"):
         for part in split_link_header(value):
             target = re.match(r"\s*<([^>]+)>", part)
@@ -274,16 +284,26 @@ def canonical_link_urls(headers, base_url):
                 continue
             rels = set(next(group for group in relation.groups() if group is not None).lower().split())
             if "canonical" in rels:
-                urls.append(urllib.parse.urljoin(base_url, target.group(1)))
-    return urls
+                try:
+                    urls.append(urllib.parse.urljoin(base_url, target.group(1)))
+                except (TypeError, ValueError):
+                    malformed += 1
+    return urls, malformed
+
+
+def canonical_link_urls(headers, base_url):
+    return canonical_link_analysis(headers, base_url)[0]
 
 
 def normalized_url(url, base_url):
     if not url or not str(url).strip():
         return None
-    absolute = urllib.parse.urljoin(base_url, str(url).strip())
-    clean = urllib.parse.urldefrag(absolute)[0]
-    return clean.rstrip("/") or clean
+    try:
+        absolute = urllib.parse.urljoin(base_url, str(url).strip())
+        clean = urllib.parse.urldefrag(absolute)[0]
+        return clean.rstrip("/") or clean
+    except (TypeError, ValueError):
+        return None
 
 
 def path_locale(path):
@@ -317,13 +337,15 @@ class EvidenceCollector:
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.max_bytes = max(0, int(max_bytes))
+        self.manifest_budget = min(MAX_EVIDENCE_MANIFEST_BYTES, self.max_bytes)
+        self.response_budget = self.max_bytes - self.manifest_budget
         self.saved_bytes = 0
         self.budget_exhausted = False
         self.redacted_header_names = set()
         self.sampled_urls = []
 
     def _write_bounded(self, filename, data):
-        remaining = max(0, self.max_bytes - self.saved_bytes)
+        remaining = max(0, self.response_budget - self.saved_bytes)
         saved = data[:remaining]
         truncated = len(saved) < len(data)
         if truncated:
@@ -365,6 +387,7 @@ class EvidenceCollector:
             "http_status": response.get("status"),
             "body_sha256": response.get("body_sha256"),
             "body_bytes": response.get("body_bytes"),
+            "response_truncated": response.get("response_truncated", False),
             "headers_file": headers_file,
             "headers_saved_bytes": headers_saved,
             "headers_truncated": headers_truncated,
@@ -380,15 +403,25 @@ class EvidenceCollector:
             "schema_version": 1,
             "scope": "bounded_raw_get_page_sample",
             "budget_bytes": self.max_bytes,
+            "response_saved_bytes": self.saved_bytes,
+            "manifest_bytes": 0,
             "saved_bytes": self.saved_bytes,
             "budget_exhausted": self.budget_exhausted,
             "redacted_header_names": sorted(self.redacted_header_names),
             "sampled_urls": self.sampled_urls,
         }
-        (self.directory / "sampled-urls.json").write_text(
-            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
+        for _ in range(5):
+            data = (json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+            manifest_bytes = len(data)
+            saved_bytes = self.saved_bytes + manifest_bytes
+            if manifest["manifest_bytes"] == manifest_bytes and manifest["saved_bytes"] == saved_bytes:
+                break
+            manifest["manifest_bytes"] = manifest_bytes
+            manifest["saved_bytes"] = saved_bytes
+        data = (json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        if len(data) > self.manifest_budget or self.saved_bytes + len(data) > self.max_bytes:
+            raise ValueError("evidence manifest exceeds reserved budget")
+        (self.directory / "sampled-urls.json").write_bytes(data)
         return manifest
 
 def schema_types(obj):
@@ -413,7 +446,7 @@ def inspect_page(url, sitemap_eligible=False, evidence_collector=None):
     final_path = urllib.parse.urlsplit(res["url"]).path
     deployed_sha = build_sha(headers)
     out = {"requested_url": url, "final_url": res["url"], "http_status": res["status"], "issues": [], "warnings": [], "limitations": [],
-           "response_evidence": {k: res.get(k) for k in ("body_sha256", "body_bytes", "ttfb_ms", "redirect_chain", "etag", "last_modified")},
+           "response_evidence": {k: res.get(k) for k in ("body_sha256", "body_bytes", "response_truncated", "ttfb_ms", "redirect_chain", "etag", "last_modified")},
            "route_identity": {
                "requested_path": requested_path,
                "final_path": final_path,
@@ -437,6 +470,9 @@ def inspect_page(url, sitemap_eligible=False, evidence_collector=None):
         out["limitations"].append("rate_limited_429")
         out["error"] = res.get("error")
         return out
+    if res["status"] == 206:
+        out["limitations"].append("partial_content_206")
+        return out
     if res["status"] != 200:
         if 300 <= res["status"] < 400:
             out["issues"].append("unresolved_http_redirect")
@@ -458,36 +494,51 @@ def inspect_page(url, sitemap_eligible=False, evidence_collector=None):
         out["issues"].append("sitemap_url_redirects")
     if "html" not in res.get("content_type", "").lower():
         out["warnings"].append("unexpected_content_type")
-    security_headers = {
-        name: header_value(headers, name)
+    security_header_values = {
+        name: header_values(headers, name)
         for name in SECURITY_HEADER_EXPECTATIONS
     }
+    security_headers = {
+        name: values[-1] if values else None
+        for name, values in security_header_values.items()
+    }
     out["security_headers"] = security_headers
+    out["security_header_values"] = security_header_values
     if "response_headers" in res:
         for name, expected in SECURITY_HEADER_EXPECTATIONS.items():
-            actual = security_headers[name]
-            if actual is None or actual.lower() != expected.lower():
+            values = security_header_values[name]
+            if len(values) > 1:
+                out["issues"].append(f"security_header_{name.replace('-', '_')}_duplicate_or_conflicting")
+            if not values or any(value.lower() != expected.lower() for value in values):
                 out["issues"].append(f"security_header_{name.replace('-', '_')}_missing_or_unexpected")
     p = PageParser()
     p.feed(res["body"])
+    p.close()
     placement = {
         "head_closed": p.head_closed,
         **{name: {section: len(values) for section, values in locations.items()}
            for name, locations in p.metadata.items()},
     }
     out["metadata_placement"] = placement
+    out["document_closed"] = p.document_closed
     out["canonical_urls"] = p.canonicals
-    out["canonical_header_urls"] = canonical_link_urls(headers, res["url"])
+    out["canonical_header_urls"], malformed_header_canonicals = canonical_link_analysis(headers, res["url"])
+    if malformed_header_canonicals:
+        out["issues"].append("canonical_header_malformed")
     out["hreflang"] = p.alternates
     out["html_lang"] = p.html_lang
     out["title"] = p.metadata["title"]["head"]
     out["meta_descriptions"] = p.metadata["description"]["head"]
     out["robots_directives"] = p.metadata["robots"]["head"]
+    out["x_robots_tag"] = header_values(headers, "X-Robots-Tag")
     out["visible_text_characters"] = len(" ".join(p.visible_text))
     out["jsonld_blocks"] = len(p.jsonld)
     out["jsonld_types"] = sorted(set().union(*(schema_types(x["data"]) for x in p.jsonld if x["valid"])))
     if not p.head_closed:
         out["limitations"].append("partial_html_response; metadata placement unverified")
+        return out
+    if not p.document_closed:
+        out["limitations"].append("partial_html_response; document not closed")
         return out
     for name in ("canonical", "title", "description", "robots", "hreflang"):
         if p.metadata[name]["body"]:
@@ -497,12 +548,17 @@ def inspect_page(url, sitemap_eligible=False, evidence_collector=None):
     else:
         href = p.canonicals[0]
         canonical = normalized_url(href, res["url"])
-        if canonical is None:
+        if canonical is None and href and str(href).strip():
+            out["issues"].append("canonical_malformed")
+        elif canonical is None:
             out["issues"].append("canonical_missing_href")
         elif not same_site(canonical):
             out["issues"].append("canonical_off_site_or_not_https")
         elif canonical != normalized_url(res["url"], res["url"]):
-            out["warnings"].append("canonical_differs_from_final_url_check_intent")
+            if sitemap_eligible:
+                out["issues"].append("sitemap_url_canonical_mismatch")
+            else:
+                out["warnings"].append("canonical_differs_from_final_url_check_intent")
     tag_canonicals = {normalized_url(value, res["url"]) for value in p.canonicals if normalized_url(value, res["url"])}
     header_canonicals = {normalized_url(value, res["url"]) for value in out["canonical_header_urls"] if normalized_url(value, res["url"])}
     if header_canonicals and header_canonicals != tag_canonicals:
@@ -522,7 +578,7 @@ def inspect_page(url, sitemap_eligible=False, evidence_collector=None):
         out["issues"].append("insufficient_visible_content")
     robots_tokens = {
         token
-        for directive in p.metadata["robots"]["head"]
+        for directive in [*p.metadata["robots"]["head"], *out["x_robots_tag"]]
         if directive
         for token in re.split(r"[\s,]+", directive.lower())
         if token
