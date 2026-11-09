@@ -2,8 +2,13 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261108-e6r-phase2: PR #605 remediation is pushed and all checks pass. Seven reported findings are fixed and replied to; five addressed threads remain unresolved only because the available GitHub token lacks thread-resolution permission. No database write, history repair, workflow activation, deployment, or merge.
+- 20261109-perfbee-p1: Committed `e9caafa3` (repo security headers, bounded Bengali product meta title + tests, hreflang reciprocity/edge-case contracts) and `0c54575c` (HeroBanner informative/decorative image alt fallbacks + tests) on `perf/perfbee-fixes-p1`. 111 files / 830 tests, typecheck, lint pass. Next: evidence-gated PerfBee work (Task 1 raw GET/provenance; Task 2 canonical/head only if reproduced; Task 4 effective header verification; Task 5 exact missing-alt/dimension samples).
+
 ## Decisions
+- 20261109-perfbee-p0: Kept existing formatProductMetaTitle 68 char ceiling intact to preserve established storefront unit test contracts and prevent regressions, while introducing formatBengaliProductMetaTitle with 30-60 character clamp for /bn/ product routes to fix title_too_short.
+- 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
+- 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
+- 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.
 - 20261108-e6r-phase2-contract: manifests read migration bytes from the reviewed Git commit and bind commit, version, filename, and SQL SHA-256, with an explicit reason for no-migration releases. The verifier CLI fetches project identity before history and enforces fresh evidence; caller refs/history files alone cannot pass.
 - 20261108-e6r-phase2-states: results are exactly `APPLIED`, `PENDING`, `DRIFT`, or `UNVERIFIED`. A recorded version or matching history name without SQL/schema equivalence remains `UNVERIFIED`.
 - 20261108-e6r-phase2-live: test has 290 remote/276 local: all 23 remote-only versions are authorized, nine local-only versions make parity `PENDING`, resolver schema is `EQUIVALENT`, and history metadata is `INCOMPLETE`. Production resolver version is recorded with statements, its schema is `EQUIVALENT`, and history metadata is `COMPLETE`; full 276-version set equality is not persisted and remains `UNVERIFIED`.
