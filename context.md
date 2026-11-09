@@ -2,8 +2,15 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261108-e6r-phase2: PR #605 remediation is pushed and all checks pass. Seven reported findings are fixed and replied to; five addressed threads remain unresolved only because the available GitHub token lacks thread-resolution permission. No database write, history repair, workflow activation, deployment, or merge.
+- 20261109-pr608-remediation: Preserve factual Bengali prices, disable Next.js streaming metadata so canonical/title tags stay in `<head>`, and validate repository security-header configuration. Effective production headers and HTML remain deployment-gated.
+
 ## Decisions
+- 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
+- 20261109-canonical-head-placement: Raw production and local evidence plus Next.js 16 docs confirm streaming metadata appended dynamic route metadata to `<body>`. `htmlLimitedBots: /.*/` disables streaming so raw HTML keeps generated metadata in `<head>`; this may increase TTFB on dynamic routes.
+- 20261109-security-headers-config: `next.config.js` configures `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `X-Content-Type-Options: nosniff`, with config-level tests. Saved production build `e6c1b1b` predates the header commit, so upstream preservation remains unverified until deployment.
+- 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
+- 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
+- 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.
 - 20261108-e6r-phase2-contract: manifests read migration bytes from the reviewed Git commit and bind commit, version, filename, and SQL SHA-256, with an explicit reason for no-migration releases. The verifier CLI fetches project identity before history and enforces fresh evidence; caller refs/history files alone cannot pass.
 - 20261108-e6r-phase2-states: results are exactly `APPLIED`, `PENDING`, `DRIFT`, or `UNVERIFIED`. A recorded version or matching history name without SQL/schema equivalence remains `UNVERIFIED`.
 - 20261108-e6r-phase2-live: test has 290 remote/276 local: all 23 remote-only versions are authorized, nine local-only versions make parity `PENDING`, resolver schema is `EQUIVALENT`, and history metadata is `INCOMPLETE`. Production resolver version is recorded with statements, its schema is `EQUIVALENT`, and history metadata is `COMPLETE`; full 276-version set equality is not persisted and remains `UNVERIFIED`.
@@ -32,4 +39,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Owner resolve/approve the five addressed PR #605 threads. Keep merge and migration/release execution blocked until review requirements and recorded parity limitations are accepted or resolved.
+- Push the verified PR #608 remediation and await review. Recheck effective headers and metadata after an authorized staging release.

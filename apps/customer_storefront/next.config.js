@@ -3,6 +3,9 @@ const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig = {
+  // Keep generated metadata in <head> for raw HTML crawlers. Next.js otherwise
+  // streams slow dynamic metadata into <body> for user agents outside its bot list.
+  htmlLimitedBots: /.*/,
   // Keep Turbopack and Webpack dev artifacts separate to prevent stale/mixed
   // client and server output when switching compilers. Production stays `.next`.
   distDir: (isDev && process.env.NEXT_DEV_DIST_DIR) || '.next',
@@ -98,6 +101,11 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'Link', value: linkHeaders.join(', ') },
+          // Hostinger/Cloudflare must preserve these application headers. Verify
+          // effective values after deployment and configure the edge if absent.
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
         ],
       },
     ];

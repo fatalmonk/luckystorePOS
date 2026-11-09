@@ -123,7 +123,8 @@ export function HeroBanner({
             )}
             <img
               src={src}
-              alt={imgVal?.alt || ''}
+              alt={imgVal?.alt || (s.hideText ? '' : s.title || '')}
+              aria-hidden={s.hideText && !imgVal?.alt ? true : undefined}
               sizes={imgVal?.sizes || '100vw'}
               srcSet={imgVal?.srcSet || undefined}
               fetchPriority={isLcp ? 'high' : 'low'}
