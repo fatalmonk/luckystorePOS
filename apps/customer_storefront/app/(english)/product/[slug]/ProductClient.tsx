@@ -126,7 +126,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
       )}
       <Header />
 
-      <main className="flex-1 pb-28 md:pb-12">
+      <main id="main-content" className="flex-1 pb-28 md:pb-12">
           <div className="mx-auto mt-1 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-3">
           {/* Breadcrumb Navigation */}
           <div className="pt-2 md:pt-0">

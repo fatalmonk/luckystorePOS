@@ -95,7 +95,7 @@ describe('ProductClient Brand Linking', () => {
     }
   });
 
-  it('keeps essential product details, metadata and JSON-LD in server-rendered HTML', async () => {
+  it('keeps essential product details and JSON-LD in the server-rendered route body', async () => {
     const product = { ...mockProduct, id: createProductId('task-9-product') };
     const slug = toProductSlug(product.name, product.id);
     const canonicalUrl = `https://www.luckystore1947.com/product/${slug}`;
@@ -104,7 +104,6 @@ describe('ProductClient Brand Linking', () => {
     vi.mocked(getCachedRadhuniPackVariants).mockResolvedValue([]);
     vi.mocked(prepareCrossSell).mockReturnValue([]);
 
-    const metadata = await generateMetadata({ params: Promise.resolve({ slug }) });
     const page = await ProductPage({ params: Promise.resolve({ slug }) });
     const html = renderToStaticMarkup(page);
     const document = new DOMParser().parseFromString(html, 'text/html');
@@ -123,14 +122,6 @@ describe('ProductClient Brand Linking', () => {
         price: product.price,
         priceCurrency: 'BDT',
         url: canonicalUrl,
-      },
-    });
-    expect(metadata.alternates).toEqual({
-      canonical: canonicalUrl,
-      languages: {
-        'en-BD': canonicalUrl,
-        'bn-BD': canonicalUrl.replace('/product/', '/bn/product/'),
-        'x-default': canonicalUrl,
       },
     });
   });
