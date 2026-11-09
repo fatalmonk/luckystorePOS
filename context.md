@@ -2,12 +2,12 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261109-perfbee-non-gated: Commits `e9caafa3`,`0c54575c`,`5b629900`,`5706336a` on `perf/perfbee-fixes-p1`. Task 1 GET evidence captured (prod build `e6c1b1b`): `/`,`/product/*` have canonical in head; `/bn/product/*`,`/best/dealoftheweek` show canonical/title/meta/hreflang in body on prod and local current build (root cause unresolved). Prod missing `X-Frame-Options`/`Referrer-Policy` (repo fix not effective). Added raw HTML SEO placement contract tests. Dove duplicate pair (`0cb22302`/`6e4bb7c3`, SKUs `PC-DOV-INR-330ML-1`/`PC-DOV-INR-330ML`) investigated; no speculative SKU/title merge. Gated: Task 2 fix, effective header deploy, Task 3 prod validation, Tasks 5 exact samples, 8-12 release/measurement.
+- 20261109-pr608-remediation: Preserve factual Bengali prices, disable Next.js streaming metadata so canonical/title tags stay in `<head>`, and validate repository security-header configuration. Effective production headers and HTML remain deployment-gated.
 
 ## Decisions
-- 20261109-perfbee-p0: Kept existing formatProductMetaTitle 68 char ceiling intact to preserve established storefront unit test contracts and prevent regressions, while introducing formatBengaliProductMetaTitle with 30-60 character clamp for /bn/ product routes to fix title_too_short.
-- 20261109-perfbee-task2-min-length: Modified formatBengaliProductMetaTitle in productMetadata.ts to enforce 30-char minimum. When title < 30 chars, widens price string by appending zeros then re-applies max 60 truncation if needed. All 39 tests pass including new regression test for short names like "Salt".
-- 20261109-security-headers-config: Added security headers (X-Frame-Options, Referrer-Policy, X-Content-Type-Options) configuration in next.config.js and test coverage (app/__tests__/next-config-security-headers.test.ts). Added upstream deployment note noting Hostinger/Cloudflare override requirement.
+- 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
+- 20261109-canonical-head-placement: Raw production and local evidence plus Next.js 16 docs confirm streaming metadata appended dynamic route metadata to `<body>`. `htmlLimitedBots: /.*/` disables streaming so raw HTML keeps generated metadata in `<head>`; this may increase TTFB on dynamic routes.
+- 20261109-security-headers-config: `next.config.js` configures `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `X-Content-Type-Options: nosniff`, with config-level tests. Saved production build `e6c1b1b` predates the header commit, so upstream preservation remains unverified until deployment.
 - 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
 - 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
 - 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.
@@ -39,4 +39,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Owner resolve/approve the five addressed PR #605 threads. Keep merge and migration/release execution blocked until review requirements and recorded parity limitations are accepted or resolved.
+- Push the verified PR #608 remediation and await review. Recheck effective headers and metadata after an authorized staging release.

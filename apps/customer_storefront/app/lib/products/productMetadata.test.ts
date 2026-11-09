@@ -14,16 +14,24 @@ describe('Product metadata identity', () => {
     expect(formatBengaliProductMetaDescription('Nahar Laban', 45)).toBe('Nahar Laban – ৳৪৫ | লাকি স্টোর');
   });
 
-  it('builds a Bengali product title bounded between 30 and 60 chars', () => {
+  it('builds a Bengali product title within 60-char max', () => {
     const title = formatBengaliProductMetaTitle('বসুন্ধরা কিচেন টাওয়েল', 120);
     expect(title).toBe('বসুন্ধরা কিচেন টাওয়েল – ৳১২০ | লাকি স্টোর');
-    expect(title.length).toBeGreaterThanOrEqual(30);
     expect(title.length).toBeLessThanOrEqual(60);
   });
 
-  it('enforces a minimum of 30 characters for short product names', () => {
+  it('produces short Bengali titles without price padding for short product names', () => {
     const title = formatBengaliProductMetaTitle('Salt', 100);
-    expect(title.length).toBeGreaterThanOrEqual(30);
+    expect(title).toBe('Salt – ৳১০০ | লাকি স্টোর');
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
+
+  it('truncates long Bengali product names to 60-char max', () => {
+    const longName = 'বসুন্ধরা কিচেন টাওয়েল বিস্তারিত বর্ণনা সহ অতিরিক্ত দীর্ঘ পণ্যের নাম';
+    const title = formatBengaliProductMetaTitle(longName, 120);
+    expect(title).toContain('৳১২০');
+    expect(title).toContain('| লাকি স্টোর');
+    expect(title).toContain('…');
     expect(title.length).toBeLessThanOrEqual(60);
   });
 
@@ -182,5 +190,4 @@ describe('Product metadata identity', () => {
     expect(title.length).toBeLessThanOrEqual(60);
   });
 });
-
 

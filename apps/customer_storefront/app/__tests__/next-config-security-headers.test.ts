@@ -5,6 +5,13 @@ type HeaderRule = { source: string; headers: { key: string; value: string }[] };
 const headers = await (nextConfig as { headers: () => Promise<HeaderRule[]> }).headers();
 
 describe('next.config.js security headers', () => {
+  it('keeps dynamic metadata in the document head for raw HTML clients', () => {
+    const htmlLimitedBots = (nextConfig as { htmlLimitedBots?: RegExp }).htmlLimitedBots;
+
+    expect(htmlLimitedBots).toBeInstanceOf(RegExp);
+    expect(htmlLimitedBots?.test('Mozilla/5.0')).toBe(true);
+  });
+
   it('returns a catch-all header rule for /(.*)', () => {
     const catchAll = headers.find((rule) => rule.source === '/(.*)');
     expect(catchAll).toBeDefined();
