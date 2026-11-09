@@ -36,3 +36,11 @@ describe('next.config.js security headers', () => {
     expect(xcto).toEqual({ key: 'X-Content-Type-Options', value: 'nosniff' });
   });
 });
+
+describe('next.config.js CSS emission guard', () => {
+  it('does not opt into duplicated inline CSS', () => {
+    const experimental = (nextConfig as { experimental?: { inlineCss?: boolean } }).experimental;
+
+    expect(experimental?.inlineCss).not.toBe(true);
+  });
+});

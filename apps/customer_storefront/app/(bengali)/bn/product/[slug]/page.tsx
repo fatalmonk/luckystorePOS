@@ -7,6 +7,7 @@ import { supabase } from '../../../../lib/supabase';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { formatBdt } from '../../../../lib/formatPrice';
 import { formatBengaliProductMetaDescription, formatBengaliProductMetaTitle } from '../../../../lib/products/productMetadata';
+import { buildProductAlternateLanguages } from '../../../../lib/seo/productAlternates';
 import { isMissingItemTranslationsTableError } from '../../../../lib/translationErrors';
 import { getEnrichedProductData } from '../../../../lib/products/productEnrichment';
 import { getProductGalleryImages } from '../../../../lib/products/productGalleryRegistry';
@@ -32,17 +33,18 @@ const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedPro
   // migration has not reached an environment yet, keep the product usable
   // with its canonical English content instead of failing the route.
   if (error) {
-    if (!isMissingItemTranslationsTableError(error)) {
-      console.error('Failed to load Bengali product translation', {
-        itemId: product.id,
-        error,
-      });
-    }
-    return {
+    const fallback = {
       sourceName: product.name,
       translated: false,
       product,
     };
+    if (isMissingItemTranslationsTableError(error)) return fallback;
+
+    console.error('Failed to load Bengali product translation', {
+      itemId: product.id,
+      error,
+    });
+    throw error;
   }
 
   return {
@@ -66,6 +68,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug !== canonicalSlug) permanentRedirect(`/bn/product/${canonicalSlug}`);
 
   const canonicalUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
+  const canonicalEnUrl = `https://www.luckystore1947.com/product/${canonicalSlug}`;
   const enrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
   const galleryImages = enrichment?.galleryImages?.length
     ? enrichment.galleryImages
@@ -82,13 +85,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: { absolute: title },
     description,
+    ...(localized.translated ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical: canonicalUrl,
-      languages: {
-        'bn-BD': canonicalUrl,
-        'en-BD': `https://www.luckystore1947.com/product/${canonicalSlug}`,
-        'x-default': `https://www.luckystore1947.com/product/${canonicalSlug}`,
-      },
+      ...(localized.translated
+        ? {
+            languages: buildProductAlternateLanguages({
+              canonicalEnUrl,
+              canonicalBnUrl: canonicalUrl,
+              isBengaliIndexable: true,
+            }),
+          }
+        : {}),
     },
     openGraph: {
       type: 'website',

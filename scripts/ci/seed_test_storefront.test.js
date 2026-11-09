@@ -4,6 +4,10 @@ import test from 'node:test';
 
 const seedSource = fs.readFileSync(new URL('./seed_test_storefront.js', import.meta.url), 'utf8');
 const sqlFixture = fs.readFileSync(new URL('../../supabase/seed/storefront_test_fixtures.sql', import.meta.url), 'utf8');
+const seoResponseContract = fs.readFileSync(
+  new URL('../../apps/customer_storefront/e2e/seo-response-contract.spec.ts', import.meta.url),
+  'utf8',
+);
 
 test('service-role fallback includes the Polar Kheer test fixture and its category', () => {
   assert.match(seedSource, /id: 'c0000000-0000-0000-0000-000000000008'[^\n]+name: 'Frozen Desserts'[^\n]+slug: 'frozen-desserts'/);
@@ -28,4 +32,23 @@ test('product fixtures use unique URL ID prefixes', () => {
   assert.ok(sqlIds.length > 0, 'SQL product fixtures should be present');
   assert.equal(new Set(prefixes(serviceIds)).size, serviceIds.length);
   assert.equal(new Set(prefixes(sqlIds)).size, sqlIds.length);
+});
+
+test('SEO response fixture has a published Bengali translation in every seed path', () => {
+  assert.match(
+    seoResponseContract,
+    /\/product\/aarong-dairy-pure-liquid-milk--a0740002/,
+  );
+  assert.match(
+    sqlFixture,
+    /INSERT INTO public\.item_translations[\s\S]*?'a0740002-0000-0000-0000-000000000002'[\s\S]*?'bn'[\s\S]*?'published'/,
+  );
+  assert.match(
+    seedSource,
+    /const itemTranslations = \[[\s\S]*?item_id: 'a0740002-0000-0000-0000-000000000002'[\s\S]*?locale: 'bn'[\s\S]*?review_status: 'published'/,
+  );
+  assert.match(
+    seedSource,
+    /supabase\s*\.from\('item_translations'\)\s*\.upsert\(itemTranslations, \{ onConflict: 'item_id,locale' \}\)/,
+  );
 });

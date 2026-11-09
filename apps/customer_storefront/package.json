@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:html-contract": "node --test scripts/storefront-html-contract.test.mjs",
     "test:watch": "vitest",
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "verify:skills": "node scripts/verify-agent-skills.mjs"

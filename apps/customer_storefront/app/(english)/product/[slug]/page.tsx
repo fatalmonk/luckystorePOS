@@ -7,15 +7,37 @@ import {
   getCachedRadhuniPackVariants,
   prepareCrossSell,
 } from '../../../lib/products/getCachedCrossSell';
-import { toProductSlug } from '../../../lib/products/slugify';
+import { isBareUuid, toProductSlug } from '../../../lib/products/slugify';
 import { getEnrichedProductData } from '../../../lib/products/productEnrichment';
 import { getProductGalleryImages } from '../../../lib/products/productGalleryRegistry';
 import { ProductJsonLd } from '../../../components/seo/ProductJsonLd';
+import { supabase } from '../../../lib/supabase';
+import { isMissingItemTranslationsTableError } from '../../../lib/translationErrors';
 import {
   buildProductMetadata,
   formatProductMetaDescription,
 } from '../../../lib/products/productMetadata';
 import ProductClient from './ProductClient';
+
+const hasPublishedBengaliTranslation = React.cache(async (itemId: string): Promise<boolean> => {
+  if (!isBareUuid(itemId)) return false;
+
+  const { data, error } = await (supabase as any)
+    .from('item_translations')
+    .select('item_id')
+    .eq('item_id', itemId)
+    .eq('locale', 'bn')
+    .eq('review_status', 'published')
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingItemTranslationsTableError(error)) return false;
+    console.error('Failed to resolve Bengali product publication status', { itemId, error });
+    throw error;
+  }
+
+  return Boolean(data);
+});
 
 export async function generateMetadata({
   params,
@@ -40,6 +62,8 @@ export async function generateMetadata({
     ? enrichment.galleryImages
     : getProductGalleryImages(product.id);
   const canonicalUrl = `https://www.luckystore1947.com/product/${canonicalSlug}`;
+  const canonicalBnUrl = `https://www.luckystore1947.com/bn/product/${canonicalSlug}`;
+  const isBengaliIndexable = await hasPublishedBengaliTranslation(product.id);
   const description = formatProductMetaDescription(
     effectiveName,
     product.price,
@@ -60,6 +84,8 @@ export async function generateMetadata({
     images: galleryImages?.map(({ url, alt }) => ({ url, alt })),
     brand: enrichment?.brand || product.brand,
     category: enrichment?.category || product.category,
+    canonicalBnUrl,
+    isBengaliIndexable,
   });
 }
 

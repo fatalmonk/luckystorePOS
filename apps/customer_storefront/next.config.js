@@ -34,8 +34,9 @@ const nextConfig = {
       // Avoid loading every page entry into memory before it is requested.
       preloadEntriesOnStart: false,
     } : {}),
+    // Keep the large shared stylesheet external. Next's inlineCss mode duplicates
+    // it in both the document and the initial RSC payload on every dynamic route.
     webpackMemoryOptimizations: true,
-    inlineCss: true,
   },
   async redirects() {
     return [

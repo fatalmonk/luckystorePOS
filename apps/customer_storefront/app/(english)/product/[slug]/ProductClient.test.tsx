@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import ProductClient from './ProductClient';
@@ -92,6 +93,37 @@ describe('ProductClient Brand Linking', () => {
       expect(json.offers.priceCurrency).toBe('BDT');
       unmount();
     }
+  });
+
+  it('keeps essential product details and JSON-LD in the server-rendered route body', async () => {
+    const product = { ...mockProduct, id: createProductId('task-9-product') };
+    const slug = toProductSlug(product.name, product.id);
+    const canonicalUrl = `https://www.luckystore1947.com/product/${slug}`;
+    vi.mocked(getCachedProductBySlug).mockResolvedValue(product);
+    vi.mocked(getCachedCrossSellProducts).mockResolvedValue([]);
+    vi.mocked(getCachedRadhuniPackVariants).mockResolvedValue([]);
+    vi.mocked(prepareCrossSell).mockReturnValue([]);
+
+    const page = await ProductPage({ params: Promise.resolve({ slug }) });
+    const html = renderToStaticMarkup(page);
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const productJsonLd = JSON.parse(
+      document.querySelector('script[type="application/ld+json"]')?.textContent || '{}',
+    );
+
+    expect(document.querySelector('h1')?.textContent).toContain(product.name);
+    expect(document.querySelector('main')?.textContent).toContain(product.description);
+    expect(document.querySelector('main')?.textContent).toContain('৳160');
+    expect(productJsonLd).toMatchObject({
+      '@type': 'Product',
+      name: product.name,
+      description: expect.stringContaining(product.name),
+      offers: {
+        price: product.price,
+        priceCurrency: 'BDT',
+        url: canonicalUrl,
+      },
+    });
   });
 
   it('keeps an out-of-stock product unavailable and offers similar items', () => {
