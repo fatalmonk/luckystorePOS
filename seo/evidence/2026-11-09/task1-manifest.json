@@ -68,5 +68,43 @@
       "titleHead": 0,
       "titleBody": 1
     }
+  },
+  "findings": {
+    "duplicateTitleDovePair": {
+      "ids": [
+        "0cb22302-74ab-4769-bde2-1a3667f00750",
+        "6e4bb7c3-bea2-40e8-af06-12cdf83b27c4"
+      ],
+      "skus": [
+        "PC-DOV-INR-330ML-1",
+        "PC-DOV-INR-330ML"
+      ],
+      "catalogNames": [
+        "Dove Shampoo Intensive Repair 330ml",
+        "Dove Shampoo Intensive Repair 330 ml"
+      ],
+      "enrichmentExactName": "Dove Shampoo Intensive Repair 330ml",
+      "status": "needs catalog/SKU identity verification before disambiguation; no speculative title/sku-label change made"
+    },
+    "seoTagsOutsideHead": {
+      "affectedSamples": [
+        "/bn/product/aarong-standardized-milk-500-ml--3d7c76cf",
+        "/best/dealoftheweek"
+      ],
+      "localCurrentBuildReproduced": true,
+      "rootCause": "unresolved; adding Bengali product force-dynamic did not fix"
+    },
+    "effectiveSecurityHeaders": {
+      "productionMissing": [
+        "X-Frame-Options",
+        "Referrer-Policy"
+      ],
+      "productionObserved": [
+        "X-Content-Type-Options",
+        "Strict-Transport-Security",
+        "upgrade-insecure-requests CSP"
+      ],
+      "repoFixCommitted": "e9caafa3 but not effective on production"
+    }
   }
 }

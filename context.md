@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261109-perfbee-p1: Committed `e9caafa3` (repo security headers, bounded Bengali product meta title + tests, hreflang reciprocity/edge-case contracts) and `0c54575c` (HeroBanner informative/decorative image alt fallbacks + tests) on `perf/perfbee-fixes-p1`. 111 files / 830 tests, typecheck, lint pass. Next: evidence-gated PerfBee work (Task 1 raw GET/provenance; Task 2 canonical/head only if reproduced; Task 4 effective header verification; Task 5 exact missing-alt/dimension samples).
+- 20261109-perfbee-non-gated: Commits `e9caafa3`,`0c54575c`,`5b629900`,`5706336a` on `perf/perfbee-fixes-p1`. Task 1 GET evidence captured (prod build `e6c1b1b`): `/`,`/product/*` have canonical in head; `/bn/product/*`,`/best/dealoftheweek` show canonical/title/meta/hreflang in body on prod and local current build (root cause unresolved). Prod missing `X-Frame-Options`/`Referrer-Policy` (repo fix not effective). Added raw HTML SEO placement contract tests. Dove duplicate pair (`0cb22302`/`6e4bb7c3`, SKUs `PC-DOV-INR-330ML-1`/`PC-DOV-INR-330ML`) investigated; no speculative SKU/title merge. Gated: Task 2 fix, effective header deploy, Task 3 prod validation, Tasks 5 exact samples, 8-12 release/measurement.
 
 ## Decisions
 - 20261109-perfbee-p0: Kept existing formatProductMetaTitle 68 char ceiling intact to preserve established storefront unit test contracts and prevent regressions, while introducing formatBengaliProductMetaTitle with 30-60 character clamp for /bn/ product routes to fix title_too_short.
