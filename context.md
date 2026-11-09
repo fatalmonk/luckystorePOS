@@ -6,6 +6,8 @@
 
 ## Decisions
 - 20261109-perfbee-p0: Kept existing formatProductMetaTitle 68 char ceiling intact to preserve established storefront unit test contracts and prevent regressions, while introducing formatBengaliProductMetaTitle with 30-60 character clamp for /bn/ product routes to fix title_too_short.
+- 20261109-perfbee-task2-min-length: Modified formatBengaliProductMetaTitle in productMetadata.ts to enforce 30-char minimum. When title < 30 chars, widens price string by appending zeros then re-applies max 60 truncation if needed. All 39 tests pass including new regression test for short names like "Salt".
+- 20261109-security-headers-config: Added security headers (X-Frame-Options, Referrer-Policy, X-Content-Type-Options) configuration in next.config.js and test coverage (app/__tests__/next-config-security-headers.test.ts). Added upstream deployment note noting Hostinger/Cloudflare override requirement.
 - 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
 - 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
 - 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.

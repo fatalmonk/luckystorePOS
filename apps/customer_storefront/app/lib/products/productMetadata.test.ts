@@ -21,6 +21,12 @@ describe('Product metadata identity', () => {
     expect(title.length).toBeLessThanOrEqual(60);
   });
 
+  it('enforces a minimum of 30 characters for short product names', () => {
+    const title = formatBengaliProductMetaTitle('Salt', 100);
+    expect(title.length).toBeGreaterThanOrEqual(30);
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
+
   it.each([
     ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml'],
     ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml'],

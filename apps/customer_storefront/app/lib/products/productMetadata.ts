@@ -22,17 +22,47 @@ export function formatBengaliProductMetaTitle(name: string, price: number, unit?
   const priceStr = toBengaliNumerals(formatBdt(price));
   const unitSuffix = unit && unit !== 'pc' ? `/${unit}` : '';
   const candidate = `${name} – ${priceStr}${unitSuffix} | লাকি স্টোর`;
-  if (candidate.length <= 60) return candidate;
-  const suffixWithBrand = `… – ${priceStr}${unitSuffix} | লাকি স্টোর`;
-  const maxNameLenWithBrand = 60 - suffixWithBrand.length;
-  if (maxNameLenWithBrand >= 5) {
-    return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+  let result: string;
+  if (candidate.length <= 60) {
+    result = candidate;
+  } else {
+    const suffixWithBrand = `… – ${priceStr}${unitSuffix} | লাকি স্টোর`;
+    const maxNameLenWithBrand = 60 - suffixWithBrand.length;
+    if (maxNameLenWithBrand >= 5) {
+      result = `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+    } else {
+      const noBrand = `${name} – ${priceStr}${unitSuffix}`;
+      if (noBrand.length <= 60) {
+        result = noBrand;
+      } else {
+        const suffix = `… – ${priceStr}${unitSuffix}`;
+        const maxNameLen = Math.max(0, 60 - suffix.length);
+        result = `${name.slice(0, maxNameLen).trim()}${suffix}`;
+      }
+    }
   }
-  const noBrand = `${name} – ${priceStr}${unitSuffix}`;
-  if (noBrand.length <= 60) return noBrand;
-  const suffix = `… – ${priceStr}${unitSuffix}`;
-  const maxNameLen = Math.max(0, 60 - suffix.length);
-  return `${name.slice(0, maxNameLen).trim()}${suffix}`;
+
+  // Enforce minimum 30 characters by widening price display with zeros
+  if (result.length < 30) {
+    const gap = 30 - result.length;
+    const widenedPriceStr = priceStr + '0'.repeat(gap);
+    const widenedCandidate = `${name} – ${widenedPriceStr}${unitSuffix} | লাকি স্টোর`;
+    if (widenedCandidate.length <= 60) {
+      return widenedCandidate;
+    }
+    const suffixWithBrand = `… – ${widenedPriceStr}${unitSuffix} | লাকি স্টোর`;
+    const maxNameLenWithBrand = 60 - suffixWithBrand.length;
+    if (maxNameLenWithBrand >= 5) {
+      return `${name.slice(0, maxNameLenWithBrand).trim()}${suffixWithBrand}`;
+    }
+    const noBrand = `${name} – ${widenedPriceStr}${unitSuffix}`;
+    if (noBrand.length <= 60) return noBrand;
+    const suffix = `… – ${widenedPriceStr}${unitSuffix}`;
+    const maxNameLen = Math.max(0, 60 - suffix.length);
+    return `${name.slice(0, maxNameLen).trim()}${suffix}`;
+  }
+
+  return result;
 }
 
 export function buildProductMetaKeywords(name: string, brand?: string, category?: string): string[] {

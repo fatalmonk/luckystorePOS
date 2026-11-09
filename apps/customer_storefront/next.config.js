@@ -98,6 +98,7 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'Link', value: linkHeaders.join(', ') },
+          // NOTE: Effective production delivery requires Hostinger/Cloudflare upstream to preserve these headers. Configure at edge layer for production enforcement.
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
