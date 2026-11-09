@@ -58,7 +58,7 @@ function alternateLinks(head) {
 
 function productJsonLd(html) {
   const scripts = Array.from(
-    html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi),
+    html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script(?:\s+[^>]*)?>/gi),
     (match) => ({ attributes: match[1], content: match[2] }),
   );
   return scripts
