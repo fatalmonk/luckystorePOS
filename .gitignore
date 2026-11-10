@@ -110,6 +110,9 @@ backups/
 supabasebakcup/
 *.backup
 
+# Confidential local audit records; never include in public Git history.
+/local-docs/
+
 # -----------------------------------------------------------------------------
 # Logs
 # -----------------------------------------------------------------------------

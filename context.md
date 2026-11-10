@@ -5,6 +5,7 @@
 - 20261110-pr609-post-merge-reconciliation: PR #609 merged as `9c19c5f5b57a4d24526696390d9cd33158c1321f`; at the 2026-11-10 bounded smoke, production `/api/health` reported that SHA. Published/unpublished Bengali indexing, sampled canonical/hreflang/head placement, and security-header checks passed. Remaining PerfBee groups require fresh crawl evidence.
 
 ## Decisions
+- 20261110-dove-storefront-release: PR #610 merged; exact English and Bengali duplicate-product redirects are implemented, the duplicate is excluded from emergency browse fallback, stale-cart cleanup is preserved, and focused tests plus CI passed.
 - 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
 - 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. It merged into `main` at `53ec205b73d5cd57fd82c05c59e4a59218e1ea50`; production deployment and image bytes remain unverified.
 - 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
