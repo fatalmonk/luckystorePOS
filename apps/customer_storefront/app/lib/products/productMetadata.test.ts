@@ -47,6 +47,16 @@ describe('Product metadata identity', () => {
     expect(title).toBe(`${'ক'.repeat(36)}… – ৳120 | Lucky Store`);
   });
 
+  it('uses the catalog net quantity for Cadbury SKU CC-CDM-GEN', () => {
+    const item = getEnrichedProductData('4dc60601')!;
+
+    expect(item.exactName).toBe('Cadbury Dairy Milk Chocolate Bar, 13.2 g');
+    expect(item.netQuantity).toBe('13.2 g');
+    expect(item.summary).not.toMatch(/\b10\s?g\b/i);
+    expect(item.specifications.map(({ value }) => value).join(' ')).not.toMatch(/\b10\s?g\b/i);
+    expect(item.highlights?.join(' ') ?? '').not.toMatch(/\b10\s?g\b/i);
+  });
+
   it.each([
     ['e8771528', 'Polar Carnival Vanilla Cone Ice Cream 120ml'],
     ['6df59696', 'Polar Carnival Strawberry Cone Ice Cream 120ml'],
