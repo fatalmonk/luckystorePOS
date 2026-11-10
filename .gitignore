@@ -1,11 +1,16 @@
 # -----------------------------------------------------------------------------
-# Lucky Store POS - Root .gitignore
-# Cleaned for monorepo: Flutter + Node + Supabase + Scripts
+# Lucky Store POS — Root .gitignore
+# Monorepo: Flutter, Next.js/Node, Supabase, Cloudflare, and local tooling
+# Policy-preserving reorganization of the 2026-11-10 reviewed file.
+# Broad legacy exclusions are intentionally retained pending separate review.
+# IMPORTANT: order matters for negations; keep adjacent exception chains together.
 # -----------------------------------------------------------------------------
 
-# -----------------------------------------------------------------------------
-# Environment / Secrets
-# -----------------------------------------------------------------------------
+# =============================================================================
+# 01. Environment and secrets
+# =============================================================================
+
+# Keep the environment exception chain intact, including deliberate repeated exceptions.
 .env
 .env.*
 .env.local
@@ -14,16 +19,17 @@
 !.env.example
 !.env.secrets.example
 
+# Application environment files and reviewed examples.
 apps/*/.env
 apps/*/.env.*
-# But allow .env.example template files (they contain only placeholders, no real secrets)
 !apps/*/.env.example
 apps/mobile_app/env/*
 !apps/mobile_app/env/.env.example
-# Cloudflare wrangler dev vars (secrets)
+
+# Wrangler local secret files.
 **/.dev.vars
 
-# Secret files
+# Key and certificate material.
 *.key
 *.pem
 *.p12
@@ -32,45 +38,44 @@ apps/mobile_app/env/*
 *.csr
 *client_secret*.json
 
-# -----------------------------------------------------------------------------
-# Node / JS / Package Managers
-# -----------------------------------------------------------------------------
+# Flutter bundled configuration (legacy policy).
+apps/mobile_app/assets/app.env
+
+# =============================================================================
+# 02. Dependencies and package managers
+# =============================================================================
+
+# Node dependencies and Plug’n’Play.
 node_modules/
 .pnp
 .pnp.js
-*.traineddata
-*-DRAFT.pdf
-aiREADME.md
-audit_reports/
-scripts/seo/*_discrepancies.json
-scripts/seo/audit_polar_storefront.mjs
-scripts/ops/extract-*.mjs
-scripts/ops/generate-*-audit-report.mjs
-scripts/ops/scan-receipts-dryrun.mjs
-scripts/ops/triage-*.mjs
 
+# Local package-manager state.
 .npm/
 .pnpm-store/
-
 .yarn/cache/
 .yarn/unplugged/
 .yarn/build-state.yml
 .yarn/install-state.gz
 
+# Package-manager debug logs.
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# -----------------------------------------------------------------------------
-# Build Outputs / Coverage / Cache
-# -----------------------------------------------------------------------------
+# =============================================================================
+# 03. Build outputs and caches
+# =============================================================================
+
+# Build products and coverage.
 dist/
 build/
 out/
 coverage/
 .nyc_output/
 
+# Framework caches and generated outputs.
 .cache/
 supabase/.cache/
 .parcel-cache/
@@ -78,27 +83,25 @@ supabase/.cache/
 .next/
 apps/customer_storefront/.next-turbo/
 apps/customer_storefront/.next-webpack/
-.expo/
 .nuxt/
 .svelte-kit/
-
 *.tsbuildinfo
 /storefront-release.zip
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+.~*
+/blink
 
-# -----------------------------------------------------------------------------
-# Testing and generated reports
-# -----------------------------------------------------------------------------
+# =============================================================================
+# 04. Flutter and Dart
+# =============================================================================
 
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+.expo/
 
-# -----------------------------------------------------------------------------
-# Flutter / Dart
-# -----------------------------------------------------------------------------
+# Flutter and Dart generated state.
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -106,15 +109,33 @@ apps/customer_storefront/.next-webpack/
 .pub/
 pubspec.lock
 
-# -----------------------------------------------------------------------------
-# Supabase / Local DB State
-# -----------------------------------------------------------------------------
+# Generated mobile app analysis output.
+apps/mobile_app/flutter/
+
+# =============================================================================
+# 05. Python
+# =============================================================================
+
+# Python environments, compiled files, and packages.
+.venv/
+*.py[cod]
+*.egg-info/
+
+# Python cache directories.
+__pycache__/
+.pytest_cache/
+
+# =============================================================================
+# 06. Supabase and local database artifacts
+# =============================================================================
+
+# Local Supabase state and lockfiles.
 .supabase/
 supabase/.temp/
 supabase/.branches/
 deno.lock
 
-# Dumps / backups only
+# Local database dumps and backups.
 dumps/
 backups/
 *.dump
@@ -124,26 +145,29 @@ backups/
 *.sql.bak
 supabasebakcup/
 *.backup
+scratch_*.sql
+apply_*_v2.sql
 
-# Confidential local audit records; never include in public Git history.
-/docs-local/
-# Temporary safeguard for the existing Dove audit file until its location is reconciled.
-/local-docs/
+# =============================================================================
+# 07. Cloudflare and hosting
+# =============================================================================
 
-# -----------------------------------------------------------------------------
-# Logs
-# -----------------------------------------------------------------------------
-logs/
-*.log
-*.pid
-*.pid.lock
+# Vercel and Wrangler state.
+.vercel/
+.wrangler/
 
-# -----------------------------------------------------------------------------
-# Editors, IDE, and operating-system files
-# -----------------------------------------------------------------------------
+# Custom hosting output.
+dist_public/
+
+# =============================================================================
+# 08. Editors and operating-system files
+# =============================================================================
+
+# Editor configuration allowlist; keep negation after the broad rule.
 .vscode/*
 !.vscode/extensions.json
 
+# IDE and swap files.
 .idea/
 *.iml
 *.suo
@@ -151,44 +175,57 @@ logs/
 *.swo
 *~
 
+# OS junk.
 .DS_Store
 Thumbs.db
 
-# -----------------------------------------------------------------------------
-# Hosting Platforms
-# -----------------------------------------------------------------------------
-.vercel/
+# Generated IDE inspections.
+SpellCheckingInspection.xml
+AndroidDomInspection.xml
+*.inspectionProfile.xml
+.inspections/
 
-# Wrangler local dev state / cache
-.wrangler/
+# =============================================================================
+# 09. Testing and generated reports
+# =============================================================================
 
-# -----------------------------------------------------------------------------
-# Python
-# -----------------------------------------------------------------------------
-.venv/
-*.py[cod]
-*.egg-info/
+*.traineddata
+*-DRAFT.pdf
 
-# Python caches
-__pycache__/
-.pytest_cache/
+# Local audits and generated SEO reports.
+audit_reports/
+scripts/seo/*_discrepancies.json
+scripts/seo/audit_polar_storefront.mjs
+scripts/ops/extract-*.mjs
+scripts/ops/generate-*-audit-report.mjs
+scripts/ops/scan-receipts-dryrun.mjs
+scripts/ops/triage-*.mjs
 
+# Playwright results and authentication state.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
 
-# -----------------------------------------------------------------------------
-# Temporary / Scratch
-# -----------------------------------------------------------------------------
-tmp/
-temp/
-*.tmp
-*.bak
-*.orig
-.~*
-/blink
+# Runtime logs and process markers.
+logs/
+*.log
+*.pid
+*.pid.lock
 
+# Generated SEO reports.
+/seo/reports/technical/
+seo/reports/*.json
 
-# -----------------------------------------------------------------------------
-# Local AI Tool Metadata
-# -----------------------------------------------------------------------------
+# =============================================================================
+# 10. Local AI tools and development artifacts
+# =============================================================================
+
+# Local AI instructions and tool metadata.
+aiREADME.md
+
+# Local agent directories and settings.
 .cursor/
 .agents/
 .agents_archive/
@@ -200,116 +237,89 @@ skills-lock.json
 /.kilo/kilo.jsonc
 /.kilo/skills/
 
-# Databricks AI Dev Kit (project-local generated state)
+# Other AI development tooling.
 .ai-dev-kit/
 .databricks/
 .gemini/
 .github/skills/
 GEMINI.md
 
-# -----------------------------------------------------------------------------
-# Data Exports (scoped, not global)
-# -----------------------------------------------------------------------------
+# Aion sessions.
+.aionrs/
+
+# Local Codex audit symlink.
+/.codex-audits
+
+# Local agent notes.
+system-docs/agents/image-to-code-short.md
+
+# Local planning files.
+/tasks/
+
+# =============================================================================
+# 11. Private documentation and operational data
+# =============================================================================
+
+# Confidential documents — both directory spellings are protected.
+/docs-local/
+/local-docs/
+
+# Historical archive directory.
+archive/
+
+# Audit and competitive research folders.
+/audit/
+system-docs/competitive/
+
+# Historical local-only documents.
+/docs/audit/database-contract-reconciliation.md
+/docs/audit/infrastructure-audit.md
+/docs/audits/competitor-prices-final-review.md
+/docs/archive/2026-04-27/05-frontend-pos/08-REACT-POS-SETUP.md
+/Lucky Store/docs/typesafe-cookbooks.md
+/Lucky Store/docs/typesafe-cookies.md
+/Lucky Store/docs/typesafe-flutter-cookbooks.md
+
+# Operational documents excluded after earlier untracking.
+/docs/performance/supabase-egress-emergency-2026-10-29.md
+/system-docs/development/supabase-production-migration-repair-runbook.md
+/system-docs/audits/2026-11-06-supabase-egress-phase2-measurement.md
+/system-docs/audits/2026-11-06-supabase-egress-phase3-results.md
+/system-docs/audits/2026-11-06-supabase-egress-phase4-report.md
+/system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
+/social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
+/googlesearchconsole.txt.rtf
+
+# Private local plans and audits.
+/docs/SEO Optimization/
+/system-docs/audits/*.md
+/system-docs/plans/
+/*plan*.md
+/seo/plan-brief.md
+/docs/archive/*-PLAN.md
+/production-preflight-analysis.md
+
+# =============================================================================
+# 12. Catalog assets and generated media
+# =============================================================================
+
+# Data exports and scraper outputs.
 data/exports/
 data/tmp/
 apps/scraper/output/
-
-# Scraper data files (keep code, ignore data)
 apps/scraper/*_products.json
 apps/scraper/scraped_images/
+
+# Global spreadsheets/CSV policy and reviewed sample-file exception.
 *.xlsx
 *.xls
 *.csv
 !data/samples/*.csv
 
-# -----------------------------------------------------------------------------
-# Archive / Legacy Local Storage
-# -----------------------------------------------------------------------------
-archive/
-
-# -----------------------------------------------------------------------------
-# IDE Inspection Artifacts (IntelliJ / Android Studio)
-# -----------------------------------------------------------------------------
-# These large XML files are auto-generated and should not be versioned.
-SpellCheckingInspection.xml
-AndroidDomInspection.xml
-*.inspectionProfile.xml
-.inspections/
-
-# -----------------------------------------------------------------------------
-# Scratch / One-off SQL files
-# -----------------------------------------------------------------------------
-scratch_*.sql
-apply_*_v2.sql
-
-# -----------------------------------------------------------------------------
-# Flutter asset env (safe to bundle, but keep out of git history)
-# -----------------------------------------------------------------------------
-# app.env is safe-to-bundle (anon key only) but still shouldn't be committed
-# to avoid leaking even non-secret config. Manage via CI secrets.
-apps/mobile_app/assets/app.env
-
-# Ignore generated Flutter analysis folder
-apps/mobile_app/flutter/
-# Ignore local JSON secrets
+# Local data JSON files.
 data/*.json
 
-
-# Aion session artifacts
-.aionrs/
-
-# Vercel custom public output directory
-dist_public/
-
-# Documentation migration starts with the root index and reviewed collections.
-# Keep the inherited corpus ignored until each collection is reviewed and admitted.
-/docs/*
-!/docs/README.md
-!/docs/adr/
-!/docs/adr/**
-!/docs/audits/
-/docs/audits/*
-
-# Neon sync artifacts (contain data, not just schema)
-_plans/neon_data.sql
-
-# Local image catalog backup folder
-catalog-images/
-.env*
-!.env.example
-!.env.secrets.example
-!apps/*/.env.example
-!apps/mobile_app/env/.env.example
-!supabase/tests/.env.test.example
-
-# Added by agent
-_archive
-_data
-_plans
-context.md
-!apps/customer_storefront/CONTEXT.md
-!apps/admin_web/CONTEXT.md
-!apps/mobile_app/CONTEXT.md
-!apps/scraper/CONTEXT.md
-!supabase/CONTEXT.md
-!cloudflare/workers/CONTEXT.md
-data/
-
-# Allow only reviewed catalog metadata; keep local source data and image bytes ignored.
-!data/
-data/*
-!data/catalog/
-data/catalog/*
-!data/catalog/README.md
-!data/catalog/.gitignore
-!data/catalog/source-inventory.schema.json
-!data/catalog/source-inventory.json
-!data/catalog/image-manifest.csv
-!data/catalog/contracts/
-data/catalog/contracts/*
-!data/catalog/contracts/catalog-import-v1.schema.json
-
-# Generated responsive image variants — served from R2 CDN in production
+# Generated storefront media and brand assets.
 apps/customer_storefront/public/images/*_400.webp
 apps/customer_storefront/public/images/*_600.webp
 apps/customer_storefront/public/images/*_800.webp
@@ -323,27 +333,13 @@ lucky-store-brand-guidelines/**/*.jpg
 lucky-store-brand-guidelines/**/*.jpeg
 lucky-store-brand-guidelines/**/*.webp
 lucky-store-brand-guidelines/**/*.html
-# Keep the small, canonical production logo exports reviewable with the brand kit.
 !lucky-store-brand-guidelines/assets/logo/approved/*.png
-
-# Local Canva logo exports — keep outside repository history
 lucky-store-brand-guidelines/assets/logo/canva-svg/
 
-
-.hermes/
-
-templates/
-architecture-review.html
-
-# Do not commit — local dump and font archive
+# Scraper data dump.
 apps/scraper/chaldal-dump.txt
-lucky-store-brand-guidelines/fonts/Geist.zip
-Lucky_Store_E-Trade_License_Notarized_Translation.pdf
 
-# Local Codex audit metadata symlink
-/.codex-audits
-/audit/
-system-docs/competitive/
+# Locally generated social-media assets.
 lucky-store-brand-guidelines/social-media-post/gemini-reference-assets.zip
 lucky-store-brand-guidelines/social-media-post/logo-reveal.mp4
 lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets.zip
@@ -356,37 +352,83 @@ lucky-store-brand-guidelines/social-media-post/gemini-reference-assets/video.mp4
 lucky-store-brand-guidelines/social-media-post/gemini-reference-assets/READ-ME-FIRST.md
 lucky-store-brand-guidelines/social-media-post/lucky-store-social-assets/README.md
 
-# Polar catalogue images are served from Cloudflare R2, not the storefront bundle.
+# Cloudflare R2-backed Polar catalog.
 /apps/customer_storefront/public/products/polar/
 
-# Local untracked artifacts & config
-videos/
+# Locally stored media.
 /social-media/
-.prettierrc
 assets/screenshots/
-/seo/reports/technical/
-seo/reports/*.json
-system-docs/agents/image-to-code-short.md
 
-# Keep the reviewed catalog v1 template despite the legacy global templates/ ignore.
+# Local image candidate manifest.
+/scripts/catalog/build_catalog_image_candidate_manifest.py
+
+# Local-only generated hero image.
+/apps/customer_storefront/public/images/hero-grocery-tote.webp
+
+# =============================================================================
+# 13. Order-sensitive reviewed exceptions and legacy exclusions
+# =============================================================================
+
+# PRECEDENCE-SENSITIVE BLOCK: preserve relative ordering of rules in this section.
+/docs/*
+!/docs/README.md
+!/docs/adr/
+!/docs/adr/**
+!/docs/audits/
+/docs/audits/*
+_plans/neon_data.sql
+catalog-images/
+
+# Later environment catch-all and allowlist; must follow /docs/* exclusions.
+.env*
+!.env.example
+!.env.secrets.example
+!apps/*/.env.example
+!apps/mobile_app/env/.env.example
+!supabase/tests/.env.test.example
+_archive
+_data
+_plans
+context.md
+!apps/customer_storefront/CONTEXT.md
+!apps/admin_web/CONTEXT.md
+!apps/mobile_app/CONTEXT.md
+!apps/scraper/CONTEXT.md
+!supabase/CONTEXT.md
+!cloudflare/workers/CONTEXT.md
+
+# Catalog metadata exception chain; keep together with parent traversal.
+data/
+!data/
+data/*
+!data/catalog/
+data/catalog/*
+!data/catalog/README.md
+!data/catalog/.gitignore
+!data/catalog/source-inventory.schema.json
+!data/catalog/source-inventory.json
+!data/catalog/image-manifest.csv
+!data/catalog/contracts/
+data/catalog/contracts/*
+!data/catalog/contracts/catalog-import-v1.schema.json
+.hermes/
+
+# Broad templates exclusion; explicit catalog-template exceptions follow later.
+templates/
+architecture-review.html
+lucky-store-brand-guidelines/fonts/Geist.zip
+Lucky_Store_E-Trade_License_Notarized_Translation.pdf
+videos/
+
+# Local editor config: review separately before changing policy.
+.prettierrc
+
+# Reviewed catalog template exception chain.
 !data/catalog/templates/
 data/catalog/templates/*
 !data/catalog/templates/catalog-import-v1.csv
 
-# Keep local consolidation planning documents out of Git.
-/tasks/
-
-# Local-only image candidate manifest utility.
-/scripts/catalog/build_catalog_image_candidate_manifest.py
-
-# Keep selected audit and one-off operator files local after untracking them.
-/docs/audit/database-contract-reconciliation.md
-/docs/audit/infrastructure-audit.md
-/docs/audits/competitor-prices-final-review.md
-/docs/archive/2026-04-27/05-frontend-pos/08-REACT-POS-SETUP.md
-/Lucky Store/docs/typesafe-cookbooks.md
-/Lucky Store/docs/typesafe-cookies.md
-/Lucky Store/docs/typesafe-flutter-cookbooks.md
+# One-off operator and integration scripts.
 /references/canva-automation
 /integrations/lucky-store-canva/src/intents/content_publisher/index.tsx
 /integrations/lucky-store-canva/scripts/canva-rest.ts
@@ -395,23 +437,3 @@ data/catalog/templates/*
 /scripts/receipts/reconcile_google_sheet.py
 /scripts/products/sync_expenses_csv.py
 /scripts/products/record_missing_receipts.py
-/apps/customer_storefront/public/images/hero-grocery-tote.webp
-
-# Keep selected operational and historical records local after untracking.
-/docs/performance/supabase-egress-emergency-2026-10-29.md
-/system-docs/development/supabase-production-migration-repair-runbook.md
-/system-docs/audits/2026-11-06-supabase-egress-phase2-measurement.md
-/system-docs/audits/2026-11-06-supabase-egress-phase3-results.md
-/system-docs/audits/2026-11-06-supabase-egress-phase4-report.md
-/system-docs/integrations/canva-design-editor-acceptance-2026-10-13.md
-/social-media/catalogue-images/polar-storefront-audit-2026-10-22.md
-/googlesearchconsole.txt.rtf
-
-# Local agent-generated audits and one-off planning artifacts.
-/docs/SEO Optimization/
-/system-docs/audits/*.md
-/system-docs/plans/
-/*plan*.md
-/seo/plan-brief.md
-/docs/archive/*-PLAN.md
-/production-preflight-analysis.md
