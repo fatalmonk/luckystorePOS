@@ -110,6 +110,11 @@ backups/
 supabasebakcup/
 *.backup
 
+# Confidential local audit records; never include in public Git history.
+/docs-local/
+# Temporary safeguard for the existing Dove audit file until its location is reconciled.
+/local-docs/
+
 # -----------------------------------------------------------------------------
 # Logs
 # -----------------------------------------------------------------------------
