@@ -137,7 +137,9 @@ export function formatProductMetaDescription(
     const summaryWords = new Set(enrichedSummary.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu));
     if (identityWords.length && identityWords.every((word) => summaryWords.has(word))) {
       if (enrichedSummary.length <= 160) return enrichedSummary;
-      const sentences = enrichedSummary.match(/[^.!?]+[.!?](?:\s|$)/g) || [];
+      // Keep decimal pack sizes (e.g. 13.2 g) inside the sentence. Splitting on
+      // every period can otherwise lose the product identity before excerpting.
+      const sentences = enrichedSummary.match(/(?:[^.!?]|\.(?=\d))+[.!?](?:\s|$)/g) || [];
       let excerpt = '';
       for (const sentence of sentences) {
         const candidate = `${excerpt} ${sentence.trim()}`.trim();

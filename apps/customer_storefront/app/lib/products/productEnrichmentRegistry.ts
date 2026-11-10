@@ -5873,9 +5873,9 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Cadbury",
     netQuantity: "13.2 g",
     category: "Chocolates & Candies",
-    summary: "Cadbury Dairy Milk Chocolate Bar, 13.2 g.",
+    summary: "Enjoy a Cadbury Dairy Milk Chocolate Bar, 13.2 g, with the brand’s classic creamy milk chocolate taste from Lucky Store in Chawkbazar, Chattogram, Bangladesh. Looking for Cadbury chocolate near you? Shop Cadbury Dairy Milk online and inspect your order before payment.",
     specifications: [{"label":"Brand","value":"Cadbury","evidenceRefs":["CATALOG_RECORD"]},{"label":"Product Type","value":"Chocolate Bar","evidenceRefs":["CATALOG_RECORD"]},{"label":"Net Weight","value":"13.2 g","evidenceRefs":["CATALOG_RECORD"]}],
-    highlights: ["Cadbury Dairy Milk chocolate bar","13.2 g pack size","100% doorstep inspection before payment guarantee via Lucky Store"],
+    highlights: ["Cadbury Dairy Milk chocolate bar","13.2 g pack size","Classic creamy milk chocolate taste described by Cadbury","Doorstep inspection before payment at Lucky Store"],
     faqs: [{"question":"Can I inspect the chocolate bar at doorstep delivery?","answer":"Yes, Lucky Store riders allow doorstep inspection before payment so you can check the item before paying.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       CATALOG_RECORD: {
@@ -5885,6 +5885,13 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
         verifiedAt: "2026-11-10",
         skuScope: "4dc60601-5883-4ab4-98a7-d5e8b1ca8adb",
       },
+      MFR_DAIRY_MILK_RANGE: {
+        source: "MANUFACTURER",
+        evidenceRef: "https://shop.cadbury.co.uk/c/shop/dairy-milk/",
+        sourceTitle: "Cadbury Dairy Milk product family description",
+        verifiedAt: "2026-11-10",
+        notes: "Supports only the brand-family wording ‘classic creamy taste’; it does not verify this SKU’s formulation, ingredients, origin, or cocoa sourcing.",
+      },
       STORE_INSPECTION_POLICY: GLOBAL_STORE_INSPECTION_POLICY,
     },
     fieldEvidence: {
@@ -5892,8 +5899,8 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       brand: ["CATALOG_RECORD"],
       netQuantity: ["CATALOG_RECORD"],
       category: ["CATALOG_RECORD"],
-      summary: ["CATALOG_RECORD"],
-      highlights: [["CATALOG_RECORD"],["CATALOG_RECORD"],["STORE_INSPECTION_POLICY"]],
+      summary: ["CATALOG_RECORD","MFR_DAIRY_MILK_RANGE","STORE_INSPECTION_POLICY"],
+      highlights: [["CATALOG_RECORD"],["CATALOG_RECORD"],["MFR_DAIRY_MILK_RANGE"],["STORE_INSPECTION_POLICY"]],
     },
   },
   "4741d809": {

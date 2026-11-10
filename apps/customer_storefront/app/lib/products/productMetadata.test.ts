@@ -52,7 +52,15 @@ describe('Product metadata identity', () => {
 
     expect(item.exactName).toBe('Cadbury Dairy Milk Chocolate Bar, 13.2 g');
     expect(item.netQuantity).toBe('13.2 g');
-    expect(item.summary).toBe('Cadbury Dairy Milk Chocolate Bar, 13.2 g.');
+    expect(item.summary).toContain('classic creamy milk chocolate taste');
+    expect(item.summary).toContain('Lucky Store in Chawkbazar, Chattogram, Bangladesh');
+    expect(item.summary).toMatch(/inspect your order before payment/i);
+    expect(item.summary).not.toMatch(/100%|Cocoa Life|sustainably sourced|British/i);
+    expect(item.evidenceManifest.MFR_DAIRY_MILK_RANGE.notes).toContain('does not verify this SKU’s formulation');
+    const description = formatProductMetaDescription(item.exactName, 45, 'pc', item.summary);
+    expect(description).toContain('Chawkbazar, Chattogram, Bangladesh');
+    expect(description.length).toBeLessThanOrEqual(160);
+    expect(description).not.toMatch(/100%|Cocoa Life|sustainably sourced|British/i);
     expect(item.specifications.map(({ value }) => value).join(' ')).not.toMatch(/\b10\s?g\b/i);
     expect(item.highlights?.join(' ') ?? '').not.toMatch(/\b10\s?g\b/i);
   });

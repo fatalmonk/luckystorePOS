@@ -25,3 +25,11 @@
 ## Limits
 
 The recorded 2026-11-10 PerfBee scan predates the #614 production deployment. No post-release comparable crawl or score change is claimed. No merge or deployment was performed.
+
+## Follow-up — bilingual identity and description correction
+
+- Read-only production GETs on 2026-11-10 showed `/product/cadbury-dairy-milk-chocolate-bar-132-g--4dc60601` with English title/H1 `Cadbury Dairy Milk Chocolate Bar 10g`, while `/bn/product/cadbury-dairy-milk-chocolate-bar-132-g--4dc60601` used `Cadbury Dairy Milk Chocolate Bar, 13.2 g`. Both use the same product UUID and route slug; the English enrichment override caused the mismatch.
+- The Bengali page's published description currently also says “100% sustainably sourced cocoa.” No SKU-matching packaging or manufacturer evidence for that claim was found. This PR does not write to the published translation table; the production Bengali description remains an external translation-data follow-up.
+- English enrichment now uses the catalog name/weight and a fuller local product description. Cadbury's Dairy Milk range page supports the “classic creamy taste” brand-family wording; the evidence note explicitly excludes SKU-level formulation, ingredients, origin, and cocoa-sourcing claims. The local copy targets Cadbury Dairy Milk / Cadbury chocolate searches with Chawkbazar and Chattogram context, without claiming nationwide service or promising ranking gains.
+- `productMetadata.ts` now keeps decimal pack sizes such as `13.2 g` intact during sentence extraction. The previously failing regression showed that the decimal point caused the enriched local description to be discarded for generic metadata.
+- Focused follow-up verification: 3 Vitest files, 91 tests passed, including exact SKU name, metadata length/local context, rendered H1/overview, Product JSON-LD identity, and the decimal-size description regression.
