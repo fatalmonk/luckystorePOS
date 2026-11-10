@@ -95,6 +95,39 @@ describe('ProductClient Brand Linking', () => {
     }
   });
 
+  it('renders Cadbury metadata, H1 and Product JSON-LD with the catalog pack size', async () => {
+    const id = '4dc60601';
+    const enrichment = getEnrichedProductData(id)!;
+    const product = {
+      ...mockProduct,
+      id: createProductId(id),
+      name: 'Cadbury Dairy Milk Chocolate Bar, 13.2 g',
+      brand: 'Cadbury',
+      price: 45,
+      unit: 'pc',
+    };
+    const slug = toProductSlug(product.name, product.id);
+    vi.mocked(getCachedProductBySlug).mockResolvedValue(product);
+    vi.mocked(getCachedCrossSellProducts).mockResolvedValue([]);
+    vi.mocked(getCachedRadhuniPackVariants).mockResolvedValue([]);
+    vi.mocked(prepareCrossSell).mockReturnValue([]);
+
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug }) });
+    expect(metadata.title).toEqual({ absolute: expect.stringContaining('13.2 g') });
+    expect((metadata.title as { absolute: string }).absolute).not.toMatch(/10\s?g/i);
+    expect(metadata.description).toContain('Chawkbazar, Chattogram, Bangladesh');
+    expect(metadata.description?.length).toBeLessThanOrEqual(160);
+
+    const page = await ProductPage({ params: Promise.resolve({ slug }) });
+    const { container, unmount } = render(page);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(enrichment.exactName);
+    expect(screen.getByText(enrichment.summary)).toBeInTheDocument();
+    const productJsonLd = JSON.parse(container.querySelector('script[type="application/ld+json"]')!.textContent!);
+    expect(productJsonLd.name).toBe(enrichment.exactName);
+    expect(productJsonLd.offers.price).toBe(45);
+    unmount();
+  });
+
   it('keeps essential product details and JSON-LD in the server-rendered route body', async () => {
     const product = { ...mockProduct, id: createProductId('task-9-product') };
     const slug = toProductSlug(product.name, product.id);
