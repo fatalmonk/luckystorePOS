@@ -11,12 +11,17 @@
 ## Current State
 
 ```
-phase:          baseline-established
-last_run:       2026-10-24 (partial: artifact storage quota blocks evidence upload)
-last_pr:        #543 (draft; pending review)
-open_prs:       #543 (draft)
-next_run:       2026-10-25
+phase:                    post-merge-production-verified
+last_run:                 2026-11-10 (bounded production SEO smoke)
+last_pr:                  #609 merged as 9c19c5f5b57a4d24526696390d9cd33158c1321f
+production_build:         9c19c5f5b57a4d24526696390d9cd33158c1321f (/api/health at check time)
+smoke:                    published/unpublished Bengali, canonical/hreflang/head placement, and security headers passed on sampled routes
+perfbee:                  latest full crawl 2026-11-08; refresh required before sitewide reconciliation
+dove:                     PR #610 merged as 53ec205b; production release status not checked in this record
+next:                     fresh bounded PerfBee evidence, then rank remaining verified findings
 ```
+
+The exact sampled URLs and results are recorded in `seo/evidence/2026-11-10/pr609-post-merge-smoke.md`. The bounded checks do not substitute for a fresh full PerfBee crawl or verify every previously flagged URL. This production SHA is the value observed during the 2026-11-10 check; recheck `/api/health` before making a current deployment claim.
 
 ---
 

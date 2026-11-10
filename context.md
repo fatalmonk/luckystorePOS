@@ -2,14 +2,15 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261110-dove-duplicate-approval-package: Storefront patch approved for release and PR #610 checks pass; merge/deployment await required GitHub review. Production inventory mutations remain unapproved.
+- 20261110-pr609-post-merge-reconciliation: PR #609 merged as `9c19c5f5b57a4d24526696390d9cd33158c1321f`; at the 2026-11-10 bounded smoke, production `/api/health` reported that SHA. Published/unpublished Bengali indexing, sampled canonical/hreflang/head placement, and security-header checks passed. Remaining PerfBee groups require fresh crawl evidence.
 
 ## Decisions
 - 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
-- 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. Focused tests (4), storefront typecheck, CI and automated review pass; GitHub requires an eligible review before merge. Production image bytes remain unverified.
+- 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. It merged into `main` at `53ec205b73d5cd57fd82c05c59e4a59218e1ea50`; production deployment and image bytes remain unverified.
 - 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
 - 20261109-canonical-head-placement: Raw production and local evidence plus Next.js 16 docs confirm streaming metadata appended dynamic route metadata to `<body>`. `htmlLimitedBots: /.*/` disables streaming so raw HTML keeps generated metadata in `<head>`; this may increase TTFB on dynamic routes.
 - 20261109-security-headers-config: `next.config.js` configures `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `X-Content-Type-Options: nosniff`, with config-level tests. Saved production build `e6c1b1b` predates the header commit, so upstream preservation remains unverified until deployment.
+- 20261110-pr609-production-smoke: The bounded five-route production sample and production build identity are recorded at `seo/evidence/2026-11-10/pr609-post-merge-smoke.md`. Published English/Bengali alternates were reciprocal; an active product with no Bengali translation row returned `noindex, follow`, a Bengali self-canonical, and no hreflang. Sampled SEO metadata was in `<head>` and expected security headers were present. These results do not clear sitewide PerfBee groups.
 - 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
 - 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
 - 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.
@@ -41,4 +42,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Push the verified PR #608 remediation and await review. Recheck effective headers and metadata after an authorized staging release.
+- Obtain a fresh bounded PerfBee crawl or URL rechecks before reconciling remaining sitewide findings. Keep the Dove remediation work in its separate worktree; no production data changes or deployment without authorization.
