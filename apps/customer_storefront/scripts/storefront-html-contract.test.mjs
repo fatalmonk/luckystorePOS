@@ -46,7 +46,7 @@ function effectiveBodyContent(html) {
   const root = { type: 'root', children: [], parent: null };
   const stack = [root];
   const nodesById = new Map();
-  const tokens = body.match(/<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script\s*>|<style\b[\s\S]*?<\/style\s*>|<![^>]*>|<[^>]+>|[^<]+/gi) || [];
+  const tokens = body.match(/<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script(?:\s+[^>]*)?\s*>|<style\b[\s\S]*?<\/style(?:\s+[^>]*)?\s*>|<![^>]*>|<[^>]+>|[^<]+/gi) || [];
   const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
   for (const token of tokens) {
@@ -104,7 +104,7 @@ function effectiveBodyContent(html) {
     node.parent = null;
   };
   const operations = [];
-  for (const script of body.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)) {
+  for (const script of body.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script(?:\s+[^>]*)?\s*>/gi)) {
     for (const operation of script[1].matchAll(/\$(RS|RC)\(\s*["']([BPS]:[\da-z]+)["']\s*,\s*["']([BPS]:[\da-z]+)["']\s*\)/gi)) {
       operations.push({ kind: operation[1].toUpperCase(), first: operation[2], second: operation[3] });
     }
@@ -221,7 +221,7 @@ function splitDocument(html) {
 }
 
 function inlineStyleBytes(html) {
-  return Array.from(html.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi), (match) => Buffer.byteLength(match[0]))
+  return Array.from(html.matchAll(/<style\b[^>]*>[\s\S]*?<\/style(?:\s+[^>]*)?\s*>/gi), (match) => Buffer.byteLength(match[0]))
     .reduce((total, size) => total + size, 0);
 }
 
@@ -429,13 +429,15 @@ test('completed React stream segments count once and exclude fallback and incomp
     <div hidden id="S:2">Incomplete stream content</div>
     <div hidden id="S:0"><section><template id="P:1"></template></section></div>
     <div hidden>Hidden fallback content</div>
-    <script>$RS("S:1","P:1");$RS("S:1","P:1");$RC("B:1","S:0");$RC("B:1","S:0")</script>
+    <style>.fixture{color:red}</style\t\n data-x>
+    <script>$RS("S:1","P:1");$RS("S:1","P:1");$RC("B:1","S:0");$RC("B:1","S:0")</script\t\n bar>
   </main></body></html>`;
 
   const content = effectiveBodyContent(fixture);
   assert.equal(content.text, 'Completed hero product ৳50');
   assert.equal(content.text.split('Completed hero').length - 1, 1, 'Repeated completion markers must not double-count segment text');
   assert.doesNotMatch(content.text, /Fallback-only|Incomplete stream|Hidden fallback/);
+  assert.equal(inlineStyleBytes(fixture), Buffer.byteLength('<style>.fixture{color:red}</style\t\n data-x>'));
 });
 
 test('Product JSON-LD parser accepts browser-tolerated script end tags', () => {
