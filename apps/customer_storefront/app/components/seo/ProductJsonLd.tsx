@@ -2,7 +2,7 @@ import React from 'react';
 import type { Product } from '../../lib/products/types';
 import { toProductSlug } from '../../lib/products/slugify';
 import { validateGtin } from '../../lib/products/gtin';
-import { DELIVERY_POLICY, getMerchantReturnPolicies } from '../../lib/deliveryData';
+import { getMerchantReturnPolicies } from '../../lib/deliveryData';
 import { getBrandByName } from '../../lib/brandsData';
 import { JsonLd } from './JsonLd';
 
@@ -13,44 +13,6 @@ interface ProductJsonLdProps {
   brand?: string;
   canonicalUrl?: string;
   images?: string[];
-}
-
-function getOfferShippingDetails(product: Product) {
-  const shippingRateValue =
-    product.price >= DELIVERY_POLICY.freeDeliveryThresholdBdt
-      ? 0
-      : DELIVERY_POLICY.standardDeliveryFeeBdt;
-
-  return {
-    '@type': 'OfferShippingDetails',
-    name: `${DELIVERY_POLICY.storeName} Standard Local Delivery`,
-    description: `Local grocery delivery within the verified ${DELIVERY_POLICY.radiusLabel} around the Chawkbazar store. Free delivery applies on orders of ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt} and above.`,
-    shippingDestination: {
-      '@type': 'DefinedRegion',
-      addressCountry: 'BD',
-      postalCode: '4203',
-    },
-    shippingRate: {
-      '@type': 'MonetaryAmount',
-      value: shippingRateValue,
-      currency: 'BDT',
-    },
-    deliveryTime: {
-      '@type': 'ShippingDeliveryTime',
-      handlingTime: {
-        '@type': 'QuantitativeValue',
-        minValue: 0,
-        maxValue: 0,
-        unitCode: 'DAY',
-      },
-      transitTime: {
-        '@type': 'QuantitativeValue',
-        minValue: 0,
-        maxValue: 0,
-        unitCode: 'DAY',
-      },
-    },
-  };
 }
 
 export function ProductJsonLd({ product, description, name, brand, canonicalUrl: providedCanonicalUrl, images }: ProductJsonLdProps) {
@@ -109,7 +71,6 @@ export function ProductJsonLd({ product, description, name, brand, canonicalUrl:
         name: 'Lucky Store',
         url: 'https://www.luckystore1947.com',
       },
-      shippingDetails: getOfferShippingDetails(product),
       hasMerchantReturnPolicy: getMerchantReturnPolicies(),
     },
   };
