@@ -52,7 +52,7 @@ describe('Product metadata identity', () => {
 
     expect(item.exactName).toBe('Cadbury Dairy Milk Chocolate Bar, 13.2 g');
     expect(item.netQuantity).toBe('13.2 g');
-    expect(item.summary).not.toMatch(/\b10\s?g\b/i);
+    expect(item.summary).toBe('Cadbury Dairy Milk Chocolate Bar, 13.2 g.');
     expect(item.specifications.map(({ value }) => value).join(' ')).not.toMatch(/\b10\s?g\b/i);
     expect(item.highlights?.join(' ') ?? '').not.toMatch(/\b10\s?g\b/i);
   });

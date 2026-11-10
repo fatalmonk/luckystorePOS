@@ -5873,7 +5873,7 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     brand: "Cadbury",
     netQuantity: "13.2 g",
     category: "Chocolates & Candies",
-    summary: "Cadbury Dairy Milk is a classic milk chocolate bar with a smooth, creamy taste.",
+    summary: "Cadbury Dairy Milk Chocolate Bar, 13.2 g.",
     specifications: [{"label":"Brand","value":"Cadbury","evidenceRefs":["CATALOG_RECORD"]},{"label":"Product Type","value":"Chocolate Bar","evidenceRefs":["CATALOG_RECORD"]},{"label":"Net Weight","value":"13.2 g","evidenceRefs":["CATALOG_RECORD"]}],
     highlights: ["Cadbury Dairy Milk chocolate bar","13.2 g pack size","100% doorstep inspection before payment guarantee via Lucky Store"],
     faqs: [{"question":"Can I inspect the chocolate bar at doorstep delivery?","answer":"Yes, Lucky Store riders allow doorstep inspection before payment so you can check the item before paying.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],

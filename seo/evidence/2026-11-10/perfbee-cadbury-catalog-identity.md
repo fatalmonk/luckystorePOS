@@ -4,11 +4,12 @@
 
 - Production catalog item master identifies `items.sku=CC-CDM-GEN`, UUID `4dc60601-5883-4ab4-98a7-d5e8b1ca8adb`, as **Cadbury Dairy Milk Chocolate Bar, 13.2 g**, priced at ৳45.
 - The same product’s 132g-slug route was represented by PerfBee as a 10g product. The enrichment registry repeated the unsupported 10g identity and attached manufacturer claims whose evidence URL was a 110g product page.
-- Corrected enrichment is limited to catalog-supported identity, package size, category, and a short description. Manufacturer-only claims and their invalid provenance were removed. Existing Lucky Store doorstep-inspection wording retains its policy evidence.
+- Corrected enrichment is limited to catalog-supported identity, package size, category, and an exact-identity summary. Manufacturer-only claims and their invalid provenance were removed. Existing Lucky Store doorstep-inspection wording retains its policy evidence.
+- The summary was reduced to `Cadbury Dairy Milk Chocolate Bar, 13.2 g.` after review confirmed that the catalog record does not verify flavor or texture descriptors.
 
 ## Regression coverage
 
-- `apps/customer_storefront/app/lib/products/productMetadata.test.ts`: exact catalog identity and no stale 10g claim in summary, specifications, or highlights.
+- `apps/customer_storefront/app/lib/products/productMetadata.test.ts`: exact catalog-backed summary and no stale 10g claim in specifications or highlights. The review finding reproduced RED before the summary correction and passed GREEN afterward.
 - `apps/customer_storefront/app/(english)/product/[slug]/ProductClient.test.tsx`: generated metadata, H1, Product JSON-LD name, and unchanged ৳45 offer price.
 
 ## Verification
