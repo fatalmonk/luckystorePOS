@@ -39,15 +39,51 @@ describe('ProductJsonLd', () => {
 
     expect(jsonLd['@type']).toBe('Product');
     expect(jsonLd.name).toBe('Polar Chocolate Cup');
+    expect(jsonLd.description).toBe('Polar Chocolate Cup 100 ml.');
+    expect(jsonLd.sku).toBe('IC-POL-CHO-CUP');
+    expect(jsonLd.brand).toMatchObject({ '@type': 'Brand', name: 'Polar' });
     expect(jsonLd.image).toEqual([
       'https://www.luckystore1947.com/products/polar/chocolate-cup-front.webp',
     ]);
     expect(jsonLd.offers).toMatchObject({
       price: 30,
       priceCurrency: 'BDT',
+      itemCondition: 'https://schema.org/NewCondition',
       availability: 'https://schema.org/InStock',
       url: 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+      seller: {
+        '@type': 'Organization',
+        name: 'Lucky Store',
+        url: 'https://www.luckystore1947.com',
+      },
     });
+    expect(jsonLd.offers).not.toHaveProperty('shippingDetails');
+  });
+
+  it.each([
+    {
+      locale: 'English',
+      name: 'Polar Chocolate Cup',
+      canonicalUrl: 'https://www.luckystore1947.com/product/polar-chocolate-cup--f6d581d5',
+    },
+    {
+      locale: 'Bengali',
+      name: 'পোলার চকোলেট কাপ',
+      canonicalUrl: 'https://www.luckystore1947.com/bn/product/polar-chocolate-cup--f6d581d5',
+    },
+  ])('renders valid $locale Product JSON-LD with its canonical Offer URL', ({ name, canonicalUrl }) => {
+    const jsonLd = parseJsonLd(renderToStaticMarkup(
+      <ProductJsonLd product={product} name={name} canonicalUrl={canonicalUrl} />
+    ));
+
+    expect(jsonLd.name).toBe(name);
+    expect(jsonLd.offers).toMatchObject({
+      price: 30,
+      priceCurrency: 'BDT',
+      availability: 'https://schema.org/InStock',
+      url: canonicalUrl,
+    });
+    expect(jsonLd.offers).not.toHaveProperty('shippingDetails');
   });
 
   it('omits explicitly unresolved product images rather than emitting a broken URL', () => {

@@ -138,7 +138,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(json.brand.name).toBe('Fortune');
     });
 
-    it('emits offer-level shipping details and the merchant return policy without fake reviews', () => {
+    it('keeps standard shipping at organization level and retains the merchant return policy without fake reviews', () => {
       const product: Product = {
         id: createProductId('radhuni-test-item-123'),
         name: 'Radhuni Holud Gura 100g',
@@ -161,25 +161,7 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers.price).toBe(65);
       expect(offers.availability).toBe('https://schema.org/InStock');
 
-      expect(offers.shippingDetails).toBeDefined();
-      expect(offers.shippingDetails['@type']).toBe('OfferShippingDetails');
-      expect(offers.shippingDetails.shippingDestination.addressCountry).toBe('BD');
-      expect(offers.shippingDetails.shippingRate).toMatchObject({
-        '@type': 'MonetaryAmount',
-        value: 40,
-        currency: 'BDT',
-      });
-      expect(offers.shippingDetails.deliveryTime['@type']).toBe('ShippingDeliveryTime');
-      expect(offers.shippingDetails.deliveryTime.handlingTime).toMatchObject({
-        minValue: 0,
-        maxValue: 0,
-        unitCode: 'DAY',
-      });
-      expect(offers.shippingDetails.deliveryTime.transitTime).toMatchObject({
-        minValue: 0,
-        maxValue: 0,
-        unitCode: 'DAY',
-      });
+      expect(offers).not.toHaveProperty('shippingDetails');
 
       const policies = offers.hasMerchantReturnPolicy;
       expect(policies).toHaveLength(2);
