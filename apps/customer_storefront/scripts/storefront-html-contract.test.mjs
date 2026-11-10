@@ -220,9 +220,11 @@ test('production HTML stays within budget with loadable styles and integrated pr
   }));
 });
 
-test('Product JSON-LD parser accepts whitespace before a script end tag', () => {
-  const schema = productJsonLd(
-    '<script type="application/ld+json">{"@type":"Product","name":"Fixture"}</script >',
-  );
-  assert.equal(schema?.name, 'Fixture');
+test('Product JSON-LD parser accepts browser-tolerated script end tags', () => {
+  for (const closingTag of ['</script >', '</script\t\n bar>']) {
+    const schema = productJsonLd(
+      `<script type="application/ld+json">{"@type":"Product","name":"Fixture"}${closingTag}`,
+    );
+    assert.equal(schema?.name, 'Fixture');
+  }
 });
