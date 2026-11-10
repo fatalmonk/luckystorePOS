@@ -60,6 +60,16 @@ const nextConfig = {
         destination: '/bn/product/radhuni-roast-masala-35-g--602a8c45',
         permanent: true,
       },
+      {
+        source: '/product/dove-shampoo-intensive-repair-330ml--0cb22302',
+        destination: '/product/dove-shampoo-intensive-repair-330-ml--6e4bb7c3',
+        permanent: true,
+      },
+      {
+        source: '/bn/product/dove-shampoo-intensive-repair-330ml--0cb22302',
+        destination: '/bn/product/dove-shampoo-intensive-repair-330-ml--6e4bb7c3',
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

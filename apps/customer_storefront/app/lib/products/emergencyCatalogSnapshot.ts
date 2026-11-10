@@ -26,7 +26,6 @@ export const EMERGENCY_CATALOG_SNAPSHOT = [
   {"id":"0a325bcd-78ce-42aa-9f98-9e5dbac1bed3","name":"Savoy Golden Delight Cake 1kg","price":1100.0,"image_url":"https://images.luckystore1947.com/products/IC-SAV-GLD-1KG.webp","brand":"Savoy"},
   {"id":"0a61cf45-ad13-464a-a8db-1f69a5c780a0","name":"Godrej Soap","price":230.0,"image_url":"https://images.luckystore1947.com/products/PC-GDJ-GEN.webp","brand":"Godrej"},
   {"id":"0c6fed87-4f54-46eb-befb-7fd088c65e8d","name":"Taaza 500 g","price":300.0,"image_url":"https://images.luckystore1947.com/products/TC-TAA-GEN-500G.webp","brand":"Taaza"},
-  {"id":"0cb22302-74ab-4769-bde2-1a3667f00750","name":"Dove Shampoo Intensive Repair 330ml","price":440.0,"image_url":"https://hvmyxyccfnkrbxqbhlnm.supabase.co/storage/v1/object/public/item-images/PC-DOV-INR-330ML-1.webp","brand":"Dove"},
   {"id":"0d2d40d4-c0f2-46a2-8594-1e27742edeeb","name":"Mojo 500 ml","price":40.0,"image_url":"https://images.luckystore1947.com/products/BV-MJO-GEN-500ML.webp","brand":"Mojo"},
   {"id":"0d523ffc-02c1-4ee6-9ebc-6d889d2069d3","name":"Nutrilife Mango Juice 1 L","price":295.0,"image_url":"https://images.luckystore1947.com/products/BV-NTL-GEN-1L.webp","brand":"Nutrilife"},
   {"id":"0d79eecb-30e3-4f60-81e4-3764c1adfebf","name":"Go & Handsome Skin Cream Men 25 g","price":135.0,"image_url":"https://images.luckystore1947.com/products/PC-GAL-GHC-25G.webp","brand":"Fair & Lovely"},

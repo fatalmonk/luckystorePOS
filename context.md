@@ -2,9 +2,11 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261109-pr608-remediation: Preserve factual Bengali prices, disable Next.js streaming metadata so canonical/title tags stay in `<head>`, and validate repository security-header configuration. Effective production headers and HTML remain deployment-gated.
+- 20261110-dove-duplicate-approval-package: Prepare a read-only production inventory reconciliation and storefront redirect/fallback patch for owner review; no production mutations, merge, or deployment authorized.
 
 ## Decisions
+- 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
+- 20261110-dove-storefront: Add exact English/Bengali permanent redirects to survivor and remove duplicate from browse fallback while preserving cart purge ID. Focused tests (4) and storefront typecheck pass; production image bytes remain unverified.
 - 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
 - 20261109-canonical-head-placement: Raw production and local evidence plus Next.js 16 docs confirm streaming metadata appended dynamic route metadata to `<body>`. `htmlLimitedBots: /.*/` disables streaming so raw HTML keeps generated metadata in `<head>`; this may increase TTFB on dynamic routes.
 - 20261109-security-headers-config: `next.config.js` configures `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `X-Content-Type-Options: nosniff`, with config-level tests. Saved production build `e6c1b1b` predates the header commit, so upstream preservation remains unverified until deployment.
