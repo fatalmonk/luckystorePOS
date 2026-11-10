@@ -57,6 +57,10 @@ describe('Product metadata identity', () => {
     expect(item.summary).toMatch(/inspect your order before payment/i);
     expect(item.summary).not.toMatch(/100%|Cocoa Life|sustainably sourced|British/i);
     expect(item.evidenceManifest.MFR_DAIRY_MILK_RANGE.notes).toContain('does not verify this SKU’s formulation');
+    expect(item.localizedContent?.bn?.summary).toContain('Cadbury Dairy Milk ১৩.২ গ্রাম');
+    expect(item.localizedContent?.bn?.summary).toContain('চকবাজার, চট্টগ্রামে');
+    expect(item.localizedContent?.bn?.summary?.length).toBeLessThanOrEqual(160);
+    expect(item.localizedContent?.bn?.summary).not.toMatch(/100%|Cocoa Life|sustainably sourced|British/i);
     const description = formatProductMetaDescription(item.exactName, 45, 'pc', item.summary);
     expect(description).toContain('Chawkbazar, Chattogram, Bangladesh');
     expect(description.length).toBeLessThanOrEqual(160);

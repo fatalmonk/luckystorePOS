@@ -79,7 +79,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : localized.product.image_url || '/lucky-store-social-share-v2.png';
   const imageAlt = metadataImage?.alt || localized.product.name;
   const title = formatBengaliProductMetaTitle(localized.product.name, localized.product.price, localized.product.unit);
-  const description = localized.product.description?.trim()
+  const localizedSummary = localized.translated ? enrichment?.localizedContent?.bn?.summary?.trim() : undefined;
+  const description = localizedSummary || localized.product.description?.trim()
     || formatBengaliProductMetaDescription(localized.product.name, localized.product.price);
 
   return {
@@ -134,13 +135,16 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
   });
 
   const rawEnrichment = getEnrichedProductData(slug) || getEnrichedProductData(localized.product.id);
+  const localizedSummary = localized.translated ? rawEnrichment?.localizedContent?.bn?.summary : undefined;
   const enrichment = rawEnrichment && localized.translated
     ? {
         ...rawEnrichment,
         exactName: localized.product.name,
-        summary: localized.product.description || rawEnrichment.summary,
+        summary: localizedSummary || localized.product.description || rawEnrichment.summary,
       }
-    : rawEnrichment;
+    : rawEnrichment
+      ? { ...rawEnrichment, localizedContent: undefined }
+      : undefined;
   const galleryImages = enrichment?.galleryImages?.length
     ? enrichment.galleryImages
     : getProductGalleryImages(localized.product.id);
@@ -157,7 +161,7 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
         product={localized.product}
         name={localized.product.name}
         brand={enrichment?.brand || localized.product.brand}
-        description={localized.product.description || enrichment?.summary}
+        description={localizedSummary || localized.product.description || enrichment?.summary}
         canonicalUrl={canonicalUrl}
         images={productImages}
       />

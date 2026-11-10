@@ -5876,6 +5876,11 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     summary: "Enjoy a Cadbury Dairy Milk Chocolate Bar, 13.2 g, with the brand’s classic creamy milk chocolate taste from Lucky Store in Chawkbazar, Chattogram, Bangladesh. Looking for Cadbury chocolate near you? Shop Cadbury Dairy Milk online and inspect your order before payment.",
     specifications: [{"label":"Brand","value":"Cadbury","evidenceRefs":["CATALOG_RECORD"]},{"label":"Product Type","value":"Chocolate Bar","evidenceRefs":["CATALOG_RECORD"]},{"label":"Net Weight","value":"13.2 g","evidenceRefs":["CATALOG_RECORD"]}],
     highlights: ["Cadbury Dairy Milk chocolate bar","13.2 g pack size","Classic creamy milk chocolate taste described by Cadbury","Doorstep inspection before payment at Lucky Store"],
+    localizedContent: {
+      bn: {
+        summary: "Cadbury Dairy Milk ১৩.২ গ্রাম চকোলেট বার—পরিচিত ক্রিমি স্বাদ। চকবাজার, চট্টগ্রামে ক্যাডবেরি চকোলেট খুঁজুন লাকি স্টোরে; পেমেন্টের আগে পণ্য দেখুন।",
+      },
+    },
     faqs: [{"question":"Can I inspect the chocolate bar at doorstep delivery?","answer":"Yes, Lucky Store riders allow doorstep inspection before payment so you can check the item before paying.","evidenceRefs":["STORE_INSPECTION_POLICY"]}],
     evidenceManifest: {
       CATALOG_RECORD: {
@@ -5901,6 +5906,11 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       category: ["CATALOG_RECORD"],
       summary: ["CATALOG_RECORD","MFR_DAIRY_MILK_RANGE","STORE_INSPECTION_POLICY"],
       highlights: [["CATALOG_RECORD"],["CATALOG_RECORD"],["MFR_DAIRY_MILK_RANGE"],["STORE_INSPECTION_POLICY"]],
+    },
+    localizedFieldEvidence: {
+      bn: {
+        summary: ["CATALOG_RECORD","MFR_DAIRY_MILK_RANGE","STORE_INSPECTION_POLICY"],
+      },
     },
   },
   "4741d809": {
