@@ -143,6 +143,7 @@ describe('official product evidence enrichment batch', () => {
       bc8cac68: ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
       b9f7ef06: ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
       '94614080': ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
+      a79ae214: ['fat 28.4g', 'saturated fat 18.8g', 'carbohydrate 39g', 'protein 24g'],
       '31d78d91': ['2120 kJ / 510 kcal', 'fat 28.4g', 'saturated fat 18.8g', 'carbohydrate 39g', 'protein 24g'],
     } as const;
 
@@ -150,7 +151,7 @@ describe('official product evidence enrichment batch', () => {
       const nutrition = PRODUCT_ENRICHMENTS[id].nutrition;
       expect(nutrition?.basis).toBe('Per 100 g');
       expect(nutrition?.sourceLabel).toBe('Source: Arla Foods Bangladesh');
-      for (const fact of facts) expect(nutrition?.text).toContain(fact);
+      for (const fact of facts) expect(nutrition?.text?.toLowerCase()).toContain(fact);
       expect(nutrition?.text).toContain('not supplied');
       expect(nutrition?.text).not.toMatch(/(?:sugars|salt)\W*0(?:\.0+)?\s*g/i);
       expect(nutrition?.evidenceRefs).toEqual(['MFR_PRODUCT_PAGE']);
