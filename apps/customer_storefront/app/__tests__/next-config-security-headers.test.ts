@@ -3,6 +3,7 @@ import nextConfig from '../../next.config';
 import {
   PUBLIC_CATALOG_CACHE_CONTROL,
   SECURITY_HEADERS,
+  escapeHtaccessQuoted,
   renderHtaccess,
 } from '../../security-headers.cjs';
 import { readFileSync } from 'node:fs';
@@ -59,6 +60,7 @@ describe('next.config.js security headers', () => {
   it('writes the same security headers into the LiteSpeed htaccess file', () => {
     const htaccess = readFileSync(path.join(__dirname, '../../public/.htaccess'), 'utf8');
     expect(htaccess).toBe(renderHtaccess());
+    expect(escapeHtaccessQuoted('say "hi" \\ path')).toBe('say \\"hi\\" \\\\ path');
     for (const header of SECURITY_HEADERS) {
       expect(htaccess).toContain(header.key);
       expect(htaccess).toContain(header.value);

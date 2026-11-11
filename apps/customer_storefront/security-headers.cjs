@@ -59,6 +59,10 @@ function applySecurityHeaders(headers) {
   }
 }
 
+function escapeHtaccessQuoted(value) {
+  return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 function renderHtaccess({ immutableDirectory = false } = {}) {
   const lines = [
     '# Keep in sync with security-headers.cjs. LiteSpeed serves static files',
@@ -67,13 +71,13 @@ function renderHtaccess({ immutableDirectory = false } = {}) {
   ];
   for (const { key, value } of SECURITY_HEADERS) {
     lines.push(`  Header always unset ${key}`);
-    lines.push(`  Header always set ${key} "${value.replace(/"/g, '\\"')}"`);
+    lines.push(`  Header always set ${key} "${escapeHtaccessQuoted(value)}"`);
   }
   if (immutableDirectory) {
-    lines.push(`  Header always set Cache-Control "${STATIC_CACHE_CONTROL}"`);
+    lines.push(`  Header always set Cache-Control "${escapeHtaccessQuoted(STATIC_CACHE_CONTROL)}"`);
   } else {
     lines.push('  <FilesMatch "\\.(?:webp|avif|png|jpe?g|gif|svg|ico|webmanifest|woff2)$">');
-    lines.push(`    Header always set Cache-Control "${STATIC_CACHE_CONTROL}"`);
+    lines.push(`    Header always set Cache-Control "${escapeHtaccessQuoted(STATIC_CACHE_CONTROL)}"`);
     lines.push('  </FilesMatch>');
   }
   lines.push('</IfModule>');
@@ -91,5 +95,6 @@ module.exports = {
   isPublicCatalogPath,
   isStaticAssetPath,
   applySecurityHeaders,
+  escapeHtaccessQuoted,
   renderHtaccess,
 };

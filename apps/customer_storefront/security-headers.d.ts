@@ -6,4 +6,5 @@ export function isPrivateStorefrontPath(pathname: string): boolean;
 export function isPublicCatalogPath(pathname: string): boolean;
 export function isStaticAssetPath(pathname: string): boolean;
 export function applySecurityHeaders(headers: { set(name: string, value: string): void }): void;
+export function escapeHtaccessQuoted(value: string): string;
 export function renderHtaccess(options?: { immutableDirectory?: boolean }): string;
