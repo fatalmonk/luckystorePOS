@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { HeritageSection } from './HeritageSection';
 import { HomeTrustStrip } from './HomeTrustStrip';
-import { InstallPrompt } from './InstallPrompt';
 import { PopularBrandsSection } from './PopularBrandsSection';
 import { ProductGridSection } from './ProductGridSection';
 import type { Product } from '../lib/types';
@@ -37,23 +35,7 @@ export function DeferredHomeShelves({
   weeklyEditionActive,
   weeklyEditionUnavailable,
 }: DeferredHomeShelvesProps) {
-  const [ready, setReady] = useState(false);
   const dict = getDictionary(locale);
-
-  useEffect(() => {
-    const win = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    if (win.requestIdleCallback) {
-      const id = win.requestIdleCallback(() => setReady(true), { timeout: 1200 });
-      return () => win.cancelIdleCallback?.(id);
-    }
-    const timer = window.setTimeout(() => setReady(true), 250);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  if (!ready) return null;
 
   return (
     <>
@@ -95,7 +77,6 @@ export function DeferredHomeShelves({
       <PopularBrandsSection locale={locale} />
       <HeritageSection locale={locale} />
       <HomeTrustStrip locale={locale} />
-      <InstallPrompt locale={locale} />
     </>
   );
 }

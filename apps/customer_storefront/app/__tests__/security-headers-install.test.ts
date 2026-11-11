@@ -12,6 +12,11 @@ describe('outgoing security header install', () => {
         res.end('nope');
         return;
       }
+      if (req.url === '/profile') {
+        res.writeHead(200, { 'Cache-Control': 'public, max-age=3600', 'X-Frame-Options': 'DENY' });
+        res.end('profile');
+        return;
+      }
       res.end('ok');
     });
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -49,6 +54,25 @@ describe('outgoing security header install', () => {
       const authed = await fetch(`${base}/`, { headers: { cookie: 'sb-project-auth-token=session' } });
       expect(authed.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
       expect(authed.headers.get('cdn-cache-control')).toBe('private, no-store');
+
+      const profile = await new Promise<{ status: number; headers: Headers }>((resolve, reject) => {
+        const request = http.request({
+          hostname: '127.0.0.1',
+          port: address.port,
+          path: '/profile',
+          method: 'GET',
+        }, (response) => {
+          response.resume();
+          resolve({ status: response.statusCode || 0, headers: new Headers(Object.entries(response.headers).flatMap(([key, value]) => {
+            const values = Array.isArray(value) ? value : value ? [value] : [];
+            return values.map((item) => [key, item] as [string, string]);
+          })) });
+        });
+        request.on('error', reject);
+        request.end();
+      });
+      expect(profile.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+      expect(profile.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
 
       const failure = await read('/boom');
       expect(failure.status).toBe(500);

@@ -97,6 +97,8 @@ export function ThemeToggler({
         { clipPath: [fromClip, toClip] },
         { duration: 700, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' },
       );
+    }).catch(() => {
+      // A newer toggle can skip this transition. The theme is already applied.
     });
   }, [fromClip, onImmediateChange, resolved, setTheme, toClip]);
 

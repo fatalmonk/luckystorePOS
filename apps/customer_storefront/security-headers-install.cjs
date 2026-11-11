@@ -42,6 +42,11 @@ function applyOutgoingHeaders(res, statusCode) {
   if (statusCode >= 500) return;
 
   const pathname = pathnameOf(res);
+  if (String(res.getHeader('x-lucky-negotiated') || '') === 'markdown') {
+    res.setHeader('Cache-Control', PRIVATE_CACHE_CONTROL);
+    res.setHeader('CDN-Cache-Control', 'private, no-store');
+    return;
+  }
   const existingCache = String(res.getHeader('cache-control') || '');
   const existingCdn = String(res.getHeader('cdn-cache-control') || '');
   const authed = hasAuthCookie(res) || res.hasHeader('set-cookie');
@@ -78,6 +83,21 @@ function installSecurityHeaders() {
   ServerResponse.prototype.writeHead = function writeHeadWithSecurity(status, ...rest) {
     const code = typeof status === 'number' ? status : this.statusCode || 200;
     applyOutgoingHeaders(this, code);
+    const explicit = rest.length > 0 && rest[rest.length - 1] && typeof rest[rest.length - 1] === 'object' && !Array.isArray(rest[rest.length - 1])
+      ? rest[rest.length - 1]
+      : null;
+    if (explicit) {
+      for (const key of Object.keys(explicit)) {
+        const lower = key.toLowerCase();
+        if (
+          lower === 'cache-control'
+          || lower === 'cdn-cache-control'
+          || SECURITY_HEADERS.some((header) => header.key.toLowerCase() === lower)
+        ) {
+          delete explicit[key];
+        }
+      }
+    }
     return originalWriteHead.call(this, status, ...rest);
   };
 

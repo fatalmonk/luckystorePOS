@@ -415,14 +415,7 @@ function mdAuthPage(variant: 'login' | 'signup'): string {
   md += `## For AI Agents\n\n`;
   md += `Agents use the same account pages as customers. This host does not publish OAuth metadata or an agent registration API.\n\n`;
   md += `1. Read [/auth.md](${BASE_URL}/auth.md)\n`;
-  md += `2. Create an account at [/signup](${BASE_URL}/signup) or sign in at [/login](${BASE_URL}/login)\n\n`;
-
-  md += `### Supported Scopes\n\n`;
-  md += `- \`read:products\` — Browse products, categories, prices\n`;
-  md += `- \`read:orders\` — View order history\n`;
-  md += `- \`write:orders\` — Create orders, submit purchases\n`;
-  md += `- \`read:profile\` — Read user profile data\n`;
-  md += `- \`write:profile\` — Update user preferences\n`;
+  md += `2. Create an account at [/signup](${BASE_URL}/signup) or sign in at [/login](${BASE_URL}/login)\n`;
   return md;
 }
 

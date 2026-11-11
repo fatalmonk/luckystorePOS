@@ -11,6 +11,7 @@ import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage, WEEKLY_DEALS_LIMIT } from '../lib/deals';
 import { DeferredHomeShelvesGate } from './DeferredHomeShelvesGate';
+import { InstallPromptBootstrap } from './InstallPromptBootstrap';
 
 const HOME_SHELF_SIZE = 8;
 
@@ -84,6 +85,7 @@ export function HomeShell({
         </main>
         <Footer locale={locale} />
         <BottomNav locale={locale} />
+        <InstallPromptBootstrap locale={locale} />
       </>
     );
   }
@@ -159,6 +161,7 @@ export function HomeShell({
       </main>
       <Footer locale={locale} />
       <BottomNav locale={locale} />
+      <InstallPromptBootstrap locale={locale} />
     </>
   );
 }

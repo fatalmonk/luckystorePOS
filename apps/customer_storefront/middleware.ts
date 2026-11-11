@@ -415,7 +415,10 @@ export async function middleware(request: NextRequest) {
       rewriteResponse.headers.set(key, value);
     });
 
-    rewriteResponse.headers.set('Vary', 'Accept');
+    rewriteResponse.headers.set('Vary', 'Accept, User-Agent');
+    rewriteResponse.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+    rewriteResponse.headers.set('CDN-Cache-Control', 'private, no-store');
+    rewriteResponse.headers.set('x-lucky-negotiated', 'markdown');
     applySecurityHeaders(rewriteResponse.headers);
     return rewriteResponse;
   }

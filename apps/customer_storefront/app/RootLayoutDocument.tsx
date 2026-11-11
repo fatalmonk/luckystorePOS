@@ -445,7 +445,6 @@ export default function RootLayoutDocument({
             })();
           `}
         </Script>
-        <DeferredClientWidgets />
         <AuthProvider>
           <ThemeProvider>
             <CartProvider>

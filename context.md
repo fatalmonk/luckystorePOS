@@ -5,7 +5,7 @@
 - Storefront Lighthouse follow-up: public-page caching, security headers on every response, real 404s, image resizing, and a smaller first-paint stylesheet. PR is open; not merged.
 
 ## Decisions
-- 20261111-lighthouse: Public catalog HTML is ISR (120s) with `public, max-age=0, s-maxage=120`. Cart, checkout, login, profile, order, and wishlist stay `private, no-store`. Static files get a one-year immutable cache. Security headers are applied in Next config, middleware, the Node response hook, and LiteSpeed `.htaccess`.
+- 20261111-lighthouse: Public catalog HTML is ISR (120s) with `public, max-age=0, s-maxage=120`. Cart, checkout, login, profile, order, and wishlist stay `private, no-store`. Hashed `/_next/static` files get a one-year immutable cache. Unhashed public images cache for 30 days, and web manifests for one hour. Security headers are applied in Next config, middleware, the Node response hook, and LiteSpeed `.htaccess`.
 - 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
 - 20261111-fonts: Geist Mono is not loaded; prices use the system monospace stack. Noto Sans Bengali is a Bengali-only file and loads on `/bn` pages only.
 - 20261111-htaccess-escape: Apache header values escape backslashes before quotes so a quoted `.htaccess` value cannot break out.
