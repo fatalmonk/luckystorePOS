@@ -7270,10 +7270,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
     evidenceManifest: {
       MFR_PRODUCT_PAGE: {
         source: 'MANUFACTURER',
-        evidenceRef: 'Official Avonee product card: Large (L), 48 pieces, recommended weight range 9-14kg',
-        sourceTitle: 'Avonee Products - Large Pant Diaper',
-        sourceUrl: 'https://avonee.com/products',
-        skuScope: 'Avonee Large pant-style diaper, 48 pieces, 9-14kg',
+        evidenceRef: 'Official Avonee product range listing: Large (L) pant diaper, 48 pieces, 9-14kg',
+        sourceTitle: 'Avonee Products',
+        sourceUrl: 'https://www.avonee.com/products',
+        skuScope: 'Avonee product range listing (no product-specific page published)',
         verifiedAt: '2026-11-10',
       },
       CATALOG_RECORD: {

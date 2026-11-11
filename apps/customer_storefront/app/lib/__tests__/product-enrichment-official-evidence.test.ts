@@ -8,7 +8,7 @@ const expectedProducts = [
     exactName: 'Avonee Pant-Style Baby Diaper, Large, 48 Pieces (9-14kg)',
     brand: 'Avonee',
     quantity: '48 pieces',
-    sourceUrl: 'https://avonee.com/products',
+    sourceUrl: 'https://www.avonee.com/products',
   },
   {
     id: '4072b5b2',

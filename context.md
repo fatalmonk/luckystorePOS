@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261112-dano-enrichment: Updated 10 Dano registry records. Applied Arla's Delight dessert copy and per-100g nutrition tables to active 200g and 500g products. Omitted Delight 200g energy due to Arla's conflicting value; sugars/salt rows say `Not stated`. No third Delight pack was found. Corrected Pushti ingredients and URLs and added product cautions.
+- 20261112-product-enrichment: Updated 10 Dano records and clarified Avonee evidence as a manufacturer range listing, not exact-pack verification. Delight 200g omits conflicting energy; sugars/salt rows say `Not stated`. No third Delight pack was found. Corrected Pushti ingredients and URLs and added product cautions.
 
 ## Decisions
 - 20261111-official-enrichment-scope: Update 6 exact-pack Dano records, Avonee L 48, Bashundhara Gold tissue, and 2 BelleAme 240g cookies. Hold two other tissue records because their catalog category is incorrectly `Pest Control`; enrichment alone must not conceal catalog drift.
