@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- Storefront Lighthouse follow-up: public-page caching, security headers on every response, real 404s, image resizing, and a smaller first-paint stylesheet. PR is open; not merged.
+- Storefront Lighthouse follow-up is on PR #619. Chromium E2E and the other CI checks passed on `ba0f05e6`. Not merged.
 
 ## Decisions
 - 20261111-lighthouse: Public catalog HTML is ISR (120s) with `public, max-age=0, s-maxage=120`. Cart, checkout, login, profile, order, and wishlist stay `private, no-store`. Hashed `/_next/static` files get a one-year immutable cache. Unhashed public images cache for 30 days, and web manifests for one hour. Security headers are applied in Next config, middleware, the Node response hook, and LiteSpeed `.htaccess`.
@@ -20,6 +20,7 @@
 - 20261108-committed-db-secret: `scripts/db/backup_db.mjs` still contains a connection string; rotate separately.
 
 ## Resolved
+- 20261111-e2e: Chromium E2E passed after fixing nested standalone static files, report-only CSP noise, lazy-image failure detection, and the duplicate image srcset.
 - 20261111-soft-404: unknown product, brand, and blog slugs return HTTP 404 from middleware, including `/bn` product and brand URLs.
 - 20261109-security-headers-config: frame, referrer, and nosniff headers now also cover static files and non-HTML responses.
 
