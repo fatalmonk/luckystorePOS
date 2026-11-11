@@ -2,10 +2,11 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261111-official-enrichment: PR #618 (`fix/product-enrichment-official-evidence`) replaces unsupported generated claims for 10 existing products with exact official manufacturer evidence and regression coverage; no merge or deployment authorized.
+- 20261112-dano-enrichment: Updated 10 Dano registry records. Applied Arla's Delight dessert copy to active 200g and 500g products and added per-100g nutrition tables. The 200g Arla energy value conflicts with the 500g page, so both are transcribed verbatim and flagged; no third Delight pack was found. Corrected Pushti ingredients and URLs and added product cautions.
 
 ## Decisions
 - 20261111-official-enrichment-scope: Update 6 exact-pack Dano records, Avonee L 48, Bashundhara Gold tissue, and 2 BelleAme 240g cookies. Hold two other tissue records because their catalog category is incorrectly `Pest Control`; enrichment alone must not conceal catalog drift.
+- 20261112-product-evidence: Draft folder covers 100 IDs / 127 URLs with 13 MATCHED, 37 PARTIAL, 44 UNAVAILABLE, 5 CONFLICT, and 1 REDIRECT_ALIAS; 33 official sources and 6 exact-pack nutrition records. Bashundhara Restaurant Napkin was matched from exact-name manufacturer evidence; 250 Poly hand towel and 100-piece facial tissue candidates remain partial pending pack confirmation. Structural checks were not rerun. MATCHED evidence does not prove current stock or publication readiness. Daily Pushti sources list ingredients but no percentages.
 - 20261110-dove-storefront-release: PR #610 merged; exact English and Bengali duplicate-product redirects are implemented, the duplicate is excluded from emergency browse fallback, stale-cart cleanup is preserved, and focused tests plus CI passed.
 - 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
 - 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. It merged into `main` at `53ec205b73d5cd57fd82c05c59e4a59218e1ea50`; production deployment and image bytes remain unverified.
@@ -45,4 +46,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Await review/checks for PR #618. No catalog mutation, image sync, merge, or production deployment in this task.
+- Add Daily Pushti 1kg and Power 50g only if matching catalog UUIDs are confirmed; directly verify 1kg nutrition first. No live catalog updates, image sync, merge, or deployment.

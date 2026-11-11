@@ -37,6 +37,15 @@ const expectedProducts = [
     brand: 'Dano',
     quantity: '100g',
     sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/daily-pushti-100g/',
+    verifiedAt: '2026-11-12',
+  },
+  {
+    id: 'b9f7ef06',
+    exactName: 'Dano Daily Pushti 500g',
+    brand: 'Dano',
+    quantity: '500g',
+    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/daily-pushti-500g/',
+    verifiedAt: '2026-11-12',
   },
   {
     id: 'b4e513b8',
@@ -44,13 +53,23 @@ const expectedProducts = [
     brand: 'Dano',
     quantity: '200g',
     sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/daily-pushti-200g/',
+    verifiedAt: '2026-11-12',
   },
   {
     id: 'bc8cac68',
     exactName: 'Dano Daily Pushti 50g',
     brand: 'Dano',
     quantity: '50g',
-    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano-daily-pushti-50g-389519/',
+    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/daily-pushti-50g/',
+    verifiedAt: '2026-11-12',
+  },
+  {
+    id: 'a79ae214',
+    exactName: 'Dano Delight Full Cream Milk Powder 200g',
+    brand: 'Dano',
+    quantity: '200g',
+    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/delight-full-cream-milk-powder-200g/',
+    verifiedAt: '2026-11-12',
   },
   {
     id: '31d78d91',
@@ -58,6 +77,7 @@ const expectedProducts = [
     brand: 'Dano',
     quantity: '500g',
     sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/delight-full-cream-milk-powder-500g/',
+    verifiedAt: '2026-11-12',
   },
   {
     id: 'd5ea59ff',
@@ -65,13 +85,15 @@ const expectedProducts = [
     brand: 'Dano',
     quantity: '200g',
     sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/power-200g/',
+    verifiedAt: '2026-11-12',
   },
   {
     id: '8c09ecf8',
     exactName: 'Dano Power Full Cream Milk Powder 500g',
     brand: 'Dano',
     quantity: '500g',
-    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano-power-500g-389473/',
+    sourceUrl: 'https://www.arlafoods.com.bd/brands/dano/power-500g/',
+    verifiedAt: '2026-11-12',
   },
 ] as const;
 
@@ -87,7 +109,7 @@ describe('official product evidence enrichment batch', () => {
     expect(enrichment.evidenceManifest.MFR_PRODUCT_PAGE).toMatchObject({
       source: 'MANUFACTURER',
       sourceUrl: expected.sourceUrl,
-      verifiedAt: '2026-11-10',
+      verifiedAt: 'verifiedAt' in expected ? expected.verifiedAt : '2026-11-10',
     });
     expect(enrichment.evidenceManifest).not.toHaveProperty('PACK_FRONT');
     expect(enrichment.evidenceManifest).not.toHaveProperty('PACK_DESC');
@@ -119,24 +141,26 @@ describe('official product evidence enrichment batch', () => {
       '8c09ecf8': ['2070 kJ / 495 kcal', 'fat 26g', 'saturated fat 17g', 'carbohydrate 41g', 'protein 24g'],
       b4e513b8: ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
       bc8cac68: ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
+      b9f7ef06: ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
       '94614080': ['2090 kJ / 500 kcal', 'fat 28g', 'saturated fat 14g', 'carbohydrate 41g', 'sugars 5g', 'protein 22g'],
       '31d78d91': ['2120 kJ / 510 kcal', 'fat 28.4g', 'saturated fat 18.8g', 'carbohydrate 39g', 'protein 24g'],
     } as const;
 
     for (const [id, facts] of Object.entries(expectedNutrition)) {
       const nutrition = PRODUCT_ENRICHMENTS[id].nutrition;
-      expect(nutrition?.basis).toBe('Per 100g, as published by Arla Foods Bangladesh');
+      expect(nutrition?.basis).toBe('Per 100 g');
+      expect(nutrition?.sourceLabel).toBe('Source: Arla Foods Bangladesh');
       for (const fact of facts) expect(nutrition?.text).toContain(fact);
       expect(nutrition?.text).toContain('not supplied');
-      expect(nutrition?.text).not.toMatch(/(?:sugars|salt)\s+0g/i);
+      expect(nutrition?.text).not.toMatch(/(?:sugars|salt)\W*0(?:\.0+)?\s*g/i);
       expect(nutrition?.evidenceRefs).toEqual(['MFR_PRODUCT_PAGE']);
     }
   });
 
-  it.each(['94614080', 'b4e513b8', 'bc8cac68'])('preserves the published Daily Pushti ingredient percentages for %s', (id) => {
+  it.each(['94614080', 'b4e513b8', 'bc8cac68', 'b9f7ef06'])('preserves Arla’s published Daily Pushti ingredients for %s', (id) => {
     expect(PRODUCT_ENRICHMENTS[id].specifications).toContainEqual({
       label: 'Ingredients',
-      value: 'Skimmed milk (33%), buttermilk (33%), vegetable palm oil (25%), sucrose (5%), calcium carbonate, soy lecithin, vitamin A and D3',
+      value: 'Milk [Skimmed milk, Butter Milk], Vegetable oil [Palm Oil], Sucrose, Calcium Carbonate, Soy lecithin, Vitamin A and D3',
       evidenceRefs: ['MFR_PRODUCT_PAGE'],
     });
   });
