@@ -179,10 +179,19 @@ export function ProductImage({
 
   useEffect(() => {
     const image = imageRef.current;
-    if (image?.complete) {
-      const loaded = image.naturalWidth > 0;
+    if (!image) return;
+
+    // A lazy image reports complete with naturalWidth 0 until the browser
+    // selects a source. currentSrc stays empty in that state. Treating it as
+    // a failure unmounts the image, so it never loads once it scrolls into view.
+    if (image.complete && image.naturalWidth > 0) {
       setImageLoaded(true);
-      setImageError(!loaded);
+      setImageError(false);
+      return;
+    }
+    if (image.complete && image.naturalWidth === 0 && image.currentSrc) {
+      setImageLoaded(true);
+      setImageError(true);
       return;
     }
 
