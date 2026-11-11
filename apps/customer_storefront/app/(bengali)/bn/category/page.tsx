@@ -11,7 +11,7 @@ import { BENGALI_CATEGORY_NAMES, CATALOG_SNAPSHOT_PRODUCTS } from '../../../lib/
 import { loadCategoryCatalogProducts } from '../../../lib/categoryRouteData';
 import { resolveBengaliOverlays } from '../../../lib/products/bengaliOverlay';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export async function generateMetadata({
   searchParams,

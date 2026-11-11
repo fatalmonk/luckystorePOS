@@ -12,7 +12,7 @@ This document describes how agents can register, authenticate, and obtain creden
 
 ## Quick Start for Agents
 
-1. **Discover** this service's capabilities via \`/.well-known/oauth-authorization-server\`
+1. Read this document for agent authentication. This host does not publish OAuth metadata.
 2. **Register** at the \`register_uri\` endpoint shown in the agent_auth block
 3. **Assert identity** (ID-JAG, verified email, or anonymous) to receive a credential
 4. **Exchange** credentials for access tokens
@@ -23,32 +23,7 @@ This document describes how agents can register, authenticate, and obtain creden
 
 ## Discovery
 
-### OAuth Protected Resource Metadata
-
-\`\`\`
-GET /.well-known/oauth-protected-resource
-\`\`\`
-
-Returns:
-- \`resource\`: https://www.luckystore1947.com
-- \`authorization_servers\`: https://hvmyxyccfnkrbxqbhlnm.supabase.co
-- \`scopes_supported\`: read:products, read:orders, write:orders, read:profile, write:profile
-- \`bearer_methods_supported\`: header
-
-### OAuth Authorization Server Metadata
-
-\`\`\`
-GET /.well-known/oauth-authorization-server
-\`\`\`
-
-Returns full OAuth 2.1 metadata plus an \`agent_auth\` block with:
-- \`skill\`: This document
-- \`register_uri\`: Agent registration endpoint
-- \`identity_types_supported\`: identity_assertion, anonymous
-- \`identity_assertion.assertion_types_supported\`: urn:ietf:params:oauth:token-type:id-jag, verified_email
-- \`claim_uri\`: Endpoint to claim identity details
-- \`revocation_uri\`: Endpoint to revoke credentials
-- \`events_supported\`: revocation events
+OAuth authorization-server and protected-resource metadata are not published on this host. Requests to \`/.well-known/oauth-authorization-server\` and \`/.well-known/oauth-protected-resource\` return HTTP 404 so clients do not treat the storefront as a token server. Agent instructions are this document. The agent service publishes protected-resource metadata at \`https://agent.luckystore1947.com/.well-known/oauth-protected-resource\`.
 
 ---
 

@@ -9,6 +9,8 @@ import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../components/seo/JsonLd';
 import { POPULAR_BRANDS, type BrandDefinition } from '../../lib/brandsData';
 
+export const revalidate = 120;
+
 export const metadata: Metadata = {
   title: { absolute: 'Grocery Brands in Chattogram | Lucky Store' },
   description: 'Shop genuine household grocery brands: Radhuni, Aarong, Rupchanda, Teer, Fresh, Ispahani, Polar, Nestlé & more from Lucky Store in Chawkbazar, Chattogram.',

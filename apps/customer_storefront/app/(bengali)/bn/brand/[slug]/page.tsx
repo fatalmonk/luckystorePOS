@@ -9,7 +9,7 @@ import { supabase } from '../../../../lib/supabase';
 import { searchAllPages } from '../../../../lib/products/searchAllPages';
 import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,

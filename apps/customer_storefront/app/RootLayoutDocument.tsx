@@ -1,17 +1,15 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Bricolage_Grotesque, Geist_Mono, Manrope, Noto_Sans_Bengali } from 'next/font/google';
+import { Bricolage_Grotesque, Manrope } from 'next/font/google';
 import './globals.css';
 import { PullToRefresh } from './components/PullToRefresh';
+import { DeferredClientWidgets } from './components/DeferredClientWidgets';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
-import { WebMCPInit } from './components/WebMCPInit';
-import { MetaPixel } from './components/MetaPixel';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
-import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { getDeliveryShippingServiceSchema, getMerchantReturnPolicies } from './lib/deliveryData';
@@ -26,20 +24,6 @@ const bricolage = Bricolage_Grotesque({
 const manrope = Manrope({
   subsets: ['latin'],
   variable: '--font-manrope',
-  display: 'swap',
-  preload: false,
-});
-
-const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-  display: 'swap',
-  preload: false,
-});
-
-const notoBengali = Noto_Sans_Bengali({
-  subsets: ['bengali'],
-  variable: '--font-bengali',
   display: 'swap',
   preload: false,
 });
@@ -96,7 +80,7 @@ export const metadata: Metadata = {
   classification: 'Business',
   referrer: 'origin-when-cross-origin',
   generator: 'Next.js',
-  manifest: '/site.webmanifest',
+  manifest: '/manifest.webmanifest',
   twitter: {
     card: 'summary_large_image',
     title: 'Lucky Store | Online Grocery & Daily Bazaar in Chattogram',
@@ -137,14 +121,19 @@ export const viewport: Viewport = {
 export default function RootLayoutDocument({
   children,
   lang,
+  extraClassName = '',
 }: Readonly<{
   children: React.ReactNode;
   lang: 'en' | 'bn';
+  extraClassName?: string;
 }>) {
   return (
-    <html lang={lang} suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${geistMono.variable} ${notoBengali.variable}`}>
+    <html lang={lang} suppressHydrationWarning data-scroll-behavior="smooth" className={`${bricolage.variable} ${manrope.variable} ${extraClassName}`.trim()}>
       <head>
         <link rel="dns-prefetch" href="https://images.luckystore1947.com" />
+        {extraClassName.includes('font-bengali') ? (
+          <link rel="preload" href="/fonts/noto-sans-bengali.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        ) : null}
         <meta name="theme-color" content="#0B0B0D" />
         <meta name="facebook-domain-verification" content="9jw1hn1oghfyjbs41ymolt13tkd7hi" />
         <script
@@ -303,9 +292,6 @@ export default function RootLayoutDocument({
             }
           `}
         </Script>
-        <Suspense fallback={null}>
-          <MetaPixel />
-        </Suspense>
         <div
           id="lucky-consent-banner"
           role="region"
@@ -459,7 +445,7 @@ export default function RootLayoutDocument({
             })();
           `}
         </Script>
-        <WebMCPInit />
+        <DeferredClientWidgets />
         <AuthProvider>
           <ThemeProvider>
             <CartProvider>
@@ -467,10 +453,9 @@ export default function RootLayoutDocument({
                 <CartSheetProvider>
                   <PullToRefresh lang={lang} />
                   <div className="app-container">
-
                     {children}
                   </div>
-                  <WhatsAppFloat />
+                  <DeferredClientWidgets />
                 </CartSheetProvider>
               </ToastProvider>
             </CartProvider>

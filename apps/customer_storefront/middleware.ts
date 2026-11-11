@@ -4,21 +4,58 @@ import { getCanonicalCategorySlug, isCategoryGroup, normalizeCategorySlug } from
 import { isBareUuid, normalizeProductSlug, toProductSlug, uuidPrefixRange } from './app/lib/products/slugify';
 import { BUYING_GUIDES } from './app/lib/buying-guides/registry';
 import { isPublicGuideSlug } from './app/lib/buying-guides/publication';
+import { getBrandBySlug } from './app/lib/brandsData';
+import { resetBlogSlugCacheForTest, resolveBlogSlug } from './app/lib/blogSlugCache';
+import {
+  applySecurityHeaders,
+  isPrivateStorefrontPath,
+  isPublicCatalogPath,
+  PRIVATE_CACHE_CONTROL,
+  PUBLIC_CATALOG_CACHE_CONTROL,
+} from './security-headers.cjs';
 
 type CanonicalProduct = { id: string; name: string };
+type ProductLookup =
+  | { status: 'found'; product: CanonicalProduct }
+  | { status: 'missing' }
+  | { status: 'unknown' };
 
 function notFoundResponse() {
-  return new NextResponse('Not Found', {
+  const response = new NextResponse('Not Found', {
     status: 404,
-    headers: { 'X-Robots-Tag': 'noindex' },
+    headers: {
+      'X-Robots-Tag': 'noindex',
+      'Cache-Control': 'public, max-age=300',
+    },
   });
+  applySecurityHeaders(response.headers);
+  return response;
 }
 
-async function resolveProductForCanonicalRedirect(identifier: string): Promise<CanonicalProduct | null> {
+function redirectResponse(url: URL | string, status: 301 | 308) {
+  const response = NextResponse.redirect(url, status);
+  applySecurityHeaders(response.headers);
+  return response;
+}
+
+function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some((cookie) => cookie.name.startsWith('sb-') && cookie.name.includes('auth-token'));
+}
+
+async function updateSessionIfConfigured(request: NextRequest) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next();
+  }
+  return updateSession(request);
+}
+
+export { resetBlogSlugCacheForTest as _resetBlogSlugCacheForTest };
+
+async function resolveProductForCanonicalRedirect(identifier: string): Promise<ProductLookup> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) return null;
+  if (!supabaseUrl || !supabaseAnonKey) return { status: 'unknown' };
 
   const restHeaders = {
     apikey: supabaseAnonKey,
@@ -40,7 +77,7 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
     } else {
       // uuid columns reject LIKE; bound the first UUID group with gte/lt instead.
       const range = uuidPrefixRange(identifier);
-      if (!range) return null;
+      if (!range) return { status: 'unknown' };
       itemUrl.searchParams.append('id', `gte.${range.gte}`);
       if (range.lt) itemUrl.searchParams.append('id', `lt.${range.lt}`);
       itemUrl.searchParams.set('limit', '2');
@@ -52,10 +89,10 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
       signal: controller.signal,
     });
 
-    if (!itemResponse.ok) return null;
+    if (!itemResponse.ok) return { status: 'unknown' };
 
     const rows = await itemResponse.json();
-    if (!Array.isArray(rows)) return null;
+    if (!Array.isArray(rows)) return { status: 'unknown' };
 
     const prefix = identifier.replace(/[^a-fA-F0-9]/g, '').toLowerCase();
     const matches = isBareUuid(identifier)
@@ -66,16 +103,18 @@ async function resolveProductForCanonicalRedirect(identifier: string): Promise<C
             row.id.replace(/-/g, '').toLowerCase().startsWith(prefix),
         );
 
-    if (matches.length !== 1) return null;
-
-    const id = matches[0]?.id;
-    const name = matches[0]?.name;
-    return typeof id === 'string' && isBareUuid(id) && typeof name === 'string' && name.trim()
-      ? { id, name: name.trim() }
-      : null;
+    if (matches.length === 1) {
+      const id = matches[0]?.id;
+      const name = matches[0]?.name;
+      if (typeof id === 'string' && isBareUuid(id) && typeof name === 'string' && name.trim()) {
+        return { status: 'found', product: { id, name: name.trim() } };
+      }
+      return { status: 'unknown' };
+    }
+    return rows.length === 0 ? { status: 'missing' } : { status: 'unknown' };
   } catch (error) {
     console.error('Failed to resolve product canonical redirect', { identifier, error });
-    return null;
+    return { status: 'unknown' };
   } finally {
     clearTimeout(timeout);
   }
@@ -188,7 +227,7 @@ export async function middleware(request: NextRequest) {
       : `/blog${pathname === '/' ? '' : pathname}`;
     const targetUrl = new URL(targetPath, 'https://www.luckystore1947.com');
     targetUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(targetUrl, 301);
+    return redirectResponse(targetUrl, 301);
   }
 
   // Reject unpublished/unknown guide routes before Next can stream a soft 404.
@@ -217,12 +256,16 @@ export async function middleware(request: NextRequest) {
     const isLegacyPrefixSlug = /^--+[0-9a-f]{8}$/i.test(decodedProductSlug);
     const isUuidAlias = isBareUuid(decodedProductSlug);
     const namedPrefix = normalizeProductSlug(rawProductSlug).match(/^.+--([0-9a-f]{8})$/i)?.[1];
+    if (!isUuidAlias && !isLegacyPrefixSlug && !namedPrefix) {
+      return notFoundResponse();
+    }
     if (isUuidAlias || isLegacyPrefixSlug || namedPrefix) {
       const identifier = isUuidAlias
         ? decodedProductSlug.toLowerCase()
         : (namedPrefix ?? decodedProductSlug.replace(/^-+/, '')).toLowerCase();
-      const product = await resolveProductForCanonicalRedirect(identifier);
-      if (product) {
+      const lookup = await resolveProductForCanonicalRedirect(identifier);
+      if (lookup.status === 'found') {
+        const product = lookup.product;
         const canonicalPath = `/${localePrefix}product/${toProductSlug(product.name, product.id)}`;
         const url = request.nextUrl.clone();
         url.pathname = canonicalPath;
@@ -232,15 +275,40 @@ export async function middleware(request: NextRequest) {
           url.port = '';
         }
         if (request.nextUrl.pathname !== canonicalPath || url.origin !== request.nextUrl.origin) {
-          return NextResponse.redirect(url, 308);
+          const redirect = NextResponse.redirect(url, 308);
+          applySecurityHeaders(redirect.headers);
+          return redirect;
         }
-      } else if (isUuidAlias || isLegacyPrefixSlug) {
+      } else if (lookup.status === 'missing' || isUuidAlias || isLegacyPrefixSlug) {
         return notFoundResponse();
       }
-      // The resolver conflates absence, ambiguity and upstream errors. Named routes
-      // retain page-level identity validation so a transient failure cannot 404 a
-      // canonical product. UUID/empty-name aliases retain their existing 404 behavior.
+      // Named routes stay available when the lookup is ambiguous or the upstream
+      // request fails, so a transient error cannot 404 a canonical product.
     }
+  }
+
+  const brandPathMatch = request.nextUrl.pathname.match(/^\/(bn\/)?brand\/([^/]+)\/?$/);
+  if (brandPathMatch) {
+    let brandSlug: string;
+    try {
+      brandSlug = decodeURIComponent(brandPathMatch[2]);
+    } catch {
+      return notFoundResponse();
+    }
+    if (!getBrandBySlug(brandSlug)) return notFoundResponse();
+  }
+
+  const blogPathMatch = request.nextUrl.pathname.match(/^\/blog\/([^/]+)\/?$/);
+  if (blogPathMatch) {
+    let blogSlug: string;
+    try {
+      blogSlug = decodeURIComponent(blogPathMatch[1]);
+    } catch {
+      return notFoundResponse();
+    }
+    if (/[\/\\\u0000-\u001f\u007f]/.test(blogSlug)) return notFoundResponse();
+    const blog = await resolveBlogSlug(blogSlug);
+    if (blog === 'missing') return notFoundResponse();
   }
 
   // Pre-session canonical redirect: consolidate delivery hub aliases to single authoritative hub
@@ -251,7 +319,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = new URL('/delivery', request.url);
     url.search = request.nextUrl.search;
-    return NextResponse.redirect(url, 308);
+    return redirectResponse(url, 308);
   }
 
   // Pre-session canonical redirect: consolidate /category?cat=<slug> to /category/<slug>
@@ -263,7 +331,7 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = canonicalCat ? `/category/${canonicalCat}` : '/category';
       url.searchParams.delete('cat');
-      return NextResponse.redirect(url, 308);
+      return redirectResponse(url, 308);
     }
   }
 
@@ -288,11 +356,25 @@ export async function middleware(request: NextRequest) {
     if (rawSlug !== canonical) {
       const url = request.nextUrl.clone();
       url.pathname = `/${localePrefix}category/${canonical}`;
-      return NextResponse.redirect(url, 308);
+      return redirectResponse(url, 308);
     }
   }
 
-  const supabaseResponse = await updateSession(request);
+  const pathname = request.nextUrl.pathname;
+  const catalog = isPublicCatalogPath(pathname);
+  const personalized = isPrivateStorefrontPath(pathname);
+  const authed = hasSupabaseAuthCookie(request);
+  const supabaseResponse = personalized || authed || !catalog
+    ? await updateSessionIfConfigured(request)
+    : NextResponse.next();
+  applySecurityHeaders(supabaseResponse.headers);
+  if (personalized || authed) {
+    supabaseResponse.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+    supabaseResponse.headers.set('CDN-Cache-Control', 'private, no-store');
+  } else if (catalog) {
+    supabaseResponse.headers.set('Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
+    supabaseResponse.headers.set('CDN-Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
+  }
 
   const accept = request.headers.get('accept') || '';
   const userAgent = request.headers.get('user-agent') || '';
@@ -334,6 +416,7 @@ export async function middleware(request: NextRequest) {
     });
 
     rewriteResponse.headers.set('Vary', 'Accept');
+    applySecurityHeaders(rewriteResponse.headers);
     return rewriteResponse;
   }
 
@@ -343,6 +426,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|api|robots\\.txt|llms\\.txt|llms-full\\.txt|.*\\.txt$|sitemap|sitemap\\.xml|site\\.webmanifest|auth\\.md|.*\\.md$|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
+    '/((?!_next/static|_next/image|api|robots\\.txt|llms\\.txt|llms-full\\.txt|.*\\.txt$|sitemap|sitemap\\.xml|.*\\.webmanifest$|auth\\.md|.*\\.md$|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|\\.well-known).*)',
   ],
 };

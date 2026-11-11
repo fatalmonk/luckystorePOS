@@ -9,6 +9,8 @@ import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../../components/seo/JsonLd';
 import { POPULAR_BRANDS, type BrandDefinition } from '../../../lib/brandsData';
 
+export const revalidate = 120;
+
 export const metadata: Metadata = {
   title: { absolute: 'জনপ্রিয় ব্র্যান্ডসমূহ চট্টগ্রাম | লাকি স্টোর' },
   description: 'আসল রাঁধুনী, আড়ং, রূপচাঁদা, তীর, ফ্রেশ, ইস্পাহানি, পোলার ও নেসলে পণ্য কিনুন চকবাজার লাকি স্টোরে। ডোরস্টেপ চেকিং ও ক্যাশ অন ডেলিভারি।',

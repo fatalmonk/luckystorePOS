@@ -191,7 +191,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       const response = await pending;
       expect(response.status).toBe(expectedStatus);
       expect(response.headers.get('location')).toBeNull();
-      expect(mockUpdateSession).toHaveBeenCalledTimes(expectedStatus === 200 ? 1 : 0);
+      expect(mockUpdateSession).not.toHaveBeenCalled();
       expect(vi.getTimerCount()).toBe(0);
     });
 
@@ -211,20 +211,68 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(lookup.searchParams.get('limit')).toBe('2');
     });
 
-    it('passes the current slug through without a redirect loop', async () => {
+    it('passes the current slug through without a redirect loop or anonymous session refresh', async () => {
       const { middleware } = await import('../../../middleware');
       const response = await middleware(new NextRequest('https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8'));
       expect(response.status).toBe(200);
       expect(response.headers.get('location')).toBeNull();
-      expect(mockUpdateSession).toHaveBeenCalledOnce();
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=120, stale-while-revalidate=600');
+      expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+      expect(response.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
+      expect(response.headers.get('content-security-policy-report-only')).toContain("default-src 'self'");
+      expect(response.headers.get('permissions-policy')).toContain('camera=()');
+      expect(response.headers.get('strict-transport-security')).toContain('max-age=31536000');
     });
 
-    it.each([[[]], [[mockProduct, { ...mockProduct, id: '029b62d8-0000-0000-0000-000000000000' }]], [[{ id: '029b62d8-invalid', name: 'Bad ID' }]]])('never guesses identity from missing, ambiguous or malformed rows: %j', async (...rows) => {
-      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(rows[0]), { status: 200 }));
+    it('refreshes a signed-in catalog session and keeps that response private', async () => {
+      const { middleware } = await import('../../../middleware');
+      const request = new NextRequest('https://www.luckystore1947.com/product/radhuni-holud-gura-100gm--029b62d8');
+      request.cookies.set('sb-project-auth-token', 'session');
+      const response = await middleware(request);
+      expect(response.status).toBe(200);
+      expect(mockUpdateSession).toHaveBeenCalledOnce();
+      expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+    });
+
+    it('keeps cart responses private even for anonymous visitors', async () => {
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest('https://www.luckystore1947.com/bn/cart'));
+      expect(mockUpdateSession).toHaveBeenCalledOnce();
+      expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+      expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+    });
+
+    it('returns a real 404 for product slugs that cannot identify a catalog item', async () => {
+      const { middleware } = await import('../../../middleware');
+      for (const path of ['/product/fake-xyz', '/bn/product/fake-xyz', '/product/old--zzzzzzzz']) {
+        const response = await middleware(new NextRequest(`https://www.luckystore1947.com${path}`));
+        expect(response.status, path).toBe(404);
+        expect(response.headers.get('x-robots-tag')).toBe('noindex');
+        expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+        expect(response.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
+      }
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('returns a real 404 when a canonical product prefix is conclusively absent', async () => {
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest('https://www.luckystore1947.com/bn/product/missing-item--aaaaaaaa'));
+      expect(response.status).toBe(404);
+      expect(mockUpdateSession).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      [[mockProduct, { ...mockProduct, id: '029b62d8-0000-0000-0000-000000000000' }]],
+      [[{ id: '029b62d8-invalid', name: 'Bad ID' }]],
+    ])('never guesses identity from ambiguous or malformed rows: %j', async (rows) => {
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(rows), { status: 200 }));
       const { middleware } = await import('../../../middleware');
       const response = await middleware(new NextRequest('https://www.luckystore1947.com/product/old-name--029b62d8'));
+      expect(response.status).not.toBe(404);
       expect(response.headers.get('location')).toBeNull();
-      expect(mockUpdateSession).toHaveBeenCalledOnce();
+      expect(mockUpdateSession).not.toHaveBeenCalled();
     });
 
     it('passes named routes through when lookup fails but preserves alias 404 semantics', async () => {
@@ -249,11 +297,37 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(fetch).not.toHaveBeenCalled();
     });
 
-    it.each(['old--029b62d', 'old--029b62d80', 'old--zzzzzzzz'])('leaves invalid suffix %s to page validation', async (slug) => {
+    it.each(['old--029b62d', 'old--029b62d80', 'old--zzzzzzzz'])('returns 404 for invalid product suffix %s before lookup', async (slug) => {
       const { middleware } = await import('../../../middleware');
       const response = await middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`));
+      expect(response.status).toBe(404);
       expect(response.headers.get('location')).toBeNull();
       expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('returns 404 for unknown brand slugs in both locales', async () => {
+      const { middleware } = await import('../../../middleware');
+      for (const path of ['/brand/fake-xyz', '/bn/brand/fake-xyz']) {
+        const response = await middleware(new NextRequest(`https://www.luckystore1947.com${path}`));
+        expect(response.status, path).toBe(404);
+        expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+        expect(response.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
+      }
+      expect((await middleware(new NextRequest('https://www.luckystore1947.com/brand/radhuni'))).status).toBe(200);
+    });
+
+    it('returns 404 when the blog index confirms a slug is absent', async () => {
+      vi.stubEnv('NOTFAIR_SEO_API_KEY', 'test-key');
+      vi.stubEnv('NOTFAIR_SEO_API_URL', 'https://notfair.example/content');
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ posts: [{ slug: 'real-post' }] }), { status: 200 }));
+      const { middleware, _resetBlogSlugCacheForTest } = await import('../../../middleware');
+      _resetBlogSlugCacheForTest();
+      const missing = await middleware(new NextRequest('https://www.luckystore1947.com/blog/fake-xyz'));
+      expect(missing.status).toBe(404);
+      expect(missing.headers.get('x-content-type-options')).toBe('nosniff');
+      const found = await middleware(new NextRequest('https://www.luckystore1947.com/blog/real-post'));
+      expect(found.status).toBe(200);
+      expect(found.headers.get('cache-control')).toContain('s-maxage=120');
     });
 
     it.each(['bad%ZZ--029b62d8', 'bad%2Fname--029b62d8'])('rejects malformed path encoding %s before lookup', async (slug) => {
@@ -812,7 +886,8 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         );
 
         expect(res.status).not.toBe(404);
-        expect(mockUpdateSession).toHaveBeenCalled();
+        expect(mockUpdateSession).not.toHaveBeenCalled();
+        expect(res.headers.get('x-frame-options')).toBe('SAMEORIGIN');
       } finally {
         fetchSpy.mockRestore();
         if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;

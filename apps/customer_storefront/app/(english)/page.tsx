@@ -3,7 +3,7 @@ import { HomeShell } from '../components/HomeShell';
 import { getHomePageData } from '../lib/products/getHomePageData';
 import { toProductSlug } from '../lib/products/slugify';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   alternates: {

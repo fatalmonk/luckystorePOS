@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { createStandaloneRuntimeManifest } from './standalone-runtime-manifest.mjs';
 
 export function writeBuildProvenance(standaloneDir, buildSha) {
@@ -36,7 +37,13 @@ export function packageStandalone({ rootDir = process.cwd(), outputZip = 'storef
   fs.mkdirSync(rootDestPublic, { recursive: true });
   fs.cpSync(publicDir, rootDestPublic, { recursive: true });
 
-  fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./apps/customer_storefront/server.js');\n`);
+  fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./security-headers-install.cjs');\nrequire('./apps/customer_storefront/server.js');\n`);
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'security-headers.cjs'));
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'security-headers-install.cjs'));
+  const { renderHtaccess } = createRequire(import.meta.url)(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'));
+  const staticHtaccess = renderHtaccess({ immutableDirectory: true });
+  fs.writeFileSync(path.join(destStatic, '.htaccess'), staticHtaccess);
+  fs.writeFileSync(path.join(rootDestStatic, '.htaccess'), staticHtaccess);
   const appPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'apps/customer_storefront/package.json'), 'utf8'));
   const rootPkg = createStandaloneRuntimeManifest(appPkg);
   fs.writeFileSync(path.join(standaloneDir, 'package.json'), JSON.stringify(rootPkg, null, 2));

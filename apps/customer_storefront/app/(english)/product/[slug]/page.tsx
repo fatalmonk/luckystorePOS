@@ -19,6 +19,8 @@ import {
 } from '../../../lib/products/productMetadata';
 import ProductClient from './ProductClient';
 
+export const revalidate = 120;
+
 const hasPublishedBengaliTranslation = React.cache(async (itemId: string): Promise<boolean> => {
   if (!isBareUuid(itemId)) return false;
 

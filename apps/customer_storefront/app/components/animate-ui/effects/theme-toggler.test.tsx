@@ -39,6 +39,16 @@ describe('ThemeToggler', () => {
     vi.restoreAllMocks();
   });
 
+  it('does not inject a style tag for each toggle', () => {
+    const { container } = render(
+      <ThemeProvider>
+        <ThemeToggler>{() => <button type="button">One</button>}</ThemeToggler>
+        <ThemeToggler>{() => <button type="button">Two</button>}</ThemeToggler>
+      </ThemeProvider>,
+    );
+    expect(container.querySelectorAll('style')).toHaveLength(0);
+  });
+
   it('renders with initial light theme and toggles to dark', async () => {
     render(<TestConsumer />);
 

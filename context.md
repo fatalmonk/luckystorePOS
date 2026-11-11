@@ -2,45 +2,21 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261110-pr609-post-merge-reconciliation: PR #609 merged as `9c19c5f5b57a4d24526696390d9cd33158c1321f`; at the 2026-11-10 bounded smoke, production `/api/health` reported that SHA. Published/unpublished Bengali indexing, sampled canonical/hreflang/head placement, and security-header checks passed. Remaining PerfBee groups require fresh crawl evidence.
+- Storefront Lighthouse follow-up: public-page caching, security headers on every response, real 404s, image resizing, and a smaller first-paint stylesheet. PR is open; not merged.
 
 ## Decisions
-- 20261110-dove-storefront-release: PR #610 merged; exact English and Bengali duplicate-product redirects are implemented, the duplicate is excluded from emergency browse fallback, stale-cart cleanup is preserved, and focused tests plus CI passed.
-- 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
-- 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. It merged into `main` at `53ec205b73d5cd57fd82c05c59e4a59218e1ea50`; production deployment and image bytes remain unverified.
-- 20261109-perfbee-title-integrity: Bengali product titles preserve the exact localized price and may remain under 30 characters; long titles retain the existing 60-character target. Artificial zero-padding was removed.
-- 20261109-canonical-head-placement: Raw production and local evidence plus Next.js 16 docs confirm streaming metadata appended dynamic route metadata to `<body>`. `htmlLimitedBots: /.*/` disables streaming so raw HTML keeps generated metadata in `<head>`; this may increase TTFB on dynamic routes.
-- 20261109-security-headers-config: `next.config.js` configures `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `X-Content-Type-Options: nosniff`, with config-level tests. Saved production build `e6c1b1b` predates the header commit, so upstream preservation remains unverified until deployment.
-- 20261110-pr609-production-smoke: The bounded five-route production sample and production build identity are recorded at `seo/evidence/2026-11-10/pr609-post-merge-smoke.md`. Published English/Bengali alternates were reciprocal; an active product with no Bengali translation row returned `noindex, follow`, a Bengali self-canonical, and no hreflang. Sampled SEO metadata was in `<head>` and expected security headers were present. These results do not clear sitewide PerfBee groups.
-- 20261109-perfbee-p1-hreflang: Added 6 hreflang reciprocity tests covering English/Bengali product page alternates, reciprocal en-BD/bn-BD/x-default mapping, stale-slug redirect, and no redirect-alias hreflang targets. Both product pages already emit reciprocal alternates; no implementation change needed.
-- 20261109-branch-cleanup: deleted 4 stale local branches and 4 merged/closed remote branches (`chore/untrack-audits-plans-tasks`, `codex/e6-r-migration-parity`, `codex/e6-r-release-parity`, `docs/audit-reconciliation-2026-11`). Preserved active worktree `foremost-pizza`.
-- 20261109-pr-607-merged: PR #607 merged to `main` (`518725de`). All audit, plan, and task files are untracked on remote Git and ignored locally under `docs-local/`.
-- 20261108-e6r-phase2-contract: manifests read migration bytes from the reviewed Git commit and bind commit, version, filename, and SQL SHA-256, with an explicit reason for no-migration releases. The verifier CLI fetches project identity before history and enforces fresh evidence; caller refs/history files alone cannot pass.
-- 20261108-e6r-phase2-states: results are exactly `APPLIED`, `PENDING`, `DRIFT`, or `UNVERIFIED`. A recorded version or matching history name without SQL/schema equivalence remains `UNVERIFIED`.
-- 20261108-e6r-phase2-live: test has 290 remote/276 local: all 23 remote-only versions are authorized, nine local-only versions make parity `PENDING`, resolver schema is `EQUIVALENT`, and history metadata is `INCOMPLETE`. Production resolver version is recorded with statements, its schema is `EQUIVALENT`, and history metadata is `COMPLETE`; full 276-version set equality is not persisted and remains `UNVERIFIED`.
-- 20261108-e6r-authorized-test-only: `scripts/ci/authorized-test-only-migrations.json` now exactly matches the recorded 23-version remote-only set (8 security-test-only, 5 ledger-snapshot-only, 10 historical duplicates), including omitted versions `20261028193249` and `20261028194416`. Names and dormant entries are checked; authorization is hard-limited to the test project.
-- 20261108-e6r-test-fix: `validateRemoteMigrationState` test now passes `now: Date.parse('2026-11-08T20:05:00Z')` to all three sub-calls so the hardcoded `checkedAt: '2026-11-08T20:00:00Z'` evidence stays inside the 15-minute freshness window; previously the wrong-target assertion masked the stale-evidence assertion.
-- 20261108-e6r-production-hash: v1 normalizes `pg_proc.prosrc` by LF line endings plus boundary ASCII-whitespace removal, preserving internal UTF-8 bytes. Reviewed and production bodies both hash to `c409155d8f78931d904b08c040730565e3ad01852319710ff0bd9268e407a791`; the earlier test hash `5df6...` retained one trailing LF.
-- 20261108-e6r-live-binding: live verification obtains resolver catalog data through the Management API read-only query endpoint and derives the local migration inventory from the reviewed Git commit; supplied artifacts are cross-checked, not release-authoritative on their own.
-- 20261108-e6r-gates: superseding the implementation claim, PR #604 does not yet fail closed end to end. `release-migrations.mjs` is disconnected from promotion and accepts supplied refs/history files/pass booleans; a missing remote migration and an evidence-free production promote check both reproduced as success. Runtime smoke SHA enforcement is valid but does not supply schema parity.
-- 20261108-egress-release-rule: the earlier plan recorded authorization for a matching test-validated production migration after final review, but repository scope rules do not make it standing permission for later tasks. The current review explicitly authorizes no merge/deploy; any future production execution must use current-task owner authorization plus exact reviewed SQL/history, verified target, real-role tests, bounded repairs and release postchecks.
-- 20261108-egress-rollout: E6-R completed health verification contract:
-  - Health endpoint returns `status: 'ok'`, build SHA, and timestamp.
-  - Provenance smoke tests require HTTPS, status 'ok', exact expected build SHA, parseable and fresh timestamp.
-  - Storefront builds now include standalone provenance via `resolveBuildSha()` helper and immutable artifact ZIP packaging; Hostinger workflow passes `EXPECTED_SHA`.
-- 20261108-migration-parity-gate: removed `migration-parity-gate` job and its dependency from the active Hostinger workflow. Migration scripts (`scripts/ci/release-migrations.mjs` and helpers) retained as dormant reference tooling but explicitly not release-authoritative.
-- 20261108-todo-update: updated `tasks/todo.md` to mark migration manifest selection, independent target verification, RPC introspection, CI evidence generation, and migration application as pending follow-up work.
+- 20261111-lighthouse: Public catalog HTML is ISR (120s) with `public, max-age=0, s-maxage=120`. Cart, checkout, login, profile, order, and wishlist stay `private, no-store`. Static files get a one-year immutable cache. Security headers are applied in Next config, middleware, the Node response hook, and LiteSpeed `.htaccess`.
+- 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
+- 20261111-fonts: Geist Mono is not loaded; prices use the system monospace stack. Noto Sans Bengali is a Bengali-only file and loads on `/bn` pages only.
+- 20261110-pr609-post-merge: Production smoke of `9c19c5f5b` passed indexing, canonical, and header spot checks. Remaining PerfBee groups need a fresh crawl after this release.
+
 ## Blockers
-- 20261108-e6r-production-parity: the supplied production evidence records 276 migrations but not the exact full version set; do not claim global version parity from count equality.
-- 20261108-e6r-test-local-only: nine local-only migrations are outside the reviewed manifest, so test-project version parity remains `PENDING`.
-- 20261108-committed-db-secret: `scripts/db/backup_db.mjs` contains a committed production database connection string. Treat it as exposed and handle removal plus credential rotation as separate security remediation.
-- 20261108-local-secret-scan: the full scan fails on 25 non-staged findings (6 scanner fixture strings in an unrelated untracked `.kilo` worktree and 19 ignored `.next-turbo` artifacts); the scoped staged-addition scan found no suspicious credential patterns.
-- 20261108-review-thread-resolution: five fixed/replied Cubic threads remain unresolved. GraphQL `resolveReviewThread` returns `FORBIDDEN`, and the browser session is unauthenticated; code and regression verification are complete.
+- 20261108-e6r-production-parity: production migration evidence is not a full version set.
+- 20261108-committed-db-secret: `scripts/db/backup_db.mjs` still contains a connection string; rotate separately.
+
 ## Resolved
-- 20261108-e6r-access: owner-supplied connected Supabase evidence resolved resolver verification without requesting credentials; GitHub access works through the configured keychain after ignoring a stale environment token.
-- 20261108-e6r-phase2-tests: 43 focused CI tests and 1,013 app tests pass; typecheck passes; lint passes with 3 existing React Compiler warnings. Final independent standards/spec/security review reports no findings, and all PR checks pass.
-- 20261108-release-blocked-gate: finished health verification contract and removed the incomplete migration gate from the Hostinger workflow. Release parity foundation established: build SHA verification with timestamp, status 'ok', and HTTPS requirements.
-- 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
-- 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
+- 20261111-soft-404: unknown product, brand, and blog slugs return HTTP 404 from middleware, including `/bn` product and brand URLs.
+- 20261109-security-headers-config: frame, referrer, and nosniff headers now also cover static files and non-HTML responses.
+
 ## Next
-- Obtain a fresh bounded PerfBee crawl or URL rechecks before reconciling remaining sitewide findings. Keep the Dove remediation work in its separate worktree; no production data changes or deployment without authorization.
+- After merge, deploy through the Hostinger workflow and confirm Cloudflare HSTS, HTML cache rules, and LiteSpeed `.htaccess` as noted in the PR.
