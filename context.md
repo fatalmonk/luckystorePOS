@@ -2,7 +2,7 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261111-official-enrichment: `fix/product-enrichment-official-evidence` replaces unsupported generated claims for 10 existing products with exact official manufacturer evidence and regression coverage; commit/PR pending, no deployment authorized.
+- 20261111-official-enrichment: PR #618 (`fix/product-enrichment-official-evidence`) replaces unsupported generated claims for 10 existing products with exact official manufacturer evidence and regression coverage; no merge or deployment authorized.
 
 ## Decisions
 - 20261111-official-enrichment-scope: Update 6 exact-pack Dano records, Avonee L 48, Bashundhara Gold tissue, and 2 BelleAme 240g cookies. Hold two other tissue records because their catalog category is incorrectly `Pest Control`; enrichment alone must not conceal catalog drift.
@@ -45,4 +45,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Complete independent review, commit/push the focused enrichment branch, and open a PR. No catalog mutation, image sync, merge, or production deployment in this task.
+- Await review/checks for PR #618. No catalog mutation, image sync, merge, or production deployment in this task.
