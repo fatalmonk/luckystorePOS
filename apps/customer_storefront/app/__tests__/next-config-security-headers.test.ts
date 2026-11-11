@@ -69,6 +69,13 @@ describe('next.config.js security headers', () => {
 });
 
 describe('next.config.js CSS emission guard', () => {
+  it('leaves images unoptimized unless the build enables Cloudflare resizing', () => {
+    const images = (nextConfig as { images?: { unoptimized?: boolean; loader?: string } }).images;
+
+    expect(images?.loader).toBe('custom');
+    expect(images?.unoptimized).toBe(process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1');
+  });
+
   it('does not opt into duplicated inline CSS', () => {
     const experimental = (nextConfig as { experimental?: { inlineCss?: boolean; optimizeCss?: boolean } }).experimental;
 

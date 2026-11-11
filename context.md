@@ -9,6 +9,7 @@
 - 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. `upgrade-insecure-requests` is omitted there; browsers ignore it in report-only mode and log an error. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
 - 20261111-e2e-static: Storefront E2E copies standalone `public` and `/_next/static` with `cp -a src/. dest/` so traced font and CSS files already in those directories do not nest the chunk folder.
 - 20261111-lazy-image: ProductImage treats a lazy image as failed only after the browser has selected a source. An unfetched image stays mounted so it can load when it enters the viewport.
+- 20261111-unoptimized: Next image optimization stays off unless `NEXT_PUBLIC_IMAGE_RESIZE=1`. A custom loader that returns one URL for every width produces a duplicate srcset and the browser drops the image.
 - 20261111-fonts: Geist Mono is not loaded; prices use the system monospace stack. Noto Sans Bengali is a Bengali-only file and loads on `/bn` pages only.
 - 20261111-htaccess-escape: Apache header values escape backslashes before quotes so a quoted `.htaccess` value cannot break out.
 - 20261111-review-fixes: Hostinger's entry file loads the header bootstrap. Unhashed public files cache for 30 days without `immutable`; manifests cache for one hour. Image resizing is on only when `NEXT_PUBLIC_IMAGE_RESIZE=1`, which the Hostinger build sets. Authenticated responses keep private cache headers.

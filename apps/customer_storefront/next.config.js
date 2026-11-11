@@ -24,8 +24,13 @@ const nextConfig = {
   serverExternalPackages: ['critters'],
   devIndicators: false,
   images: {
-    // Delivery uses the custom Cloudflare loader. The built-in optimizer stays
-    // closed: an empty remotePatterns list rejects crafted /_next/image URLs.
+    // Delivery uses the custom Cloudflare loader when the Hostinger build sets
+    // NEXT_PUBLIC_IMAGE_RESIZE=1. Otherwise leave images unoptimized. A custom
+    // loader that returns the original URL for every width makes Next emit a
+    // srcset of duplicate candidates, and the browser then drops the image.
+    // The built-in optimizer stays closed: an empty remotePatterns list rejects
+    // crafted /_next/image URLs.
+    unoptimized: process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1',
     loader: 'custom',
     loaderFile: './app/lib/image-loader.ts',
     formats: ['image/avif', 'image/webp'],
