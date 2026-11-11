@@ -164,23 +164,18 @@ describe('Phase 4A: Product Page SEO and Content Enrichment Contract', () => {
       expect(offers).not.toHaveProperty('shippingDetails');
 
       const policies = offers.hasMerchantReturnPolicy;
-      expect(policies).toHaveLength(2);
+      expect(policies).toHaveLength(1);
       expect(policies[0]).toMatchObject({
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'BD',
         returnPolicyCountry: 'BD',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-      });
-      expect(policies[0].description).toContain('before payment');
-      expect(policies[0].description).toContain('change of mind');
-      expect(policies[1]).toMatchObject({
-        '@type': 'MerchantReturnPolicy',
         returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
         merchantReturnDays: 1,
         returnFees: 'https://schema.org/FreeReturn',
       });
-      expect(policies[1].description).toContain('24 hours');
-      expect(policies[1].description).toContain('receipt');
+      expect(policies[0].description).toContain('24 hours');
+      expect(policies[0].description).toContain('change of mind');
+      expect(policies[0].description).toContain('receipt');
 
       expect(json.aggregateRating).toBeUndefined();
       expect(json.review).toBeUndefined();

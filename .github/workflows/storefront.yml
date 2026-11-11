@@ -135,8 +135,12 @@ jobs:
       - name: Prepare standalone static assets
         working-directory: apps/customer_storefront
         run: |
-          cp -r public .next/standalone/apps/customer_storefront/public
-          cp -r .next/static .next/standalone/apps/customer_storefront/.next/static
+          # File tracing can already create these directories (fonts, CSS).
+          # `cp -r src dest` nests src inside an existing dest, so chunks 404.
+          mkdir -p .next/standalone/apps/customer_storefront/public
+          mkdir -p .next/standalone/apps/customer_storefront/.next/static
+          cp -a public/. .next/standalone/apps/customer_storefront/public/
+          cp -a .next/static/. .next/standalone/apps/customer_storefront/.next/static/
 
       - run: npx playwright install chromium
       - name: Run Chromium E2E

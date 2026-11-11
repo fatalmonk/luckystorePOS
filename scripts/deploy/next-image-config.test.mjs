@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../apps/customer_storefront');
 const configPath = path.join(appRoot, 'next.config.js');
 
-function loadImageConfig(vercelValue, env = {}) {
+function loadImageConfig(vercelValue) {
   const previousVercel = process.env.VERCEL;
   const previousAnalyze = process.env.ANALYZE;
 
@@ -27,9 +27,13 @@ function loadImageConfig(vercelValue, env = {}) {
   }
 }
 
-test('serves remote image originals directly across hosting modes', () => {
-  assert.equal(loadImageConfig(undefined).unoptimized, true);
-  assert.equal(loadImageConfig('1').unoptimized, true);
+test('uses the Cloudflare loader instead of the built-in remote optimizer', () => {
+  for (const vercelValue of [undefined, '1']) {
+    const images = loadImageConfig(vercelValue);
+    assert.equal(images.loader, 'custom');
+    assert.equal(images.loaderFile, './app/lib/image-loader.ts');
+    assert.equal(images.unoptimized, process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1');
+  }
 });
 
 test('rejects all remote sources at the public optimizer endpoint', () => {

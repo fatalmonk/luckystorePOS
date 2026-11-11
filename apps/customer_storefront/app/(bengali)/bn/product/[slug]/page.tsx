@@ -15,6 +15,8 @@ import { ProductJsonLd } from '../../../../components/seo/ProductJsonLd';
 import type { Product } from '../../../../lib/products/types';
 import ProductClient from '../../../../(english)/product/[slug]/ProductClient';
 
+export const revalidate = 120;
+
 type LocalizedProduct = { product: Product; sourceName: string; translated: boolean };
 
 const getCachedBengaliProduct = cache(async (slug: string): Promise<LocalizedProduct | null> => {

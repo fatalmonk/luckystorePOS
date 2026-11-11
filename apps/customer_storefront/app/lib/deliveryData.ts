@@ -51,18 +51,12 @@ export function getMerchantReturnPolicies() {
       '@type': 'MerchantReturnPolicy',
       applicableCountry: 'BD',
       returnPolicyCountry: 'BD',
-      returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-      description: RETURN_RULES.en.doorstep,
-    },
-    {
-      '@type': 'MerchantReturnPolicy',
-      applicableCountry: 'BD',
-      returnPolicyCountry: 'BD',
       returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
       merchantReturnDays: 1,
       returnMethod: 'https://schema.org/ReturnInStore',
       returnFees: 'https://schema.org/FreeReturn',
-      description: RETURN_RULES.en.defective,
+      merchantReturnLink: 'https://www.luckystore1947.com/return-policy',
+      description: `${RETURN_RULES.en.defective} ${RETURN_RULES.en.doorstep}`,
     },
   ];
 }

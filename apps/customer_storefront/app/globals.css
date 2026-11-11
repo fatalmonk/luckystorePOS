@@ -6,7 +6,22 @@
 
 @layer base {
   html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     scroll-behavior: auto;
+  }
+
+  /* One copy of the theme-wipe rule. Theme toggles must not each inject it. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  :root:active-view-transition-type(animate-ui-theme) body,
+  :root:active-view-transition-type(animate-ui-theme) body * {
+    view-transition-name: none !important;
   }
 
   body {
@@ -502,7 +517,7 @@
 
   .home-process-number {
     color: var(--color-accent-dark);
-    font-family: var(--font-geist-mono), monospace;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 800;
     line-height: 1rem;

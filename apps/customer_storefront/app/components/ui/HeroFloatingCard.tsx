@@ -243,7 +243,7 @@ export function HeroDiscoveryRail({
                     category={product.category}
                     sizes="164px"
                     imageClassName="product-image-on-well object-contain p-2 transition-transform duration-300 group-hover/product:scale-108 motion-reduce:transition-none"
-                    priority={index === 0}
+                    priority={false}
                     showLoadingState
                   />
                 </span>

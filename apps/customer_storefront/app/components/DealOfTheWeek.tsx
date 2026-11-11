@@ -210,7 +210,6 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
                 category={leadProduct.category}
                 sizes="(max-width: 640px) calc(100vw - 72px), (max-width: 1024px) calc(100vw - 112px), 500px"
                 imageClassName="object-contain transition-transform duration-300 ease-out group-hover/deal:scale-[1.08] motion-reduce:transition-none"
-                priority
                 iconSize={64}
               />
             </div>

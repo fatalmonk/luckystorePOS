@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import {
-  ThemeToggler as PrimitiveThemeToggler,
-  type Resolved,
-  type ThemeSelection,
-  type Direction,
-} from '@animate-ui/react/primitives/effects/theme-toggler';
+import React, { useCallback, useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTheme } from '../../providers/ThemeProvider';
 
-export type { Resolved, ThemeSelection, Direction };
+export type Resolved = 'light' | 'dark';
+export type ThemeSelection = Resolved | 'system';
+export type Direction = 'ltr' | 'rtl' | 'ttb' | 'btt';
 
 export interface ThemeTogglerRenderState {
   theme: ThemeSelection;
@@ -23,6 +20,30 @@ export interface ThemeTogglerProps {
   children?: (state: ThemeTogglerRenderState) => React.ReactNode;
 }
 
+const WIPE_TYPE = 'animate-ui-theme';
+
+function clipKeyframes(direction: Direction): [string, string] {
+  switch (direction) {
+    case 'rtl':
+      return ['inset(0 0 0 100%)', 'inset(0 0 0 0)'];
+    case 'ttb':
+      return ['inset(0 0 100% 0)', 'inset(0 0 0 0)'];
+    case 'btt':
+      return ['inset(100% 0 0 0)', 'inset(0 0 0 0)'];
+    default:
+      return ['inset(0 100% 0 0)', 'inset(0 0 0 0)'];
+  }
+}
+
+function systemTheme(): Resolved {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/**
+ * One shared stylesheet rule covers the theme wipe. This component does not
+ * emit a <style> tag, so header and drawer toggles do not repeat it.
+ */
 export function ThemeToggler({
   direction = 'ltr',
   onImmediateChange,
@@ -31,51 +52,57 @@ export function ThemeToggler({
   const themeContext = useTheme();
   const theme = themeContext?.theme ?? 'light';
   const setTheme = themeContext?.setTheme;
+  const [resolved, setResolved] = useState<Resolved>(theme);
+  const [fromClip, toClip] = clipKeyframes(direction);
 
-  const handleSetTheme = useCallback(
-    (next: ThemeSelection) => {
-      if (!setTheme) return;
-      if (next === 'system') {
-        const isSystemDark =
-          typeof window !== 'undefined' &&
-          window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(isSystemDark ? 'dark' : 'light');
-      } else {
-        setTheme(next);
-      }
-    },
-    [setTheme],
-  );
+  useEffect(() => {
+    setResolved(theme);
+  }, [theme]);
 
-  return (
-    <PrimitiveThemeToggler
-      theme={theme as ThemeSelection}
-      resolvedTheme={theme as Resolved}
-      setTheme={handleSetTheme}
-      direction={direction}
-      onImmediateChange={onImmediateChange}
-    >
-      {({ resolved, effective, toggleTheme }) => {
-        const handleToggle = (nextTheme?: ThemeSelection) => {
-          if (nextTheme) {
-            toggleTheme(nextTheme);
-          } else {
-            toggleTheme(resolved === 'dark' ? 'light' : 'dark');
-          }
-        };
+  const toggleTheme = useCallback((nextTheme?: ThemeSelection) => {
+    const selection: ThemeSelection = nextTheme ?? (resolved === 'dark' ? 'light' : 'dark');
+    const nextResolved = selection === 'system' ? systemTheme() : selection;
+    onImmediateChange?.(selection);
+    if (!setTheme) return;
 
-        if (typeof children === 'function') {
-          return children({
-            theme: effective,
-            resolved,
-            toggleTheme: handleToggle,
-          });
-        }
+    const apply = () => {
+      setResolved(nextResolved);
+      document.documentElement.classList.toggle('dark', nextResolved === 'dark');
+      if (nextResolved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      else document.documentElement.removeAttribute('data-theme');
+      setTheme(nextResolved);
+    };
 
-        return null;
-      }}
-    </PrimitiveThemeToggler>
-  );
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const startViewTransition = document.startViewTransition?.bind(document);
+    if (reduced || !startViewTransition) {
+      flushSync(apply);
+      return;
+    }
+
+    let transition: { ready: Promise<void> };
+    try {
+      transition = document.startViewTransition({
+        update: () => {
+          flushSync(apply);
+        },
+        types: [WIPE_TYPE],
+      });
+    } catch {
+      flushSync(apply);
+      return;
+    }
+    void transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [fromClip, toClip] },
+        { duration: 700, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' },
+      );
+    }).catch(() => {
+      // A newer toggle can skip this transition. The theme is already applied.
+    });
+  }, [fromClip, onImmediateChange, resolved, setTheme, toClip]);
+
+  if (typeof children !== 'function') return null;
+
+  return children({ theme: resolved, resolved, toggleTheme });
 }
-
-export { PrimitiveThemeToggler };

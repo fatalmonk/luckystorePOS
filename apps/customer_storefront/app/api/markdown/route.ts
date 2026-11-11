@@ -121,7 +121,6 @@ function mdBusinessContext(): string {
 
   md += `### 🤖 For AI Agents\n\n`;
   md += `- **Agent Auth:** [/auth.md](${BASE_URL}/auth.md) — authentication protocol for programmatic access\n`;
-  md += `- **OAuth Discovery:** [/.well-known/oauth-protected-resource](${BASE_URL}/.well-known/oauth-protected-resource)\n`;
   md += `- **API Catalog:** [/.well-known/api-catalog](${BASE_URL}/.well-known/api-catalog)\n`;
   md += `- **Content Negotiation:** Send \`Accept: text/markdown\` to any page URL\n`;
   md += `- **Stack:** Next.js 15, React 19, Supabase (Postgres + Auth), Cloudflare R2 CDN\n\n`;
@@ -396,7 +395,7 @@ function mdSecurityPolicyPage(): string {
 
   md += `## Agent & API Security\n\n`;
   md += `- Agent authentication follows the [auth.md](${BASE_URL}/auth.md) protocol\n`;
-  md += `- OAuth 2.1 discovery at [/.well-known/oauth-authorization-server](${BASE_URL}/.well-known/oauth-authorization-server)\n`;
+  md += `- This host does not publish OAuth authorization-server metadata\n`;
   md += `- API keys and tokens are scoped to specific permissions\n`;
   md += `- Rate limiting applies per credential\n\n`;
 
@@ -414,18 +413,9 @@ function mdAuthPage(variant: 'login' | 'signup'): string {
   md += `Visit [${BASE_URL}/${variant}](${BASE_URL}/${variant}) in your browser to ${action} account.\n\n`;
 
   md += `## For AI Agents\n\n`;
-  md += `Agents should use the **auth.md** protocol instead of the browser login flow:\n\n`;
-  md += `1. Read [/auth.md](${BASE_URL}/auth.md) for the full agent authentication spec\n`;
-  md += `2. Discover OAuth endpoints at [/.well-known/oauth-authorization-server](${BASE_URL}/.well-known/oauth-authorization-server)\n`;
-  md += `3. Register via the \`register_uri\` endpoint\n`;
-  md += `4. Exchange credentials for access tokens\n\n`;
-
-  md += `### Supported Scopes\n\n`;
-  md += `- \`read:products\` — Browse products, categories, prices\n`;
-  md += `- \`read:orders\` — View order history\n`;
-  md += `- \`write:orders\` — Create orders, submit purchases\n`;
-  md += `- \`read:profile\` — Read user profile data\n`;
-  md += `- \`write:profile\` — Update user preferences\n`;
+  md += `Agents use the same account pages as customers. This host does not publish OAuth metadata or an agent registration API.\n\n`;
+  md += `1. Read [/auth.md](${BASE_URL}/auth.md)\n`;
+  md += `2. Create an account at [/signup](${BASE_URL}/signup) or sign in at [/login](${BASE_URL}/login)\n`;
   return md;
 }
 

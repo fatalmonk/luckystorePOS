@@ -2,19 +2,18 @@ import Link from 'next/link';
 import { Header } from './updated/Header';
 import { Footer } from './updated/Footer';
 import { CampaignGrid } from './CampaignGrid';
-import { DealOfTheWeek } from './DealOfTheWeek';
 import { BottomNav } from './BottomNav';
 import { CartStorageNotice } from './CartStorageNotice';
-import { HomeTrustStrip } from './HomeTrustStrip';
 import { HomeTeaBanner } from './HomePromoBanners';
 import { ProductGridSection } from './ProductGridSection';
-import { PopularBrandsSection } from './PopularBrandsSection';
-import { HeritageSection } from './HeritageSection';
-import { InstallPrompt } from './InstallPrompt';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage, WEEKLY_DEALS_LIMIT } from '../lib/deals';
+import { DeferredHomeShelvesGate } from './DeferredHomeShelvesGate';
+import { InstallPromptBootstrap } from './InstallPromptBootstrap';
+
+const HOME_SHELF_SIZE = 8;
 
 export interface CategoryItem {
   id: string;
@@ -86,7 +85,7 @@ export function HomeShell({
         </main>
         <Footer locale={locale} />
         <BottomNav locale={locale} />
-        <InstallPrompt locale={locale} />
+        <InstallPromptBootstrap locale={locale} />
       </>
     );
   }
@@ -141,75 +140,28 @@ export function HomeShell({
               id="popular-right-now"
               title={dict.reels.popularTitle}
               subtitle={dict.reels.popularSubtitle}
-              products={featuredProducts.slice(0, 15)}
+              products={featuredProducts.slice(0, HOME_SHELF_SIZE)}
               ctaHref={withLocale('/category', locale)}
               ctaLabel={dict.reels.seeAll}
               locale={locale}
             />
-            <div className="shelf-container-deferred">
-              <ProductGridSection
-                id="daily-essentials"
-                title={dict.reels.pantryTitle}
-                subtitle={dict.reels.pantrySubtitle}
-                products={pantryProducts.slice(0, 15)}
-                ctaHref={withLocale('/category/cooking-essentials', locale)}
-                ctaLabel={dict.reels.seeAll}
-                locale={locale}
-              />
-            </div>
-
-            <div className="shelf-container-deferred py-2 sm:py-4">
-              <DealOfTheWeek
-                products={weeklyDealProducts}
-                discountedProductCount={discountedProductCount}
-                weeklyPicks={weeklyPicks}
-                weeklyEditionActive={weeklyEditionActive}
-                weeklyEditionUnavailable={weeklyEditionUnavailable}
-                locale={locale}
-              />
-            </div>
-
-            <div className="shelf-container-deferred">
-              <ProductGridSection
-                id="snacks-drinks"
-                title={dict.reels.snacksTitle}
-                subtitle={dict.reels.snacksSubtitle}
-                products={snacksProducts.slice(0, 15)}
-                ctaHref={withLocale('/category/snacks', locale)}
-                ctaLabel={dict.reels.seeAll}
-                locale={locale}
-              />
-            </div>
-
-            <div className="shelf-container-deferred">
-              <ProductGridSection
-                id="home-personal-care"
-                title={dict.reels.careTitle}
-                subtitle={dict.reels.careSubtitle}
-                products={personalCareProducts.slice(0, 15)}
-                ctaHref={withLocale('/category/personal-care', locale)}
-                ctaLabel={dict.reels.seeAll}
-                locale={locale}
-              />
-            </div>
-
-            <div className="shelf-container-deferred">
-              <PopularBrandsSection locale={locale} />
-            </div>
-          </div>
-
-          <div className="shelf-container-deferred">
-            <HeritageSection locale={locale} />
-          </div>
-
-          <div className="shelf-container-deferred mt-6 sm:mt-8">
-            <HomeTrustStrip locale={locale} />
+            <DeferredHomeShelvesGate
+              locale={locale}
+              pantryProducts={pantryProducts}
+              snacksProducts={snacksProducts}
+              personalCareProducts={personalCareProducts}
+              weeklyDealProducts={weeklyDealProducts}
+              discountedProductCount={discountedProductCount}
+              weeklyPicks={weeklyPicks}
+              weeklyEditionActive={weeklyEditionActive}
+              weeklyEditionUnavailable={weeklyEditionUnavailable}
+            />
           </div>
         </div>
       </main>
       <Footer locale={locale} />
       <BottomNav locale={locale} />
-      <InstallPrompt locale={locale} />
+      <InstallPromptBootstrap locale={locale} />
     </>
   );
 }

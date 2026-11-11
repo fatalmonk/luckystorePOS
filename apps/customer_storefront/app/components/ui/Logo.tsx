@@ -36,7 +36,8 @@ export function Logo({ className = '', href, variant = 'default', onClick, local
         alt={altText}
         width={isBn ? 155 : 210}
         height={48}
-        priority
+        loading="eager"
+        fetchPriority="low"
         style={{ width: 'auto', height: 'auto' }}
         className={`max-h-10 sm:max-h-12 w-auto object-contain transition-transform duration-300 motion-safe:group-hover:scale-105 ${
           isWhite ? 'hidden' : 'block dark:hidden'
@@ -45,10 +46,11 @@ export function Logo({ className = '', href, variant = 'default', onClick, local
       {/* Dark theme / inverse logo */}
       <Image
         src={darkSrc}
-        alt={altText}
+        alt=""
         width={isBn ? 155 : 211}
         height={48}
-        priority
+        loading="lazy"
+        fetchPriority="low"
         style={{ width: 'auto', height: 'auto' }}
         className={`max-h-10 sm:max-h-12 w-auto object-contain transition-transform duration-300 motion-safe:group-hover:scale-105 ${
           isWhite ? 'block' : 'hidden dark:block'

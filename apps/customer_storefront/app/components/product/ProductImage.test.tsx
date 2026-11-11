@@ -66,6 +66,44 @@ describe('ProductImage', () => {
     expect(image).toHaveAttribute('sizes', '(max-width: 640px) 50vw, 240px');
   });
 
+  it('keeps an unfetched lazy image instead of showing the unavailable fallback', () => {
+    vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+    vi.spyOn(HTMLImageElement.prototype, 'currentSrc', 'get').mockReturnValue('');
+
+    render(
+      <ProductImage
+        src="https://example.com/lazy.webp"
+        alt="Lazy item"
+        category="Snacks"
+        sizes="100px"
+        showLoadingState
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: 'Lazy item' })).toBeInTheDocument();
+    expect(screen.queryByTestId('product-image-fallback')).not.toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('replaces an image that already failed before the error listener attached', () => {
+    vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+    vi.spyOn(HTMLImageElement.prototype, 'currentSrc', 'get').mockReturnValue('https://example.com/broken.webp');
+
+    render(
+      <ProductImage
+        src="https://example.com/broken.webp"
+        alt="Broken item"
+        category="Snacks"
+        sizes="100px"
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: 'Broken item image unavailable' })).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
   it('hides the loading placeholder when a cached image is already complete on mount', () => {
     vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
     vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(120);

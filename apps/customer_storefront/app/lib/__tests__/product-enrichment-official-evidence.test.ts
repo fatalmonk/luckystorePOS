@@ -151,7 +151,7 @@ describe('official product evidence enrichment batch', () => {
       const nutrition = PRODUCT_ENRICHMENTS[id].nutrition;
       expect(nutrition?.basis).toBe('Per 100 g');
       expect(nutrition?.sourceLabel).toBe('Source: Arla Foods Bangladesh');
-      for (const fact of facts) expect(nutrition?.text?.toLowerCase()).toContain(fact);
+      for (const fact of facts) expect(nutrition?.text?.toLowerCase()).toContain(fact.toLowerCase());
       expect(nutrition?.text).toContain('not supplied');
       expect(nutrition?.text).not.toMatch(/(?:sugars|salt)\W*0(?:\.0+)?\s*g/i);
       expect(nutrition?.evidenceRefs).toEqual(['MFR_PRODUCT_PAGE']);

@@ -8,7 +8,7 @@ import { getBrandBySlug, isProductOfBrand } from '../../../lib/brandsData';
 import { supabase } from '../../../lib/supabase';
 import { searchAllPages } from '../../../lib/products/searchAllPages';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,

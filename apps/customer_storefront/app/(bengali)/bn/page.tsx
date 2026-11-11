@@ -5,7 +5,7 @@ import { HomeShell } from '../../components/HomeShell';
 import { getHomePageData } from '../../lib/products/getHomePageData';
 import { toProductSlug } from '../../lib/products/slugify';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: { absolute: 'চট্টগ্রামের অনলাইন গ্রোসারি ও দৈনন্দিন বাজার | Lucky Store' },

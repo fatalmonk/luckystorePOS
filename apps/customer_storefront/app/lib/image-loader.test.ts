@@ -1,33 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import cloudflareLoader from './image-loader';
+import { buildOptimizedImageUrl } from './image-loader';
 
 describe('cloudflareLoader', () => {
   it('handles empty or missing src', () => {
-    expect(cloudflareLoader({ src: '', width: 200 })).toBe('');
+    expect(buildOptimizedImageUrl('', 200, 75, { resize: true })).toBe('');
   });
 
   it('passes through SVGs and data URIs unchanged', () => {
-    expect(cloudflareLoader({ src: '/icon.svg', width: 200 })).toBe('/icon.svg');
-    expect(cloudflareLoader({ src: '/icon.svg?v=1', width: 200 })).toBe('/icon.svg?v=1');
-    expect(cloudflareLoader({ src: 'data:image/png;base64,123', width: 200 })).toBe('data:image/png;base64,123');
+    expect(buildOptimizedImageUrl('/icon.svg', 200, 75, { resize: true })).toBe('/icon.svg');
+    expect(buildOptimizedImageUrl('/icon.svg?v=1', 200, 75, { resize: true })).toBe('/icon.svg?v=1');
+    expect(buildOptimizedImageUrl('data:image/png;base64,123', 200, 75, { resize: true })).toBe('data:image/png;base64,123');
   });
 
-  it('enforces HTTPS for absolute HTTP URLs to eliminate mixed content', () => {
-    const httpUrl = 'http://images.luckystore1947.com/products/sample.webp';
-    expect(cloudflareLoader({ src: httpUrl, width: 200 })).toBe(
-      'https://images.luckystore1947.com/products/sample.webp'
+  it('upgrades HTTP schemes of either case before resizing', () => {
+    expect(buildOptimizedImageUrl('http://images.luckystore1947.com/products/sample.webp', 256, 70, { resize: true }))
+      .toBe('https://images.luckystore1947.com/cdn-cgi/image/width=256,quality=70,format=auto,fit=scale-down/products/sample.webp');
+    expect(buildOptimizedImageUrl('HTTP://images.luckystore1947.com/products/sample.webp', 128, 75, { resize: true }))
+      .toBe('https://images.luckystore1947.com/cdn-cgi/image/width=128,quality=75,format=auto,fit=scale-down/products/sample.webp');
+  });
+
+  it('requests a small Cloudflare variant for product photos and keeps the cache-buster', () => {
+    const src = 'https://images.luckystore1947.com/products/NOO-BUL-QTC.webp?t=123';
+    expect(buildOptimizedImageUrl(src, 384, 80, { resize: true })).toBe(
+      'https://images.luckystore1947.com/cdn-cgi/image/width=384,quality=80,format=auto,fit=scale-down/products/NOO-BUL-QTC.webp?t=123',
     );
   });
 
-  it('preserves HTTPS Cloudflare R2 product image URLs without 404-inducing cdn-cgi prefix', () => {
-    const src = 'https://images.luckystore1947.com/products/NOO-BUL-QTC.webp?t=123';
-    expect(cloudflareLoader({ src, width: 384, quality: 80 })).toBe(src);
+  it('resizes local hero files on the storefront zone when enabled', () => {
+    expect(buildOptimizedImageUrl('/images/hero-reference.webp', 640, 70, { resize: true })).toBe(
+      '/cdn-cgi/image/width=640,quality=70,format=auto,fit=scale-down/images/hero-reference.webp',
+    );
   });
 
-  it('preserves local static asset paths without transformation', () => {
-    expect(cloudflareLoader({ src: '/images/hero-grocery-basket.webp', width: 384 })).toBe(
-      '/images/hero-grocery-basket.webp'
+  it('leaves original URLs in place when resizing is disabled', () => {
+    const src = 'https://images.luckystore1947.com/products/NOO-BUL-QTC.webp?t=123';
+    expect(buildOptimizedImageUrl(src, 384, 80, { resize: false })).toBe(src);
+    expect(buildOptimizedImageUrl('/images/hero-grocery-basket.webp', 384, undefined, { resize: false })).toBe(
+      '/images/hero-grocery-basket.webp',
+    );
+  });
+
+  it('does not resize unrelated hosts', () => {
+    expect(buildOptimizedImageUrl('https://notfair.co/api/seo/image/test', 640, 75, { resize: true })).toBe(
+      'https://notfair.co/api/seo/image/test',
     );
   });
 });
-

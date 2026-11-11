@@ -10,7 +10,7 @@ import { CATALOG_SNAPSHOT_PRODUCTS } from '../../lib/products/getHomePageData';
 import type { Product } from '../../lib/types';
 import { loadCategoryCatalogProducts } from '../../lib/categoryRouteData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export async function generateMetadata({
   searchParams,

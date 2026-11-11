@@ -11,7 +11,7 @@ import { resolveCategoryRouteData } from '../../../../lib/categoryRouteData';
 import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 import { BENGALI_CATEGORY_NAMES } from '../../../../lib/products/getHomePageData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 const BENGALI_CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'rice-and-grain': 'মিনিকেট, নাজিরশাইল ও চিনিগুঁড়া চালের বর্তমান বাজারদর দেখুন।',

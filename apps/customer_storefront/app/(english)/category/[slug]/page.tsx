@@ -42,7 +42,7 @@ const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }
   },
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,

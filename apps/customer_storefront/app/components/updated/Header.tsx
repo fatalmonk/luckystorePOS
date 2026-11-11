@@ -13,7 +13,7 @@ import { Sun } from '@phosphor-icons/react/dist/csr/Sun';
 import { Moon } from '@phosphor-icons/react/dist/csr/Moon';
 import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
 import { motion } from 'motion/react';
-import { AppDrawer } from '../AppDrawer';
+import dynamic from 'next/dynamic';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
 import { SearchSuggestions } from './SearchSuggestions';
@@ -25,6 +25,8 @@ import { getDictionary } from '../../lib/i18n/dictionaries';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { LiquidButton } from '../animate-ui/buttons/liquid';
 import { ThemeToggler } from '../animate-ui/effects/theme-toggler';
+
+const AppDrawer = dynamic(() => import('../AppDrawer').then((mod) => mod.AppDrawer), { ssr: false });
 
 const MotionLink = motion.create(Link);
 
