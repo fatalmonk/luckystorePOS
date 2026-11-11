@@ -55,8 +55,8 @@ export function getMerchantReturnPolicies() {
       merchantReturnDays: 1,
       returnMethod: 'https://schema.org/ReturnInStore',
       returnFees: 'https://schema.org/FreeReturn',
-      description:
-        'Defective items can be returned within 24 hours of purchase or delivery, with the receipt. Items are checked at the door before payment, and a paid product cannot be returned for a change of mind.',
+      merchantReturnLink: 'https://www.luckystore1947.com/return-policy',
+      description: `${RETURN_RULES.en.defective} ${RETURN_RULES.en.doorstep}`,
     },
   ];
 }

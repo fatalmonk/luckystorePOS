@@ -40,11 +40,15 @@ describe('outgoing security header install', () => {
 
       const asset = await read('/images/hero-reference.webp');
       expect(asset.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
-      expect(asset.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+      expect(asset.headers.get('cache-control')).toBe('public, max-age=2592000');
 
       const cart = await read('/bn/checkout');
       expect(cart.headers.get('permissions-policy')).toContain('geolocation=(self)');
       expect(cart.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+
+      const authed = await fetch(`${base}/`, { headers: { cookie: 'sb-project-auth-token=session' } });
+      expect(authed.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+      expect(authed.headers.get('cdn-cache-control')).toBe('private, no-store');
 
       const failure = await read('/boom');
       expect(failure.status).toBe(500);

@@ -17,12 +17,9 @@ This document describes how agents can register, authenticate, and obtain creden
 
 ## Quick Start for Agents
 
-1. Read this document. This host does not publish OAuth metadata.
-2. **Register** at the register_uri endpoint shown in the agent_auth block
-3. **Assert identity** (ID-JAG, verified email, or anonymous) to receive a credential
-4. **Exchange** credentials for access tokens
-5. **Use** the API with proper Authorization headers
-6. **Revoke** when no longer needed
+1. This host does not publish OAuth metadata or an agent registration API.
+2. Create an account at /signup or sign in at /login.
+3. There is no register_uri, token exchange, or /auth/register endpoint on this storefront.
 
 ---
 

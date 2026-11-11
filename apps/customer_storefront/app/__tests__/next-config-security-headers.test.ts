@@ -51,7 +51,7 @@ describe('next.config.js security headers', () => {
     const images = headers.find((rule) => rule.source === '/images/:path*');
     const nextStatic = headers.find((rule) => rule.source === '/_next/static/:path*');
     const cart = headers.find((rule) => rule.source === '/bn/cart');
-    expect(headerMap(images).get('Cache-Control')).toMatch(/max-age=31536000/);
+    expect(headerMap(images).get('Cache-Control')).toBe('public, max-age=2592000');
     expect(headerMap(nextStatic).get('Cache-Control')).toMatch(/immutable/);
     expect(headerMap(cart).get('Cache-Control')).toBe('private, no-store, max-age=0, must-revalidate');
     expect(PUBLIC_CATALOG_CACHE_CONTROL).not.toContain('no-store');

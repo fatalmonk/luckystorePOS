@@ -37,6 +37,13 @@ export function packageStandalone({ rootDir = process.cwd(), outputZip = 'storef
   fs.mkdirSync(rootDestPublic, { recursive: true });
   fs.cpSync(publicDir, rootDestPublic, { recursive: true });
 
+  const appServer = path.join(standaloneDir, 'apps/customer_storefront/server.js');
+  const appServerSource = fs.readFileSync(appServer, 'utf8');
+  if (!appServerSource.includes('security-headers-install.cjs')) {
+    fs.writeFileSync(appServer, `require('./security-headers-install.cjs');\n${appServerSource}`);
+  }
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers.cjs'));
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers-install.cjs'));
   fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./security-headers-install.cjs');\nrequire('./apps/customer_storefront/server.js');\n`);
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'security-headers.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'security-headers-install.cjs'));

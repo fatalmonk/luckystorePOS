@@ -9,6 +9,7 @@
 - 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
 - 20261111-fonts: Geist Mono is not loaded; prices use the system monospace stack. Noto Sans Bengali is a Bengali-only file and loads on `/bn` pages only.
 - 20261111-htaccess-escape: Apache header values escape backslashes before quotes so a quoted `.htaccess` value cannot break out.
+- 20261111-review-fixes: Hostinger's entry file loads the header bootstrap. Unhashed public files cache for 30 days without `immutable`; manifests cache for one hour. Image resizing is on only when `NEXT_PUBLIC_IMAGE_RESIZE=1`, which the Hostinger build sets. Authenticated responses keep private cache headers.
 - 20261110-pr609-post-merge: Production smoke of `9c19c5f5b` passed indexing, canonical, and header spot checks. Remaining PerfBee groups need a fresh crawl after this release.
 
 ## Blockers

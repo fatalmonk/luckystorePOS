@@ -3,7 +3,9 @@ const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 const {
   SECURITY_HEADERS,
-  STATIC_CACHE_CONTROL,
+  HASHED_STATIC_CACHE_CONTROL,
+  PUBLIC_ASSET_CACHE_CONTROL,
+  MANIFEST_CACHE_CONTROL,
   PRIVATE_CACHE_CONTROL,
 } = require('./security-headers.cjs');
 
@@ -111,7 +113,9 @@ const nextConfig = {
       { key: 'Link', value: linkHeaders.join(', ') },
     ];
     const privateCache = [{ key: 'Cache-Control', value: PRIVATE_CACHE_CONTROL }];
-    const staticCache = [{ key: 'Cache-Control', value: STATIC_CACHE_CONTROL }];
+    const hashedCache = [{ key: 'Cache-Control', value: HASHED_STATIC_CACHE_CONTROL }];
+    const publicAssetCache = [{ key: 'Cache-Control', value: PUBLIC_ASSET_CACHE_CONTROL }];
+    const manifestCache = [{ key: 'Cache-Control', value: MANIFEST_CACHE_CONTROL }];
     const privateSources = [
       '/cart',
       '/cart/:path*',
@@ -158,11 +162,15 @@ const nextConfig = {
       // missed either the root or dotted static paths depending on the source.
       { source: '/:path*', headers: securityAndDiscovery },
       { source: '/(.*)', headers: securityAndDiscovery },
-      { source: '/images/:path*', headers: staticCache },
-      { source: '/_next/static/:path*', headers: staticCache },
+      { source: '/images/:path*', headers: publicAssetCache },
+      { source: '/_next/static/:path*', headers: hashedCache },
       {
-        source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|webmanifest|woff2)$)',
-        headers: staticCache,
+        source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|woff2)$)',
+        headers: publicAssetCache,
+      },
+      {
+        source: '/:file(.*\\.webmanifest$)',
+        headers: manifestCache,
       },
       ...privateSources.map((source) => ({ source, headers: privateCache })),
     ];

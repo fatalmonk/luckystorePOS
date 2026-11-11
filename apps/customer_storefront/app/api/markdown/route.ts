@@ -413,10 +413,9 @@ function mdAuthPage(variant: 'login' | 'signup'): string {
   md += `Visit [${BASE_URL}/${variant}](${BASE_URL}/${variant}) in your browser to ${action} account.\n\n`;
 
   md += `## For AI Agents\n\n`;
-  md += `Agents should use the **auth.md** protocol instead of the browser login flow:\n\n`;
-  md += `1. Read [/auth.md](${BASE_URL}/auth.md) for the full agent authentication spec\n`;
-  md += `2. Register via the \`register_uri\` endpoint described there\n`;
-  md += `3. Exchange credentials for access tokens\n\n`;
+  md += `Agents use the same account pages as customers. This host does not publish OAuth metadata or an agent registration API.\n\n`;
+  md += `1. Read [/auth.md](${BASE_URL}/auth.md)\n`;
+  md += `2. Create an account at [/signup](${BASE_URL}/signup) or sign in at [/login](${BASE_URL}/login)\n\n`;
 
   md += `### Supported Scopes\n\n`;
   md += `- \`read:products\` — Browse products, categories, prices\n`;

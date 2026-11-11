@@ -5,7 +5,7 @@ interface CloudflareLoaderParams {
 }
 
 export interface ImageResizeOptions {
-  /** When omitted, resizing is on for production builds. */
+  /** When omitted, resizing is on only if NEXT_PUBLIC_IMAGE_RESIZE=1. */
   resize?: boolean;
 }
 
@@ -13,7 +13,7 @@ const IMAGE_HOST = 'images.luckystore1947.com';
 
 function shouldResize(resize: boolean | undefined): boolean {
   if (resize !== undefined) return resize;
-  return process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '0';
+  return process.env.NEXT_PUBLIC_IMAGE_RESIZE === '1';
 }
 
 function resizeOptions(width: number | undefined, quality: number | undefined): string {
@@ -35,8 +35,8 @@ export function buildOptimizedImageUrl(
 ): string {
   if (!src) return '';
   let normalized = src.trim();
-  if (normalized.startsWith('http://')) {
-    normalized = `https://${normalized.slice('http://'.length)}`;
+  if (/^http:\/\//i.test(normalized)) {
+    normalized = `https://${normalized.slice(normalized.indexOf('://') + 3)}`;
   }
   if (
     normalized.startsWith('data:')

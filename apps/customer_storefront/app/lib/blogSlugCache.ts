@@ -2,11 +2,13 @@ const BLOG_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cachedSlugs: Set<string> | null = null;
 let cacheExpiresAt = 0;
+let cacheFresh = false;
 let refresh: Promise<Set<string> | null> | null = null;
 
 export function resetBlogSlugCacheForTest() {
   cachedSlugs = null;
   cacheExpiresAt = 0;
+  cacheFresh = false;
   refresh = null;
 }
 
@@ -46,20 +48,22 @@ async function loadBlogSlugs(): Promise<Set<string> | null> {
   if (endpoint.protocol !== 'https:') return null;
 
   const now = Date.now();
-  if (cachedSlugs && now < cacheExpiresAt) return cachedSlugs;
+  if (!refresh && now < cacheExpiresAt) return cacheFresh ? cachedSlugs : null;
   if (!refresh) {
     refresh = fetchBlogSlugs(endpoint, apiKey).then((slugs) => {
+      cacheExpiresAt = Date.now() + BLOG_CACHE_TTL_MS;
       if (slugs) {
         cachedSlugs = slugs;
-        cacheExpiresAt = Date.now() + BLOG_CACHE_TTL_MS;
+        cacheFresh = true;
+      } else {
+        cacheFresh = false;
       }
       return slugs;
     }).finally(() => {
       refresh = null;
     });
   }
-  const fresh = await refresh;
-  return fresh ?? cachedSlugs;
+  return refresh;
 }
 
 /** Returns missing only when the blog index was fetched and does not contain the slug. */

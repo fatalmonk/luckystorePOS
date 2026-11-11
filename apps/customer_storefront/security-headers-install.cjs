@@ -6,12 +6,16 @@
 const { ServerResponse } = require('http');
 const {
   SECURITY_HEADERS,
-  STATIC_CACHE_CONTROL,
+  HASHED_STATIC_CACHE_CONTROL,
+  PUBLIC_ASSET_CACHE_CONTROL,
+  MANIFEST_CACHE_CONTROL,
   PUBLIC_CATALOG_CACHE_CONTROL,
   PRIVATE_CACHE_CONTROL,
   isPrivateStorefrontPath,
   isPublicCatalogPath,
-  isStaticAssetPath,
+  isHashedStaticPath,
+  isWebManifestPath,
+  isPublicAssetPath,
 } = require('./security-headers.cjs');
 
 function pathnameOf(res) {
@@ -24,6 +28,11 @@ function pathnameOf(res) {
   }
 }
 
+function hasAuthCookie(res) {
+  const cookie = res.req && res.req.headers ? res.req.headers.cookie || '' : '';
+  return /(?:^|;\s*)sb-[^=;]*auth-token/i.test(cookie);
+}
+
 function applyOutgoingHeaders(res, statusCode) {
   if (res.headersSent) return;
   for (const header of SECURITY_HEADERS) {
@@ -33,16 +42,29 @@ function applyOutgoingHeaders(res, statusCode) {
   if (statusCode >= 500) return;
 
   const pathname = pathnameOf(res);
-  if (isPrivateStorefrontPath(pathname)) {
+  const existingCache = String(res.getHeader('cache-control') || '');
+  const existingCdn = String(res.getHeader('cdn-cache-control') || '');
+  const authed = hasAuthCookie(res) || res.hasHeader('set-cookie');
+  const markedPrivate = /(?:^|,)\s*private\b/i.test(existingCache) || /(?:^|,)\s*private\b/i.test(existingCdn);
+  if (isPrivateStorefrontPath(pathname) || authed) {
     res.setHeader('Cache-Control', PRIVATE_CACHE_CONTROL);
     res.setHeader('CDN-Cache-Control', 'private, no-store');
     return;
   }
-  if (isStaticAssetPath(pathname)) {
-    if (!res.getHeader('cache-control')) res.setHeader('Cache-Control', STATIC_CACHE_CONTROL);
+  if (markedPrivate) return;
+  if (isHashedStaticPath(pathname)) {
+    if (!existingCache) res.setHeader('Cache-Control', HASHED_STATIC_CACHE_CONTROL);
     return;
   }
-  if (isPublicCatalogPath(pathname) && !res.hasHeader('set-cookie')) {
+  if (isWebManifestPath(pathname)) {
+    if (!existingCache) res.setHeader('Cache-Control', MANIFEST_CACHE_CONTROL);
+    return;
+  }
+  if (isPublicAssetPath(pathname)) {
+    if (!existingCache) res.setHeader('Cache-Control', PUBLIC_ASSET_CACHE_CONTROL);
+    return;
+  }
+  if (isPublicCatalogPath(pathname)) {
     res.setHeader('Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
     res.setHeader('CDN-Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
   }

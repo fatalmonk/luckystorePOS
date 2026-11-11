@@ -1,10 +1,14 @@
 export const SECURITY_HEADERS: { key: string; value: string }[];
-export const STATIC_CACHE_CONTROL: string;
+export const HASHED_STATIC_CACHE_CONTROL: string;
+export const PUBLIC_ASSET_CACHE_CONTROL: string;
+export const MANIFEST_CACHE_CONTROL: string;
 export const PUBLIC_CATALOG_CACHE_CONTROL: string;
 export const PRIVATE_CACHE_CONTROL: string;
 export function isPrivateStorefrontPath(pathname: string): boolean;
 export function isPublicCatalogPath(pathname: string): boolean;
-export function isStaticAssetPath(pathname: string): boolean;
+export function isHashedStaticPath(pathname: string): boolean;
+export function isWebManifestPath(pathname: string): boolean;
+export function isPublicAssetPath(pathname: string): boolean;
 export function applySecurityHeaders(headers: { set(name: string, value: string): void }): void;
 export function escapeHtaccessQuoted(value: string): string;
 export function renderHtaccess(options?: { immutableDirectory?: boolean }): string;

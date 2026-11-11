@@ -12,9 +12,11 @@ describe('cloudflareLoader', () => {
     expect(buildOptimizedImageUrl('data:image/png;base64,123', 200, 75, { resize: true })).toBe('data:image/png;base64,123');
   });
 
-  it('enforces HTTPS before resizing an absolute product image', () => {
+  it('upgrades HTTP schemes of either case before resizing', () => {
     expect(buildOptimizedImageUrl('http://images.luckystore1947.com/products/sample.webp', 256, 70, { resize: true }))
       .toBe('https://images.luckystore1947.com/cdn-cgi/image/width=256,quality=70,format=auto,fit=scale-down/products/sample.webp');
+    expect(buildOptimizedImageUrl('HTTP://images.luckystore1947.com/products/sample.webp', 128, 75, { resize: true }))
+      .toBe('https://images.luckystore1947.com/cdn-cgi/image/width=128,quality=75,format=auto,fit=scale-down/products/sample.webp');
   });
 
   it('requests a small Cloudflare variant for product photos and keeps the cache-buster', () => {
