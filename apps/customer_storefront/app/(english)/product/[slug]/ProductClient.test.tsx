@@ -247,7 +247,8 @@ describe('ProductClient Brand Linking', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Nutrition per 100 g' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Nutrition' })).toBeInTheDocument();
+    expect(screen.getByText('per 100 g')).toBeInTheDocument();
     expect(screen.getByText('Caramel: 246.23 kcal; Chocolate: 243.95 kcal')).toBeInTheDocument();
   });
 
