@@ -168,11 +168,12 @@ const nextConfig = {
       { source: '/:path*', headers: securityAndDiscovery },
       { source: '/(.*)', headers: securityAndDiscovery },
       { source: '/images/:path*', headers: publicAssetCache },
-      { source: '/_next/static/:path*', headers: hashedCache },
       {
         source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|woff2)$)',
         headers: publicAssetCache,
       },
+      // Last matching Cache-Control wins, including for hashed fonts and images.
+      { source: '/_next/static/:path*', headers: hashedCache },
       {
         source: '/:file(.*\\.webmanifest$)',
         headers: manifestCache,

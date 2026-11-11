@@ -32,7 +32,7 @@ test('uses the Cloudflare loader instead of the built-in remote optimizer', () =
     const images = loadImageConfig(vercelValue);
     assert.equal(images.loader, 'custom');
     assert.equal(images.loaderFile, './app/lib/image-loader.ts');
-    assert.notEqual(images.unoptimized, true);
+    assert.equal(images.unoptimized, process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1');
   }
 });
 

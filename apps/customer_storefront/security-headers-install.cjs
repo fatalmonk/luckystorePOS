@@ -50,7 +50,8 @@ function applyOutgoingHeaders(res, statusCode) {
   const existingCache = String(res.getHeader('cache-control') || '');
   const existingCdn = String(res.getHeader('cdn-cache-control') || '');
   const authed = hasAuthCookie(res) || res.hasHeader('set-cookie');
-  const markedPrivate = /(?:^|,)\s*private\b/i.test(existingCache) || /(?:^|,)\s*private\b/i.test(existingCdn);
+  const markedPrivate = /(?:^|,)\s*(?:private|no-store)\b/i.test(existingCache)
+    || /(?:^|,)\s*(?:private|no-store)\b/i.test(existingCdn);
   if (isPrivateStorefrontPath(pathname) || authed) {
     res.setHeader('Cache-Control', PRIVATE_CACHE_CONTROL);
     res.setHeader('CDN-Cache-Control', 'private, no-store');
@@ -82,22 +83,37 @@ function installSecurityHeaders() {
 
   ServerResponse.prototype.writeHead = function writeHeadWithSecurity(status, ...rest) {
     const code = typeof status === 'number' ? status : this.statusCode || 200;
-    applyOutgoingHeaders(this, code);
-    const explicit = rest.length > 0 && rest[rest.length - 1] && typeof rest[rest.length - 1] === 'object' && !Array.isArray(rest[rest.length - 1])
-      ? rest[rest.length - 1]
+    const headerIndex = rest.length - 1;
+    const explicit = headerIndex >= 0 && rest[headerIndex] && typeof rest[headerIndex] === 'object'
+      ? rest[headerIndex]
       : null;
-    if (explicit) {
+    const protectedHeader = (key) => key === 'cache-control'
+      || key === 'cdn-cache-control'
+      || SECURITY_HEADERS.some((header) => header.key.toLowerCase() === key);
+    if (Array.isArray(explicit)) {
+      const remaining = [];
+      for (let i = 0; i < explicit.length; i += 2) {
+        const key = explicit[i];
+        const value = explicit[i + 1];
+        const lower = String(key).toLowerCase();
+        if (lower === 'set-cookie' || lower === 'cache-control' || lower === 'cdn-cache-control') {
+          this.setHeader(key, value);
+        }
+        if (!protectedHeader(lower)) remaining.push(key, value);
+      }
+      rest[headerIndex] = remaining;
+    } else if (explicit) {
       for (const key of Object.keys(explicit)) {
         const lower = key.toLowerCase();
-        if (
-          lower === 'cache-control'
-          || lower === 'cdn-cache-control'
-          || SECURITY_HEADERS.some((header) => header.key.toLowerCase() === lower)
-        ) {
+        if (lower === 'set-cookie' || lower === 'cache-control' || lower === 'cdn-cache-control') {
+          this.setHeader(key, explicit[key]);
+        }
+        if (protectedHeader(lower)) {
           delete explicit[key];
         }
       }
     }
+    applyOutgoingHeaders(this, code);
     return originalWriteHead.call(this, status, ...rest);
   };
 

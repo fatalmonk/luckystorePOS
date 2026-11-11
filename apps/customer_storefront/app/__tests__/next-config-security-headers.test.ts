@@ -57,6 +57,14 @@ describe('next.config.js security headers', () => {
     expect(PUBLIC_CATALOG_CACHE_CONTROL).not.toContain('no-store');
   });
 
+  it('keeps the hashed static rule after the overlapping font and image rule', () => {
+    const publicExtensionIndex = headers.findIndex((rule) => rule.source.includes('woff2'));
+    const hashedStaticIndex = headers.findIndex((rule) => rule.source === '/_next/static/:path*');
+    expect(publicExtensionIndex).toBeGreaterThanOrEqual(0);
+    expect(hashedStaticIndex).toBeGreaterThan(publicExtensionIndex);
+    expect(headerMap(headers[hashedStaticIndex]).get('Cache-Control')).toBe('public, max-age=31536000, immutable');
+  });
+
   it('writes the same security headers into the LiteSpeed htaccess file', () => {
     const htaccess = readFileSync(path.join(__dirname, '../../public/.htaccess'), 'utf8');
     expect(htaccess).toBe(renderHtaccess());

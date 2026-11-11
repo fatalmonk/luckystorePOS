@@ -17,6 +17,21 @@ describe('outgoing security header install', () => {
         res.end('profile');
         return;
       }
+      if (req.url === '/product/cookie') {
+        res.writeHead(200, { 'Set-Cookie': 'session=value; Path=/', 'Cache-Control': 'public, max-age=3600' });
+        res.end('cookie');
+        return;
+      }
+      if (req.url === '/product/cookie-array') {
+        res.writeHead(200, ['Set-Cookie', 'session=value; Path=/', 'Cache-Control', 'public, max-age=3600']);
+        res.end('cookie');
+        return;
+      }
+      if (req.url === '/product/private') {
+        res.writeHead(200, { 'Cache-Control': 'no-store' });
+        res.end('private');
+        return;
+      }
       res.end('ok');
     });
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -73,6 +88,16 @@ describe('outgoing security header install', () => {
       });
       expect(profile.headers.get('x-frame-options')).toBe('SAMEORIGIN');
       expect(profile.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+
+      for (const path of ['/product/cookie', '/product/cookie-array']) {
+        const response = await read(path);
+        expect(response.headers.get('set-cookie')).toContain('session=value');
+        expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0, must-revalidate');
+        expect(response.headers.get('cdn-cache-control')).toBe('private, no-store');
+      }
+      const explicitlyPrivate = await read('/product/private');
+      expect(explicitlyPrivate.headers.get('cache-control')).toBe('no-store');
+      expect(explicitlyPrivate.headers.get('cdn-cache-control')).toBeNull();
 
       const failure = await read('/boom');
       expect(failure.status).toBe(500);
