@@ -6,7 +6,8 @@
 
 ## Decisions
 - 20261111-lighthouse: Public catalog HTML is ISR (120s) with `public, max-age=0, s-maxage=120`. Cart, checkout, login, profile, order, and wishlist stay `private, no-store`. Hashed `/_next/static` files get a one-year immutable cache. Unhashed public images cache for 30 days, and web manifests for one hour. Security headers are applied in Next config, middleware, the Node response hook, and LiteSpeed `.htaccess`.
-- 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
+- 20261111-csp: CSP is report-only because the storefront uses inline scripts and third-party tags. `upgrade-insecure-requests` is omitted there; browsers ignore it in report-only mode and log an error. HSTS max-age is 31536000 in the app; Cloudflare currently sends 15552000 and must be changed in the dashboard.
+- 20261111-e2e-static: Storefront E2E copies standalone `public` and `/_next/static` with `cp -a src/. dest/` so traced font and CSS files already in those directories do not nest the chunk folder.
 - 20261111-fonts: Geist Mono is not loaded; prices use the system monospace stack. Noto Sans Bengali is a Bengali-only file and loads on `/bn` pages only.
 - 20261111-htaccess-escape: Apache header values escape backslashes before quotes so a quoted `.htaccess` value cannot break out.
 - 20261111-review-fixes: Hostinger's entry file loads the header bootstrap. Unhashed public files cache for 30 days without `immutable`; manifests cache for one hour. Image resizing is on only when `NEXT_PUBLIC_IMAGE_RESIZE=1`, which the Hostinger build sets. Authenticated responses keep private cache headers.

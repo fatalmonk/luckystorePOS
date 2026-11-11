@@ -13,6 +13,8 @@ const SECURITY_HEADERS = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
   {
+    // Report-only on purpose. Do not add upgrade-insecure-requests here:
+    // browsers ignore that directive in a report-only policy and log an error.
     key: 'Content-Security-Policy-Report-Only',
     value: [
       "default-src 'self'",
@@ -26,7 +28,6 @@ const SECURITY_HEADERS = [
       "img-src 'self' data: blob: https://images.luckystore1947.com https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://*.facebook.com https://maps.gstatic.com https://maps.googleapis.com https://*.google.com https://*.gstatic.com",
       "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com https://*.facebook.com https://maps.googleapis.com https://images.luckystore1947.com https://agent.luckystore1947.com https://notfair.co https://cloudflareinsights.com https://*.cloudflare.com",
       "frame-src 'self' https://www.google.com https://maps.google.com https://www.googletagmanager.com https://www.facebook.com",
-      'upgrade-insecure-requests',
     ].join('; '),
   },
   {
