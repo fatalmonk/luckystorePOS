@@ -2,9 +2,11 @@
 ## Stack
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 ## Current Task
-- 20261110-pr609-post-merge-reconciliation: PR #609 merged as `9c19c5f5b57a4d24526696390d9cd33158c1321f`; at the 2026-11-10 bounded smoke, production `/api/health` reported that SHA. Published/unpublished Bengali indexing, sampled canonical/hreflang/head placement, and security-header checks passed. Remaining PerfBee groups require fresh crawl evidence.
+- 20261112-product-enrichment: Updated 10 Dano records and clarified Avonee evidence as a manufacturer range listing, not exact-pack verification. Delight 200g omits conflicting energy; sugars/salt rows say `Not stated`. No third Delight pack was found. Corrected Pushti ingredients and URLs and added product cautions.
 
 ## Decisions
+- 20261111-official-enrichment-scope: Update 6 exact-pack Dano records, Avonee L 48, Bashundhara Gold tissue, and 2 BelleAme 240g cookies. Hold two other tissue records because their catalog category is incorrectly `Pest Control`; enrichment alone must not conceal catalog drift.
+- 20261112-product-evidence: Draft folder covers 100 IDs / 127 URLs with 13 MATCHED, 37 PARTIAL, 44 UNAVAILABLE, 5 CONFLICT, and 1 REDIRECT_ALIAS; 33 official sources and 6 exact-pack nutrition records. Bashundhara Restaurant Napkin was matched from exact-name manufacturer evidence; 250 Poly hand towel and 100-piece facial tissue candidates remain partial pending pack confirmation. Structural checks were not rerun. MATCHED evidence does not prove current stock or publication readiness. Daily Pushti sources list ingredients but no percentages.
 - 20261110-dove-storefront-release: PR #610 merged; exact English and Bengali duplicate-product redirects are implemented, the duplicate is excluded from emergency browse fallback, stale-cart cleanup is preserved, and focused tests plus CI passed.
 - 20261110-dove-reconciliation: Owner-confirmed physical stock is 4; plan `2 + 2 -> 4 + 0`, retain duplicate row/history, deactivate only after fresh revalidation, and remove duplicate from browse fallback while keeping stale-cart purge ID.
 - 20261110-dove-storefront: PR #610 adds exact English/Bengali permanent redirects and removes duplicate from browse fallback while preserving cart purge ID. It merged into `main` at `53ec205b73d5cd57fd82c05c59e4a59218e1ea50`; production deployment and image bytes remain unverified.
@@ -31,6 +33,7 @@
 - 20261108-migration-parity-gate: removed `migration-parity-gate` job and its dependency from the active Hostinger workflow. Migration scripts (`scripts/ci/release-migrations.mjs` and helpers) retained as dormant reference tooling but explicitly not release-authoritative.
 - 20261108-todo-update: updated `tasks/todo.md` to mark migration manifest selection, independent target verification, RPC introspection, CI evidence generation, and migration application as pending follow-up work.
 ## Blockers
+- 20261111-enrichment-build-env: Storefront build compiles and typechecks, then blog prerender fails because clean worktree lacks Supabase and `NOTFAIR_SEO_API_KEY`; full build/HTML contract remains unverified locally.
 - 20261108-e6r-production-parity: the supplied production evidence records 276 migrations but not the exact full version set; do not claim global version parity from count equality.
 - 20261108-e6r-test-local-only: nine local-only migrations are outside the reviewed manifest, so test-project version parity remains `PENDING`.
 - 20261108-committed-db-secret: `scripts/db/backup_db.mjs` contains a committed production database connection string. Treat it as exposed and handle removal plus credential rotation as separate security remediation.
@@ -43,4 +46,4 @@
 - 20261108-workflow-cleanup: migrated hostinger workflow (YAML valid) with deprecated migration gate removed; deploy-production now correctly needs `[resolve-context, test-staging]`.
 - 20261108-task-tracking: updated `tasks/todo.md` to reflect remaining E6-M/E6-B/E6-C/E6-D/E6-L/E6-H/E6-P/E6-K/E6-V/E6-S1/E6-S2/E6-S3 backlog.
 ## Next
-- Obtain a fresh bounded PerfBee crawl or URL rechecks before reconciling remaining sitewide findings. Keep the Dove remediation work in its separate worktree; no production data changes or deployment without authorization.
+- Add Daily Pushti 1kg and Power 50g only if matching catalog UUIDs are confirmed; directly verify 1kg nutrition first. No live catalog updates, image sync, merge, or deployment.

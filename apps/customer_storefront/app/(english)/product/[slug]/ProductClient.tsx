@@ -280,10 +280,40 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
 
           {locale === 'en' && (displayEnrichment?.nutrition || product.nutrition) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.nutrition}{displayEnrichment?.nutrition?.basis ? ` ${displayEnrichment.nutrition.basis}` : ''}</h2>
-              <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
-                {displayEnrichment?.nutrition?.text || product.nutrition}
-              </p>
+              <h2 className="text-base font-bold mb-2 text-warm-fg">{dict.productPage.nutrition}</h2>
+              {displayEnrichment?.nutrition?.basis && !displayEnrichment.nutrition.rows && (
+                <p className="mb-3 text-xs text-warm-muted">
+                  {displayEnrichment.nutrition.basis}
+                  {displayEnrichment.nutrition.sourceLabel ? ` · ${displayEnrichment.nutrition.sourceLabel}` : ''}
+                </p>
+              )}
+              {displayEnrichment?.nutrition?.rows && displayEnrichment.nutrition.sourceLabel && (
+                <p className="mb-3 text-xs text-warm-muted">{displayEnrichment.nutrition.sourceLabel}</p>
+              )}
+              {displayEnrichment?.nutrition?.rows ? (
+                <div className="overflow-x-auto max-w-3xl">
+                  <table className="w-full border-collapse text-sm text-warm-muted">
+                    <thead>
+                      <tr className="border-b border-warm-border text-left">
+                        <th scope="col" className="px-3 py-2 font-semibold text-warm-fg">Typical values</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-warm-fg">{displayEnrichment.nutrition.basis}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayEnrichment.nutrition.rows.map((row) => (
+                        <tr key={row.label} className="border-b border-warm-border last:border-0">
+                          <th scope="row" className="px-3 py-2 text-left font-medium">{row.label}</th>
+                          <td className="px-3 py-2">{row.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
+                  {displayEnrichment?.nutrition?.text || product.nutrition}
+                </p>
+              )}
             </section>
           )}
 
