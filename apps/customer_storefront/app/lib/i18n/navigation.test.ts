@@ -49,6 +49,9 @@ describe('hasBengaliRoute', () => {
     '/terms/extra',
     '/terms/extra/',
     '/brands/acme',
+    '/category/a/b',
+    '/product/x/y',
+    '/bn/brand/a/b',
   ])(
     'rejects paths without a Bengali counterpart: %s',
     (pathname) => {
@@ -63,6 +66,8 @@ describe('getLocalizedPathname', () => {
     ['/contact?y=1#top', 'bn', '/bn'],
     ['/contact', 'en', '/contact'],
     ['/category/rice-and-grain', 'bn', '/bn/category/rice-and-grain'],
+    ['/category/a/b', 'bn', '/bn'],
+    ['/product/x/y', 'bn', '/bn'],
     ['/bn/about', 'en', '/about'],
     ['/bn/about', 'bn', '/bn/about'],
     ['/about/', 'bn', '/bn/about/'],

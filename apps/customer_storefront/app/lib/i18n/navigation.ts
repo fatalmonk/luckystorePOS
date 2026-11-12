@@ -26,7 +26,11 @@ export function hasBengaliRoute(pathname: string): boolean {
   const path = stripLocalePrefix(pathname.split(/[?#]/, 1)[0] ?? '/');
   const normalizedPath = path === '/' ? path : path.replace(/\/+$/, '');
   return BENGALI_ROUTE_PATHS.some((route) => normalizedPath === route)
-    || BENGALI_ROUTE_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix));
+    || BENGALI_ROUTE_PREFIXES.some((prefix) => {
+      if (!normalizedPath.startsWith(prefix)) return false;
+      const slug = normalizedPath.slice(prefix.length);
+      return slug.length > 0 && !slug.includes('/');
+    });
 }
 
 export function getLocalizedPathname(pathname: string, targetLocale: Locale): string {
