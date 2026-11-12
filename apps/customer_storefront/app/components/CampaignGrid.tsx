@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
+import { buildOptimizedImageUrl } from '../lib/image-loader';
 import Link from 'next/link';
 import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
@@ -9,6 +9,19 @@ import { MapPin } from '@phosphor-icons/react/dist/csr/MapPin';
 import { MarketPanel } from './ui/MarketSurface';
 import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import type { Product } from '../lib/types';
+
+const CAMPAIGN_HERO_PATH = '/images/hero-reference.webp';
+const CAMPAIGN_HERO_SIZES = '(max-width: 1280px) 100vw, 1280px';
+const CAMPAIGN_HERO_WIDTHS = [480, 640, 828, 1080, 1280, 1600];
+const RESIZE_CAMPAIGN_HERO = process.env.NEXT_PUBLIC_IMAGE_RESIZE === '1';
+const CAMPAIGN_HERO_SRC = RESIZE_CAMPAIGN_HERO
+  ? buildOptimizedImageUrl(CAMPAIGN_HERO_PATH, 1280, 75, { resize: true })
+  : CAMPAIGN_HERO_PATH;
+const CAMPAIGN_HERO_SRC_SET = RESIZE_CAMPAIGN_HERO
+  ? CAMPAIGN_HERO_WIDTHS
+    .map((width) => `${buildOptimizedImageUrl(CAMPAIGN_HERO_PATH, width, 75, { resize: true })} ${width}w`)
+    .join(', ')
+  : undefined;
 import type { Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
 import { withLocale } from '../lib/i18n/config';
@@ -34,14 +47,16 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
       <div className="flex w-full flex-col gap-4 sm:gap-6">
         <div className="campaign-feature relative isolate min-h-[17rem] overflow-hidden rounded-2xl bg-[var(--color-campaign-surface-feature)] text-[var(--color-campaign-ink)] sm:min-h-[20rem] lg:min-h-[24rem] xl:min-h-[26rem]">
           <div role="img" aria-label={dict.campaign.basketAlt} className="absolute inset-0 -z-20">
-            <Image
-              src="/images/hero-reference.webp"
+            {/* eslint-disable-next-line @next/next/no-img-element -- Cloudflare variants keep the priority hero right-sized at each viewport. */}
+            <img
+              src={CAMPAIGN_HERO_SRC}
+              srcSet={CAMPAIGN_HERO_SRC_SET}
+              sizes={CAMPAIGN_HERO_SIZES}
               alt=""
-              fill
-              priority
+              loading="eager"
               fetchPriority="high"
-              sizes="(max-width: 1280px) 100vw, 1280px"
-              className="object-cover object-[82%_center] sm:object-center"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-[82%_center] sm:object-center"
             />
           </div>
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(255,237,180,0.96)_0%,rgba(255,237,180,0.88)_55%,rgba(255,237,180,0.4)_100%)] sm:bg-[linear-gradient(90deg,#ffedb4_0%,#ffedb4_44%,rgba(255,237,180,0.85)_53%,rgba(255,237,180,0)_72%)] lg:bg-[linear-gradient(90deg,rgba(255,237,180,0.9)_0%,rgba(255,237,180,0.96)_12%,#ffedb4_27%,rgba(255,237,180,0.9)_38%,rgba(255,237,180,0)_58%,rgba(255,237,180,0.08)_78%,rgba(255,237,180,0.38)_100%)]" aria-hidden="true" />

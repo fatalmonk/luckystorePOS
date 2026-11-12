@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 
-const WebMCPInit = dynamic(() => import('./WebMCPInit').then((mod) => mod.WebMCPInit), { ssr: false });
 const WhatsAppFloat = dynamic(() => import('./WhatsAppFloat').then((mod) => mod.WhatsAppFloat), { ssr: false });
 const MetaPixel = dynamic(() => import('./MetaPixel').then((mod) => mod.MetaPixel), { ssr: false });
 
@@ -10,7 +9,6 @@ const MetaPixel = dynamic(() => import('./MetaPixel').then((mod) => mod.MetaPixe
 export function DeferredClientWidgets() {
   return (
     <>
-      <WebMCPInit />
       <WhatsAppFloat />
       <MetaPixel />
     </>

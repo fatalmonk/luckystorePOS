@@ -147,14 +147,6 @@ export function HomeShell({
             />
             <DeferredHomeShelvesGate
               locale={locale}
-              pantryProducts={pantryProducts}
-              snacksProducts={snacksProducts}
-              personalCareProducts={personalCareProducts}
-              weeklyDealProducts={weeklyDealProducts}
-              discountedProductCount={discountedProductCount}
-              weeklyPicks={weeklyPicks}
-              weeklyEditionActive={weeklyEditionActive}
-              weeklyEditionUnavailable={weeklyEditionUnavailable}
             />
           </div>
         </div>

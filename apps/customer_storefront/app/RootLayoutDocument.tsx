@@ -5,6 +5,7 @@ import { Bricolage_Grotesque, Manrope } from 'next/font/google';
 import './globals.css';
 import { PullToRefresh } from './components/PullToRefresh';
 import { DeferredClientWidgets } from './components/DeferredClientWidgets';
+import { WebMCPInit } from './components/WebMCPInit';
 import { ToastProvider } from './components/Toast';
 import { CartProvider } from './components/CartProvider';
 import { CartSheetProvider } from './components/providers/CartSheetProvider';
@@ -228,70 +229,9 @@ export default function RootLayoutDocument({
         >
           Skip to main content
         </a>
-        <Script id="google-consent-default" strategy="beforeInteractive" data-cfasync="false">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
-            gtag('consent', 'default', {
-              ad_storage: 'denied',
-              ad_user_data: 'denied',
-              ad_personalization: 'denied',
-              analytics_storage: 'denied',
-              wait_for_update: 500
-            });
-            gtag('set', 'ads_data_redaction', true);
-
-            try {
-              if (localStorage.getItem('lucky-analytics-consent') === 'granted') {
-                gtag('consent', 'update', {
-                  ad_storage: 'denied',
-                  ad_user_data: 'denied',
-                  ad_personalization: 'denied',
-                  analytics_storage: 'granted'
-                });
-              }
-            } catch (error) {
-              // Storage can be unavailable in privacy-restricted browsers.
-            }
-          `}
-        </Script>
+        <Script id="google-consent-default" src="/scripts/google-consent-default.v1.js" strategy="beforeInteractive" data-cfasync="false" />
         {/* Google Analytics — consolidated with Cloudflare Zaraz to avoid redundant 173 KiB script when Zaraz is active */}
-        <Script id="gtag-init" strategy="lazyOnload">
-          {`
-            var consentStorageKey = 'lucky-analytics-consent';
-            var getAnalyticsChoice = function(){
-              try { return localStorage.getItem(consentStorageKey); } catch (error) { return null; }
-            };
-            var loadGtag = function(){
-              if (getAnalyticsChoice() !== 'granted') return;
-              if (document.querySelector('script[data-lucky-gtag]')) return;
-              if (window.zaraz || window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) {
-                // Cloudflare Zaraz is active at edge; skip direct gtag.js download
-                return;
-              }
-              var script = document.createElement('script');
-              script.async = true;
-              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-K5JLJNSW6D';
-              script.dataset.luckyGtag = 'true';
-              script.setAttribute('data-cfasync', 'false');
-              script.onload = function(){
-                gtag('js', new Date());
-                gtag('config', 'G-K5JLJNSW6D');
-              };
-              document.head.appendChild(script);
-            };
-            window.luckyLoadGoogleAnalytics = loadGtag;
-            var scheduleGtag = function(){
-              window.setTimeout(loadGtag, 3000);
-            };
-            if (getAnalyticsChoice() === 'granted' && 'requestIdleCallback' in window) {
-              window.requestIdleCallback(scheduleGtag, { timeout: 5000 });
-            } else if (getAnalyticsChoice() === 'granted') {
-              scheduleGtag();
-            }
-          `}
-        </Script>
+        <Script id="gtag-init" src="/scripts/google-analytics-loader.v1.js" strategy="lazyOnload" data-cfasync="false" />
         <div
           id="lucky-consent-banner"
           role="region"
@@ -334,117 +274,7 @@ export default function RootLayoutDocument({
             </button>
           </div>
         </div>
-        <Script id="google-consent-ui" strategy="afterInteractive">
-          {`
-            (function () {
-              var storageKey = 'lucky-analytics-consent';
-              var banner = document.getElementById('lucky-consent-banner');
-              var accept = document.getElementById('lucky-consent-accept');
-              var reject = document.getElementById('lucky-consent-reject');
-              if (!banner || !accept || !reject) return;
-
-              var readChoice = function () {
-                try { return localStorage.getItem(storageKey); } catch (error) { return null; }
-              };
-              var saveChoice = function (value) {
-                try { localStorage.setItem(storageKey, value); } catch (error) {}
-              };
-              var clearAnalyticsCookies = function () {
-                var hostParts = location.hostname.split('.');
-                var domains = ['', location.hostname];
-                if (hostParts.length > 2) domains.push('.' + hostParts.slice(-2).join('.'));
-                document.cookie.split(';').forEach(function (cookie) {
-                  var name = cookie.split('=')[0].trim();
-                  if (name === '_ga' || name.indexOf('_ga_') === 0 || name === '_fbp' || name === '_fbc') {
-                    domains.forEach(function (domain) {
-                      document.cookie = name + '=; Max-Age=0; path=/' + (domain ? '; domain=' + domain : '');
-                    });
-                  }
-                });
-              };
-              var showBanner = function () {
-                banner.hidden = false;
-              };
-              var hideBanner = function () {
-                banner.hidden = true;
-              };
-              var pendingZarazConsent = null;
-              var syncZarazConsent = function (analyticsStorage) {
-                var consent = window.zaraz && window.zaraz.consent;
-                if (consent && consent.APIReady) {
-                  try {
-                    consent.set({ onAw: analyticsStorage === 'granted' });
-                    pendingZarazConsent = null;
-                    return;
-                  } catch (error) {}
-                }
-                pendingZarazConsent = analyticsStorage;
-              };
-              document.addEventListener('zarazConsentAPIReady', function () {
-                if (pendingZarazConsent === null) return;
-                var consent = window.zaraz && window.zaraz.consent;
-                if (!consent) return;
-                try {
-                  consent.set({ onAw: pendingZarazConsent === 'granted' });
-                  pendingZarazConsent = null;
-                } catch (error) {}
-              });
-              var updateConsent = function (analyticsStorage) {
-                window.gtag('consent', 'update', {
-                  ad_storage: 'denied',
-                  ad_user_data: 'denied',
-                  ad_personalization: 'denied',
-                  analytics_storage: analyticsStorage
-                });
-                syncZarazConsent(analyticsStorage);
-              };
-              var loadGoogleTagManager = function () {
-                if (window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) return;
-                window.luckyGtmLoading = true;
-                window.dataLayer = window.dataLayer || [];
-                window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-                var script = document.createElement('script');
-                script.async = true;
-                script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-PH4QHV3N';
-                script.setAttribute('data-cfasync', 'false');
-                script.onload = function () {
-                  window.luckyGtmLoaded = true;
-                  window.luckyGtmLoading = false;
-                };
-                script.onerror = function () {
-                  window.luckyGtmLoading = false;
-                };
-                document.head.appendChild(script);
-              };
-
-              accept.addEventListener('click', function () {
-                saveChoice('granted');
-                updateConsent('granted');
-                loadGoogleTagManager();
-                if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
-                if (window.luckyLoadMetaPixel) window.luckyLoadMetaPixel();
-                hideBanner();
-              });
-              reject.addEventListener('click', function () {
-                saveChoice('denied');
-                updateConsent('denied');
-                clearAnalyticsCookies();
-                hideBanner();
-              });
-
-              var savedChoice = readChoice();
-              if (savedChoice) hideBanner();
-              else showBanner();
-              if (savedChoice === 'granted' || savedChoice === 'denied') {
-                updateConsent(savedChoice);
-              }
-              if (savedChoice === 'granted') {
-                loadGoogleTagManager();
-              }
-              if (savedChoice === 'denied') clearAnalyticsCookies();
-            })();
-          `}
-        </Script>
+        <Script id="google-consent-ui" src="/scripts/google-consent-ui.v1.js" strategy="afterInteractive" data-cfasync="false" />
         <AuthProvider>
           <ThemeProvider>
             <CartProvider>
@@ -454,6 +284,7 @@ export default function RootLayoutDocument({
                   <div className="app-container">
                     {children}
                   </div>
+                  <WebMCPInit />
                   <DeferredClientWidgets />
                 </CartSheetProvider>
               </ToastProvider>

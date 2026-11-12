@@ -33,11 +33,19 @@ export default async function Home() {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Featured groceries at Lucky Store',
-    itemListElement: data.featuredProducts.map((product, index) => ({
+    itemListElement: data.featuredProducts
+      .filter((product) => Number.isFinite(product.price) && product.price >= 0)
+      .map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      name: product.name,
-      url: `https://www.luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
+      item: {
+        '@type': 'Product',
+        name: product.name,
+        url: `https://www.luckystore1947.com/product/${toProductSlug(product.name, product.id)}`,
+        ...(!data.catalogSnapshotFallback && Number.isFinite(product.price) && product.price >= 0
+          ? { offers: { '@type': 'Offer', priceCurrency: 'BDT', price: product.price } }
+          : {}),
+      },
     })),
   };
 

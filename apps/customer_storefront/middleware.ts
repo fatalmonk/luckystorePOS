@@ -20,6 +20,37 @@ type ProductLookup =
   | { status: 'missing' }
   | { status: 'unknown' };
 
+function getAcceptPreferences(accept: string) {
+  const accepted = accept
+    .toLowerCase()
+    .split(',')
+    .map((entry) => {
+      const [mediaType = '', ...parameters] = entry.trim().split(';');
+      const qualityParameter = parameters.find((parameter) => parameter.trim().startsWith('q='));
+      const quality = qualityParameter ? Number(qualityParameter.trim().slice(2)) : 1;
+      return { mediaType: mediaType.trim(), quality: Number.isFinite(quality) ? quality : 0 };
+    });
+
+  const preferenceFor = (target: string) => {
+    const [type] = target.split('/');
+    const ranges = [
+      { mediaType: target, specificity: 2 },
+      { mediaType: `${type}/*`, specificity: 1 },
+      { mediaType: '*/*', specificity: 0 },
+    ];
+    for (const range of ranges) {
+      const match = accepted.find((entry) => entry.mediaType === range.mediaType);
+      if (match) return { quality: match.quality, specificity: range.specificity };
+    }
+    return { quality: 0, specificity: -1 };
+  };
+
+  return {
+    markdown: preferenceFor('text/markdown'),
+    html: preferenceFor('text/html'),
+  };
+}
+
 function notFoundResponse() {
   const response = new NextResponse('Not Found', {
     status: 404,
@@ -378,14 +409,23 @@ export async function middleware(request: NextRequest) {
 
   const accept = request.headers.get('accept') || '';
   const userAgent = request.headers.get('user-agent') || '';
+  const acceptPreferences = getAcceptPreferences(accept);
 
   // AI bots that prefer structured markdown over heavy client JS
   const isKnownAiBot = /GPTBot|PerplexityBot|ClaudeBot|cohere-ai|OAI-SearchBot|Applebot-Extended/i.test(userAgent);
 
   // Check if client wants markdown via Accept header or AI User-Agent (when html isn't forced)
-  const wantsMarkdown =
-    (accept.includes('text/markdown') && !accept.includes('text/html')) ||
-    (isKnownAiBot && !accept.includes('text/html'));
+  const explicitlyRejectsMarkdown =
+    acceptPreferences.markdown.specificity === 2 && acceptPreferences.markdown.quality === 0;
+  const explicitlyAcceptsHtml =
+    acceptPreferences.html.specificity === 2 && acceptPreferences.html.quality > 0;
+  const markdownPreferred = acceptPreferences.markdown.quality > acceptPreferences.html.quality ||
+    (acceptPreferences.markdown.quality === acceptPreferences.html.quality &&
+      acceptPreferences.markdown.specificity > acceptPreferences.html.specificity);
+  const wantsMarkdown = !explicitlyRejectsMarkdown && (
+    (acceptPreferences.markdown.quality > 0 && markdownPreferred) ||
+    (isKnownAiBot && !explicitlyAcceptsHtml)
+  );
 
   const originalPath = request.nextUrl.pathname;
   const isStaticTextDoc =

@@ -25,7 +25,7 @@ export function Logo({ className = '', href, variant = 'default', onClick, local
   const targetHref = href !== undefined ? (isBn && href === '/' ? '/bn' : href) : defaultHref;
 
   const lightSrc = isBn ? '/logo-bangla.svg' : '/logo-main.png';
-  const darkSrc = isBn ? '/logo-bangla-inverse.svg' : '/logo-main-inverse.png';
+  const darkSrc = isBn ? '/logo-bangla-inverse.svg' : '/logo-main-inverse.webp';
   const altText = isBn ? 'লাকি স্টোর ১৯৪৭' : 'Lucky Store 1947';
 
   const content = (
