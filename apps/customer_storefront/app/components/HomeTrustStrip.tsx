@@ -75,26 +75,24 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
         {facts.map(({ icon: Icon, iconClassName, title, detail, href }, index) => (
           <div
             key={title}
-            className={`relative flex min-h-[5.5rem] items-start gap-2.5 border-warm-fg/40 py-3 sm:min-h-[4.75rem] sm:items-center sm:gap-3 lg:min-h-[3.75rem] lg:border-b-0 lg:px-4 lg:py-2 lg:first:pl-0 ${
+            className={`relative grid min-h-[5.5rem] grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-x-2.5 border-warm-fg/40 py-3 sm:min-h-[4.75rem] sm:items-center sm:gap-x-3 lg:min-h-[3.75rem] lg:border-b-0 lg:px-4 lg:py-2 lg:first:pl-0 ${
               index < 2 ? 'border-b' : ''
             } ${index % 2 === 0 ? 'border-r pr-3' : 'pl-3'} ${
               index < facts.length - 1 ? 'lg:border-r' : 'lg:border-r-0'
             }`}
           >
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconClassName}`}>
-              <Icon size={19} weight="regular" aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <dt className="text-xs font-bold leading-5 text-warm-fg sm:text-sm">
-                <Link
-                  href={href.startsWith('/contact') ? href : withLocale(href, locale)}
-                  className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-                >
-                  {title}
-                </Link>
-              </dt>
-              <dd className="mt-0.5 text-xs leading-5 text-warm-muted">{detail}</dd>
-            </div>
+            <dt className="col-span-2 flex items-center gap-2.5 text-xs font-bold leading-5 text-warm-fg sm:gap-3 sm:text-sm">
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconClassName}`}>
+                <Icon size={19} weight="regular" aria-hidden="true" />
+              </span>
+              <Link
+                href={href.startsWith('/contact') ? href : withLocale(href, locale)}
+                className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              >
+                {title}
+              </Link>
+            </dt>
+            <dd className="col-start-2 mt-0.5 text-xs leading-5 text-warm-muted">{detail}</dd>
           </div>
         ))}
       </dl>
