@@ -40,6 +40,11 @@ const MONEY_PAGE_METADATA: Record<string, { title: string; description: string }
     description:
       'Shop Ispahani Mirzapore, Taaza tea and coffee online from Lucky Store in Chittagong. Cash on Delivery and local delivery available.',
   },
+  'ice-cream': {
+    title: 'Ice Cream in Chittagong | Lucky Store',
+    description:
+      'Browse ice cream tubs, cones and popsicles at Lucky Store in Chittagong. Check current prices and availability, then order for local delivery.',
+  },
 };
 
 export const revalidate = 120;

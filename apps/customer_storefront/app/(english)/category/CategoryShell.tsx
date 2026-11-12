@@ -34,12 +34,13 @@ interface CategoryShellProps {
   locale?: Locale;
 }
 
-const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any }> = {
+const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any; seoIntro?: string }> = {
   'ice-cream': {
     title: 'Ice Cream & Frozen Delights',
     subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
     badge: 'Chilled & Sweet',
     bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
+    seoIntro: 'Shop ice cream in Chittagong from Lucky Store in Chawkbazar. Browse tubs, cones and popsicles, check current prices and availability, and order for local delivery.',
   },
   'ice-creams': {
     title: 'Ice Cream & Frozen Delights',
@@ -135,6 +136,7 @@ export function CategoryShell({
   };
 
   const bannerConfig = BANNER_MAP[categorySlug] || (group?.slug && BANNER_MAP[group.slug]) || defaultBanner;
+  const categoryHeading = !isBn && categorySlug === 'ice-cream' ? 'Ice Cream in Chittagong' : prettyName;
   const showFortuneCookiesIntentLink = categorySlug === 'biscuits-and-cookies';
 
   const hasActiveFilters = Boolean(
@@ -210,7 +212,7 @@ export function CategoryShell({
               )}
               <div className="space-y-4">
                 <CategoryHero
-                  name={prettyName}
+                  name={categoryHeading}
                   locale={locale}
                   description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
                   imageUrl={bannerConfig.bgImage.src}
@@ -220,6 +222,11 @@ export function CategoryShell({
                   icon={getCategoryIcon(group?.slug || categorySlug, 28)}
                   productCount={productCount}
                 />
+                {!isBn && bannerConfig.seoIntro && (
+                  <p className="max-w-4xl text-sm leading-6 text-warm-muted sm:text-base">
+                    {bannerConfig.seoIntro}
+                  </p>
+                )}
                 {showFortuneCookiesIntentLink && (
                   <section className="rounded-warm-card border border-warm-border bg-warm-surface p-3 shadow-warm-sm sm:p-4">
                     <div className="flex items-center justify-between gap-2 sm:gap-4">

@@ -976,6 +976,17 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
   });
 
   describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
+    it('gives the English homepage a local, date-grounded title and delivery snippet', async () => {
+      const { metadata } = await import('../../(english)/page');
+      expect((metadata.title as any)?.absolute).toBe('Lucky Store | Chawkbazar Grocery Since 1947');
+      expect(metadata.description).toContain('Chawkbazar, Chattogram');
+      expect(metadata.description).toContain('since 1947');
+      expect(metadata.description).toContain('9 AM–12:30 AM daily');
+      expect(metadata.description).toContain('Cash on Delivery or bKash');
+      expect((metadata.openGraph as any)?.url).toBe('https://www.luckystore1947.com/');
+      expect((metadata.twitter as any)?.title).toBe('Lucky Store | Chawkbazar Grocery Since 1947');
+    });
+
     it('provides clean entity-level Homepage root metadata without product stuffing', async () => {
       const { metadata } = await import('../../RootLayoutDocument');
       expect((metadata.title as any).default).toBe('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
@@ -1050,6 +1061,18 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(meta.description).not.toContain('Handpicked blends');
       expect(meta.description).not.toContain('garden-fresh');
       expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/tea-and-coffee');
+    });
+
+    it('generates specific ice cream category metadata with the canonical www URL', async () => {
+      const { generateMetadata } = await import('../../(english)/category/[slug]/page');
+      const meta = await generateMetadata({
+        params: Promise.resolve({ slug: 'ice-cream' }),
+        searchParams: Promise.resolve({}),
+      });
+
+      expect(meta.title).toEqual({ absolute: 'Ice Cream in Chittagong | Lucky Store' });
+      expect(meta.description).toContain('ice cream tubs, cones and popsicles');
+      expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/ice-cream');
     });
 
     it('falls back to factual metadata for non-money category without delivery speed claims', async () => {

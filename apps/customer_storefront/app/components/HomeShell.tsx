@@ -155,6 +155,27 @@ export function HomeShell({
               locale={locale}
             />
             <DeferredHomeShelves {...deferredShelves} />
+
+            <section className="rounded-2xl border border-warm-border bg-warm-surface p-5 sm:p-6">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <h2 className="text-lg font-black text-warm-fg">
+                    {locale === 'bn' ? 'চকবাজারে আমাদের গ্রোসারি ডেলিভারি' : 'Grocery delivery from Chawkbazar'}
+                  </h2>
+                  <p className="mt-1 text-sm text-warm-muted">
+                    {locale === 'bn'
+                      ? 'ডেলিভারি সময়, এলাকা ও পেমেন্টের তথ্য দেখুন।'
+                      : 'See delivery hours, service area, and payment details.'}
+                  </p>
+                </div>
+                <Link
+                  href={withLocale('/delivery', locale)}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-warm-accent px-5 text-sm font-extrabold text-warm-accent-text transition-colors hover:bg-warm-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                >
+                  {locale === 'bn' ? 'ডেলিভারি তথ্য' : 'Delivery information'}
+                </Link>
+              </div>
+            </section>
           </div>
         </div>
       </main>

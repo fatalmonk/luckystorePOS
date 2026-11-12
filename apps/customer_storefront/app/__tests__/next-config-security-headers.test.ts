@@ -17,6 +17,16 @@ function headerMap(rule: HeaderRule | undefined) {
 }
 
 describe('next.config.js security headers', () => {
+  it('permanently redirects apex requests to www while preserving the requested path', async () => {
+    const redirects = await (nextConfig as { redirects: () => Promise<Array<Record<string, unknown>>> }).redirects();
+    expect(redirects[0]).toEqual({
+      source: '/:path*',
+      has: [{ type: 'host', value: 'luckystore1947.com' }],
+      destination: 'https://www.luckystore1947.com/:path*',
+      permanent: true,
+    });
+  });
+
   it('keeps dynamic metadata in the document head for raw HTML clients', () => {
     const htmlLimitedBots = (nextConfig as { htmlLimitedBots?: RegExp }).htmlLimitedBots;
 

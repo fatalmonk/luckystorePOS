@@ -47,7 +47,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   describe('Page Metadata & Canonical Hygiene', () => {
     it('provides optimized title within SERP display length (<= 60 chars)', () => {
       const title = typeof metadata.title === 'string' ? metadata.title : (metadata.title as any)?.absolute;
-      expect(title).toBe('Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store');
+      expect(title).toBe('Online Grocery Shop in Chattogram | Lucky Store');
       expect(title.length).toBeLessThanOrEqual(60);
       expect(title.length).toBeGreaterThanOrEqual(40);
     });
@@ -62,6 +62,14 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
     it('emits absolute self-canonical targeting configured canonical URL', () => {
       expect(metadata.alternates?.canonical).toBe(DELIVERY_POLICY.canonicalUrl);
+    });
+
+    it('includes links to the main browseable grocery categories and the requested H1', () => {
+      const source = readFileSync(resolve(process.cwd(), 'app/(english)/delivery/page.tsx'), 'utf8');
+      expect(source).toContain('Your Online Grocery Shop in Chattogram');
+      expect(source).toContain("['Rice & grains', '/category/rice-and-grain']");
+      expect(source).toContain("['Cooking oils & ghee', '/category/oil-and-ghee']");
+      expect(source).toContain("['Snacks', '/category/snacks']");
     });
 
     it('derives matching OpenGraph and Twitter metadata', () => {

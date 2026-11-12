@@ -6,6 +6,11 @@ import { toProductSlug } from '../lib/products/slugify';
 export const revalidate = 120;
 
 export const metadata: Metadata = {
+  title: {
+    absolute: 'Lucky Store | Chawkbazar Grocery Since 1947',
+  },
+  description:
+    'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
   alternates: {
     canonical: 'https://www.luckystore1947.com/',
     languages: {
@@ -13,6 +18,21 @@ export const metadata: Metadata = {
       'bn-BD': 'https://www.luckystore1947.com/bn',
       'x-default': 'https://www.luckystore1947.com/',
     },
+  },
+  openGraph: {
+    title: 'Lucky Store | Chawkbazar Grocery Since 1947',
+    description:
+      'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
+    url: 'https://www.luckystore1947.com/',
+    siteName: 'Lucky Store',
+    locale: 'en_BD',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lucky Store | Chawkbazar Grocery Since 1947',
+    description:
+      'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
   },
 };
 

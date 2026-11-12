@@ -52,6 +52,12 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'luckystore1947.com' }],
+        destination: 'https://www.luckystore1947.com/:path*',
+        permanent: true,
+      },
+      {
         source: '/product/radhuni-biriyani-masala-40-g--cbbc35e5',
         destination: '/product/radhuni-biryani-masala-40g--35fdd44a',
         permanent: true,
