@@ -54,7 +54,7 @@ describe('Logo', () => {
 
     render(<Logo locale="bn" />);
     const bangla = screen.getByRole('img', { name: 'লাকি স্টোর ১৯৪৭' });
-    expect(bangla).toHaveAttribute('src', '/logo-bangla.svg');
+    expect(bangla).toHaveAttribute('src', '/logo-bangla.svg?v=2');
     expect(bangla).not.toHaveAttribute('srcset');
     expect(bangla).toHaveAttribute('width', '155');
     expect(bangla).toHaveAttribute('height', '48');
