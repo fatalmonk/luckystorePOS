@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useTransition } from 'react';
+import React, { useCallback, useSyncExternalStore, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from 'cn';
@@ -28,6 +28,24 @@ export interface LanguageSwitcherProps {
   children?: (state: LanguageSwitcherRenderState) => React.ReactNode;
 }
 
+function subscribeToHashChange(onStoreChange: () => void) {
+  window.addEventListener('hashchange', onStoreChange);
+  return () => window.removeEventListener('hashchange', onStoreChange);
+}
+
+function getBrowserHash() {
+  return window.location.hash;
+}
+
+function getServerHash() {
+  return '';
+}
+
+function withCurrentHash(href: string, hash: string) {
+  const hrefWithoutHash = href.split('#', 1)[0] ?? href;
+  return hash ? `${hrefWithoutHash}${hash}` : hrefWithoutHash;
+}
+
 function useSafeRouter() {
   try {
     return useRouter();
@@ -45,6 +63,7 @@ export function LanguageSwitcher({
   const router = useSafeRouter();
   const pathname = usePathname() || '/';
   const search = useSearchParams()?.toString() || '';
+  const hash = useSyncExternalStore(subscribeToHashChange, getBrowserHash, getServerHash);
   const currentLocale = getLocaleFromPathname(pathname);
   const [isPending, startTransition] = useTransition();
 
@@ -60,18 +79,21 @@ export function LanguageSwitcher({
       const dictionary = getDictionary(activeLocale);
       const cleanPath = stripLocalePrefix(pathname);
       const targetPath = getLocalizedPathname(cleanPath, target);
-      const targetHref =
+      const preserveHash = target === 'en' || hasBengaliRoute(cleanPath);
+      const baseHref =
         target === 'bn' && !hasBengaliRoute(cleanPath)
           ? targetPath
           : `${targetPath}${search ? `?${search}` : ''}`;
+      const targetHref = preserveHash ? withCurrentHash(baseHref, hash) : baseHref;
       return {
         locale: activeLocale,
         targetLocale: target,
         targetHref,
+        preserveHash,
         label: dictionary.language,
       };
     },
-    [currentLocale, pathname, search]
+    [currentLocale, hash, pathname, search]
   );
 
   const { targetLocale, targetHref, label } = calculateTarget();
@@ -80,9 +102,8 @@ export function LanguageSwitcher({
     (nextLocale?: string) => {
       const targetInfo = calculateTarget(nextLocale);
       const navigationHref =
-        typeof window !== 'undefined' &&
-        (targetInfo.targetLocale === 'en' || hasBengaliRoute(pathname))
-          ? `${targetInfo.targetHref}${window.location.hash}`
+        typeof window !== 'undefined' && targetInfo.preserveHash
+          ? withCurrentHash(targetInfo.targetHref, window.location.hash)
           : targetInfo.targetHref;
       onImmediateChange?.(targetInfo.targetLocale);
       startTransition(() => {
@@ -93,7 +114,7 @@ export function LanguageSwitcher({
         }
       });
     },
-    [calculateTarget, onImmediateChange, pathname, router]
+    [calculateTarget, onImmediateChange, router]
   );
 
   const handleClick = useCallback(
