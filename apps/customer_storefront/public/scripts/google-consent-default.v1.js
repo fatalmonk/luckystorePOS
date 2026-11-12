@@ -22,3 +22,4 @@ try {
 } catch {
   // Storage can be unavailable in privacy-restricted browsers.
 }
+window.luckyConsentInitialized = true;

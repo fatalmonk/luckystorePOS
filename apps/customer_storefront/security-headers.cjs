@@ -87,7 +87,7 @@ function renderHtaccess({ immutableDirectory = false } = {}) {
     lines.push(`  Header always set Cache-Control "${escapeHtaccessQuoted(HASHED_STATIC_CACHE_CONTROL)}"`);
   } else {
     lines.push('  SetEnvIf Request_URI "^/scripts/" lucky_versioned_script');
-    lines.push(`  Header always set Cache-Control "${escapeHtaccessQuoted(HASHED_STATIC_CACHE_CONTROL)}" env=lucky_versioned_script`);
+    lines.push(`  Header set Cache-Control "${escapeHtaccessQuoted(HASHED_STATIC_CACHE_CONTROL)}" env=lucky_versioned_script`);
     lines.push('  <FilesMatch "\\.(?:webp|avif|png|jpe?g|gif|svg|ico|woff2)$">');
     lines.push(`    Header always set Cache-Control "${escapeHtaccessQuoted(PUBLIC_ASSET_CACHE_CONTROL)}"`);
     lines.push('  </FilesMatch>');

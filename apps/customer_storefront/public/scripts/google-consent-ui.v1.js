@@ -46,15 +46,22 @@
     } catch {}
   });
   var updateConsent = function (analyticsStorage) {
-    window.gtag('consent', 'update', {
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      analytics_storage: analyticsStorage,
-    });
-    syncZarazConsent(analyticsStorage);
+    if (!window.luckyConsentInitialized || typeof window.gtag !== 'function') return false;
+    try {
+      window.gtag('consent', 'update', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: analyticsStorage,
+      });
+      syncZarazConsent(analyticsStorage);
+      return true;
+    } catch {
+      return false;
+    }
   };
   var loadGoogleTagManager = function () {
+    if (!window.luckyConsentInitialized || readChoice() !== 'granted') return;
     if (window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) return;
     window.luckyGtmLoading = true;
     window.dataLayer = window.dataLayer || [];
@@ -71,24 +78,30 @@
     document.head.appendChild(script);
   };
 
-  accept.addEventListener('click', function () {
-    saveChoice('granted');
-    updateConsent('granted');
-    loadGoogleTagManager();
-    if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
-    if (window.luckyLoadMetaPixel) window.luckyLoadMetaPixel();
-    banner.hidden = true;
-  });
-  reject.addEventListener('click', function () {
-    saveChoice('denied');
-    updateConsent('denied');
-    clearAnalyticsCookies();
-    banner.hidden = true;
-  });
+  if (!window.luckyConsentUiFallbackBound) {
+    accept.addEventListener('click', function () {
+      if (!updateConsent('granted')) {
+        banner.hidden = false;
+        return;
+      }
+      saveChoice('granted');
+      loadGoogleTagManager();
+      if (window.luckyLoadGoogleAnalytics) window.luckyLoadGoogleAnalytics();
+      if (window.luckyLoadMetaPixel) window.luckyLoadMetaPixel();
+      banner.hidden = true;
+    });
+    reject.addEventListener('click', function () {
+      saveChoice('denied');
+      updateConsent('denied');
+      clearAnalyticsCookies();
+      banner.hidden = true;
+    });
+  }
 
   var savedChoice = readChoice();
-  banner.hidden = Boolean(savedChoice);
-  if (savedChoice === 'granted' || savedChoice === 'denied') updateConsent(savedChoice);
-  if (savedChoice === 'granted') loadGoogleTagManager();
+  var validChoice = savedChoice === 'granted' || savedChoice === 'denied';
+  var consentUpdated = validChoice ? updateConsent(savedChoice) : false;
+  banner.hidden = validChoice && (savedChoice === 'denied' || consentUpdated);
+  if (savedChoice === 'granted' && consentUpdated) loadGoogleTagManager();
   if (savedChoice === 'denied') clearAnalyticsCookies();
 })();

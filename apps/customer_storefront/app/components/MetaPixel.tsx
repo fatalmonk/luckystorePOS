@@ -20,7 +20,7 @@ declare global {
 const META_PIXEL_ID = '2783542491893720';
 
 function hasConsent(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined' || !window.luckyConsentInitialized) return false;
   try {
     return window.localStorage.getItem(ANALYTICS_CONSENT_KEY) === 'granted';
   } catch {

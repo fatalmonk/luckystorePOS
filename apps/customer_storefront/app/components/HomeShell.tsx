@@ -9,8 +9,9 @@ import { ProductGridSection } from './ProductGridSection';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
-import { DeferredHomeShelvesGate } from './DeferredHomeShelvesGate';
+import { DeferredHomeShelves, type DeferredHomeShelvesProps } from './DeferredHomeShelves';
 import { InstallPromptBootstrap } from './InstallPromptBootstrap';
+import { getDealOfTheWeekProducts, getDiscountBadgePercentage, WEEKLY_DEALS_LIMIT } from '../lib/deals';
 
 const HOME_SHELF_SIZE = 8;
 
@@ -57,6 +58,21 @@ export function HomeShell({
   locale = 'en',
 }: HomeShellProps) {
   const dict = getDictionary(locale);
+  const dealSelection = getDealOfTheWeekProducts(inStock, WEEKLY_DEALS_LIMIT);
+  const deferredShelves: DeferredHomeShelvesProps = {
+    locale,
+    pantryProducts,
+    snacksProducts,
+    personalCareProducts,
+    weeklyDealProducts: dealSelection ? [dealSelection.leadProduct, ...dealSelection.supportingProducts] : [],
+    discountedProductCount: Math.min(
+      WEEKLY_DEALS_LIMIT,
+      inStock.filter((product) => getDiscountBadgePercentage(product) !== null).length,
+    ),
+    weeklyPicks,
+    weeklyEditionActive,
+    weeklyEditionUnavailable,
+  };
   if (inStock.length === 0) {
     return (
       <>
@@ -135,9 +151,7 @@ export function HomeShell({
               ctaLabel={dict.reels.seeAll}
               locale={locale}
             />
-            <DeferredHomeShelvesGate
-              locale={locale}
-            />
+            <DeferredHomeShelves {...deferredShelves} />
           </div>
         </div>
       </main>

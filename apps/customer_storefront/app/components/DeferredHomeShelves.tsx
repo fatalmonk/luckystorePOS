@@ -1,5 +1,3 @@
-'use client';
-
 import { DealOfTheWeek } from './DealOfTheWeek';
 import { HeritageSection } from './HeritageSection';
 import { HomeTrustStrip } from './HomeTrustStrip';
@@ -23,7 +21,7 @@ export interface DeferredHomeShelvesProps {
   weeklyEditionUnavailable: boolean;
 }
 
-/** Below-the-fold homepage shelves. Loaded after the initial document so the hero is not competing with their JavaScript. */
+/** Below-the-fold homepage shelves rendered into the initial HTML. */
 export function DeferredHomeShelves({
   locale,
   pantryProducts,

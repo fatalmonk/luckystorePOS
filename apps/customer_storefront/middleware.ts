@@ -464,7 +464,7 @@ export async function middleware(request: NextRequest) {
     return rewriteResponse;
   }
 
-  supabaseResponse.headers.set('Vary', 'Accept');
+  supabaseResponse.headers.set('Vary', 'Accept, User-Agent');
   return supabaseResponse;
 }
 

@@ -14,7 +14,7 @@
   Header always unset Permissions-Policy
   Header always set Permissions-Policy "camera=(), microphone=(), payment=(), usb=(), interest-cohort=(), browsing-topics=(), geolocation=(self)"
   SetEnvIf Request_URI "^/scripts/" lucky_versioned_script
-  Header always set Cache-Control "public, max-age=31536000, immutable" env=lucky_versioned_script
+  Header set Cache-Control "public, max-age=31536000, immutable" env=lucky_versioned_script
   <FilesMatch "\.(?:webp|avif|png|jpe?g|gif|svg|ico|woff2)$">
     Header always set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
   </FilesMatch>

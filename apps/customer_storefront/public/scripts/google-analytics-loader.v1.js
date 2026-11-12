@@ -3,7 +3,7 @@ var getAnalyticsChoice = function () {
   try { return localStorage.getItem(consentStorageKey); } catch { return null; }
 };
 var loadGtag = function () {
-  if (getAnalyticsChoice() !== 'granted') return;
+  if (!window.luckyConsentInitialized || getAnalyticsChoice() !== 'granted') return;
   if (document.querySelector('script[data-lucky-gtag]')) return;
   if (window.zaraz || window.google_tag_manager || window.luckyGtmLoading || window.luckyGtmLoaded) return;
 

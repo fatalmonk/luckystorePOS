@@ -54,11 +54,50 @@ describe('WebMCP submit_order', () => {
     expect(requests[0].idempotencyKey).toBe(requests[1].idempotencyKey);
     expect(requests[0].orderNumber).toBe(requests[1].orderNumber);
     expect(requests[0].paymentMethod).toBe('cod');
+    expect(requests[1].subtotal).toBe(100);
+    expect(requests[1].deliveryFee).toBe(40);
+    expect(requests[1].total).toBe(140);
     expect(checkoutSchema.safeParse({
       ...requests[1],
       tenantId: '00000000-0000-0000-0000-000000000001',
       storeId: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
     }).success).toBe(true);
     expect(sessionStorage.getItem('lucky-webmcp-checkout-identity')).toBeNull();
+  });
+
+  it('returns the server quote when promotion pricing differs', async () => {
+    vi.stubGlobal('localStorage', {
+      ...createStorage(),
+      getItem: (key: string) => key === 'cart' ? JSON.stringify({
+        items: [{ id: '029b62d8-1111-2222-3333-444455556666', name: 'Rice', price: 100, qty: 1, unit: '1 kg' }],
+      }) : null,
+    });
+    vi.stubGlobal('sessionStorage', createStorage());
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      ok: false,
+      code: 'PRICE_MISMATCH',
+      error: 'Some prices changed.',
+      items: [{ id: '029b62d8-1111-2222-3333-444455556666', price: 100, qty: 1 }],
+      subtotal: 90,
+      discount: 10,
+      deliveryFee: 40,
+      total: 130,
+    }), { status: 400 })));
+
+    const result = await WEBMCP_TOOLS.submit_order.execute({
+      customerName: 'Test Customer',
+      customerPhone: '01712345678',
+      customerAddress: '12 Example Road, Chattogram',
+      paymentMethod: 'cod',
+    }, { signal: new AbortController().signal });
+
+    expect(result).toMatchObject({
+      code: 'PRICE_MISMATCH',
+      subtotal: 90,
+      discount: 10,
+      deliveryFee: 40,
+      total: 130,
+      requiresCustomerReview: true,
+    });
   });
 });

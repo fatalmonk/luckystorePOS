@@ -36,6 +36,8 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    luckyConsentInitialized?: boolean;
+    luckyConsentUiFallbackBound?: boolean;
     zaraz?: {
       track?: (eventName: string, properties?: Record<string, AnalyticsValue>) => void;
       ecommerce?: (eventName: string, properties?: Record<string, ZarazEcommerceValue>) => void;

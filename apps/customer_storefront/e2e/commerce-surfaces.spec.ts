@@ -36,7 +36,6 @@ test.describe('Storefront commerce surfaces', () => {
     expect(addBox!.y).toBeGreaterThan(priceBox!.y);
     expect(addBox!.height).toBeGreaterThanOrEqual(44);
 
-    await page.getByTestId('deferred-home-shelves-gate').scrollIntoViewIfNeeded();
     const weeklyDeal = page.locator('.deal-panel').first();
     await expect(weeklyDeal).toBeVisible();
     await expect(weeklyDeal).toHaveCSS('background-color', 'rgb(246, 243, 236)');

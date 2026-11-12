@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { preload } from 'react-dom';
 import { buildOptimizedImageUrl } from '../lib/image-loader';
 import Link from 'next/link';
 import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
@@ -33,6 +34,12 @@ interface CampaignGridProps {
 
 /** Renders the localized campaign hero, delivery details, and discovery rail for the supplied products. */
 export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
+  preload(CAMPAIGN_HERO_SRC, {
+    as: 'image',
+    imageSrcSet: CAMPAIGN_HERO_SRC_SET,
+    imageSizes: CAMPAIGN_HERO_SIZES,
+    fetchPriority: 'high',
+  });
   const dict = getDictionary(locale);
   const [searchQuery, setSearchQuery] = useState('');
   const organicMatches = products.filter(
@@ -52,6 +59,8 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               src={CAMPAIGN_HERO_SRC}
               srcSet={CAMPAIGN_HERO_SRC_SET}
               sizes={CAMPAIGN_HERO_SIZES}
+              width={1600}
+              height={696}
               alt=""
               loading="eager"
               fetchPriority="high"

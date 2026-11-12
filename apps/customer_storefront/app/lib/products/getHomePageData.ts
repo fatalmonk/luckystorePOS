@@ -390,11 +390,5 @@ async function loadHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
     snacksProducts,
   };
 }
-import { unstable_cache } from 'next/cache';
 
-/** Share homepage catalog reads between the page render and deferred shelf request. */
-export const getHomePageData = unstable_cache(
-  loadHomePageData,
-  ['storefront-home-page-data-v1'],
-  { revalidate: 120, tags: ['storefront-home-page-data'] },
-);
+export const getHomePageData = loadHomePageData;

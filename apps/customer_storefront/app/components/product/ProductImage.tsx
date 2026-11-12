@@ -231,7 +231,7 @@ export function ProductImage({
         <img
           ref={imageRef}
           src={buildOptimizedImageUrl(usableSrc, 640, 75, { resize: true })}
-          srcSet={[160, 256, 320, 384, 480, 512, 640, 960].map((width) =>
+          srcSet={[160, 320, 480, 640, 960].map((width) =>
             `${buildOptimizedImageUrl(usableSrc, width, 75, { resize: true })} ${width}w`).join(', ')}
           alt={alt}
           sizes={sizes}

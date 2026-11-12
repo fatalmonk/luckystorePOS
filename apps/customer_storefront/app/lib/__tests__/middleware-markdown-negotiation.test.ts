@@ -21,4 +21,13 @@ describe('Markdown content negotiation', () => {
 
     expect(response.headers.get('x-lucky-negotiated')).toBe(negotiated);
   });
+
+  it('varies HTML responses by Accept and User-Agent', async () => {
+    const request = new NextRequest('https://www.luckystore1947.com/', {
+      headers: { accept: 'text/html', 'user-agent': 'Mozilla/5.0' },
+    });
+    const response = await middleware(request);
+
+    expect(response.headers.get('Vary')).toBe('Accept, User-Agent');
+  });
 });

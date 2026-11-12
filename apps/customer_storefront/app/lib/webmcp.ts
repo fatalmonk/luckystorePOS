@@ -237,7 +237,7 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
 
   submit_order: {
     description:
-      'Submit the current cart as a grocery order with customer delivery details. Requires customer name, phone, and address.',
+      'Submit the current cart as a grocery order with customer delivery details. If checkout returns PRICE_MISMATCH, present the server quote for customer review before trying again.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -256,7 +256,8 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
         return { error: 'Cart is empty' };
       }
 
-      const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const subtotal = Math.round(cart.items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
+
       const deliveryFee = subtotal >= 500 ? 0 : 40;
       const payloadSignature = JSON.stringify({
         items: cart.items.map(({ id, qty }) => ({ id, qty })).sort((a, b) => a.id.localeCompare(b.id)),
@@ -289,11 +290,22 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        if (err.code === 'PRICE_MISMATCH') {
+          return {
+            error: err.error || 'Prices changed. Review the updated total before placing the order.',
+            code: err.code,
+            items: err.items,
+            subtotal: err.subtotal,
+            discount: err.discount,
+            deliveryFee: err.deliveryFee,
+            total: err.total,
+            requiresCustomerReview: true,
+          };
+        }
         return { error: err.error || `Checkout failed: ${res.status}` };
       }
 
       const order = await res.json();
-      // Clear cart on successful order
       saveCart({ items: [] });
       try { sessionStorage.removeItem('lucky-webmcp-checkout-identity'); } catch { /* Storage may be unavailable. */ }
       return order;
