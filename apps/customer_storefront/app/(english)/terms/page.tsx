@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { Header } from '../../components/updated/Header';
 import { BottomNav } from '../../components/BottomNav';
 import { DELIVERY_POLICY, RETURN_RULES } from '../../lib/deliveryData';
-
-const CANONICAL = 'https://www.luckystore1947.com/terms';
+import { buildLocaleAlternates } from '../../lib/i18n/metadata';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -13,14 +12,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  alternates: {
-    canonical: CANONICAL,
-    languages: {
-      'en-BD': CANONICAL,
-      'bn-BD': 'https://www.luckystore1947.com/bn/terms',
-      'x-default': CANONICAL,
-    },
-  },
+  alternates: buildLocaleAlternates('/terms', 'en'),
 };
 
 interface PolicySectionProps {

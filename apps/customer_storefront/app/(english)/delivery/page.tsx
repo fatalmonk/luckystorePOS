@@ -13,18 +13,14 @@ import {
   RETURN_RULES,
   getDeliveryFaqSchema,
 } from '../../lib/deliveryData';
+import { buildLocaleAlternates } from '../../lib/i18n/metadata';
+
+const deliveryAlternates = buildLocaleAlternates('/delivery', 'en');
 
 export const metadata: Metadata = {
   title: { absolute: 'Online Grocery Shop in Chattogram | Lucky Store' },
   description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
-  alternates: {
-    canonical: DELIVERY_POLICY.canonicalUrl,
-    languages: {
-      'en-BD': 'https://www.luckystore1947.com/delivery',
-      'bn-BD': 'https://www.luckystore1947.com/bn/delivery',
-      'x-default': 'https://www.luckystore1947.com/delivery',
-    },
-  },
+  alternates: deliveryAlternates,
   openGraph: {
     title: 'Online Grocery Shop in Chattogram | Lucky Store',
     description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
