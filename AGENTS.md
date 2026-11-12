@@ -22,7 +22,11 @@
 5. **Report:** Summarize work and command status.
 
 ## Project Context Maintenance
-- After every task completion, update the root [`context.md`](context.md), including when a decision is made, a blocker is encountered or resolved, or work switches context. Do not skip the update for read-only or documentation tasks.
+- Treat root `context.md` as durable, shared project context, not as a per-task journal.
+- Do not update `context.md` after every task, during read-only reviews, or for temporary blockers and worktree/branch status.
+- Keep task progress and worktree-specific notes in local Codex memory or a git-ignored per-worktree note. Do not add those notes to tracked `context.md`.
+- Update `context.md` only for durable decisions, verified architecture or product facts, and unresolved blockers that matter across worktrees. Review other worktree changes before editing it.
+- Commit `context.md` only when the update is deliberate and useful to other contributors; do not include it automatically in unrelated PRs.
 - Keep `context.md` under 50 lines; summarize older history as needed. If it grows beyond 100 lines, replace it with a compact summary. On a major project pivot, archive the prior context as `context-[date].md` before resetting it.
 - Use this structure:
   ```markdown
@@ -45,8 +49,8 @@
   ## Next
   [Immediate next step]
   ```
-- Maintain one active task in `## Current Task`. Append decisions rather than deleting them unless superseded. Move resolved blockers under `## Resolved`.
-- In the completion response, report: `Context updated: [current task brief]` and `File: context.md ([line count] lines)`.
+- Maintain one active task when this file is updated. Append durable decisions rather than deleting them unless superseded; move resolved long-lived blockers under `## Resolved`.
+- When you update it, report: `Context updated: [brief]` and `File: context.md ([line count] lines)`.
 
 ## Command Preferences
 - Use `rtk` prefixed commands for optimized output (e.g., `rtk grep`, `rtk read`).

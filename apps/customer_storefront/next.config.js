@@ -8,6 +8,10 @@ const {
   MANIFEST_CACHE_CONTROL,
   PRIVATE_CACHE_CONTROL,
 } = require('./security-headers.cjs');
+const publicImageCacheHeader = {
+  key: 'Cache-Control',
+  value: 'public, max-age=2592000, stale-while-revalidate=86400',
+};
 
 const nextConfig = {
   // Keep generated metadata in <head> for raw HTML crawlers. Next.js otherwise
@@ -18,24 +22,17 @@ const nextConfig = {
   distDir: (isDev && process.env.NEXT_DEV_DIST_DIR) || '.next',
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  outputFileTracingIncludes: {
-    '/*': ['../../node_modules/critters/**/*'],
-  },
-  serverExternalPackages: ['critters'],
   devIndicators: false,
   images: {
-    // Delivery uses the custom Cloudflare loader when the Hostinger build sets
-    // NEXT_PUBLIC_IMAGE_RESIZE=1. Otherwise leave images unoptimized. A custom
-    // loader that returns the original URL for every width makes Next emit a
-    // srcset of duplicate candidates, and the browser then drops the image.
-    // The built-in optimizer stays closed: an empty remotePatterns list rejects
-    // crafted /_next/image URLs.
-    unoptimized: process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1',
-    loader: 'custom',
-    loaderFile: './app/lib/image-loader.ts',
+    // Keep remote images browser-loaded until the standalone optimizer can
+    // validate every redirect destination and reject private network targets.
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1600],
-    imageSizes: [64, 96, 128, 160, 256, 320, 384],
+    deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 160, 224, 280, 320, 384],
+    // Do not enable the public Next image optimizer until remote redirects are
+    // validated against private and loopback IP ranges. unoptimized images load
+    // directly in the browser and this empty allowlist rejects crafted optimizer URLs.
     remotePatterns: [],
   },
   experimental: {
@@ -48,10 +45,8 @@ const nextConfig = {
       // Avoid loading every page entry into memory before it is requested.
       preloadEntriesOnStart: false,
     } : {}),
-    // Critters inlines only the CSS used by the server HTML and loads the rest
-    // of the stylesheet without blocking first paint. inlineCss is left off
-    // because it duplicates the entire sheet in the document and the RSC payload.
-    optimizeCss: true,
+    // Keep the large shared stylesheet external. Next's inlineCss mode duplicates
+    // it in both the document and the initial RSC payload on every dynamic route.
     webpackMemoryOptimizations: true,
   },
   async redirects() {
@@ -117,68 +112,61 @@ const nextConfig = {
       ...SECURITY_HEADERS,
       { key: 'Link', value: linkHeaders.join(', ') },
     ];
-    const privateCache = [{ key: 'Cache-Control', value: PRIVATE_CACHE_CONTROL }];
-    const hashedCache = [{ key: 'Cache-Control', value: HASHED_STATIC_CACHE_CONTROL }];
-    const publicAssetCache = [{ key: 'Cache-Control', value: PUBLIC_ASSET_CACHE_CONTROL }];
-    const manifestCache = [{ key: 'Cache-Control', value: MANIFEST_CACHE_CONTROL }];
     const privateSources = [
-      '/cart',
-      '/cart/:path*',
-      '/checkout',
-      '/checkout/:path*',
-      '/login',
-      '/login/:path*',
-      '/signup',
-      '/signup/:path*',
-      '/profile',
-      '/profile/:path*',
-      '/order',
-      '/order/:path*',
-      '/wishlist',
-      '/wishlist/:path*',
-      '/account',
-      '/account/:path*',
-      '/bn/cart',
-      '/bn/cart/:path*',
-      '/bn/checkout',
-      '/bn/checkout/:path*',
-      '/bn/login',
-      '/bn/login/:path*',
-      '/bn/signup',
-      '/bn/signup/:path*',
-      '/bn/profile',
-      '/bn/profile/:path*',
-      '/bn/order',
-      '/bn/order/:path*',
-      '/bn/wishlist',
-      '/bn/wishlist/:path*',
+      '/cart', '/cart/:path*', '/checkout', '/checkout/:path*',
+      '/login', '/login/:path*', '/signup', '/signup/:path*',
+      '/profile', '/profile/:path*', '/order', '/order/:path*',
+      '/wishlist', '/wishlist/:path*', '/account', '/account/:path*',
+      '/bn/cart', '/bn/cart/:path*', '/bn/checkout', '/bn/checkout/:path*',
+      '/bn/login', '/bn/login/:path*', '/bn/signup', '/bn/signup/:path*',
+      '/bn/profile', '/bn/profile/:path*', '/bn/order', '/bn/order/:path*',
+      '/bn/wishlist', '/bn/wishlist/:path*',
     ];
     return [
+      {
+        source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|woff2)$)',
+        headers: [{ key: 'Cache-Control', value: PUBLIC_ASSET_CACHE_CONTROL }],
+      },
+      // These release-bundled assets are version-controlled. Change the URL when
+      // replacing their bytes so returning browsers do not retain stale artwork.
+      {
+        source: '/images/:path*',
+        headers: [publicImageCacheHeader],
+      },
+      ...[
+        '/logo-main.png',
+        '/logo-main-inverse.png',
+        '/logo-bangla.svg',
+        '/logo-bangla-inverse.svg',
+      ].map((source) => ({ source, headers: [publicImageCacheHeader] })),
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cache-Control', value: HASHED_STATIC_CACHE_CONTROL }],
+      },
+      {
+        source: '/:file(.*\\.webmanifest$)',
+        headers: [{ key: 'Cache-Control', value: MANIFEST_CACHE_CONTROL }],
+      },
+      ...privateSources.map((source) => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: PRIVATE_CACHE_CONTROL }],
+      })),
       {
         source: '/api/mobile/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization, x-order-tracking-token' },
-          ...SECURITY_HEADERS,
         ],
       },
-      // Both patterns are intentional. Next's path matcher has historically
-      // missed either the root or dotted static paths depending on the source.
-      { source: '/:path*', headers: securityAndDiscovery },
-      { source: '/(.*)', headers: securityAndDiscovery },
-      { source: '/images/:path*', headers: publicAssetCache },
       {
-        source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|woff2)$)',
-        headers: publicAssetCache,
+        source: '/:path*',
+        headers: securityAndDiscovery,
       },
-      // Last matching Cache-Control wins, including for hashed fonts and images.
-      { source: '/_next/static/:path*', headers: hashedCache },
       {
-        source: '/:file(.*\\.webmanifest$)',
-        headers: manifestCache,
+        source: '/(.*)',
+        headers: securityAndDiscovery,
       },
-      ...privateSources.map((source) => ({ source, headers: privateCache })),
     ];
   },
 };
