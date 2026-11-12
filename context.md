@@ -3,9 +3,10 @@
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 
 ## Current Task
-- 20261112-product-enrichment: Updated 10 Dano records and clarified Avonee evidence as a manufacturer range listing, not exact-pack verification. Delight 200g omits conflicting energy; sugars/salt rows say `Not stated`. No third Delight pack was found. Corrected Pushti ingredients and URLs and added product cautions.
+- 20261112-bn-phase0-foundation: Branch `kilo/bn-phase0-foundation` (worktree `.worktrees/bn-phase0`) executes Phase 0 of `docs-local/plans-and-tasks/plan/bengaliversion.md`; most of the plan's PR 1 already existed (route groups, `<html lang>`, dictionaries, switcher). Task 1 done: shared locale route map and hreflang/canonical builder.
 
 ## Decisions
+- 20261112-bn-route-map: `app/lib/i18n/navigation.ts` `BENGALI_ROUTE_PATHS`/`BENGALI_ROUTE_PREFIXES` + `hasBengaliRoute`/`getLocalizedPathname` are the single source for which English paths have `/bn` twins; `app/lib/i18n/metadata.ts` `buildLocaleAlternates(path, locale)` emits self-canonical + en-BD/bn-BD/x-default (x-default = English).
 - 20261111-official-enrichment-scope: Update exact-pack Dano, Avonee L 48, Bashundhara Gold tissue, and BelleAme 240g cookies. Hold two other tissue records because their catalog category is `Pest Control`.
 - 20261112-product-evidence: Draft covers 100 IDs / 127 URLs: 13 MATCHED, 37 PARTIAL, 44 UNAVAILABLE, 5 CONFLICT, 1 REDIRECT_ALIAS; MATCHED evidence does not prove stock or publication readiness.
 - 20261110-thin-content: Under 300 words alone is not an SEO defect; 193 pages are conditional expansion candidates. Preserve distinct SKUs/locales and prioritize only with dated GSC/commerce evidence.
