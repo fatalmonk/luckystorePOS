@@ -14,7 +14,7 @@
   Header always unset Permissions-Policy
   Header always set Permissions-Policy "camera=(), microphone=(), payment=(), usb=(), interest-cohort=(), browsing-topics=(), geolocation=(self)"
   <FilesMatch "\.(?:webp|avif|png|jpe?g|gif|svg|ico|woff2)$">
-    Header always set Cache-Control "public, max-age=2592000"
+    Header always set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
   </FilesMatch>
   <FilesMatch "\.webmanifest$">
     Header always set Cache-Control "public, max-age=3600"

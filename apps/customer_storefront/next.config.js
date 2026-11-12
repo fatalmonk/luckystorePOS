@@ -10,7 +10,7 @@ const {
 } = require('./security-headers.cjs');
 const publicImageCacheHeader = {
   key: 'Cache-Control',
-  value: 'public, max-age=2592000, stale-while-revalidate=86400',
+  value: PUBLIC_ASSET_CACHE_CONTROL,
 };
 
 const nextConfig = {

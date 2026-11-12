@@ -82,6 +82,10 @@ export function evaluateStaticAssetCache({
       error: `Expected browser cache lifetime of at least 30 days (${minMaxAgeSeconds}s), got ${maxAgeSeconds}s.`,
     };
   }
+  const staleDirectives = directives.filter((directive) => /^stale-while-revalidate\s*=/i.test(directive));
+  if (staleDirectives.length !== 1 || !/^stale-while-revalidate\s*=\s*(?:86400|"86400")$/i.test(staleDirectives[0])) {
+    return { ok: false, error: 'Expected exactly one stale-while-revalidate=86400 directive.' };
+  }
   return { ok: true, detail: `Cache-Control: ${value}` };
 }
 

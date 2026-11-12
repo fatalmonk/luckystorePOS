@@ -97,6 +97,18 @@ test('evaluateStaticAssetCache accepts the 30-day public image policy', () => {
   assert.equal(result.ok, true);
 });
 
+test('evaluateStaticAssetCache requires one 24-hour stale-while-revalidate directive', () => {
+  for (const cacheControl of [
+    'public, max-age=2592000',
+    'public, max-age=2592000, stale-while-revalidate=3600',
+    'public, max-age=2592000, stale-while-revalidate=86400, stale-while-revalidate=86400',
+  ]) {
+    const result = smokeTest.evaluateStaticAssetCache({ statusCode: 200, cacheControl });
+    assert.equal(result.ok, false, cacheControl);
+    assert.match(result.error, /stale-while-revalidate=86400/i);
+  }
+});
+
 test('evaluateStaticAssetCache rejects immutable caching for stable public URLs', () => {
   const result = smokeTest.evaluateStaticAssetCache({
     statusCode: 200,

@@ -60,7 +60,7 @@ describe('outgoing security header install', () => {
 
       const asset = await read('/images/hero-reference.webp');
       expect(asset.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
-      expect(asset.headers.get('cache-control')).toBe('public, max-age=2592000');
+      expect(asset.headers.get('cache-control')).toBe('public, max-age=2592000, stale-while-revalidate=86400');
 
       const cart = await read('/bn/checkout');
       expect(cart.headers.get('permissions-policy')).toContain('geolocation=(self)');
