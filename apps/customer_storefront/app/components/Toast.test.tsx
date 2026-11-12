@@ -44,10 +44,10 @@ describe('Toast Component', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('shows transient toasts without requiring CartProvider', () => {
-    render(<ToastProvider><TestConsumer message="Saved" /></ToastProvider>);
+  it('shows transient toasts without requiring CartProvider', async () => {
+    render(<ToastProvider><TestConsumer message="Saved" duration={500} /></ToastProvider>);
     fireEvent.click(screen.getByText('Trigger Toast'));
-    expect(screen.getByRole('status')).toHaveTextContent('Saved');
+    expect(await screen.findByRole('status')).toHaveTextContent('Saved');
   });
 
   it('localizes persistent cart toast copy and avoids stale item messages', async () => {
@@ -57,7 +57,7 @@ describe('Toast Component', () => {
     }
     render(<ToastProvider><PersistentConsumer /></ToastProvider>);
     fireEvent.click(screen.getByText('Show cart'));
-    expect(screen.getByText('Added Rice to cart')).toBeInTheDocument();
+    expect(await screen.findByText('Added Rice to cart')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'বিজ্ঞপ্তি বন্ধ করুন' })).toBeInTheDocument();
     expect(screen.queryByLabelText('ফ্রি ডেলিভারির অগ্রগতি: ০ শতাংশ')).toBeNull();
   });
@@ -71,7 +71,7 @@ describe('Toast Component', () => {
 
     fireEvent.click(screen.getByText('Trigger Toast'));
 
-    const toastElement = screen.getByRole('status');
+    const toastElement = await screen.findByRole('status');
     expect(toastElement).toBeInTheDocument();
     expect(screen.getByText('Order confirmed!')).toBeInTheDocument();
 
@@ -93,7 +93,7 @@ describe('Toast Component', () => {
 
     fireEvent.click(screen.getByText('Trigger Toast'));
 
-    const actionBtn = screen.getByText('Undo');
+    const actionBtn = await screen.findByText('Undo');
     expect(actionBtn).toBeInTheDocument();
 
     fireEvent.click(actionBtn);

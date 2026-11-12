@@ -12,7 +12,6 @@ import { List } from '@phosphor-icons/react/dist/csr/List';
 import { Sun } from '@phosphor-icons/react/dist/csr/Sun';
 import { Moon } from '@phosphor-icons/react/dist/csr/Moon';
 import { ArrowRight } from '@phosphor-icons/react/dist/csr/ArrowRight';
-import { motion } from 'motion/react';
 import dynamic from 'next/dynamic';
 import { DesktopQuickRail } from '../DesktopQuickRail';
 import { HeaderCartButton } from '../HeaderCartButton';
@@ -27,8 +26,6 @@ import { LiquidButton } from '../animate-ui/buttons/liquid';
 import { ThemeToggler } from '../animate-ui/effects/theme-toggler';
 
 const AppDrawer = dynamic(() => import('../AppDrawer').then((mod) => mod.AppDrawer), { ssr: false });
-
-const MotionLink = motion.create(Link);
 
 interface CategoryRailItemsProps {
   currentLocale: Locale;
@@ -50,7 +47,7 @@ function CategoryRailItems({
     <>
       {allLabel && (
         <LiquidButton asChild fillHeight="3px" delay="0.3s" tapScale={0.97}>
-          <MotionLink
+          <Link
             href={withLocale('/category', currentLocale)}
             aria-current={isAllActive ? 'page' : undefined}
             className={`${itemClassName} ${
@@ -60,7 +57,7 @@ function CategoryRailItems({
             }`}
           >
             {allLabel}
-          </MotionLink>
+          </Link>
         </LiquidButton>
       )}
       {CATEGORY_RAIL_ITEMS.map((item) => {
@@ -68,7 +65,7 @@ function CategoryRailItems({
         const label = currentLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[item.slug] || item.label) : item.label;
         return (
           <LiquidButton key={item.slug} asChild fillHeight="3px" delay="0.3s" tapScale={0.97}>
-            <MotionLink
+            <Link
               href={withLocale(`/category/${item.slug}`, currentLocale)}
               aria-current={isActive ? 'page' : undefined}
               className={`${itemClassName} ${
@@ -78,7 +75,7 @@ function CategoryRailItems({
               }`}
             >
               {label}
-            </MotionLink>
+            </Link>
           </LiquidButton>
         );
       })}

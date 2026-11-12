@@ -204,284 +204,9 @@
     display: none;
   }
 
-  .campaign-spine {
-    position: absolute;
-    top: 50%;
-    right: 0.8rem;
-    z-index: 5;
-    display: none;
-    color: var(--color-campaign-on-image-muted);
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 900;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
-    transform: translateY(-50%);
-  }
-
-  .campaign-reel-status {
-    color: var(--color-campaign-on-image-muted);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
   .campaign-display,
   .campaign-on-image {
     color: var(--color-campaign-on-image);
-  }
-
-  .campaign-card-content {
-    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 12%, transparent);
-    background: var(--color-campaign-overlay-strong);
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .campaign-card-picture::after {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--color-campaign-surface) 76%, transparent));
-    content: '';
-    pointer-events: none;
-  }
-
-  .campaign-card-picture {
-    background: var(--color-image-well);
-  }
-
-  .campaign-status-badge {
-    display: inline-flex;
-    min-height: 2rem;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.65rem;
-    border: 1px solid var(--color-campaign-border);
-    border-radius: 9999px;
-    color: var(--color-campaign-on-image);
-    background: var(--color-campaign-control);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-campaign-on-image) 6%, transparent);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .campaign-on-image-muted {
-    color: var(--color-campaign-on-image-muted);
-  }
-
-  .campaign-kicker {
-    color: var(--color-accent);
-    font-size: 0.75rem;
-    font-weight: 700;
-    line-height: 1rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .campaign-secondary-action,
-  .campaign-reel-control {
-    color: var(--color-campaign-on-image);
-    background: var(--color-campaign-control);
-    border-color: var(--color-campaign-border);
-  }
-
-  .campaign-secondary-action:hover,
-  .campaign-reel-control:hover {
-    background: var(--color-campaign-control-hover);
-    border-color: var(--color-accent);
-  }
-
-  .campaign-card-action {
-    color: var(--color-campaign-on-image);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-
-  .campaign-stage {
-    perspective: 1100px;
-  }
-
-  .campaign-reel {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min(76%, 26rem);
-    gap: 0.75rem;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    padding: 0.25rem 0.25rem 0.75rem;
-    scroll-padding-inline: 0.25rem;
-    scroll-snap-type: inline mandatory;
-    transform-style: preserve-3d;
-  }
-
-  .campaign-reel-card {
-    min-width: 0;
-    scroll-snap-align: start;
-    transform-origin: center;
-    transform-style: preserve-3d;
-  }
-
-  .campaign-card-link {
-    min-height: 11rem;
-    border: 1px solid var(--color-campaign-border);
-    box-shadow: var(--shadow-campaign-card);
-    transform: translateZ(0);
-    transition:
-      border-color 280ms var(--ease-drawer),
-      box-shadow 280ms var(--ease-drawer),
-      transform 280ms var(--ease-drawer);
-  }
-
-  @media (min-width: 640px) {
-    .campaign-reel {
-      grid-auto-columns: min(72%, 34rem);
-    }
-
-    .campaign-card-link {
-      min-height: 18rem;
-    }
-  }
-
-  .campaign-card-link:hover {
-    border-color: color-mix(in srgb, var(--color-accent) 56%, transparent);
-    box-shadow:
-      var(--shadow-campaign-card),
-      0 0 40px color-mix(in srgb, var(--color-accent) 12%, transparent);
-    transform: perspective(900px) rotateX(0.7deg) rotateY(-0.9deg);
-  }
-
-  .campaign-card-link:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  @media (min-width: 1024px) {
-    .campaign-spine {
-      display: block;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .campaign-hero::before {
-      animation: aisle-marker-draw 650ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
-    }
-
-    .campaign-actions {
-      animation: aisle-actions-arrive 520ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
-    }
-
-    .campaign-rail {
-      animation: aisle-rail-turn 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
-      transform-origin: right center;
-    }
-
-    .campaign-status-badge {
-      animation: cyber-float 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1;
-    }
-
-    .campaign-status-badge:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .campaign-card-link:hover::after {
-      animation: cyber-border-shimmer 900ms ease-out both;
-    }
-
-    @supports (animation-timeline: view(inline)) {
-      .campaign-reel-card {
-        animation: campaign-card-turn linear both;
-        animation-timeline: view(inline);
-        animation-range: cover 10% cover 90%;
-      }
-    }
-  }
-
-  .home-trust-strip,
-  .home-process-step,
-  .home-process-cta {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-
-  .home-trust-strip {
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-rest);
-  }
-
-  .home-trust-fact {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    aspect-ratio: 1 / 1;
-    padding: 0.75rem 0.5rem;
-  }
-  @media (min-width: 640px) {
-    .home-trust-fact {
-      aspect-ratio: auto;
-      padding: 1.15rem 1.25rem 1.15rem 2.25rem;
-      align-items: flex-start;
-      text-align: left;
-    }
-  }
-
-  .home-trust-fact::before {
-    position: static;
-    margin-bottom: 0.4rem;
-    width: 0.45rem;
-    height: 0.45rem;
-    background: var(--color-muted);
-    border-radius: 9999px;
-    content: '';
-    flex-shrink: 0;
-  }
-  @media (min-width: 640px) {
-    .home-trust-fact::before {
-      position: absolute;
-      top: 1.35rem;
-      left: 1.15rem;
-      margin-bottom: 0;
-      width: 0.5rem;
-      height: 0.5rem;
-    }
-  }
-
-  .home-trust-fact dt {
-    color: var(--color-foreground);
-    font-size: 0.8125rem;
-    font-weight: 800;
-    line-height: 1.2;
-  }
-  @media (min-width: 640px) {
-    .home-trust-fact dt {
-      font-size: 0.875rem;
-      line-height: 1.25rem;
-    }
-  }
-
-  .home-trust-fact dd {
-    color: var(--color-muted);
-    font-size: 0.75rem;
-    line-height: 1.2;
-    margin-top: 0.2rem;
-  }
-  @media (min-width: 640px) {
-    .home-trust-fact dd {
-      font-size: 0.75rem;
-      line-height: 1.125rem;
-      margin-top: 0.125rem;
-    }
   }
 
   .home-section-kicker {
@@ -502,46 +227,6 @@
     letter-spacing: -0.025em;
   }
 
-  .home-section-description {
-    margin-top: 0.5rem;
-    color: var(--color-muted);
-    font-size: 0.8125rem;
-    line-height: 1.375rem;
-  }
-
-  .home-process-step {
-    min-height: 11rem;
-    padding: 1.25rem;
-    border-radius: var(--radius-lg);
-  }
-
-  .home-process-number {
-    color: var(--color-accent-dark);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 800;
-    line-height: 1rem;
-  }
-
-  .home-process-step h3 {
-    margin-top: 1.5rem;
-    color: var(--color-foreground);
-    font-size: 0.9375rem;
-    font-weight: 800;
-    line-height: 1.25rem;
-  }
-
-  .home-process-step p {
-    margin-top: 0.5rem;
-    color: var(--color-muted);
-    font-size: 0.75rem;
-    line-height: 1.25rem;
-  }
-
-  .home-process-cta {
-    padding: 1.25rem;
-    border-radius: var(--radius-lg);
-  }
 
   .home-primary-action {
     color: var(--color-accent-text);
@@ -566,204 +251,6 @@
 
   .home-text-link:hover {
     color: var(--color-foreground);
-  }
-
-  .category-shortcut-visual {
-    background: var(--color-surface);
-    border-color: var(--color-border);
-    box-shadow: var(--shadow-rest);
-    transition:
-      background-color 200ms ease,
-      border-color 200ms ease,
-      box-shadow 200ms ease,
-      transform 200ms var(--ease-out, ease);
-  }
-
-  .category-shortcut:hover .category-shortcut-visual {
-    background: var(--color-accent-muted);
-    border-color: var(--color-accent);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-  }
-
-  .category-shortcut-count {
-    color: var(--color-muted);
-  }
-
-  .category-scroll-hint {
-    background: linear-gradient(to left, var(--color-paper), color-mix(in srgb, var(--color-paper) 82%, transparent), transparent);
-  }
-
-  .category-single-carousel {
-    color: white;
-    background:
-      radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--color-accent) 13%, transparent), transparent 28%),
-      var(--color-campaign-logo-surface);
-  }
-
-  .category-card-reel {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min(76vw, 17rem);
-    gap: 0.875rem;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    padding: 0.25rem 0.25rem 0.75rem;
-    scroll-padding-inline: 0.25rem;
-    scroll-snap-type: inline mandatory;
-  }
-
-  .category-cyber-card {
-    position: relative;
-    display: flex;
-    min-height: 14rem;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 11%, transparent);
-    border-radius: 1rem;
-    color: white;
-    background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-      rgba(11, 11, 13, 0.40);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    scroll-snap-align: start;
-    transition:
-      border-color 220ms var(--ease-drawer),
-      background-color 220ms var(--ease-drawer),
-      transform 220ms var(--ease-drawer);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .category-cyber-card::after {
-    position: absolute;
-    right: -2rem;
-    bottom: -3rem;
-    width: 8rem;
-    height: 8rem;
-    border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
-    border-radius: 9999px;
-    content: '';
-    transition: transform 300ms var(--ease-drawer);
-  }
-
-  .category-cyber-card:hover,
-  .category-cyber-card:focus-visible {
-    border-color: color-mix(in srgb, var(--color-accent) 68%, transparent);
-    background:
-      linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 14%, transparent), rgba(255, 255, 255, 0.025)),
-      rgba(11, 11, 13, 0.48);
-    transform: translateY(-2px);
-  }
-
-  .category-cyber-card:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  .category-cyber-card:hover::after,
-  .category-cyber-card:focus-visible::after {
-    transform: scale(1.18);
-  }
-
-  .category-cyber-icon {
-    display: grid;
-    width: 3.25rem;
-    height: 3.25rem;
-    place-items: center;
-    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
-    border-radius: 0.9rem;
-    background: var(--color-accent-ghost);
-    font-size: 1.65rem;
-  }
-
-  .category-cyber-pill {
-    align-self: flex-start;
-    margin-top: 0.8rem;
-    padding: 0.35rem 0.65rem;
-    border: 1px solid color-mix(in srgb, var(--color-campaign-on-image) 18%, transparent);
-    border-radius: 9999px;
-    color: color-mix(in srgb, var(--color-campaign-on-image) 82%, transparent);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
-  }
-
-  .category-cyber-card:hover .category-cyber-pill,
-  .category-cyber-card:focus-visible .category-cyber-pill {
-    color: var(--color-accent-text);
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-  }
-
-  .cyber-rail-control {
-    display: grid;
-    width: 2.75rem;
-    height: 2.75rem;
-    place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 9999px;
-    color: white;
-    background: rgba(255, 255, 255, 0.06);
-    transition: border-color 180ms ease, background-color 180ms ease, transform 100ms ease;
-  }
-
-  .cyber-rail-control:hover {
-    border-color: var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-  }
-
-  .cyber-rail-control:active {
-    transform: scale(0.94);
-  }
-
-  @media (min-width: 640px) {
-    .category-card-reel {
-      grid-auto-columns: min(36vw, 17rem);
-      gap: 1rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .category-card-reel {
-      grid-auto-columns: min(22vw, 16rem);
-    }
-  }
-
-  .merchandising-panel {
-    color: var(--color-campaign-on-image);
-    background: linear-gradient(135deg, var(--color-campaign-surface-raised), var(--color-campaign-surface));
-  }
-
-  .merchandising-divider {
-    border-color: var(--color-campaign-border);
-  }
-
-  .merchandising-tab {
-    color: var(--color-campaign-on-image);
-    background: var(--color-campaign-control);
-    border: 1px solid var(--color-campaign-border);
-    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
-  }
-
-  .merchandising-tab:hover {
-    background: var(--color-campaign-control-hover);
-    border-color: var(--color-accent);
-  }
-
-  .merchandising-tab:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-
-  .merchandising-tab-active {
-    color: var(--color-accent-text);
-    background: var(--color-accent);
-    border-color: var(--color-accent);
   }
 
   .deal-panel {
@@ -931,43 +418,9 @@
     color: var(--color-danger-text);
   }
 
-  .header-utility,
   .site-footer {
     color: var(--color-campaign-on-image);
     background: var(--color-campaign-surface);
-  }
-
-  @media (max-width: 639px) {
-    .header-utility {
-      display: none;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .header-commerce-shell {
-      width: calc(100% - 3rem);
-      margin-block: 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-xl);
-      background: var(--color-surface);
-      box-shadow: var(--shadow-rest);
-    }
-  }
-
-  .header-nav-link {
-    display: inline-flex;
-    min-height: 2.75rem;
-    align-items: center;
-    transition: color 200ms ease;
-  }
-
-  .header-nav-link:hover {
-    color: var(--color-muted);
-  }
-
-  .header-nav-link:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
   }
 
   .header-corner-gradient {
@@ -1022,107 +475,7 @@
   }
 }
 
-@keyframes aisle-marker-draw {
-  from {
-    transform: scaleY(0);
-  }
-
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@keyframes aisle-headline-open {
-  from {
-    clip-path: inset(0 0 100% 0);
-    transform: translateX(-0.75rem);
-  }
-
-  to {
-    clip-path: inset(0);
-    transform: translateX(0);
-  }
-}
-
-@keyframes aisle-actions-arrive {
-  from {
-    opacity: 0;
-    transform: translateX(-0.75rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes aisle-rail-turn {
-  from {
-    clip-path: inset(0 0 0 100%);
-    filter: blur(6px);
-    transform: perspective(900px) rotateY(-7deg);
-  }
-
-  to {
-    clip-path: inset(0);
-    filter: blur(0);
-    transform: perspective(900px) rotateY(0);
-  }
-}
-
-@keyframes campaign-card-turn {
-  0% {
-    opacity: 0.72;
-    transform: translateX(1.75rem) rotateY(15deg) scale(0.92);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translateX(0) rotateY(0) scale(1);
-  }
-
-  100% {
-    opacity: 0.72;
-    transform: translateX(-1.75rem) rotateY(-15deg) scale(0.92);
-  }
-}
-
-@keyframes cyber-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-@keyframes cyber-border-shimmer {
-  from {
-    transform: translateX(-250%) rotate(18deg);
-  }
-
-  to {
-    transform: translateX(250%) rotate(18deg);
-  }
-}
-
 @layer utilities {
-  /* Glassmorphism surface */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border-color: var(--glass-border);
-  }
-
-  /* Tactile press feedback */
-  .press-feedback:active {
-    transform: scale(var(--press-scale));
-    transition: transform 0.1s var(--ease-out, ease);
-  }
-
   /* Scroll edge fade masks */
   .scroll-edge-mask {
     mask-image: linear-gradient(to right,
@@ -1147,36 +500,34 @@
     display: none;
   }
 
-  /* Micro-interactions: card reveal transitions with initial state */
-  @media (prefers-reduced-motion: no-preference) {
-    .card-reveal {
-      opacity: 0;
-      transform: translateY(16px);
-      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .liquid-button {
+    --liquid-button-fill-width: -1%;
+    --liquid-button-fill-height: var(--liquid-button-rest-height, 3px);
+    --liquid-button-delay: 0s;
+  }
+
+  .liquid-button:hover {
+    --liquid-button-fill-width: 100%;
+    --liquid-button-fill-height: 100%;
+    --liquid-button-delay: var(--liquid-button-configured-delay);
+    transform: scale(var(--liquid-button-hover-scale));
+  }
+
+  .liquid-button:active {
+    transform: scale(var(--liquid-button-tap-scale));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .liquid-button {
+      transition: none !important;
+    }
+
+    .liquid-button:hover,
+    .liquid-button:active {
+      transform: none;
     }
   }
 
-  /* Scroll-triggered fade-up reveal */
-  .fade-up-hidden {
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.5s var(--ease-out, ease), transform 0.5s var(--ease-out, ease);
-  }
-
-  .fade-up-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Product grid stagger reveal with fallback */
-  @media (prefers-reduced-motion: no-preference) {
-    .product-grid>* {
-      --index: 0;
-      animation: fadeUp 0.4s var(--ease-out, ease) forwards;
-      animation-delay: calc(var(--index, 0) * 80ms);
-      opacity: 0;
-    }
-  }
 }
 
 /* Explicit dark text on saffron elements & saffron backgrounds */
@@ -1194,8 +545,7 @@ html.theme-transitioning main,
 html.theme-transitioning footer,
 html.theme-transitioning nav,
 html.theme-transitioning .card,
-html.theme-transitioning .btn,
-html.theme-transitioning .glass {
+html.theme-transitioning .btn {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1244,20 +594,6 @@ html.dark [class*="border-white/"] {
   content-visibility: auto;
   contain-intrinsic-size: 0 420px;
 }
-
-/* shadcn-inspired scroll-fade utilities */
-.scroll-fade-x {
-  --scroll-fade-size: 24px;
-  mask-image: linear-gradient(to right, transparent, black var(--scroll-fade-size), black calc(100% - var(--scroll-fade-size)), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black var(--scroll-fade-size), black calc(100% - var(--scroll-fade-size)), transparent);
-}
-
-.scroll-fade-y {
-  --scroll-fade-size: 24px;
-  mask-image: linear-gradient(to bottom, transparent, black var(--scroll-fade-size), black calc(100% - var(--scroll-fade-size)), transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black var(--scroll-fade-size), black calc(100% - var(--scroll-fade-size)), transparent);
-}
-
 
 /* Keep tap feedback local to the control; release gently back into place. */
 .store-press,

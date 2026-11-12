@@ -205,7 +205,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => handleUpdateQty(-1)}
-                      className="w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                      className="store-press w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                       aria-label="Decrease quantity"
                     >
                       −
@@ -218,7 +218,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                     <button
                       onClick={() => handleUpdateQty(1)}
                       disabled={qtyInCart >= product.stock}
-                      className="w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all press-feedback focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
+                      className="store-press w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
                       aria-label="Increase quantity"
                     >
                       +
