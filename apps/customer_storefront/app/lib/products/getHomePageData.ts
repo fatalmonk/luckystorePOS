@@ -187,7 +187,7 @@ const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
   { id: 'cat-7', slug: 'personal-care', name: 'Personal Care', emoji: '🧴' },
 ];
 
-export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
+async function loadHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
   const { repo } = createAnonymousStorefrontProductRepository();
   let campaignLoadFailed = false;
   let campaignLoadError: unknown;
@@ -390,3 +390,11 @@ export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageDa
     snacksProducts,
   };
 }
+import { unstable_cache } from 'next/cache';
+
+/** Share homepage catalog reads between the page render and deferred shelf request. */
+export const getHomePageData = unstable_cache(
+  loadHomePageData,
+  ['storefront-home-page-data-v1'],
+  { revalidate: 120, tags: ['storefront-home-page-data'] },
+);

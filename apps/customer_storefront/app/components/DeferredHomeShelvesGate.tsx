@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import type { DeferredHomeShelvesProps } from './DeferredHomeShelves';
 import type { Locale } from '../lib/i18n/config';
+import { fetchDeferredHomeShelves } from '../lib/homeDeferredClient';
 
 const DeferredHomeShelves = dynamic(
   () => import('./DeferredHomeShelves').then((module) => module.DeferredHomeShelves),
@@ -47,12 +48,7 @@ export function DeferredHomeShelvesGate({ locale }: { locale: Locale }) {
     async function loadShelves() {
       try {
         setLoadFailed(false);
-        const response = await fetch(`/api/home/deferred?locale=${locale}`, {
-          signal: controller.signal,
-          cache: 'force-cache',
-        });
-        if (!response.ok) throw new Error(`Homepage data request failed: ${response.status}`);
-        const data = (await response.json()) as DeferredHomeShelvesProps;
+        const data = await fetchDeferredHomeShelves(locale, controller.signal);
         setShelves(data);
       } catch {
         if (!controller.signal.aborted) setLoadFailed(true);

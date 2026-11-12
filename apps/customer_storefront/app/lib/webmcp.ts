@@ -57,8 +57,35 @@ function saveCart(cart: CartState) {
   window.dispatchEvent(new CustomEvent('cart-updated'));
 }
 
+function getCheckoutIdentity(payloadSignature: string) {
+  const storageKey = 'lucky-webmcp-checkout-identity';
+  try {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved) {
+      const identity = JSON.parse(saved);
+      if (identity.payloadSignature === payloadSignature
+        && typeof identity.orderNumber === 'string'
+        && typeof identity.idempotencyKey === 'string') return identity;
+    }
+  } catch {
+    // Generate an identity when session storage is unavailable or invalid.
+  }
+
+  const identity = {
+    payloadSignature,
+    orderNumber: `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+    idempotencyKey: crypto.randomUUID(),
+  };
+  try {
+    sessionStorage.setItem(storageKey, JSON.stringify(identity));
+  } catch {
+    // Continue with this in-memory identity when session storage is unavailable.
+  }
+  return identity;
+}
+
 /** Tool definitions registered through document.modelContext.registerTool. */
-const TOOLS: Record<string, WebMCPTool> = {
+export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
   search_products: {
     description:
       'Search the Lucky Store product catalog by keyword. Returns matching products with id, name, price, and category.',
@@ -218,8 +245,9 @@ const TOOLS: Record<string, WebMCPTool> = {
         customerPhone: { type: 'string', description: 'Customer phone number (BD format)' },
         customerAddress: { type: 'string', description: 'Delivery address in Chittagong' },
         notes: { type: 'string', description: 'Optional delivery notes' },
+        paymentMethod: { type: 'string', enum: ['cod', 'bkash'], description: 'Payment method selected by the customer' },
       },
-      required: ['customerName', 'customerPhone', 'customerAddress'],
+      required: ['customerName', 'customerPhone', 'customerAddress', 'paymentMethod'],
     },
     annotations: { readOnlyHint: false, consequentialHint: true },
     async execute(input, { signal }) {
@@ -230,14 +258,22 @@ const TOOLS: Record<string, WebMCPTool> = {
 
       const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);
       const deliveryFee = subtotal >= 500 ? 0 : 40;
-      const orderNumber = `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      const payloadSignature = JSON.stringify({
+        items: cart.items.map(({ id, qty }) => ({ id, qty })).sort((a, b) => a.id.localeCompare(b.id)),
+        customerName: input.customerName,
+        customerPhone: input.customerPhone,
+        customerAddress: input.customerAddress,
+        notes: input.notes,
+        paymentMethod: input.paymentMethod,
+      });
+      const identity = getCheckoutIdentity(payloadSignature);
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderNumber,
-          idempotencyKey: crypto.randomUUID(),
+          orderNumber: identity.orderNumber,
+          idempotencyKey: identity.idempotencyKey,
           items: cart.items,
           subtotal,
           deliveryFee,
@@ -246,6 +282,7 @@ const TOOLS: Record<string, WebMCPTool> = {
           customerPhone: input.customerPhone,
           customerAddress: input.customerAddress,
           notes: input.notes,
+          paymentMethod: input.paymentMethod,
         }),
         signal,
       });
@@ -258,6 +295,7 @@ const TOOLS: Record<string, WebMCPTool> = {
       const order = await res.json();
       // Clear cart on successful order
       saveCart({ items: [] });
+      try { sessionStorage.removeItem('lucky-webmcp-checkout-identity'); } catch { /* Storage may be unavailable. */ }
       return order;
     },
   },
@@ -280,7 +318,7 @@ export async function initWebMCP(signal: AbortSignal): Promise<void> {
   const modelContext = (document as WebMCPDocument).modelContext;
   if (!modelContext || signal.aborted) return;
 
-  await Promise.all(Object.entries(TOOLS).map(async ([name, tool]) => {
+  await Promise.all(Object.entries(WEBMCP_TOOLS).map(async ([name, tool]) => {
     try {
       await modelContext.registerTool({
         name,
