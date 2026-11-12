@@ -51,7 +51,7 @@ describe('next.config.js security headers', () => {
     const images = headers.find((rule) => rule.source === '/images/:path*');
     const nextStatic = headers.find((rule) => rule.source === '/_next/static/:path*');
     const cart = headers.find((rule) => rule.source === '/bn/cart');
-    expect(headerMap(images).get('Cache-Control')).toBe('public, max-age=2592000');
+    expect(headerMap(images).get('Cache-Control')).toBe('public, max-age=2592000, stale-while-revalidate=86400');
     expect(headerMap(nextStatic).get('Cache-Control')).toMatch(/immutable/);
     expect(headerMap(cart).get('Cache-Control')).toBe('private, no-store, max-age=0, must-revalidate');
     expect(PUBLIC_CATALOG_CACHE_CONTROL).not.toContain('no-store');
@@ -77,17 +77,17 @@ describe('next.config.js security headers', () => {
 });
 
 describe('next.config.js CSS emission guard', () => {
-  it('leaves images unoptimized unless the build enables Cloudflare resizing', () => {
+  it('serves remote images directly across hosting modes', () => {
     const images = (nextConfig as { images?: { unoptimized?: boolean; loader?: string } }).images;
 
-    expect(images?.loader).toBe('custom');
-    expect(images?.unoptimized).toBe(process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1');
+    expect(images?.loader).toBeUndefined();
+    expect(images?.unoptimized).toBe(true);
   });
 
   it('does not opt into duplicated inline CSS', () => {
     const experimental = (nextConfig as { experimental?: { inlineCss?: boolean; optimizeCss?: boolean } }).experimental;
 
     expect(experimental?.inlineCss).not.toBe(true);
-    expect(experimental?.optimizeCss).toBe(true);
+    expect(experimental?.optimizeCss).not.toBe(true);
   });
 });

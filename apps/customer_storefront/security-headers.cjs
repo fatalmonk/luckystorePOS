@@ -37,7 +37,7 @@ const SECURITY_HEADERS = [
 ];
 
 const HASHED_STATIC_CACHE_CONTROL = 'public, max-age=31536000, immutable';
-const PUBLIC_ASSET_CACHE_CONTROL = 'public, max-age=2592000';
+const PUBLIC_ASSET_CACHE_CONTROL = 'public, max-age=2592000, stale-while-revalidate=86400';
 const MANIFEST_CACHE_CONTROL = 'public, max-age=3600';
 const PUBLIC_CATALOG_CACHE_CONTROL = 'public, max-age=0, s-maxage=120, stale-while-revalidate=600';
 const PRIVATE_CACHE_CONTROL = 'private, no-store, max-age=0, must-revalidate';

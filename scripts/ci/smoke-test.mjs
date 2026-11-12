@@ -12,6 +12,15 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+export const STATIC_ASSET_CACHE_PATHS = Object.freeze([
+  '/images/hero-reference.webp',
+  '/images/tea-time.webp',
+  '/logo-main.png',
+  '/logo-main-inverse.png',
+  '/logo-bangla.svg',
+  '/logo-bangla-inverse.svg',
+]);
+
 export function evaluateSmokeHealth({
   statusCode,
   body,
@@ -46,6 +55,38 @@ export function evaluateSmokeHealth({
   }
   const detail = data?.buildSha ? `Status 200 OK (build ${data.buildSha})` : 'Status 200 OK';
   return { ok: true, detail, data };
+}
+
+export function evaluateStaticAssetCache({
+  statusCode,
+  cacheControl,
+  minMaxAgeSeconds = 30 * 24 * 60 * 60,
+}) {
+  if (statusCode !== 200) return { ok: false, error: `Expected static asset 200, got ${statusCode}` };
+  const value = Array.isArray(cacheControl) ? cacheControl.join(', ') : String(cacheControl || '');
+  const directives = value.split(',').map((directive) => directive.trim()).filter(Boolean);
+  const prohibited = directives.find((directive) => /^(?:private|no-cache|no-store|immutable)(?:\s*=|$)/i.test(directive));
+  if (prohibited) {
+    return { ok: false, error: `Static asset uses prohibited cache directive '${prohibited}'.` };
+  }
+  const maxAgeDirectives = directives.filter((directive) => /^max-age\s*=/i.test(directive));
+  if (maxAgeDirectives.length !== 1) {
+    return { ok: false, error: `Expected exactly one max-age directive, got ${maxAgeDirectives.length}.` };
+  }
+  const match = /^max-age\s*=\s*(?:(\d+)|"(\d+)")$/i.exec(maxAgeDirectives[0]);
+  if (!match) return { ok: false, error: `Expected a valid max-age directive, got '${maxAgeDirectives[0]}'.` };
+  const maxAgeSeconds = Number(match[1] || match[2]);
+  if (maxAgeSeconds < minMaxAgeSeconds) {
+    return {
+      ok: false,
+      error: `Expected browser cache lifetime of at least 30 days (${minMaxAgeSeconds}s), got ${maxAgeSeconds}s.`,
+    };
+  }
+  const staleDirectives = directives.filter((directive) => /^stale-while-revalidate\s*=/i.test(directive));
+  if (staleDirectives.length !== 1 || !/^stale-while-revalidate\s*=\s*(?:86400|"86400")$/i.test(staleDirectives[0])) {
+    return { ok: false, error: 'Expected exactly one stale-while-revalidate=86400 directive.' };
+  }
+  return { ok: true, detail: `Cache-Control: ${value}` };
 }
 
 function parseArgs() {
@@ -202,11 +243,19 @@ async function run() {
       }
     },
     {
-      name: '6. Cache Header Assertions (Edge routing validation)',
+      name: '6. Static Asset Browser Cache',
       fn: async () => {
-        const res = await request(`${baseUrl}/`);
-        const cfCache = res.headers['cf-cache-status'];
-        return `cf-cache-status: ${cfCache || 'origin (direct)'}`;
+        const cacheStatuses = new Set();
+        for (const assetPath of STATIC_ASSET_CACHE_PATHS) {
+          const res = await request(`${baseUrl}${assetPath}`, { method: 'HEAD' });
+          const result = evaluateStaticAssetCache({
+            statusCode: res.statusCode,
+            cacheControl: res.headers['cache-control'],
+          });
+          if (!result.ok) throw new Error(`${assetPath}: ${result.error}`);
+          cacheStatuses.add(res.headers['cf-cache-status'] || 'origin (direct)');
+        }
+        return `${STATIC_ASSET_CACHE_PATHS.length} assets cached >=30 days; cf-cache-status: ${[...cacheStatuses].join(', ')}`;
       }
     }
   ];
