@@ -4,12 +4,13 @@ import React, { useCallback, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from 'cn';
-import { getLocaleFromPathname } from '../lib/i18n/config';
+import type { Locale } from '../lib/i18n/config';
+import { getLocaleFromPathname, LOCALE_HREFLANG, stripLocalePrefix } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
-import { getLocaleHref } from '../lib/i18n/navigation';
+import { getLocalizedPathname, hasBengaliRoute } from '../lib/i18n/navigation';
 
 export type Direction = 'ltr' | 'rtl' | 'ttb' | 'btt';
-export type Locale = 'en' | 'bn';
+export type { Locale } from '../lib/i18n/config';
 
 export interface LanguageSwitcherRenderState {
   locale: string;
@@ -57,25 +58,12 @@ export function LanguageSwitcher({
             ? 'en'
             : 'bn';
       const dictionary = getDictionary(activeLocale);
-      const cleanPath = pathname.startsWith('/bn') ? pathname.slice(3) || '/' : pathname;
-      const supportsBengaliRoute =
-        cleanPath === '/' ||
-        cleanPath === '/delivery' ||
-        cleanPath === '/category' ||
-        cleanPath === '/cart' ||
-        cleanPath === '/checkout' ||
-        cleanPath === '/wishlist' ||
-        cleanPath === '/login' ||
-        cleanPath === '/signup' ||
-        cleanPath === '/profile' ||
-        cleanPath.startsWith('/category/') ||
-        cleanPath.startsWith('/product/');
-      const targetPath = target === 'bn' && !supportsBengaliRoute ? '/' : pathname;
-      const targetHref = getLocaleHref(
-        targetPath,
-        targetPath === '/' && cleanPath !== '/' ? '' : search ? `?${search}` : '',
-        target
-      );
+      const cleanPath = stripLocalePrefix(pathname);
+      const targetPath = getLocalizedPathname(cleanPath, target);
+      const targetHref =
+        target === 'bn' && !hasBengaliRoute(cleanPath)
+          ? targetPath
+          : `${targetPath}${search ? `?${search}` : ''}`;
       return {
         locale: activeLocale,
         targetLocale: target,
@@ -137,7 +125,7 @@ export function LanguageSwitcher({
         className
       )}
       lang={targetLocale === 'bn' ? 'bn' : 'en'}
-      hrefLang={targetLocale === 'bn' ? 'bn-BD' : 'en-BD'}
+      hrefLang={LOCALE_HREFLANG[targetLocale]}
       prefetch={false}
       scroll={false}
       aria-busy={isPending}

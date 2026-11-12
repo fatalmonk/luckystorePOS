@@ -5,9 +5,10 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 const mockPush = vi.fn();
 const mockPathname = vi.hoisted(() => ({ value: '/' }));
+const mockSearchParams = vi.hoisted(() => ({ value: '' }));
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname.value,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(mockSearchParams.value),
   useRouter: () => ({
     push: mockPush,
   }),
@@ -17,6 +18,7 @@ describe('LanguageSwitcher', () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockPathname.value = '/';
+    mockSearchParams.value = '';
     vi.restoreAllMocks();
   });
 
@@ -55,6 +57,24 @@ describe('LanguageSwitcher', () => {
     mockPathname.value = pathname;
     render(<LanguageSwitcher />);
     expect(screen.getByRole('link')).toHaveAttribute('href', `/bn${pathname}`);
+  });
+
+  it.each([
+    ['/about', '', '/bn/about'],
+    ['/terms', 'x=1', '/bn/terms?x=1'],
+    ['/contact', 'x=1', '/bn'],
+    ['/bn/category/rice-and-grain', 'sort=price_asc', '/category/rice-and-grain?sort=price_asc'],
+  ])('switches %s with query "%s" to %s', (pathname, search, targetHref) => {
+    mockPathname.value = pathname;
+    mockSearchParams.value = search;
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', targetHref);
+
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith(targetHref, { scroll: false });
   });
 
   it('does not navigate on modified clicks (meta, ctrl, shift, alt)', () => {
