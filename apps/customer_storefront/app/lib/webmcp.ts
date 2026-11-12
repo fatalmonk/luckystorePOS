@@ -3,30 +3,28 @@
  * https://webmachinelearning.github.io/webmcp/
  * https://developer.chrome.com/blog/webmcp-epp
  *
- * Each tool is registered via navigator.modelContext.registerTool()
- * with name, description, inputSchema (JSON Schema), and execute callback.
- * Tools are unregistered via AbortController when the page unloads.
+ * Tools use Chrome's current document.modelContext imperative API.
+ * A page-lifecycle AbortSignal unregisters them when the component unmounts.
  */
 
-interface WebMCPNavigator extends Navigator {
+type WebMCPAnnotations = {
+  readOnlyHint?: boolean;
+  consequentialHint?: boolean;
+  untrustedContentHint?: boolean;
+};
+
+type WebMCPToolContext = { signal: AbortSignal };
+
+type WebMCPTool = {
+  description: string;
+  inputSchema: Record<string, unknown>;
+  annotations?: WebMCPAnnotations;
+  execute: (input: Record<string, unknown>, context: WebMCPToolContext) => Promise<unknown>;
+};
+
+interface WebMCPDocument extends Document {
   modelContext?: {
-    registerTool: (
-      name: string,
-      tool: {
-        description: string;
-        inputSchema: object;
-        execute: (input: Record<string, unknown>) => Promise<unknown>;
-      },
-      options?: { signal?: AbortSignal }
-    ) => void;
-    // Fall back to provideContext if registerTool is not available
-    provideContext?: (context: {
-      tools: Record<string, {
-        description: string;
-        inputSchema: object;
-        execute: (input: Record<string, unknown>) => Promise<unknown>;
-      }>;
-    }) => void;
+    registerTool: (tool: WebMCPTool & { name: string }, options?: { signal?: AbortSignal }) => Promise<void>;
   };
 }
 
@@ -59,8 +57,35 @@ function saveCart(cart: CartState) {
   window.dispatchEvent(new CustomEvent('cart-updated'));
 }
 
-/** Tool definitions — shared between registerTool and provideContext paths. */
-const TOOLS = {
+function getCheckoutIdentity(payloadSignature: string) {
+  const storageKey = 'lucky-webmcp-checkout-identity';
+  try {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved) {
+      const identity = JSON.parse(saved);
+      if (identity.payloadSignature === payloadSignature
+        && typeof identity.orderNumber === 'string'
+        && typeof identity.idempotencyKey === 'string') return identity;
+    }
+  } catch {
+    // Generate an identity when session storage is unavailable or invalid.
+  }
+
+  const identity = {
+    payloadSignature,
+    orderNumber: `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+    idempotencyKey: crypto.randomUUID(),
+  };
+  try {
+    sessionStorage.setItem(storageKey, JSON.stringify(identity));
+  } catch {
+    // Continue with this in-memory identity when session storage is unavailable.
+  }
+  return identity;
+}
+
+/** Tool definitions registered through document.modelContext.registerTool. */
+export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
   search_products: {
     description:
       'Search the Lucky Store product catalog by keyword. Returns matching products with id, name, price, and category.',
@@ -78,11 +103,13 @@ const TOOLS = {
       },
       required: ['query'],
     },
-    async execute(input: Record<string, unknown>) {
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    async execute(input, { signal }) {
       const query = String(input.query || '');
       const limit = Number(input.limit || 10);
       const res = await fetch(
-        `/api/products?q=${encodeURIComponent(query)}&limit=${limit}`
+        `/api/products?q=${encodeURIComponent(query)}&limit=${limit}`,
+        { signal },
       );
       if (!res.ok) {
         return { error: `Search failed: ${res.status}` };
@@ -98,8 +125,9 @@ const TOOLS = {
       type: 'object',
       properties: {},
     },
-    async execute() {
-      const res = await fetch('/api/categories');
+    annotations: { readOnlyHint: true },
+    async execute(_input, { signal }) {
+      const res = await fetch('/api/categories', { signal });
       if (!res.ok) {
         return { error: `Failed to list categories: ${res.status}` };
       }
@@ -120,9 +148,10 @@ const TOOLS = {
       },
       required: ['id'],
     },
-    async execute(input: Record<string, unknown>) {
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    async execute(input, { signal }) {
       const id = String(input.id || '');
-      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, { signal });
       if (!res.ok) {
         return { error: `Product not found: ${res.status}` };
       }
@@ -147,11 +176,12 @@ const TOOLS = {
       },
       required: ['id'],
     },
-    async execute(input: Record<string, unknown>) {
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+    async execute(input, { signal }) {
       const id = String(input.id || '');
       const qty = Number(input.qty || 1);
 
-      const prodRes = await fetch(`/api/products?id=${encodeURIComponent(id)}`);
+      const prodRes = await fetch(`/api/products?id=${encodeURIComponent(id)}`, { signal });
       if (!prodRes.ok) {
         return { error: `Product not found: ${prodRes.status}` };
       }
@@ -184,6 +214,7 @@ const TOOLS = {
       type: 'object',
       properties: {},
     },
+    annotations: { readOnlyHint: true },
     async execute() {
       const cart = getCart();
       const total = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -197,6 +228,7 @@ const TOOLS = {
       type: 'object',
       properties: {},
     },
+    annotations: { readOnlyHint: false },
     async execute() {
       saveCart({ items: [] });
       return { ok: true, message: 'Cart cleared' };
@@ -205,7 +237,7 @@ const TOOLS = {
 
   submit_order: {
     description:
-      'Submit the current cart as a grocery order with customer delivery details. Requires customer name, phone, and address.',
+      'Submit the current cart as a grocery order with customer delivery details. If checkout returns PRICE_MISMATCH, present the server quote for customer review before trying again.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -213,35 +245,69 @@ const TOOLS = {
         customerPhone: { type: 'string', description: 'Customer phone number (BD format)' },
         customerAddress: { type: 'string', description: 'Delivery address in Chittagong' },
         notes: { type: 'string', description: 'Optional delivery notes' },
+        paymentMethod: { type: 'string', enum: ['cod', 'bkash'], description: 'Payment method selected by the customer' },
       },
-      required: ['customerName', 'customerPhone', 'customerAddress'],
+      required: ['customerName', 'customerPhone', 'customerAddress', 'paymentMethod'],
     },
-    async execute(input: Record<string, unknown>) {
+    annotations: { readOnlyHint: false, consequentialHint: true },
+    async execute(input, { signal }) {
       const cart = getCart();
       if (!cart.items.length) {
         return { error: 'Cart is empty' };
       }
 
+      const subtotal = Math.round(cart.items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
+
+      const deliveryFee = subtotal >= 500 ? 0 : 40;
+      const payloadSignature = JSON.stringify({
+        items: cart.items.map(({ id, qty }) => ({ id, qty })).sort((a, b) => a.id.localeCompare(b.id)),
+        customerName: input.customerName,
+        customerPhone: input.customerPhone,
+        customerAddress: input.customerAddress,
+        notes: input.notes,
+        paymentMethod: input.paymentMethod,
+      });
+      const identity = getCheckoutIdentity(payloadSignature);
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          orderNumber: identity.orderNumber,
+          idempotencyKey: identity.idempotencyKey,
           items: cart.items,
+          subtotal,
+          deliveryFee,
+          total: subtotal + deliveryFee,
           customerName: input.customerName,
           customerPhone: input.customerPhone,
           customerAddress: input.customerAddress,
           notes: input.notes,
+          paymentMethod: input.paymentMethod,
         }),
+        signal,
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        if (err.code === 'PRICE_MISMATCH') {
+          return {
+            error: err.error || 'Prices changed. Review the updated total before placing the order.',
+            code: err.code,
+            items: err.items,
+            subtotal: err.subtotal,
+            discount: err.discount,
+            deliveryFee: err.deliveryFee,
+            total: err.total,
+            requiresCustomerReview: true,
+          };
+        }
         return { error: err.error || `Checkout failed: ${res.status}` };
       }
 
       const order = await res.json();
-      // Clear cart on successful order
       saveCart({ items: [] });
+      try { sessionStorage.removeItem('lucky-webmcp-checkout-identity'); } catch { /* Storage may be unavailable. */ }
       return order;
     },
   },
@@ -252,67 +318,27 @@ const TOOLS = {
       type: 'object',
       properties: {},
     },
-    async execute() {
-      const res = await fetch('/api/health');
+    annotations: { readOnlyHint: true },
+    async execute(_input, { signal }) {
+      const res = await fetch('/api/health', { signal });
       return res.json();
     },
   },
 };
 
-export function initWebMCP(): (() => void) | undefined {
-  const nav = navigator as WebMCPNavigator;
+export async function initWebMCP(signal: AbortSignal): Promise<void> {
+  const modelContext = (document as WebMCPDocument).modelContext;
+  if (!modelContext || signal.aborted) return;
 
-  if (!nav.modelContext) {
-    return;
-  }
-
-  // Use an AbortController to unregister tools on cleanup
-  const controller = new AbortController();
-
-  // Prefer registerTool (per-tool registration) if available
-  if (typeof nav.modelContext.registerTool === 'function') {
-    for (const [name, tool] of Object.entries(TOOLS)) {
-      try {
-        nav.modelContext.registerTool(name, tool, { signal: controller.signal });
-      } catch (e) {
-        console.warn(`[WebMCP] Failed to register tool "${name}":`, e);
-      }
-    }
-  } else if (typeof nav.modelContext.provideContext === 'function') {
-    // Fallback: provideContext with all tools at once
+  await Promise.all(Object.entries(WEBMCP_TOOLS).map(async ([name, tool]) => {
     try {
-      nav.modelContext.provideContext({ tools: TOOLS });
-    } catch (e) {
-      console.warn('[WebMCP] Failed to provide context:', e);
+      await modelContext.registerTool({
+        name,
+        ...tool,
+        execute: (input, context) => tool.execute(input, context ?? { signal }),
+      }, { signal });
+    } catch (error) {
+      if (!signal.aborted) console.warn(`[WebMCP] Failed to register tool "${name}":`, error);
     }
-  } else {
-    return;
-  }
-
-  // Return cleanup function
-  return () => controller.abort();
-}
-
-// Auto-initialize on page load
-if (typeof window !== 'undefined') {
-  let cleanup: (() => void) | undefined;
-
-  const start = () => {
-    cleanup = initWebMCP();
-  };
-
-  const stop = () => {
-    if (cleanup) cleanup();
-    cleanup = undefined;
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
-
-  // Cleanup on page unload
-  window.addEventListener('pagehide', stop);
-  window.addEventListener('beforeunload', stop);
+  }));
 }
