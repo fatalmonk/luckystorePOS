@@ -1,6 +1,6 @@
 import { HomeShell } from '../../components/HomeShell';
 import { getHomePageData } from '../../lib/products/getHomePageData';
-import { toProductSlug } from '../../lib/products/slugify';
+import { catalogProductSlug } from '../../lib/products/slugify';
 
 /** Loads Bengali homepage data and renders structured data and the home shell. */
 export async function BengaliHomeContent() {
@@ -27,7 +27,7 @@ export async function BengaliHomeContent() {
       item: {
         '@type': 'Product',
         name: product.name,
-        url: `https://www.luckystore1947.com/bn/product/${toProductSlug(product.name, product.id)}`,
+        url: `https://www.luckystore1947.com/bn/product/${catalogProductSlug(product)}`,
         ...(!data.catalogSnapshotFallback && Number.isFinite(product.price) && product.price > 0
           ? { offers: { '@type': 'Offer', priceCurrency: 'BDT', price: product.price } }
           : {}),

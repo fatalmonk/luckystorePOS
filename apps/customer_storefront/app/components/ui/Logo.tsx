@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import React from 'react';
 import type { MouseEventHandler } from 'react';
 import { usePathname } from 'next/navigation';
+import { cloudflareImageSources } from '../../lib/image-loader';
 import { getLocaleFromPathname, type Locale } from '../../lib/i18n/config';
+
+const LOGO_WIDTHS = [210, 420] as const;
+const LOGO_SIZES = '(max-width: 639px) 175px, 210px';
 
 interface LogoProps {
   className?: string;
@@ -30,28 +33,22 @@ export function Logo({ className = '', href, variant = 'default', onClick, local
 
   const content = (
     <div className={`flex items-center select-none group ${className}`}>
-      {/* Light theme logo */}
-      <Image
+      <LogoImage
         src={lightSrc}
         alt={altText}
         width={isBn ? 155 : 210}
         height={48}
         loading="eager"
-        fetchPriority="low"
-        style={{ width: 'auto', height: 'auto' }}
         className={`max-h-10 sm:max-h-12 w-auto object-contain transition-transform duration-300 motion-safe:group-hover:scale-105 ${
           isWhite ? 'hidden' : 'block dark:hidden'
         }`}
       />
-      {/* Dark theme / inverse logo */}
-      <Image
+      <LogoImage
         src={darkSrc}
         alt=""
         width={isBn ? 155 : 211}
         height={48}
         loading="lazy"
-        fetchPriority="low"
-        style={{ width: 'auto', height: 'auto' }}
         className={`max-h-10 sm:max-h-12 w-auto object-contain transition-transform duration-300 motion-safe:group-hover:scale-105 ${
           isWhite ? 'block' : 'hidden dark:block'
         }`}
@@ -73,4 +70,40 @@ export function Logo({ className = '', href, variant = 'default', onClick, local
   }
 
   return content;
+}
+
+function LogoImage({
+  src,
+  alt,
+  width,
+  height,
+  loading,
+  className,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  loading: 'eager' | 'lazy';
+  className: string;
+}) {
+  const image = cloudflareImageSources(src, LOGO_WIDTHS, 75);
+  return (
+    // The PNG artwork is unchanged. next/image is globally unoptimized and would
+    // fetch the original file instead of a Cloudflare variant.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={image.src}
+      srcSet={image.srcSet}
+      sizes={image.srcSet ? LOGO_SIZES : undefined}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={loading}
+      fetchPriority="low"
+      decoding="async"
+      style={{ width: 'auto', height: 'auto' }}
+      className={className}
+    />
+  );
 }

@@ -2,7 +2,12 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+import { cloudflareImageSources } from '../lib/image-loader';
 import { withLocale, type Locale } from '../lib/i18n/config';
+
+const TEA_BANNER_PATH = '/images/tea-time.webp';
+const TEA_BANNER_WIDTHS = [480, 800] as const;
+const TEA_BANNER_SIZES = '(max-width: 639px) calc((100vw - 2rem) * 0.65), min(680px, 55vw)';
 
 const collections = [
   {
@@ -85,13 +90,7 @@ export function HomeTeaBanner({ locale = 'en' }: { locale?: Locale }) {
       className="relative isolate flex min-h-44 items-center overflow-hidden rounded-2xl bg-[#ffedba] px-6 py-6 text-[#0b2517] sm:min-h-36 sm:px-8"
     >
       <div className="absolute inset-y-0 right-0 -z-10 w-[65%] sm:w-[55%]">
-        <Image
-          src="/images/tea-time.webp"
-          alt=""
-          fill
-          sizes="(max-width: 639px) 65vw, 55vw"
-          className="object-cover object-right"
-        />
+        <TeaBannerImage />
       </div>
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,#ffedba_0%,#ffedba_42%,rgba(255,237,186,0)_65%)]" />
       <div className="flex max-w-[65%] flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-8">
@@ -110,5 +109,24 @@ export function HomeTeaBanner({ locale = 'en' }: { locale?: Locale }) {
         </Link>
       </div>
     </section>
+  );
+}
+
+function TeaBannerImage() {
+  const image = cloudflareImageSources(TEA_BANNER_PATH, TEA_BANNER_WIDTHS, 75);
+  return (
+    // next/image stays unoptimized, so it would request the 65 KiB original.
+    // eslint-disable-next-line @next/next/no-img-element -- Cloudflare variants match the hero and stay off when the resize flag is unset.
+    <img
+      src={image.src}
+      srcSet={image.srcSet}
+      sizes={image.srcSet ? TEA_BANNER_SIZES : undefined}
+      width={1600}
+      height={538}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className="absolute inset-0 h-full w-full object-cover object-right"
+    />
   );
 }

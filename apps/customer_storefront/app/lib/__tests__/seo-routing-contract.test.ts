@@ -282,6 +282,39 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect((await middleware(new NextRequest('https://www.luckystore1947.com/product/--029b62d8'))).status).toBe(404);
     });
 
+    it('redirects an empty Bengali display slug to the shared English catalog slug', async () => {
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify([{
+        id: '95c86e99-34c8-4ed3-823d-2ca8446fdbd9',
+        name: 'Diploma Instant Full Cream Milk Powder 500 g',
+      }]), { status: 200 }));
+      const { middleware } = await import('../../../middleware');
+      const response = await middleware(new NextRequest('https://www.luckystore1947.com/bn/product/--95c86e99?ref=bn'));
+      expect(response.status).toBe(308);
+      expect(response.headers.get('location')).toBe(
+        'https://www.luckystore1947.com/bn/product/diploma-instant-full-cream-milk-powder-500-g--95c86e99?ref=bn',
+      );
+    });
+
+    it('redirects legacy slugs for a Bengali-only catalog name to the transliterated slug', async () => {
+      vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify([{
+        id: '95c86e99-34c8-4ed3-823d-2ca8446fdbd9',
+        name: 'ডিপ্লোমা ইন্স্ট্যান্ট ফুল ক্রিম মিল্ক পাউডার',
+      }]), { status: 200 }));
+      const { middleware } = await import('../../../middleware');
+      const canonical = 'https://www.luckystore1947.com/product/diploma-instyant-ful-krim-milk-paudar--95c86e99';
+      for (const slug of ['--95c86e99', 'old-diploma--95c86e99']) {
+        const response = await middleware(new NextRequest(`https://www.luckystore1947.com/product/${slug}`));
+        expect(response.status, slug).toBe(308);
+        expect(response.headers.get('location')).toBe(canonical);
+      }
+      const current = await middleware(new NextRequest(`https://www.luckystore1947.com/bn/product/diploma-instyant-ful-krim-milk-paudar--95c86e99`));
+      expect(current.status).toBe(200);
+      expect(current.headers.get('location')).toBeNull();
+      const fake = await middleware(new NextRequest('https://www.luckystore1947.com/product/fake-xyz'));
+      expect(fake.status).toBe(404);
+      expect(fake.headers.get('x-robots-tag')).toBe('noindex');
+    });
+
     it.each(['--029b62d8', '---029b62d8', '029b62d8-1111-2222-3333-444455556666'])('canonicalizes legacy alias %s on the production apex', async (slug) => {
       const { middleware } = await import('../../../middleware');
       const response = await middleware(new NextRequest(`http://luckystore1947.com/bn/product/${slug}?ref=alias`));

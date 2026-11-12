@@ -68,3 +68,29 @@ export function buildOptimizedImageUrl(
 export default function cloudflareLoader({ src, width, quality }: CloudflareLoaderParams): string {
   return buildOptimizedImageUrl(src, width, quality);
 }
+
+/**
+ * src/srcSet pair for a same-origin image.
+ * Emits a few Cloudflare widths when NEXT_PUBLIC_IMAGE_RESIZE=1.
+ * SVGs and every other URL the loader refuses stay on the original, with no
+ * duplicate srcset (that duplicate list is what made browsers drop images).
+ */
+export function cloudflareImageSources(
+  src: string,
+  widths: readonly number[],
+  quality = 75,
+): { src: string; srcSet?: string } {
+  if (!src || widths.length === 0 || process.env.NEXT_PUBLIC_IMAGE_RESIZE !== '1') {
+    return { src };
+  }
+
+  const uniqueWidths = [...new Set(widths)].sort((a, b) => a - b);
+  const resized = uniqueWidths.map((width) => buildOptimizedImageUrl(src, width, quality, { resize: true }));
+  if (resized[0] === src) return { src };
+
+  const largest = uniqueWidths[uniqueWidths.length - 1];
+  return {
+    src: buildOptimizedImageUrl(src, largest, quality, { resize: true }),
+    srcSet: resized.map((url, index) => `${url} ${uniqueWidths[index]}w`).join(', '),
+  };
+}

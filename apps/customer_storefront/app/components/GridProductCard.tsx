@@ -40,7 +40,9 @@ export function formatLocalizedBdt(value: number | null | undefined, locale: Loc
 export function GridProductCard({ product, locale = 'en', linkName, priority = false, listId, listName, index }: GridProductCardProps) {
   const dict = getDictionary(locale);
   const { isWishlisted, isPending, toggle } = useProductWishlist(product.id, product.name);
-  const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id)}`, locale);
+  const productHref = withLocale(`/product/${toProductSlug(linkName ?? product.name, product.id, {
+    englishName: product.originalName,
+  })}`, locale);
   const onSale = product.originalPrice != null && product.originalPrice > product.price;
   const discountPercentage = getDiscountBadgePercentage(product);
   const stockLow = product.stock === 1;
