@@ -939,6 +939,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(getCanonicalCategorySlug('Personal Care')).toBe('personal-care');
       expect(getCanonicalCategorySlug('personal-care')).toBe('personal-care');
       expect(getCanonicalCategorySlug('snacks')).toBe('snacks');
+      expect(getCanonicalCategorySlug('ice-creams')).toBe('ice-cream');
       expect(getCanonicalCategorySlug('rice-and-grain')).toBe('rice-and-grain');
       expect(getCanonicalCategorySlug('Rice & Grains')).toBe('rice-and-grain');
       expect(getCanonicalCategorySlug('dairy')).toBe('dairy-and-eggs');
@@ -978,13 +979,19 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
   describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
     it('gives the English homepage a local, date-grounded title and delivery snippet', async () => {
       const { metadata } = await import('../../(english)/page');
-      expect((metadata.title as any)?.absolute).toBe('Lucky Store | Chawkbazar Grocery Since 1947');
-      expect(metadata.description).toContain('Chawkbazar, Chattogram');
-      expect(metadata.description).toContain('since 1947');
-      expect(metadata.description).toContain('9 AM–12:30 AM daily');
-      expect(metadata.description).toContain('Cash on Delivery or bKash');
+      const { DELIVERY_POLICY } = await import('../deliveryData');
+      expect((metadata.title as any)?.absolute).toBe(
+        `Lucky Store ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`,
+      );
+      expect((metadata.title as any)?.absolute).toContain('Chattogram');
+      expect(metadata.description).toContain(DELIVERY_POLICY.shortLocation);
+      expect(metadata.description).toContain(String(DELIVERY_POLICY.establishedYear));
+      expect(metadata.description).toContain(DELIVERY_POLICY.deliveryHours.display);
+      expect(metadata.description).toContain(DELIVERY_POLICY.paymentMethods.cod.replace(/ \(COD\)$/, ''));
+      expect(metadata.description).toContain(DELIVERY_POLICY.paymentMethods.bkash.split(' (')[0]);
+      expect(metadata.description).toContain('after doorstep inspection');
       expect((metadata.openGraph as any)?.url).toBe('https://www.luckystore1947.com/');
-      expect((metadata.twitter as any)?.title).toBe('Lucky Store | Chawkbazar Grocery Since 1947');
+      expect((metadata.twitter as any)?.title).toBe((metadata.title as any)?.absolute);
     });
 
     it('provides clean entity-level Homepage root metadata without product stuffing', async () => {
@@ -1126,6 +1133,18 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
 
       expect(res.status).toBe(308);
       expect(res.headers.get('location')).toBe('https://www.luckystore1947.com/category/snacks');
+    });
+
+    it('permanently redirects plural ice-creams routes to the singular canonical category in both locales', async () => {
+      const { middleware } = await import('../../../middleware');
+      for (const [path, target] of [
+        ['/category/ice-creams', 'https://www.luckystore1947.com/category/ice-cream'],
+        ['/bn/category/ice-creams', 'https://www.luckystore1947.com/bn/category/ice-cream'],
+      ]) {
+        const res = await middleware(new NextRequest(`https://www.luckystore1947.com${path}`));
+        expect(res.status).toBe(308);
+        expect(res.headers.get('location')).toBe(target);
+      }
     });
 
     it('preserves clean parent canonical and adds noindex,follow on filtered category queries', async () => {

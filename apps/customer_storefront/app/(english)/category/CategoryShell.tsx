@@ -42,12 +42,6 @@ const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: strin
     bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
     seoIntro: 'Shop ice cream in Chittagong from Lucky Store in Chawkbazar. Browse tubs, cones and popsicles, check current prices and availability, and order for local delivery.',
   },
-  'ice-creams': {
-    title: 'Ice Cream & Frozen Delights',
-    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
-    badge: 'Chilled & Sweet',
-    bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
-  },
   'cold-beverages': {
     title: 'Cold Beverages & Drinks',
     subtitle: 'Chilled sparklers, fresh juices, sodas, and energy drinks delivered ice-cold.',

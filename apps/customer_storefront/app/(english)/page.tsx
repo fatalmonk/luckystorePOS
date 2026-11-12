@@ -2,15 +2,18 @@ import type { Metadata } from 'next';
 import { HomeShell } from '../components/HomeShell';
 import { getHomePageData } from '../lib/products/getHomePageData';
 import { toProductSlug } from '../lib/products/slugify';
+import { DELIVERY_POLICY } from '../lib/deliveryData';
 
 export const revalidate = 120;
 
+const homepageTitle = `${DELIVERY_POLICY.storeName} ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`;
+const homepageDescription = `${DELIVERY_POLICY.storeName} in ${DELIVERY_POLICY.shortLocation} since ${DELIVERY_POLICY.establishedYear}. Delivery ${DELIVERY_POLICY.deliveryHours.display}; pay ${DELIVERY_POLICY.paymentMethods.cod.replace(/ \(COD\)$/, '')} or ${DELIVERY_POLICY.paymentMethods.bkash.split(' (')[0]} after doorstep inspection.`;
+
 export const metadata: Metadata = {
   title: {
-    absolute: 'Lucky Store | Chawkbazar Grocery Since 1947',
+    absolute: homepageTitle,
   },
-  description:
-    'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
+  description: homepageDescription,
   alternates: {
     canonical: 'https://www.luckystore1947.com/',
     languages: {
@@ -20,9 +23,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Lucky Store | Chawkbazar Grocery Since 1947',
-    description:
-      'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
+    title: homepageTitle,
+    description: homepageDescription,
     url: 'https://www.luckystore1947.com/',
     siteName: 'Lucky Store',
     locale: 'en_BD',
@@ -30,9 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Store | Chawkbazar Grocery Since 1947',
-    description:
-      'Lucky Store is a Chawkbazar, Chattogram grocery shop since 1947. Delivery: 9 AM–12:30 AM daily. Pay Cash on Delivery or bKash after inspection.',
+    title: homepageTitle,
+    description: homepageDescription,
   },
 };
 

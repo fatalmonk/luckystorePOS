@@ -8,6 +8,7 @@ import { JsonLd } from '../../components/seo/JsonLd';
 import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
 import {
   DELIVERY_POLICY,
+  DELIVERY_CATEGORY_LINKS,
   COVERED_AREAS,
   RETURN_RULES,
   getDeliveryFaqSchema,
@@ -67,15 +68,10 @@ export default function DeliveryHubPage() {
           </header>
 
           <nav aria-label="Shop grocery categories" className="flex flex-wrap gap-2">
-            {[
-              ['Rice & grains', '/category/rice-and-grain'],
-              ['Cooking oils & ghee', '/category/oil-and-ghee'],
-              ['Snacks', '/category/snacks'],
-              ['Ice cream', '/category/ice-cream'],
-            ].map(([label, href]) => (
+            {DELIVERY_CATEGORY_LINKS.map(({ label, slug }) => (
               <Link
-                key={href}
-                href={href}
+                key={slug}
+                href={`/category/${slug}`}
                 className="inline-flex min-h-10 items-center rounded-full border border-warm-border bg-warm-surface px-4 text-sm font-bold text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {label}

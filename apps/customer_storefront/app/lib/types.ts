@@ -255,6 +255,7 @@ const CATEGORY_SLUG_ALIASES: Record<string, string> = {
   'dairy': 'dairy-and-eggs',
   'pantry': 'cooking-essentials',
   'rice-and-grains': 'rice-and-grain',
+  'ice-creams': 'ice-cream',
   'skin-care': 'personal-care',
   'chips-and-pretzels': 'snacks',
 };
