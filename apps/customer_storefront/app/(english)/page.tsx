@@ -6,7 +6,7 @@ import { DELIVERY_POLICY } from '../lib/deliveryData';
 
 export const revalidate = 120;
 
-const homepageTitle = `${DELIVERY_POLICY.storeName} ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`;
+const homepageTitle = 'Lucky Store | Online Grocery in Chawkbazar, Chattogram';
 const homepageDescription = `${DELIVERY_POLICY.storeName} in ${DELIVERY_POLICY.shortLocation} since ${DELIVERY_POLICY.establishedYear}. Delivery ${DELIVERY_POLICY.deliveryHours.display}; pay ${DELIVERY_POLICY.paymentMethods.cod.replace(/ \(COD\)$/, '')} or ${DELIVERY_POLICY.paymentMethods.bkash.split(' (')[0]} after doorstep inspection.`;
 
 export const metadata: Metadata = {
@@ -29,11 +29,21 @@ export const metadata: Metadata = {
     siteName: 'Lucky Store',
     locale: 'en_BD',
     type: 'website',
+    images: [
+      {
+        url: '/lucky-store-social-share-v2.png',
+        width: 1200,
+        height: 630,
+        alt: 'Lucky Store online grocery and daily bazaar in Chattogram',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: homepageTitle,
     description: homepageDescription,
+    images: ['/lucky-store-social-share-v2.png'],
+    creator: '@luckystore1947',
   },
 };
 

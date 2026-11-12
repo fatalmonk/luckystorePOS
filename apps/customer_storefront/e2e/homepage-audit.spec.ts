@@ -1,17 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { DELIVERY_POLICY } from '../app/lib/deliveryData';
 
 test.describe('Storefront homepage shell audit', () => {
   test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
     await page.goto('/');
 
-    const expectedTitle = `${DELIVERY_POLICY.storeName} ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`;
-    const expectedDescription = `${DELIVERY_POLICY.storeName} in ${DELIVERY_POLICY.shortLocation} since ${DELIVERY_POLICY.establishedYear}. Delivery ${DELIVERY_POLICY.deliveryHours.display}; pay ${DELIVERY_POLICY.paymentMethods.cod.replace(/ \(COD\)$/, '')} or ${DELIVERY_POLICY.paymentMethods.bkash.split(' (')[0]} after doorstep inspection.`;
-
-    await expect(page).toHaveTitle(expectedTitle);
+    await expect(page).toHaveTitle('Lucky Store | Online Grocery in Chawkbazar, Chattogram');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      expectedDescription,
+      'Lucky Store in Chawkbazar, Chattogram since 1947. Delivery 09:00 AM–12:30 AM daily; pay Cash on Delivery or bKash after doorstep inspection.',
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -107,8 +103,15 @@ test.describe('Storefront homepage shell audit', () => {
 
     const openGraphImage = await page.locator('meta[property="og:image"]').getAttribute('content');
     const twitterImage = await page.locator('meta[name="twitter:image"]').getAttribute('content');
-    expect(openGraphImage).toContain('/lucky-store-social-share-v2.png');
-    expect(twitterImage).toContain('/lucky-store-social-share-v2.png');
+    const expectedImage = 'https://www.luckystore1947.com/lucky-store-social-share-v2.png';
+    expect(openGraphImage).toBe(expectedImage);
+    expect(twitterImage).toBe(expectedImage);
+    await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute('content', '1200');
+    await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute('content', '630');
+    await expect(page.locator('meta[name="twitter:creator"]')).toHaveAttribute(
+      'content',
+      '@luckystore1947',
+    );
 
     const localAssetPath = new URL(openGraphImage!).pathname;
     const dimensions = await page.evaluate(async (source) => {
