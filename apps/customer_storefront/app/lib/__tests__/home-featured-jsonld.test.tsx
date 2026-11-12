@@ -10,7 +10,7 @@ vi.mock('../products/getHomePageData', () => ({
 }));
 
 import Home from '../../(english)/page';
-import { BengaliHomeContent } from '../../(bengali)/bn/page';
+import { BengaliHomeContent } from '../../(bengali)/bn/BengaliHomeContent';
 
 function product(name: string, id: string, price: number): Product {
   return {
