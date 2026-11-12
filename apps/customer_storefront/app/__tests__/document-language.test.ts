@@ -2,12 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-vi.mock('next/font/google', () => ({
-  Bricolage_Grotesque: () => ({ variable: 'font-bricolage' }),
-  Geist_Mono: () => ({ variable: 'font-geist-mono' }),
-  Manrope: () => ({ variable: 'font-manrope' }),
-  Noto_Sans_Bengali: () => ({ variable: 'font-bengali' }),
+const fontMocks = vi.hoisted(() => ({
+  Bricolage_Grotesque: vi.fn(() => ({ variable: 'font-bricolage' })),
+  Geist_Mono: vi.fn(() => ({ variable: 'font-geist-mono' })),
+  Manrope: vi.fn(() => ({ variable: 'font-manrope' })),
+  Noto_Sans_Bengali: vi.fn(() => ({ variable: 'font-bengali' })),
 }));
+vi.mock('next/font/google', () => fontMocks);
 
 vi.mock('next/script', () => ({ default: () => null }));
 vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));
@@ -28,6 +29,17 @@ import EnglishRootLayout from '../(english)/layout';
 import BengaliRootLayout from '../(bengali)/layout';
 
 describe('RootLayout document language', () => {
+  it('preloads the Latin fonts used in the initial English viewport', () => {
+    expect(fontMocks.Bricolage_Grotesque).toHaveBeenCalledWith(expect.objectContaining({
+      subsets: ['latin'],
+      preload: true,
+    }));
+    expect(fontMocks.Manrope).toHaveBeenCalledWith(expect.objectContaining({
+      subsets: ['latin'],
+      preload: true,
+    }));
+  });
+
   it('does not claim fortune cookies as store knowledge or an offering', () => {
     const markup = renderToStaticMarkup(EnglishRootLayout({ children: React.createElement('main') }));
     const scripts = [...markup.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(match => JSON.parse(match[1]));
