@@ -64,7 +64,7 @@ export function DeferredHomeShelvesGate({ locale }: { locale: Locale }) {
   }, [locale, nearViewport, retryCount]);
 
   return (
-    <div ref={gateRef}>
+    <div ref={gateRef} data-testid="deferred-home-shelves-gate">
       {shelves ? <DeferredHomeShelves {...shelves} /> : loadFailed ? (
         <p role="status" className="mx-auto max-w-7xl px-4 py-8 text-sm text-warm-muted sm:px-6 lg:px-8">
           {locale === 'bn' ? 'হোমপেজের কিছু অংশ এখন লোড করা যাচ্ছে না।' : 'Some homepage sections are temporarily unavailable.'}{' '}
