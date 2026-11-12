@@ -437,3 +437,7 @@ data/catalog/templates/*
 /scripts/receipts/reconcile_google_sheet.py
 /scripts/products/sync_expenses_csv.py
 /scripts/products/record_missing_receipts.py
+
+# Local PerfBee production measurement evidence.
+/seo/evidence/2026-11-10/perfbee-14x14-repeat-measurement.json
+/seo/evidence/2026-11-10/perfbee-production-benchmark-provenance.json
