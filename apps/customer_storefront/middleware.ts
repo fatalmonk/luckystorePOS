@@ -25,10 +25,21 @@ function getAcceptPreferences(accept: string) {
     .toLowerCase()
     .split(',')
     .map((entry) => {
-      const [mediaType = '', ...parameters] = entry.trim().split(';');
-      const qualityParameter = parameters.find((parameter) => parameter.trim().startsWith('q='));
-      const quality = qualityParameter ? Number(qualityParameter.trim().slice(2)) : 1;
-      return { mediaType: mediaType.trim(), quality: Number.isFinite(quality) ? quality : 0 };
+      const [mediaType = '', ...parts] = entry.trim().split(';');
+      const parameters: Record<string, string> = {};
+      let quality = 1;
+      for (const part of parts) {
+        const separator = part.indexOf('=');
+        if (separator < 0) continue;
+        const name = part.slice(0, separator).trim();
+        const value = part.slice(separator + 1).trim().replace(/^"|"$/g, '');
+        if (name === 'q') {
+          quality = /^(?:0(?:\.\d{0,3})?|1(?:\.0{0,3})?)$/.test(value) ? Number(value) : 0;
+          break; // Parameters after q are accept extensions, not media parameters.
+        }
+        parameters[name] = value;
+      }
+      return { mediaType: mediaType.trim(), quality, parameters };
     });
 
   const preferenceFor = (target: string) => {
@@ -39,8 +50,14 @@ function getAcceptPreferences(accept: string) {
       { mediaType: '*/*', specificity: 0 },
     ];
     for (const range of ranges) {
-      const match = accepted.find((entry) => entry.mediaType === range.mediaType);
-      if (match) return { quality: match.quality, specificity: range.specificity };
+      const matches = accepted.filter((entry) => entry.mediaType === range.mediaType &&
+        Object.entries(entry.parameters).every(([name, value]) => name === 'charset' && value === 'utf-8'));
+      if (matches.length) {
+        const parameterCount = Math.max(...matches.map((entry) => Object.keys(entry.parameters).length));
+        const quality = Math.max(...matches.filter((entry) => Object.keys(entry.parameters).length === parameterCount)
+          .map((entry) => entry.quality));
+        return { quality, specificity: range.specificity };
+      }
     }
     return { quality: 0, specificity: -1 };
   };
