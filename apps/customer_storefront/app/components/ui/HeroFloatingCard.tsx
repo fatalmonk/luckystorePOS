@@ -7,7 +7,7 @@ import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass'
 import { ProductImage } from '../product/ProductImage';
 import { getCategoryIcon } from '../icons/CategoryIcons';
 import { formatBdt } from '../../lib/formatPrice';
-import { toProductSlug } from '../../lib/products/slugify';
+import { catalogProductSlug } from '../../lib/products/slugify';
 import type { Product } from '../../lib/types';
 
 import { withLocale, type Locale } from '../../lib/i18n/config';
@@ -233,7 +233,7 @@ export function HeroDiscoveryRail({
               {picks.map((product, index) => (
               <Link
                 key={product.id}
-                href={withLocale(`/product/${toProductSlug(product.name, product.id)}`, locale)}
+                href={withLocale(`/product/${catalogProductSlug(product)}`, locale)}
                 className="group/product flex min-h-[12rem] w-[10.25rem] shrink-0 snap-start flex-col overflow-hidden rounded-warm-card border border-warm-image-well-border bg-warm-bg shadow-warm-card transition-[transform,box-shadow] duration-200 [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-warm-card-hover motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 <span className="relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden border-b border-warm-image-well-border bg-warm-image-well sm:aspect-[4/3]">

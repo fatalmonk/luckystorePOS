@@ -109,4 +109,21 @@ describe('homepage featured product structured data', () => {
     });
     expect(getHomePageData).toHaveBeenCalledWith('bn');
   });
+
+  it('uses the English catalog slug for a Bengali homepage label', async () => {
+    vi.mocked(getHomePageData).mockResolvedValue(pageData({
+      featuredProducts: [{
+        ...product('ডিপ্লোমা ইন্স্ট্যান্ট ফুল ক্রিম মিল্ক পাউডার', '95c86e99-1111-2222-3333-444455556666', 120),
+        originalName: 'Diploma Milk Powder',
+      }],
+    }));
+    const { container } = render(await BengaliHomeContent());
+    const list = itemLists(container)[0] as {
+      itemListElement: Array<{ item: { name: string; url: string } }>;
+    };
+    expect(list.itemListElement[0].item.name).toContain('ডিপ্লোমা');
+    expect(list.itemListElement[0].item.url).toBe(
+      'https://www.luckystore1947.com/bn/product/diploma-milk-powder--95c86e99',
+    );
+  });
 });

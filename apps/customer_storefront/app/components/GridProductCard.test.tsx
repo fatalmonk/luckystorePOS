@@ -84,6 +84,24 @@ describe('GridProductCard', () => {
     expect(add).not.toHaveBeenCalled();
   });
 
+  it('links a Bengali label to the shared English catalog slug', () => {
+    render(
+      <GridProductCard
+        locale="bn"
+        product={{
+          ...product,
+          id: '95c86e99-34c8-4ed3-823d-2ca8446fdbd9',
+          name: 'ডিপ্লোমা ইন্স্ট্যান্ট ফুল ক্রিম মিল্ক পাউডার',
+          originalName: 'Diploma Instant Full Cream Milk Powder 500 g',
+        }}
+      />,
+    );
+
+    const href = '/bn/product/diploma-instant-full-cream-milk-powder-500-g--95c86e99';
+    const productLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === href);
+    expect(productLinks.length).toBeGreaterThan(0);
+  });
+
   it('uses image and title links for navigation', () => {
     renderCard();
 

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { buildOptimizedImageUrl } from './image-loader';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildOptimizedImageUrl, cloudflareImageSources } from './image-loader';
 
 describe('cloudflareLoader', () => {
   it('handles empty or missing src', () => {
@@ -44,5 +44,36 @@ describe('cloudflareLoader', () => {
     expect(buildOptimizedImageUrl('https://notfair.co/api/seo/image/test', 640, 75, { resize: true })).toBe(
       'https://notfair.co/api/seo/image/test',
     );
+  });
+});
+
+describe('cloudflareImageSources', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('keeps the original file when resizing is off', () => {
+    vi.stubEnv('NEXT_PUBLIC_IMAGE_RESIZE', '');
+    expect(cloudflareImageSources('/images/tea-time.webp', [480, 800], 75)).toEqual({
+      src: '/images/tea-time.webp',
+    });
+  });
+
+  it('builds a short Cloudflare srcset and uses the largest width as src', () => {
+    vi.stubEnv('NEXT_PUBLIC_IMAGE_RESIZE', '1');
+    expect(cloudflareImageSources('/images/tea-time.webp', [800, 480], 75)).toEqual({
+      src: '/cdn-cgi/image/width=800,quality=75,format=auto,fit=scale-down/images/tea-time.webp',
+      srcSet: [
+        '/cdn-cgi/image/width=480,quality=75,format=auto,fit=scale-down/images/tea-time.webp 480w',
+        '/cdn-cgi/image/width=800,quality=75,format=auto,fit=scale-down/images/tea-time.webp 800w',
+      ].join(', '),
+    });
+  });
+
+  it('does not emit a duplicate srcset for SVGs', () => {
+    vi.stubEnv('NEXT_PUBLIC_IMAGE_RESIZE', '1');
+    expect(cloudflareImageSources('/logo-bangla.svg', [210, 420], 75)).toEqual({
+      src: '/logo-bangla.svg',
+    });
   });
 });

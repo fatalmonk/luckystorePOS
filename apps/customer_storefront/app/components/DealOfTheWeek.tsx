@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type Keyboard
 import { CaretLeft } from '@phosphor-icons/react/dist/csr/CaretLeft';
 import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
 import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/dealSelection';
-import { toProductSlug } from '../lib/products/slugify';
+import { catalogProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
@@ -190,7 +190,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <article className={`deal-lead-card flex flex-col justify-between gap-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
-            href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
+            href={withLocale(`/product/${catalogProductSlug(leadProduct)}`, locale)}
             aria-label={
               leadDiscount !== null
                 ? (locale === 'bn' ? `${localizeNumerals(leadDiscount)}% ছাড় — ${leadProduct.name} দেখুন` : `${leadDiscount}% off — View ${leadProduct.name}`)
@@ -222,7 +222,7 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
             </span>
             <h3 className="text-base font-black text-warm-fg sm:text-lg">
               <Link
-                href={withLocale(`/product/${toProductSlug(leadProduct.name, leadProduct.id)}`, locale)}
+                href={withLocale(`/product/${catalogProductSlug(leadProduct)}`, locale)}
                 className="hover:text-warm-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg"
               >
                 {leadProduct.name}
