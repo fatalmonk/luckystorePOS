@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { buildOptimizedImageUrl } from '../../lib/image-loader';
 import { CategoryIcon, resolveCategoryIcon } from '../icons/CategoryIcons';
 
 interface ProductImageFallbackProps {
@@ -176,6 +177,8 @@ export function ProductImage({
   const rawSrc = src?.trim() || null;
   const secureSrc = rawSrc?.startsWith('http://') ? 'https://' + rawSrc.slice('http://'.length) : rawSrc;
   const usableSrc = secureSrc === '/images/products/default.svg' ? null : secureSrc;
+  const resizeProductPhoto = Boolean(usableSrc && process.env.NEXT_PUBLIC_IMAGE_RESIZE === '1'
+    && /^https:\/\/images\.luckystore1947\.com\//i.test(usableSrc));
 
   useEffect(() => {
     const image = imageRef.current;
@@ -216,6 +219,26 @@ export function ProductImage({
           alt={alt}
           imageClassName={imageClassName}
           priority={priority}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            setImageLoaded(true);
+            setImageError(true);
+          }}
+        />
+      ) : showImage && usableSrc && resizeProductPhoto ? (
+        // Next's global unoptimized setting bypasses loaders; this srcSet uses Cloudflare's resized variants.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          ref={imageRef}
+          src={buildOptimizedImageUrl(usableSrc, 640, 75, { resize: true })}
+          srcSet={[160, 320, 480, 640, 960].map((width) =>
+            `${buildOptimizedImageUrl(usableSrc, width, 75, { resize: true })} ${width}w`).join(', ')}
+          alt={alt}
+          sizes={sizes}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
+          className={`absolute inset-0 h-full w-full ${imageClassName}`}
           onLoad={() => setImageLoaded(true)}
           onError={() => {
             setImageLoaded(true);

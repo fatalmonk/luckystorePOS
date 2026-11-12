@@ -65,6 +65,23 @@ describe('ProductImage', () => {
     expect(image.getAttribute('srcSet')).toContain('/_next/image?url=');
     expect(image).toHaveAttribute('sizes', '(max-width: 640px) 50vw, 240px');
   });
+  it('uses resized Cloudflare candidates when storefront image resizing is enabled', () => {
+    vi.stubEnv('NEXT_PUBLIC_IMAGE_RESIZE', '1');
+    try {
+      render(
+        <ProductImage
+          src="https://images.luckystore1947.com/products/item.webp?t=123"
+          alt="Resized packshot"
+          sizes="(max-width: 640px) 50vw, 301px"
+        />,
+      );
+      const image = screen.getByRole('img', { name: 'Resized packshot' });
+      expect(image.getAttribute('srcSet')).toContain('/cdn-cgi/image/width=320,quality=75,format=auto,fit=scale-down/products/item.webp?t=123 320w');
+      expect(image).toHaveAttribute('loading', 'lazy');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 
   it('keeps an unfetched lazy image instead of showing the unavailable fallback', () => {
     vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
