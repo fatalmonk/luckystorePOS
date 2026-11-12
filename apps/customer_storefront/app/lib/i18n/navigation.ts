@@ -1,5 +1,36 @@
 import type { Locale } from './config';
-import { withLocale } from './config';
+import { stripLocalePrefix, withLocale } from './config';
+
+export const BENGALI_ROUTE_PATHS = [
+  '/',
+  '/about',
+  '/brand',
+  '/cart',
+  '/category',
+  '/checkout',
+  '/delivery',
+  '/fortune-cookies-near-me',
+  '/login',
+  '/profile',
+  '/return-policy',
+  '/signup',
+  '/terms',
+  '/wishlist',
+  '/best/dealoftheweek',
+] as const;
+
+export const BENGALI_ROUTE_PREFIXES = ['/category/', '/product/', '/brand/'] as const;
+
+export function hasBengaliRoute(pathname: string): boolean {
+  const path = stripLocalePrefix(pathname.split(/[?#]/, 1)[0] ?? '/');
+  return BENGALI_ROUTE_PATHS.some((route) => path === route)
+    || BENGALI_ROUTE_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
+export function getLocalizedPathname(pathname: string, targetLocale: Locale): string {
+  if (targetLocale === 'bn' && !hasBengaliRoute(pathname)) return '/bn';
+  return withLocale(pathname, targetLocale);
+}
 
 export function getLocaleHref(pathname: string, search: string, locale: Locale): string {
   return `${withLocale(pathname, locale)}${search}`;

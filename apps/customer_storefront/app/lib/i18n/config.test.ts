@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { getLocaleFromPathname, stripLocalePrefix, withLocale } from './config';
+import { getLocaleFromPathname, isValidLocale, stripLocalePrefix, withLocale } from './config';
 import { getLocaleHref } from './navigation';
 
 describe('Bengali storefront locale foundation', () => {
+  it.each(['en', 'bn'])('accepts the supported locale %s', (value) => {
+    expect(isValidLocale(value)).toBe(true);
+  });
+
+  it.each(['', 'EN', 'BN', 'en-BD', 'bn-BD', 'fr'])('rejects the unsupported locale %j', (value) => {
+    expect(isValidLocale(value)).toBe(false);
+  });
+
   it('detects only the /bn route tree as Bengali', () => {
     expect(getLocaleFromPathname('/bn')).toBe('bn');
     expect(getLocaleFromPathname('/bn/category/rice-and-grain')).toBe('bn');
