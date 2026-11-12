@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { CaretLeft } from '@phosphor-icons/react/dist/csr/CaretLeft';
 import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
-import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/deals';
+import { getDealOfTheWeekProducts, getDiscountBadgePercentage } from '../lib/dealSelection';
 import { toProductSlug } from '../lib/products/slugify';
 import type { Product } from '../lib/types';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';

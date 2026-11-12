@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CartItem, Product } from '../lib/types';
 import { trackAddToCart } from '../lib/analytics';
-import { createClient as createBrowserSupabaseClient } from '../lib/supabase/client';
 import { getPromotionalPrice, getPromotionSavings, loadActiveStorefrontPromotions, type StorefrontItemPromotion } from '../lib/storefront-promotions';
 import { EMERGENCY_CATALOG_SNAPSHOT_IDS } from '../lib/products/emergencyCatalogSnapshotIds';
 
@@ -65,15 +64,12 @@ export function useCart() {
         setPromotions([]);
         return Promise.resolve();
       }
-      const client = createBrowserSupabaseClient();
-      if (!client) {
-        setPromotions([]);
-        return Promise.resolve();
-      }
-
       setPricingNow(new Date());
-      refreshInFlight = Promise.resolve()
-        .then(() => loadActiveStorefrontPromotions(client, itemIds))
+      refreshInFlight = import('../lib/supabase/client')
+        .then(({ createClient }) => {
+          const client = createClient();
+          return client ? loadActiveStorefrontPromotions(client, itemIds) : [];
+        })
         .then((active) => {
           if (!cancelled) setPromotions(active);
         })
