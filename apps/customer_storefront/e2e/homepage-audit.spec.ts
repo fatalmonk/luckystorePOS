@@ -1,13 +1,17 @@
 import { expect, test } from '@playwright/test';
+import { DELIVERY_POLICY } from '../app/lib/deliveryData';
 
 test.describe('Storefront homepage shell audit', () => {
   test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+    const expectedTitle = `${DELIVERY_POLICY.storeName} ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`;
+    const expectedDescription = `${DELIVERY_POLICY.storeName} in ${DELIVERY_POLICY.shortLocation} since ${DELIVERY_POLICY.establishedYear}. Delivery ${DELIVERY_POLICY.deliveryHours.display}; pay ${DELIVERY_POLICY.paymentMethods.cod.replace(/ \(COD\)$/, '')} or ${DELIVERY_POLICY.paymentMethods.bkash.split(' (')[0]} after doorstep inspection.`;
+
+    await expect(page).toHaveTitle(expectedTitle);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
+      expectedDescription,
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
