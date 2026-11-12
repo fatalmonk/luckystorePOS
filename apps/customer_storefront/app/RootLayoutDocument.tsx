@@ -18,14 +18,14 @@ const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   variable: '--font-bricolage',
   display: 'swap',
-  preload: false,
+  preload: true,
 });
 
 const manrope = Manrope({
   subsets: ['latin'],
   variable: '--font-manrope',
   display: 'swap',
-  preload: false,
+  preload: true,
 });
 
 export const metadata: Metadata = {

@@ -24,6 +24,7 @@ import { ThemeToggler } from './animate-ui/effects/theme-toggler';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import { getLocaleFromPathname, withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface AppDrawerProps {
   open: boolean;
@@ -238,6 +239,7 @@ export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
               </button>
             )}
           </ThemeToggler>
+          <LanguageSwitcher onImmediateChange={onClose} className="w-full" />
           <div className="flex items-center gap-2">
             <Link
               href={withLocale('/wishlist', effectiveLocale)}

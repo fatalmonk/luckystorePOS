@@ -399,7 +399,6 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          <LanguageSwitcher />
           {/* Theme Toggle */}
           <ThemeToggler direction="ltr">
             {({ resolved, toggleTheme: handleToggle }) => (

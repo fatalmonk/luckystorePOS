@@ -138,7 +138,7 @@ export function LanguageSwitcher({
       )}
       lang={targetLocale === 'bn' ? 'bn' : 'en'}
       hrefLang={targetLocale === 'bn' ? 'bn-BD' : 'en-BD'}
-      prefetch={true}
+      prefetch={false}
       scroll={false}
       aria-busy={isPending}
     >
