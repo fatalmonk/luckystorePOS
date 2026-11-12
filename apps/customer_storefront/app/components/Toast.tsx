@@ -40,6 +40,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     dismiss: (id: string) => void;
   }> | null>(null);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     const timers = timersRef.current;
@@ -55,6 +56,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     let active = true;
     void import('./ToastViewport').then((module) => {
       if (active) setViewport(() => module.ToastViewport);
+    }).catch(() => {
+      if (active) setLoadFailed(true);
     });
 
     return () => {
@@ -70,6 +73,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       timersRef.current.delete(id);
     }
   }, []);
+
+  useEffect(() => {
+    if (!Viewport && !loadFailed) return;
+    toasts.forEach((toast) => {
+      if (!toast.persistent && !timersRef.current.has(toast.id)) {
+        timersRef.current.set(toast.id, setTimeout(() => dismiss(toast.id), toast.duration ?? 3200));
+      }
+    });
+  }, [toasts, Viewport, loadFailed, dismiss]);
 
   const showToast = useCallback(
     (message: string, action?: ToastAction, duration = 3200, persistent = false) => {
@@ -87,18 +99,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         return [...prev, { id, message, action, duration, persistent }];
       });
 
-      if (!persistent) {
-        const timer = setTimeout(() => dismiss(id), duration);
-        timersRef.current.set(id, timer);
-      }
     },
-    [dismiss]
+    []
   );
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {toasts.length > 0 && Viewport ? <Viewport toasts={toasts} dismiss={dismiss} /> : null}
+      {Viewport ? <Viewport toasts={toasts} dismiss={dismiss} /> : loadFailed && toasts.length > 0 ? (
+        <section aria-label="Notifications" className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2">
+          {toasts.map((toast) => <div key={toast.id} role="status" className="rounded-xl bg-warm-fg p-4 text-warm-bg">
+            <span>{toast.message}</span>
+            {toast.action && <button type="button" onClick={() => { toast.action?.onClick(); dismiss(toast.id); }}>{toast.action.label}</button>}
+            <button type="button" onClick={() => dismiss(toast.id)} aria-label="Dismiss notification">×</button>
+          </div>)}
+        </section>
+      ) : null}
     </ToastContext.Provider>
   );
 }

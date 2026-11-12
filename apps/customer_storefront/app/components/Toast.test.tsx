@@ -4,6 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { ToastProvider, useToast } from './Toast';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/bn/shop' }));
+const viewportGate = vi.hoisted(() => ({ wait: null as Promise<void> | null }));
+vi.mock('./ToastViewport', async (importOriginal) => {
+  if (viewportGate.wait) await viewportGate.wait;
+  return importOriginal();
+});
 
 function TestConsumer({
   message,
@@ -34,6 +39,30 @@ function TestConsumer({
 }
 
 describe('Toast Component', () => {
+  it('gives a short toast its full lifetime after a delayed viewport load', async () => {
+    let release!: () => void;
+    viewportGate.wait = new Promise<void>((resolve) => { release = resolve; });
+    render(<ToastProvider><TestConsumer message="Slow chunk" duration={50} /></ToastProvider>);
+    fireEvent.click(screen.getByText('Trigger Toast'));
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(screen.queryByText('Slow chunk')).toBeNull();
+    release();
+    expect(await screen.findByText('Slow chunk')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Slow chunk')).toBeNull());
+    viewportGate.wait = null;
+  });
+
+  it('keeps the viewport mounted when the last toast starts exiting', async () => {
+    render(<ToastProvider><TestConsumer message="Last toast" actionLabel="Done" onActionClick={() => {}} duration={5000} /></ToastProvider>);
+    fireEvent.click(screen.getByText('Trigger Toast'));
+    expect(await screen.findByText('Last toast')).toBeInTheDocument();
+    // The final toast must pass through AnimatePresence inside the still-mounted viewport.
+    const viewport = screen.getByText('Last toast').closest('section');
+    expect(viewport).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Done'));
+    expect(viewport).toBeInTheDocument();
+    expect(viewport?.isConnected).toBe(true);
+  });
   it('renders nothing initially', () => {
     render(
       <ToastProvider>
