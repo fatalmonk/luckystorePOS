@@ -79,16 +79,21 @@ export function LanguageSwitcher({
   const toggleLanguage = useCallback(
     (nextLocale?: string) => {
       const targetInfo = calculateTarget(nextLocale);
+      const navigationHref =
+        typeof window !== 'undefined' &&
+        (targetInfo.targetLocale === 'en' || hasBengaliRoute(pathname))
+          ? `${targetInfo.targetHref}${window.location.hash}`
+          : targetInfo.targetHref;
       onImmediateChange?.(targetInfo.targetLocale);
       startTransition(() => {
         if (router?.push) {
-          router.push(targetInfo.targetHref, { scroll: false });
+          router.push(navigationHref, { scroll: false });
         } else if (typeof window !== 'undefined') {
-          window.location.assign(targetInfo.targetHref);
+          window.location.assign(navigationHref);
         }
       });
     },
-    [calculateTarget, onImmediateChange, router]
+    [calculateTarget, onImmediateChange, pathname, router]
   );
 
   const handleClick = useCallback(

@@ -977,11 +977,11 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
   });
 
   describe('Phase 3: Money Page Metadata & Snippet Optimization Contract', () => {
-    it('gives the English homepage a local, date-grounded title and delivery snippet', async () => {
+    it('gives the English homepage a local title and date-grounded delivery snippet', async () => {
       const { metadata } = await import('../../(english)/page');
       const { DELIVERY_POLICY } = await import('../deliveryData');
       expect((metadata.title as any)?.absolute).toBe(
-        `Lucky Store ${DELIVERY_POLICY.shortLocation} | Since ${DELIVERY_POLICY.establishedYear}`,
+        'Lucky Store | Online Grocery in Chawkbazar, Chattogram',
       );
       expect((metadata.title as any)?.absolute).toContain('Chattogram');
       expect(metadata.description).toContain(DELIVERY_POLICY.shortLocation);

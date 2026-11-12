@@ -5,6 +5,8 @@ import { AppDrawer } from './AppDrawer';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
+  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock('./providers/ThemeProvider', () => ({

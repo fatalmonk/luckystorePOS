@@ -19,10 +19,12 @@ describe('LanguageSwitcher', () => {
     mockPush.mockClear();
     mockPathname.value = '/';
     mockSearchParams.value = '';
+    window.location.hash = '';
     vi.restoreAllMocks();
   });
 
   afterEach(() => {
+    window.location.hash = '';
     vi.restoreAllMocks();
   });
 
@@ -75,6 +77,43 @@ describe('LanguageSwitcher', () => {
     fireEvent.click(link);
 
     expect(mockPush).toHaveBeenCalledWith(targetHref, { scroll: false });
+  });
+
+  it.each([
+    ['/about', '', '/bn/about', '/bn/about#details'],
+    ['/terms', 'x=1', '/bn/terms?x=1', '/bn/terms?x=1#details'],
+    ['/bn/terms', 'x=1', '/terms?x=1', '/terms?x=1#details'],
+    ['/', '', '/bn', '/bn#details'],
+    ['/bn', '', '/', '/#details'],
+    ['/contact', 'x=1', '/bn', '/bn'],
+    ['/bn/contact', 'x=1', '/contact?x=1', '/contact?x=1#details'],
+  ])('switches %s using the click-time hash without changing the link href', (pathname, search, targetHref, navigationHref) => {
+    mockPathname.value = pathname;
+    mockSearchParams.value = search;
+    window.location.hash = '#initial';
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', targetHref);
+
+    window.location.hash = '#details';
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith(navigationHref, { scroll: false });
+  });
+
+  it('preserves the order number and tracking hash when switching to Bengali', () => {
+    mockPathname.value = '/order';
+    mockSearchParams.value = 'num=LSO-1';
+    window.location.hash = '#track=token-1';
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/bn/order?num=LSO-1');
+
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith('/bn/order?num=LSO-1#track=token-1', { scroll: false });
   });
 
   it('does not navigate on modified clicks (meta, ctrl, shift, alt)', () => {

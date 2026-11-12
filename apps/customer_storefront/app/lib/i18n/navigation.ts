@@ -11,6 +11,7 @@ export const BENGALI_ROUTE_PATHS = [
   '/delivery',
   '/fortune-cookies-near-me',
   '/login',
+  '/order',
   '/profile',
   '/return-policy',
   '/signup',
@@ -23,8 +24,9 @@ export const BENGALI_ROUTE_PREFIXES = ['/category/', '/product/', '/brand/'] as 
 
 export function hasBengaliRoute(pathname: string): boolean {
   const path = stripLocalePrefix(pathname.split(/[?#]/, 1)[0] ?? '/');
-  return BENGALI_ROUTE_PATHS.some((route) => path === route)
-    || BENGALI_ROUTE_PREFIXES.some((prefix) => path.startsWith(prefix));
+  const normalizedPath = path === '/' ? path : path.replace(/\/+$/, '');
+  return BENGALI_ROUTE_PATHS.some((route) => normalizedPath === route)
+    || BENGALI_ROUTE_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix));
 }
 
 export function getLocalizedPathname(pathname: string, targetLocale: Locale): string {

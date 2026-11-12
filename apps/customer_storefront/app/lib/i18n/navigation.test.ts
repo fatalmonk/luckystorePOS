@@ -5,6 +5,7 @@ describe('hasBengaliRoute', () => {
   it.each([
     '/',
     '/about',
+    '/about/',
     '/brand',
     '/cart',
     '/category',
@@ -12,6 +13,7 @@ describe('hasBengaliRoute', () => {
     '/delivery',
     '/fortune-cookies-near-me',
     '/login',
+    '/order',
     '/profile',
     '/return-policy',
     '/signup',
@@ -21,18 +23,33 @@ describe('hasBengaliRoute', () => {
     '/category/rice-and-grain',
     '/brand/acme',
     '/bn',
+    '/bn/',
     '/bn/terms',
+    '/bn/terms/',
     '/bn/category/rice-and-grain',
     '/bn/brand/acme',
     '/product/x?y=1',
     '/about#details',
+    '/about/?y=1#details',
+    '/bn/terms/?y=1#details',
+    '/bn/order?num=LSO-1#track=token-1',
     '/bn?y=1#top',
     '/bn/product/x?y=1#details',
   ])('recognizes the Bengali counterpart for %s', (pathname) => {
     expect(hasBengaliRoute(pathname)).toBe(true);
   });
 
-  it.each(['/contact', '/bn/contact?y=1#top', '/product', '/about-us', '/terms/extra', '/brands/acme'])(
+  it.each([
+    '/contact',
+    '/contact/',
+    '/bn/contact?y=1#top',
+    '/product',
+    '/product/',
+    '/about-us',
+    '/terms/extra',
+    '/terms/extra/',
+    '/brands/acme',
+  ])(
     'rejects paths without a Bengali counterpart: %s',
     (pathname) => {
       expect(hasBengaliRoute(pathname)).toBe(false);
@@ -48,6 +65,11 @@ describe('getLocalizedPathname', () => {
     ['/category/rice-and-grain', 'bn', '/bn/category/rice-and-grain'],
     ['/bn/about', 'en', '/about'],
     ['/bn/about', 'bn', '/bn/about'],
+    ['/about/', 'bn', '/bn/about/'],
+    ['/bn/terms/', 'en', '/terms/'],
+    ['/about/?y=1#details', 'bn', '/bn/about/?y=1#details'],
+    ['/order?num=LSO-1#track=token-1', 'bn', '/bn/order?num=LSO-1#track=token-1'],
+    ['/bn/order?num=LSO-1#track=token-1', 'en', '/order?num=LSO-1#track=token-1'],
     ['/', 'bn', '/bn'],
     ['/bn', 'en', '/'],
     ['/product/x?y=1#details', 'bn', '/bn/product/x?y=1#details'],

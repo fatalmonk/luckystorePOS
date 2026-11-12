@@ -1,12 +1,15 @@
 'use client'; // order status page with sessionStorage read and router
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { WhatsappLogo } from '@phosphor-icons/react/dist/csr/WhatsappLogo';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/Toast';
 import { formatBdt } from '../../lib/formatPrice';
+import type { Locale } from '../../lib/i18n/config';
+import { withLocale } from '../../lib/i18n/config';
+import { getDictionary, type Dictionary } from '../../lib/i18n/dictionaries';
 
 interface OrderData {
   id?: string;
@@ -27,56 +30,85 @@ interface OrderData {
   status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
 }
 
-const formatItemsList = (items: OrderData['items']) =>
+type OrderDictionary = Dictionary['order'];
+type TimelineStatus = Exclude<OrderData['status'], 'cancelled'>;
+
+const formatCopy = (template: string, values: Record<string, string | number>) =>
+  Object.entries(values).reduce(
+    (text, [key, value]) => text.replace(`{${key}}`, String(value)),
+    template,
+  );
+
+const formatRichCopy = (template: string, values: Record<string, ReactNode>): ReactNode[] =>
+  template.split(/(\{[^}]+\})/g).filter(Boolean).map((part) => {
+    const key = /^\{([^}]+)\}$/.exec(part)?.[1];
+    return key && key in values ? values[key] : part;
+  });
+
+const formatItemsList = (items: OrderData['items'], copy: OrderDictionary) =>
   items
     .map((item, i) => {
       const unit = item.unit ? ` (${item.unit})` : '';
-      return `${i + 1}. ${item.name}${unit}\n   Qty: ${item.qty} × ৳${item.price.toFixed(2)} = ৳${item.total.toFixed(2)}`;
+      const quantity = formatCopy(copy.whatsapp.quantity, {
+        quantity: item.qty,
+        price: item.price.toFixed(2),
+        total: item.total.toFixed(2),
+      });
+      return `${i + 1}. ${item.name}${unit}\n   ${quantity}`;
     })
     .join('\n');
 
-const formatOrderMessage = (order: OrderData): string => {
-  const slotLabel = order.deliverySlot === 'morning' ? 'Morning (9AM–1PM)' : order.deliverySlot === 'evening' ? 'Evening (4PM–8PM)' : order.deliverySlot || 'Not selected';
-  const notes = order.notes ? `\n📝 Notes: ${order.notes}` : '';
+const formatOrderMessage = (order: OrderData, copy: OrderDictionary): string => {
+  const slotLabel = order.deliverySlot === 'morning'
+    ? copy.whatsapp.morningSlot
+    : order.deliverySlot === 'evening'
+      ? copy.whatsapp.eveningSlot
+      : order.deliverySlot || copy.whatsapp.noSlot;
+  const notes = order.notes
+    ? `\n${formatCopy(copy.whatsapp.notes, { notes: order.notes })}`
+    : '';
 
   return [
-    `🛒 New Order — #${order.orderNumber}`,
+    formatCopy(copy.whatsapp.newOrder, { orderNumber: order.orderNumber }),
     ``,
     `👤 ${order.name}`,
     `📱 ${order.phone}`,
     `📍 ${order.address}`,
     ``,
-    `⏰ Delivery Slot: ${slotLabel}`,
+    formatCopy(copy.whatsapp.deliverySlot, { slot: slotLabel }),
     notes,
     notes ? `` : '',
-    `🧾 Items:`,
-    formatItemsList(order.items),
+    copy.whatsapp.items,
+    formatItemsList(order.items, copy),
     ``,
-    `Subtotal: ৳${order.subtotal.toFixed(2)}`,
-    order.discount > 0 ? `Delivery Discount: -৳${order.discount.toFixed(2)}` : '',
-    `Delivery Fee: ৳${order.deliveryFee.toFixed(2)}`,
-    `*Total: ৳${order.total.toFixed(2)}*`,
+    formatCopy(copy.whatsapp.subtotal, { amount: order.subtotal.toFixed(2) }),
+    order.discount > 0
+      ? formatCopy(copy.whatsapp.deliveryDiscount, { amount: order.discount.toFixed(2) })
+      : '',
+    formatCopy(copy.whatsapp.deliveryFee, { amount: order.deliveryFee.toFixed(2) }),
+    formatCopy(copy.whatsapp.total, { amount: order.total.toFixed(2) }),
     ``,
-    order.paymentMethod === 'bkash' ? `💳 bKash — 01731944544` : `💵 Cash on Delivery`,
+    order.paymentMethod === 'bkash' ? copy.whatsapp.bkash : copy.whatsapp.cashOnDelivery,
     ``,
-    `Please confirm this order.`,
+    copy.whatsapp.confirm,
   ]
     .filter(Boolean)
     .join('\n');
 };
 
-const TIMELINE_STEPS = [
-  { id: 'pending', label: 'Order placed' },
-  { id: 'confirmed', label: 'Order confirmed' },
-  { id: 'preparing', label: 'Preparing' },
-  { id: 'out_for_delivery', label: 'Out for delivery' },
-  { id: 'delivered', label: 'Delivered' },
-] as const;
+const TIMELINE_STEPS: readonly TimelineStatus[] = [
+  'pending',
+  'confirmed',
+  'preparing',
+  'out_for_delivery',
+  'delivered',
+];
 
-export default function OrderContent() {
+export default function OrderContent({ locale = 'en' }: { locale?: Locale }) {
   const router = useRouter();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
+  const copy = getDictionary(locale).order;
   const orderNumber = searchParams.get('num');
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,21 +189,22 @@ export default function OrderContent() {
 
   const handleShare = async () => {
     if (!order) return;
+    const orderPath = withLocale('/order', locale);
     const shareUrl = order.trackingToken
-      ? `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}#track=${encodeURIComponent(order.trackingToken)}`
-      : `${window.location.origin}/order?num=${encodeURIComponent(order.orderNumber)}`;
+      ? `${window.location.origin}${orderPath}?num=${encodeURIComponent(order.orderNumber)}#track=${encodeURIComponent(order.trackingToken)}`
+      : `${window.location.origin}${orderPath}?num=${encodeURIComponent(order.orderNumber)}`;
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Order #${order.orderNumber} — Lucky Store`,
-          text: `Track order #${order.orderNumber} at Lucky Store`,
+          title: formatCopy(copy.shareTitle, { orderNumber: order.orderNumber }),
+          text: formatCopy(copy.shareText, { orderNumber: order.orderNumber }),
           url: shareUrl,
         });
         return;
       }
       await navigator.clipboard.writeText(shareUrl);
-      showToast('Order link copied');
-    } catch (err) {
+      showToast(copy.linkCopied);
+    } catch {
       // User cancelled share or permission denied — silent fail
     }
   };
@@ -189,9 +222,9 @@ export default function OrderContent() {
   if (!order) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-6 bg-warm-bg">
-        <p className="text-warm-muted mb-4">We couldn&apos;t find your order</p>
-        <Link href="/">
-          <Button>Back to Home</Button>
+        <p className="text-warm-muted mb-4">{copy.notFound}</p>
+        <Link href={withLocale('/', locale)}>
+          <Button>{copy.backToHome}</Button>
         </Link>
       </div>
     );
@@ -207,15 +240,19 @@ export default function OrderContent() {
               <span className="text-[32px] text-warm-success">✓</span>
             </div>
             <div>
-              <p className="mb-1 text-sm font-bold text-warm-success">Thanks, {order.name.split(' ')[0]}</p>
-              <h1 className="text-[22px] font-extrabold tracking-tight" data-testid="order-confirmed-heading">Order placed</h1>
+              <p className="mb-1 text-sm font-bold text-warm-success">
+                {formatCopy(copy.thanks, { name: order.name.split(' ')[0] })}
+              </p>
+              <h1 className="text-[22px] font-extrabold tracking-tight" data-testid="order-confirmed-heading">{copy.placed}</h1>
           <p className="mt-1 text-sm text-warm-muted" aria-live="polite">
-            {order.status === 'cancelled' ? 'This order was cancelled.' : `Current status: ${order.status.replace(/_/g, ' ')}.`}
+            {order.status === 'cancelled'
+              ? copy.cancelledStatus
+              : formatCopy(copy.currentStatus, { status: copy.statuses[order.status] })}
           </p>
             </div>
           </div>
           <div className="sm:text-right">
-            <p className="mb-1 text-sm text-warm-muted">Order number</p>
+            <p className="mb-1 text-sm text-warm-muted">{copy.orderNumber}</p>
             <p className="inline-block rounded-full bg-warm-accent px-3 py-1 font-mono text-lg font-extrabold text-warm-fg">{order.orderNumber}</p>
           </div>
         </div>
@@ -225,52 +262,56 @@ export default function OrderContent() {
         {/* Summary */}
         <div className="mb-5 rounded-[14px] border border-warm-border bg-warm-surface p-5 shadow-warm-sm">
           <div className="flex justify-between mb-2 text-sm">
-            <span className="text-warm-muted">Items</span>
-            <span>{order.items.length} items</span>
+            <span className="text-warm-muted">{copy.items}</span>
+            <span>{formatCopy(copy.itemCount, { count: order.items.length })}</span>
           </div>
           <div className="flex justify-between mb-2 text-sm">
-            <span className="text-warm-muted">Total</span>
+            <span className="text-warm-muted">{copy.total}</span>
             <span className="text-lg font-extrabold">{formatBdt(order.total)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-warm-muted">Payment</span>
+            <span className="text-warm-muted">{copy.payment}</span>
             <span className="text-warm-success font-bold">
-              {order.paymentMethod === 'bkash' ? 'bKash' : 'Cash on Delivery'}
+              {order.paymentMethod === 'bkash' ? copy.paymentMethods.bkash : copy.paymentMethods.cod}
             </span>
           </div>
         </div>
 
         {order.paymentMethod === 'bkash' ? (
           <div className="border border-[#e2136e]/30 bg-[#e2136e]/5 rounded-[14px] p-4 mb-6">
-            <h3 className="text-sm font-bold mb-2">bKash payment selected</h3>
+            <h3 className="text-sm font-bold mb-2">{copy.bkashTitle}</h3>
             <p className="text-sm text-warm-muted">
-              Send <strong className="text-warm-fg">{formatBdt(order.total)}</strong> to{' '}
-              <strong className="text-warm-fg">01731944544</strong> if you have not paid yet.
+              {formatRichCopy(copy.bkashInstructions, {
+                total: <strong key="total" className="text-warm-fg">{formatBdt(order.total)}</strong>,
+                phone: <strong key="phone" className="text-warm-fg">01731944544</strong>,
+              })}
             </p>
           </div>
         ) : (
           <div className="mb-6 rounded-[14px] border border-warm-border bg-warm-surface p-4">
-            <h3 className="text-sm font-bold mb-2">💵 Have Cash Ready</h3>
+            <h3 className="text-sm font-bold mb-2">{copy.cashTitle}</h3>
             <p className="text-sm text-warm-muted mb-2">
-              Have <strong className="text-warm-fg">{formatBdt(order.total)}</strong> ready in cash for the rider.
+              {formatRichCopy(copy.cashInstructions, {
+                total: <strong key="total" className="text-warm-fg">{formatBdt(order.total)}</strong>,
+              })}
             </p>
-            <p className="text-xs text-warm-muted">Having exact change speeds up delivery.</p>
+            <p className="text-xs text-warm-muted">{copy.exactChange}</p>
           </div>
         )}
         </div>
 
         {/* Timeline */}
         <div className="min-w-0 lg:rounded-[18px] lg:border lg:border-warm-border lg:bg-warm-surface lg:p-6 lg:shadow-warm-sm">
-        <h2 className="mb-4 text-lg font-extrabold tracking-tight">Order status</h2>
+        <h2 className="mb-4 text-lg font-extrabold tracking-tight">{copy.statusTitle}</h2>
         <div className="relative mb-8 pl-7">
           <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-warm-border-light" />
           <div className="space-y-6">
             {TIMELINE_STEPS.map((step, index) => {
-              const currentIndex = TIMELINE_STEPS.findIndex(({ id }) => id === order.status);
+              const currentIndex = TIMELINE_STEPS.findIndex((status) => status === order.status);
               const isCancelled = order.status === 'cancelled';
               const state = isCancelled ? 'upcoming' : index < currentIndex ? 'done' : index === currentIndex ? 'active' : 'upcoming';
               return (
-              <div key={step.id} className="relative">
+              <div key={step} className="relative">
                 <div
                   className={`absolute -left-[19px] w-[18px] h-[18px] rounded-full border-2 transition-colors ${
                     state === 'done'
@@ -288,13 +329,17 @@ export default function OrderContent() {
                   )}
                 </div>
                 <p className={`font-bold text-sm ${state === 'upcoming' ? 'text-warm-muted' : 'text-warm-fg'}`}>
-                  {step.label}
+                  {copy.timeline[step]}
                 </p>
-                {state === 'active' && <p className="text-[13px] text-warm-muted">{order.status === 'pending' ? 'The store will review your order.' : 'This is the latest update from the store.'}</p>}
+                {state === 'active' && (
+                  <p className="text-[13px] text-warm-muted">
+                    {order.status === 'pending' ? copy.pendingUpdate : copy.latestUpdate}
+                  </p>
+                )}
               </div>
               );
             })}
-            {order.status === 'cancelled' && <p className="text-sm font-semibold text-red-700">Order cancelled</p>}
+            {order.status === 'cancelled' && <p className="text-sm font-semibold text-red-700">{copy.cancelled}</p>}
           </div>
         </div>
         </div>
@@ -302,30 +347,30 @@ export default function OrderContent() {
 
         {/* WhatsApp confirmation — no API credentials needed */}
         <div className="mt-6 rounded-[14px] border border-[#25D366]/40 bg-[#25D366]/[0.06] p-4 sm:p-5 lg:mt-8">
-          <h3 className="flex items-center gap-2 text-sm font-bold mb-1 text-[#128C7E]"><WhatsappLogo size={20} weight="fill" aria-hidden="true" /> Contact Lucky Store</h3>
+          <h3 className="flex items-center gap-2 text-sm font-bold mb-1 text-[#128C7E]"><WhatsappLogo size={20} weight="fill" aria-hidden="true" /> {copy.contactTitle}</h3>
           <p className="text-sm text-warm-muted mb-3">
-            Send your order details to our store WhatsApp if you need help or want to confirm anything.
+            {copy.contactDescription}
           </p>
           <a
-            href={`https://wa.me/8801731944544?text=${encodeURIComponent(formatOrderMessage(order))}`}
+            href={`https://wa.me/8801731944544?text=${encodeURIComponent(formatOrderMessage(order, copy))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full"
           >
             <Button fullWidth className="!bg-[#25D366] !text-white hover:!bg-[#20bd5a] focus-visible:ring-2 focus-visible:ring-[#128C7E]">
-              Message Lucky Store
+              {copy.messageStore}
             </Button>
           </a>
         </div>
 
         {/* Actions */}
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:max-w-xl">
-          <Button fullWidth onClick={() => router.push('/')}>
-            Continue Shopping
+          <Button fullWidth onClick={() => router.push(withLocale('/', locale))}>
+            {copy.continueShopping}
           </Button>
           {order.trackingToken && (
             <Button variant="secondary" fullWidth onClick={handleShare}>
-              Share Order
+              {copy.shareOrder}
             </Button>
           )}
         </div>

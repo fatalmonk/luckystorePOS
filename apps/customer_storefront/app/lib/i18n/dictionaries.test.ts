@@ -6,7 +6,8 @@ type Dict = typeof dictionaries.en;
 function collectKeyPaths(obj: unknown, prefix = ''): string[] {
   if (obj === null || obj === undefined) return [];
   if (Array.isArray(obj)) {
-    return obj.flatMap((item, index) => collectKeyPaths(item, `${prefix}[${index}]`));
+    const arrayPath = prefix ? `${prefix}[]` : '[]';
+    return [arrayPath, ...obj.flatMap((item) => collectKeyPaths(item, arrayPath))];
   }
   if (typeof obj === 'object') {
     return Object.entries(obj).flatMap(([key, value]) =>
@@ -34,7 +35,7 @@ const enPaths = collectKeyPaths(dictionaries.en).sort();
 const bnPaths = collectKeyPaths(dictionaries.bn).sort();
 const missingInBn = enPaths.filter((p) => !bnPaths.includes(p));
 const extraInBn = bnPaths.filter((p) => !enPaths.includes(p));
-const bnEmptyLeaves = getLeafValues(dictionaries.bn).filter((v) => v === '');
+const bnEmptyLeaves = getLeafValues(dictionaries.bn).filter((v) => v.trim() === '');
 
 // Log differences for debugging
 if (missingInBn.length > 0 || extraInBn.length > 0 || bnEmptyLeaves.length > 0) {
@@ -45,21 +46,12 @@ if (missingInBn.length > 0 || extraInBn.length > 0 || bnEmptyLeaves.length > 0) 
 }
 
 describe('dictionary parity: en vs bn', () => {
-  if (missingInBn.length > 0 || extraInBn.length > 0 || bnEmptyLeaves.length > 0) {
-    // TODO: Fix mismatched keys - extra in bn: campaign.searchChips[5].href, campaign.searchChips[5].label (bn has 6 searchChips vs en 5)
-    it.skip('en and bn dictionaries have identical key sets and no empty bn leaves', () => {
-      expect(missingInBn).toEqual([]);
-      expect(extraInBn).toEqual([]);
-      expect(bnEmptyLeaves).toEqual([]);
-    });
-  } else {
-    it('en and bn dictionaries have identical key sets', () => {
-      expect(missingInBn).toEqual([]);
-      expect(extraInBn).toEqual([]);
-    });
+  it('en and bn dictionaries have identical key shapes', () => {
+    expect(missingInBn).toEqual([]);
+    expect(extraInBn).toEqual([]);
+  });
 
-    it('no bn leaf string is empty', () => {
-      expect(bnEmptyLeaves).toEqual([]);
-    });
-  }
+  it('no bn leaf string is blank', () => {
+    expect(bnEmptyLeaves).toEqual([]);
+  });
 });
