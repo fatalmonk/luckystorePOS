@@ -9,7 +9,6 @@ import { ProductGridSection } from './ProductGridSection';
 import type { Product, Category } from '../lib/types';
 import { withLocale, type Locale } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
-import { getDealOfTheWeekProducts, getDiscountBadgePercentage, WEEKLY_DEALS_LIMIT } from '../lib/deals';
 import { DeferredHomeShelvesGate } from './DeferredHomeShelvesGate';
 import { InstallPromptBootstrap } from './InstallPromptBootstrap';
 
@@ -58,15 +57,6 @@ export function HomeShell({
   locale = 'en',
 }: HomeShellProps) {
   const dict = getDictionary(locale);
-  const dealSelection = getDealOfTheWeekProducts(inStock, 8);
-  const weeklyDealProducts = dealSelection
-    ? [dealSelection.leadProduct, ...dealSelection.supportingProducts]
-    : [];
-  const discountedProductCount = Math.min(
-    WEEKLY_DEALS_LIMIT,
-    inStock.filter((product) => getDiscountBadgePercentage(product) !== null).length,
-  );
-
   if (inStock.length === 0) {
     return (
       <>

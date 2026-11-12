@@ -419,12 +419,13 @@ export async function middleware(request: NextRequest) {
     acceptPreferences.markdown.specificity === 2 && acceptPreferences.markdown.quality === 0;
   const explicitlyAcceptsHtml =
     acceptPreferences.html.specificity === 2 && acceptPreferences.html.quality > 0;
+  const hasMarkdownRange = acceptPreferences.markdown.specificity >= 0;
   const markdownPreferred = acceptPreferences.markdown.quality > acceptPreferences.html.quality ||
     (acceptPreferences.markdown.quality === acceptPreferences.html.quality &&
       acceptPreferences.markdown.specificity > acceptPreferences.html.specificity);
   const wantsMarkdown = !explicitlyRejectsMarkdown && (
     (acceptPreferences.markdown.quality > 0 && markdownPreferred) ||
-    (isKnownAiBot && !explicitlyAcceptsHtml)
+    (isKnownAiBot && !explicitlyAcceptsHtml && (!hasMarkdownRange || acceptPreferences.markdown.quality > 0))
   );
 
   const originalPath = request.nextUrl.pathname;

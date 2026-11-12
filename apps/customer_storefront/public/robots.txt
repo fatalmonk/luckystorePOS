@@ -1,5 +1,3 @@
-Content-Signal: search=yes, ai-train=no
-
 # Explicit permissions for AI search crawlers
 User-agent: GPTBot
 User-agent: PerplexityBot

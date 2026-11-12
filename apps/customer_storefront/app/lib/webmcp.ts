@@ -57,7 +57,7 @@ function saveCart(cart: CartState) {
   window.dispatchEvent(new CustomEvent('cart-updated'));
 }
 
-/** Tool definitions — shared between registerTool and provideContext paths. */
+/** Tool definitions registered through document.modelContext.registerTool. */
 const TOOLS: Record<string, WebMCPTool> = {
   search_products: {
     description:
@@ -228,11 +228,20 @@ const TOOLS: Record<string, WebMCPTool> = {
         return { error: 'Cart is empty' };
       }
 
+      const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const deliveryFee = subtotal >= 500 ? 0 : 40;
+      const orderNumber = `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          orderNumber,
+          idempotencyKey: crypto.randomUUID(),
           items: cart.items,
+          subtotal,
+          deliveryFee,
+          total: subtotal + deliveryFee,
           customerName: input.customerName,
           customerPhone: input.customerPhone,
           customerAddress: input.customerAddress,

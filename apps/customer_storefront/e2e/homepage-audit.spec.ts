@@ -43,6 +43,7 @@ test.describe('Storefront homepage shell audit', () => {
       page.getByRole('heading', { name: 'A well-stocked home starts here.' }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Popular Right Now' })).toBeVisible();
+    await page.locator('#daily-essentials').scrollIntoViewIfNeeded();
     await expect(page.getByRole('heading', { name: 'Daily Bazaar & Pantry Staples', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'A few essentials to get you started' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Serving Chattogram since 1947.' })).toBeVisible();
