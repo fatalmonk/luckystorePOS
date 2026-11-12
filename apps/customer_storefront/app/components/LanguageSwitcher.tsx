@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useCallback, useTransition } from 'react';
+import React, { useCallback, useSyncExternalStore, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from 'cn';
-import { getLocaleFromPathname } from '../lib/i18n/config';
+import type { Locale } from '../lib/i18n/config';
+import { getLocaleFromPathname, LOCALE_HREFLANG, stripLocalePrefix } from '../lib/i18n/config';
 import { getDictionary } from '../lib/i18n/dictionaries';
-import { getLocaleHref } from '../lib/i18n/navigation';
+import { getLocalizedPathname, hasBengaliRoute } from '../lib/i18n/navigation';
 
 export type Direction = 'ltr' | 'rtl' | 'ttb' | 'btt';
-export type Locale = 'en' | 'bn';
+export type { Locale } from '../lib/i18n/config';
 
 export interface LanguageSwitcherRenderState {
   locale: string;
@@ -25,6 +26,24 @@ export interface LanguageSwitcherProps {
   onImmediateChange?: (locale: string) => void;
   className?: string;
   children?: (state: LanguageSwitcherRenderState) => React.ReactNode;
+}
+
+function subscribeToHashChange(onStoreChange: () => void) {
+  window.addEventListener('hashchange', onStoreChange);
+  return () => window.removeEventListener('hashchange', onStoreChange);
+}
+
+function getBrowserHash() {
+  return window.location.hash;
+}
+
+function getServerHash() {
+  return '';
+}
+
+function withCurrentHash(href: string, hash: string) {
+  const hrefWithoutHash = href.split('#', 1)[0] ?? href;
+  return hash ? `${hrefWithoutHash}${hash}` : hrefWithoutHash;
 }
 
 function useSafeRouter() {
@@ -44,6 +63,7 @@ export function LanguageSwitcher({
   const router = useSafeRouter();
   const pathname = usePathname() || '/';
   const search = useSearchParams()?.toString() || '';
+  const hash = useSyncExternalStore(subscribeToHashChange, getBrowserHash, getServerHash);
   const currentLocale = getLocaleFromPathname(pathname);
   const [isPending, startTransition] = useTransition();
 
@@ -57,33 +77,23 @@ export function LanguageSwitcher({
             ? 'en'
             : 'bn';
       const dictionary = getDictionary(activeLocale);
-      const cleanPath = pathname.startsWith('/bn') ? pathname.slice(3) || '/' : pathname;
-      const supportsBengaliRoute =
-        cleanPath === '/' ||
-        cleanPath === '/delivery' ||
-        cleanPath === '/category' ||
-        cleanPath === '/cart' ||
-        cleanPath === '/checkout' ||
-        cleanPath === '/wishlist' ||
-        cleanPath === '/login' ||
-        cleanPath === '/signup' ||
-        cleanPath === '/profile' ||
-        cleanPath.startsWith('/category/') ||
-        cleanPath.startsWith('/product/');
-      const targetPath = target === 'bn' && !supportsBengaliRoute ? '/' : pathname;
-      const targetHref = getLocaleHref(
-        targetPath,
-        targetPath === '/' && cleanPath !== '/' ? '' : search ? `?${search}` : '',
-        target
-      );
+      const cleanPath = stripLocalePrefix(pathname);
+      const targetPath = getLocalizedPathname(cleanPath, target);
+      const preserveHash = target === 'en' || hasBengaliRoute(cleanPath);
+      const baseHref =
+        target === 'bn' && !hasBengaliRoute(cleanPath)
+          ? targetPath
+          : `${targetPath}${search ? `?${search}` : ''}`;
+      const targetHref = preserveHash ? withCurrentHash(baseHref, hash) : baseHref;
       return {
         locale: activeLocale,
         targetLocale: target,
         targetHref,
+        preserveHash,
         label: dictionary.language,
       };
     },
-    [currentLocale, pathname, search]
+    [currentLocale, hash, pathname, search]
   );
 
   const { targetLocale, targetHref, label } = calculateTarget();
@@ -91,12 +101,16 @@ export function LanguageSwitcher({
   const toggleLanguage = useCallback(
     (nextLocale?: string) => {
       const targetInfo = calculateTarget(nextLocale);
+      const navigationHref =
+        typeof window !== 'undefined' && targetInfo.preserveHash
+          ? withCurrentHash(targetInfo.targetHref, window.location.hash)
+          : targetInfo.targetHref;
       onImmediateChange?.(targetInfo.targetLocale);
       startTransition(() => {
         if (router?.push) {
-          router.push(targetInfo.targetHref, { scroll: false });
+          router.push(navigationHref, { scroll: false });
         } else if (typeof window !== 'undefined') {
-          window.location.assign(targetInfo.targetHref);
+          window.location.assign(navigationHref);
         }
       });
     },
@@ -137,7 +151,7 @@ export function LanguageSwitcher({
         className
       )}
       lang={targetLocale === 'bn' ? 'bn' : 'en'}
-      hrefLang={targetLocale === 'bn' ? 'bn-BD' : 'en-BD'}
+      hrefLang={LOCALE_HREFLANG[targetLocale]}
       prefetch={false}
       scroll={false}
       aria-busy={isPending}

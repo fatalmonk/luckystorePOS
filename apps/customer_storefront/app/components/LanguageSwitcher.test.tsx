@@ -5,9 +5,10 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 const mockPush = vi.fn();
 const mockPathname = vi.hoisted(() => ({ value: '/' }));
+const mockSearchParams = vi.hoisted(() => ({ value: '' }));
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname.value,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(mockSearchParams.value),
   useRouter: () => ({
     push: mockPush,
   }),
@@ -17,10 +18,13 @@ describe('LanguageSwitcher', () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockPathname.value = '/';
+    mockSearchParams.value = '';
+    window.location.hash = '';
     vi.restoreAllMocks();
   });
 
   afterEach(() => {
+    window.location.hash = '';
     vi.restoreAllMocks();
   });
 
@@ -55,6 +59,78 @@ describe('LanguageSwitcher', () => {
     mockPathname.value = pathname;
     render(<LanguageSwitcher />);
     expect(screen.getByRole('link')).toHaveAttribute('href', `/bn${pathname}`);
+  });
+
+  it.each([
+    ['/about', '', '/bn/about'],
+    ['/terms', 'x=1', '/bn/terms?x=1'],
+    ['/contact', 'x=1', '/bn'],
+    ['/bn/category/rice-and-grain', 'sort=price_asc', '/category/rice-and-grain?sort=price_asc'],
+  ])('switches %s with query "%s" to %s', (pathname, search, targetHref) => {
+    mockPathname.value = pathname;
+    mockSearchParams.value = search;
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', targetHref);
+
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith(targetHref, { scroll: false });
+  });
+
+  it.each([
+    ['/about', '', '/bn/about#initial', '/bn/about#details'],
+    ['/terms', 'x=1', '/bn/terms?x=1#initial', '/bn/terms?x=1#details'],
+    ['/bn/terms', 'x=1', '/terms?x=1#initial', '/terms?x=1#details'],
+    ['/', '', '/bn#initial', '/bn#details'],
+    ['/bn', '', '/#initial', '/#details'],
+    ['/contact', 'x=1', '/bn', '/bn'],
+    ['/bn/contact', 'x=1', '/contact?x=1#initial', '/contact?x=1#details'],
+  ])('switches %s using the click-time hash without appending it twice', (pathname, search, targetHref, navigationHref) => {
+    mockPathname.value = pathname;
+    mockSearchParams.value = search;
+    window.location.hash = '#initial';
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', targetHref);
+
+    window.location.hash = '#details';
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith(navigationHref, { scroll: false });
+  });
+
+  it.each([
+    ['/order', '/bn/order?num=LSO-1#track=token-1'],
+    ['/bn/order', '/order?num=LSO-1#track=token-1'],
+  ])('preserves the order number and tracking hash from %s in the rendered link and click', (pathname, targetHref) => {
+    mockPathname.value = pathname;
+    mockSearchParams.value = 'num=LSO-1';
+    window.location.hash = '#track=token-1';
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', targetHref);
+
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith(targetHref, { scroll: false });
+  });
+
+  it('keeps the Bengali home fallback for routes without a counterpart', () => {
+    mockPathname.value = '/contact';
+    window.location.hash = '#track=token-1';
+    render(<LanguageSwitcher />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/bn');
+
+    fireEvent.click(link);
+
+    expect(mockPush).toHaveBeenCalledWith('/bn', { scroll: false });
   });
 
   it('does not navigate on modified clicks (meta, ctrl, shift, alt)', () => {

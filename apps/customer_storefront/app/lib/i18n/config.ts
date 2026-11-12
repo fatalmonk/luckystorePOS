@@ -1,6 +1,12 @@
 export const LOCALES = ['en', 'bn'] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
+export const SITE_URL = 'https://www.luckystore1947.com';
+export const LOCALE_HREFLANG: Record<Locale, 'en-BD' | 'bn-BD'> = { en: 'en-BD', bn: 'bn-BD' };
+
+export function isValidLocale(value: string): value is Locale {
+  return LOCALES.some((locale) => locale === value);
+}
 
 export function getLocaleFromPathname(pathname: string | null | undefined): Locale {
   return pathname === '/bn' || pathname?.startsWith('/bn/') ? 'bn' : DEFAULT_LOCALE;

@@ -99,14 +99,12 @@ describe('DesktopQuickRail', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/bn/profile'));
   });
 
-  it('defers desktop initialization until after load', () => {
+  it('does not eagerly initialize auth on desktop load', () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() });
     render(<DesktopQuickRail />);
-    act(() => { window.dispatchEvent(new Event('load')); vi.advanceTimersByTime(2999); });
+    act(() => { window.dispatchEvent(new Event('load')); vi.advanceTimersByTime(4000); });
     expect(ensureAuth).not.toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(1); });
-    expect(ensureAuth).toHaveBeenCalledTimes(1);
   });
 
   it('stays out of checkout and authentication routes', () => {

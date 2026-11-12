@@ -6,20 +6,15 @@ import { BottomNav } from '../../../components/BottomNav';
 import { DELIVERY_POLICY, COVERED_AREAS, BENGALI_DELIVERY_FAQS, RETURN_RULES, getBengaliDeliveryFaqSchema } from '../../../lib/deliveryData';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../../components/seo/JsonLd';
+import { buildLocaleAlternates } from '../../../lib/i18n/metadata';
 
 const bengaliDeliveryHours = DELIVERY_POLICY.deliveryHours.displayBn;
+const bnDeliveryAlternates = buildLocaleAlternates('/delivery', 'bn');
 
 export const metadata: Metadata = {
   title: { absolute: 'চট্টগ্রাম grocery delivery | Lucky Store' },
   description: 'চকবাজার থেকে ১ কিমির মধ্যে grocery delivery। ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি, ক্যাশ অন ডেলিভারি ও bKash।',
-  alternates: {
-    canonical: 'https://www.luckystore1947.com/bn/delivery',
-    languages: {
-      'en-BD': 'https://www.luckystore1947.com/delivery',
-      'bn-BD': 'https://www.luckystore1947.com/bn/delivery',
-      'x-default': 'https://www.luckystore1947.com/delivery',
-    },
-  },
+  alternates: bnDeliveryAlternates,
   openGraph: {
     title: 'চট্টগ্রাম grocery delivery | Lucky Store',
     description: 'চকবাজার থেকে ১ কিমির মধ্যে grocery delivery। ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি, ক্যাশ অন ডেলিভারি ও bKash।',

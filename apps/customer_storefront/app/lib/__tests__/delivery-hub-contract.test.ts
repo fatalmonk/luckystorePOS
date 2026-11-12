@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { NextRequest } from 'next/server';
 import { metadata } from '../../(english)/delivery/page';
@@ -19,6 +19,10 @@ import {
 import { CATEGORY_GROUPS, CATEGORY_RAIL_ITEMS } from '../types';
 import { middleware } from '../../../middleware';
 import { GET as getMarkdown } from '../../api/markdown/route';
+
+const storefrontRoot = existsSync(resolve(process.cwd(), 'app'))
+  ? process.cwd()
+  : resolve(process.cwd(), 'apps/customer_storefront');
 
 // Mock Supabase in middleware / repo
 vi.mock('../../supabase', () => ({
@@ -67,7 +71,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
     });
 
     it('links only to registered category routes and includes the requested H1', () => {
-      const source = readFileSync(resolve(process.cwd(), 'app/(english)/delivery/page.tsx'), 'utf8');
+      const source = readFileSync(resolve(storefrontRoot, 'app/(english)/delivery/page.tsx'), 'utf8');
       expect(source).toContain('Your Online Grocery Shop in Chattogram');
       expect(source).toContain('href={`/category/${slug}`}');
       const registeredSlugs = new Set([
@@ -94,7 +98,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   describe('Operational Policy & Time Language Precision', () => {
     it('keeps checkout eligibility copy aligned with the centralized policy in both locales', () => {
       const checkoutSource = readFileSync(
-        resolve(process.cwd(), 'app/(english)/checkout/page.tsx'),
+        resolve(storefrontRoot, 'app/(english)/checkout/page.tsx'),
         'utf8',
       );
       const eligibilityCopy = checkoutSource.match(
