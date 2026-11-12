@@ -14,7 +14,7 @@ export function getDiscountPercentage(product: Pick<Product, 'price' | 'original
   if (!product.originalPrice || product.originalPrice <= product.price) {
     return 0;
   }
-  return Math.floor(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  return Math.floor(((product.originalPrice - product.price) * 100) / product.originalPrice);
 }
 
 /**
