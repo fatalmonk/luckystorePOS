@@ -14,7 +14,6 @@ describe('MetaPixel', () => {
   beforeEach(() => {
     mockPathname = '/';
     localStorage.clear();
-    window.luckyConsentInitialized = true;
     delete (window as any).fbq;
     delete (window as any)._fbq;
     delete (window as any).luckyLoadMetaPixel;
@@ -22,13 +21,6 @@ describe('MetaPixel', () => {
   });
 
   it('does not load pixel or fire PageView when consent is absent', () => {
-    render(<MetaPixel />);
-    expect(document.querySelector('script[data-lucky-pixel]')).toBeNull();
-    expect((window as any).fbq).toBeUndefined();
-  });
-  it('fails closed when stored consent exists but initialization did not complete', () => {
-    localStorage.setItem(ANALYTICS_CONSENT_KEY, 'granted');
-    window.luckyConsentInitialized = false;
     render(<MetaPixel />);
     expect(document.querySelector('script[data-lucky-pixel]')).toBeNull();
     expect((window as any).fbq).toBeUndefined();

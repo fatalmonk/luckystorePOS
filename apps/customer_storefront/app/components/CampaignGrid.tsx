@@ -10,6 +10,9 @@ import { MapPin } from '@phosphor-icons/react/dist/csr/MapPin';
 import { MarketPanel } from './ui/MarketSurface';
 import { HeroDiscoveryRail } from './ui/HeroFloatingCard';
 import type { Product } from '../lib/types';
+import type { Locale } from '../lib/i18n/config';
+import { getDictionary } from '../lib/i18n/dictionaries';
+import { withLocale } from '../lib/i18n/config';
 
 const CAMPAIGN_HERO_PATH = '/images/hero-reference.webp';
 const CAMPAIGN_HERO_SIZES = '(max-width: 1280px) 100vw, 1280px';
@@ -23,9 +26,6 @@ const CAMPAIGN_HERO_SRC_SET = RESIZE_CAMPAIGN_HERO
     .map((width) => `${buildOptimizedImageUrl(CAMPAIGN_HERO_PATH, width, 75, { resize: true })} ${width}w`)
     .join(', ')
   : undefined;
-import type { Locale } from '../lib/i18n/config';
-import { getDictionary } from '../lib/i18n/dictionaries';
-import { withLocale } from '../lib/i18n/config';
 
 interface CampaignGridProps {
   products: Product[];

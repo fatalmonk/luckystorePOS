@@ -151,7 +151,6 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
       <div className="product-card-image-well relative aspect-[4/3] w-full shrink-0 overflow-hidden border-b border-warm-image-well-border bg-warm-image-well">
         <Link
           href={productHref}
-          prefetch={false}
           onClick={(event) => {
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
               trackSelectItem(product, { listId, listName, index });
@@ -182,7 +181,6 @@ export function GridProductCard({ product, locale = 'en', linkName, priority = f
         <div className="flex flex-col gap-1">
           <Link
             href={productHref}
-            prefetch={false}
             onClick={(event) => {
               if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
                 trackSelectItem(product, { listId, listName, index });

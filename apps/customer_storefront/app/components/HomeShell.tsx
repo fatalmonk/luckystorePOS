@@ -58,21 +58,6 @@ export function HomeShell({
   locale = 'en',
 }: HomeShellProps) {
   const dict = getDictionary(locale);
-  const dealSelection = getDealOfTheWeekProducts(inStock, WEEKLY_DEALS_LIMIT);
-  const deferredShelves: DeferredHomeShelvesProps = {
-    locale,
-    pantryProducts,
-    snacksProducts,
-    personalCareProducts,
-    weeklyDealProducts: dealSelection ? [dealSelection.leadProduct, ...dealSelection.supportingProducts] : [],
-    discountedProductCount: Math.min(
-      WEEKLY_DEALS_LIMIT,
-      inStock.filter((product) => getDiscountBadgePercentage(product) !== null).length,
-    ),
-    weeklyPicks,
-    weeklyEditionActive,
-    weeklyEditionUnavailable,
-  };
   if (inStock.length === 0) {
     return (
       <>
@@ -96,6 +81,24 @@ export function HomeShell({
     );
   }
 
+  const discountedProductCount = Math.min(
+    WEEKLY_DEALS_LIMIT,
+    inStock.filter((product) => getDiscountBadgePercentage(product) !== null).length,
+  );
+  // The rail renders one lead plus eight supporting cards. Weekly campaign
+  // picks stay on weeklyPicks and are not replaced by this discount ranking.
+  const visibleDeals = weeklyEditionActive ? null : getDealOfTheWeekProducts(inStock, 8);
+  const deferredShelves: DeferredHomeShelvesProps = {
+    locale,
+    pantryProducts,
+    snacksProducts,
+    personalCareProducts,
+    weeklyDealProducts: visibleDeals ? [visibleDeals.leadProduct, ...visibleDeals.supportingProducts] : [],
+    discountedProductCount,
+    weeklyPicks,
+    weeklyEditionActive,
+    weeklyEditionUnavailable,
+  };
 
   return (
     <>

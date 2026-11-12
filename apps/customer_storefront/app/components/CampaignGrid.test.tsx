@@ -93,6 +93,16 @@ describe('CampaignGrid', () => {
     expect(heroSearch).toHaveAttribute('action', '/category');
     expect(within(heroSearch).getByRole('searchbox')).toHaveAttribute('name', 'q');
     expect(within(hero!).getByLabelText('A tote of everyday Lucky Store groceries')).toBeInTheDocument();
+    const heroImage = hero!.querySelector('.campaign-feature img');
+    expect(heroImage).toHaveAttribute('width', '1600');
+    expect(heroImage).toHaveAttribute('height', '696');
+    expect(heroImage).toHaveAttribute('fetchpriority', 'high');
+    if (process.env.NEXT_PUBLIC_IMAGE_RESIZE === '1') {
+      expect(heroImage?.getAttribute('srcset')).toContain('/cdn-cgi/image/width=828,quality=75,format=auto,fit=scale-down/images/hero-reference.webp 828w');
+    } else {
+      expect(heroImage).toHaveAttribute('src', '/images/hero-reference.webp');
+      expect(heroImage).not.toHaveAttribute('srcset');
+    }
     expect(within(hero!).getByRole('link', { name: 'Rice' })).toHaveAttribute('href', '/category?q=rice');
     expect(within(hero!).getByText('Search organic staples')).toBeInTheDocument();
     expect(within(hero!).queryByText('Healthy Living')).not.toBeInTheDocument();

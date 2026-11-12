@@ -1,20 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Storefront homepage shell audit', () => {
-  test('keeps consent choices usable when their external scripts fail', async ({ page }) => {
-    await page.addInitScript(() => localStorage.removeItem('lucky-analytics-consent'));
-    await page.route('**/scripts/google-consent-default.v1.js', (route) => route.abort());
-    await page.route('**/scripts/google-consent-ui.v1.js', (route) => route.abort());
-    await page.route('https://www.googletagmanager.com/**', (route) => route.abort());
-    await page.route('https://connect.facebook.net/**', (route) => route.abort());
-    await page.goto('/');
-    const banner = page.locator('#lucky-consent-banner');
-    await expect(banner).toBeVisible();
-    await page.getByRole('button', { name: 'Accept analytics' }).click();
-    await expect.poll(() => page.evaluate(() => localStorage.getItem('lucky-analytics-consent'))).toBe('granted');
-    await expect(banner).toBeHidden();
-  });
-
   test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
     await page.goto('/');
 

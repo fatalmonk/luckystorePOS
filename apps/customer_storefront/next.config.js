@@ -124,10 +124,6 @@ const nextConfig = {
     ];
     return [
       {
-        source: '/scripts/:path*',
-        headers: [{ key: 'Cache-Control', value: HASHED_STATIC_CACHE_CONTROL }],
-      },
-      {
         source: '/:file(.*\\.(?:png|webp|avif|jpe?g|gif|svg|ico|woff2)$)',
         headers: [{ key: 'Cache-Control', value: PUBLIC_ASSET_CACHE_CONTROL }],
       },

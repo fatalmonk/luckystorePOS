@@ -9,9 +9,10 @@ import { initWebMCP } from '../lib/webmcp';
  */
 export function WebMCPInit() {
   useEffect(() => {
-    const controller = new AbortController();
-    void initWebMCP(controller.signal);
-    return () => controller.abort();
+    const cleanup = initWebMCP();
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, []);
 
   return null;

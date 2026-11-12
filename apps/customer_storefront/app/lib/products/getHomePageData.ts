@@ -187,7 +187,7 @@ const DEFAULT_FALLBACK_CATEGORIES: CategoryItem[] = [
   { id: 'cat-7', slug: 'personal-care', name: 'Personal Care', emoji: '🧴' },
 ];
 
-async function loadHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
+export async function getHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
   const { repo } = createAnonymousStorefrontProductRepository();
   let campaignLoadFailed = false;
   let campaignLoadError: unknown;
@@ -390,5 +390,3 @@ async function loadHomePageData(locale: Locale = 'en'): Promise<HomePageData> {
     snacksProducts,
   };
 }
-
-export const getHomePageData = loadHomePageData;

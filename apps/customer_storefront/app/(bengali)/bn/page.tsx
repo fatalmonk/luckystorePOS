@@ -68,7 +68,7 @@ function BengaliHomeFallback() {
 }
 
 /** Loads Bengali homepage data and renders structured data and the home shell. */
-async function BengaliHomeContent() {
+export async function BengaliHomeContent() {
   const data = await getHomePageData('bn');
 
   const websiteJsonLd = {
@@ -85,7 +85,7 @@ async function BengaliHomeContent() {
     '@type': 'ItemList',
     name: 'লাকি স্টোরের জনপ্রিয় পণ্যসমূহ',
     itemListElement: data.featuredProducts
-      .filter((product) => Number.isFinite(product.price) && product.price >= 0)
+      .filter((product) => Number.isFinite(product.price) && product.price > 0)
       .map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
@@ -93,7 +93,7 @@ async function BengaliHomeContent() {
         '@type': 'Product',
         name: product.name,
         url: `https://www.luckystore1947.com/bn/product/${toProductSlug(product.name, product.id)}`,
-        ...(!data.catalogSnapshotFallback && Number.isFinite(product.price) && product.price >= 0
+        ...(!data.catalogSnapshotFallback && Number.isFinite(product.price) && product.price > 0
           ? { offers: { '@type': 'Offer', priceCurrency: 'BDT', price: product.price } }
           : {}),
       },
