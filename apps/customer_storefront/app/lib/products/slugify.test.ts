@@ -59,6 +59,15 @@ describe('toProductSlug', () => {
     expect(extractIdFromSlug(toProductSlug(DIPLOMA_BENGALI, DIPLOMA_ID))).toBe('95c86e99');
   });
 
+  it('gives decomposed and precomposed nukta and vowel-sign spellings the same slug', () => {
+    expect(toProductSlug('\u09A1\u09BC\u09BE', DIPLOMA_ID)).toBe('ra--95c86e99');
+    expect(toProductSlug('\u09DC\u09BE', DIPLOMA_ID)).toBe('ra--95c86e99');
+    expect(toProductSlug('\u09AF\u09BC\u09BE', DIPLOMA_ID)).toBe('ya--95c86e99');
+    expect(toProductSlug('\u09DF\u09BE', DIPLOMA_ID)).toBe('ya--95c86e99');
+    expect(toProductSlug('\u0995\u09C7\u09BE', DIPLOMA_ID)).toBe('ko--95c86e99');
+    expect(toProductSlug('\u0995\u09CB', DIPLOMA_ID)).toBe('ko--95c86e99');
+  });
+
   it('keeps the legacy empty slug when there is no name to describe', () => {
     expect(toProductSlug('', DIPLOMA_ID)).toBe('--95c86e99');
     expect(toProductSlug('!!!', DIPLOMA_ID)).toBe('--95c86e99');

@@ -123,12 +123,25 @@ function latinSlugPart(name: string): string {
 }
 
 /**
+ * NFC composes split ও/ৌ signs. It also decomposes ড়, ঢ়, and য়, which Unicode
+ * excludes from recomposition, so those three nukta letters are composed again.
+ * Otherwise a following vowel sign is skipped and the slug changes.
+ */
+function normalizeBengaliForSlug(input: string): string {
+  return input
+    .normalize('NFC')
+    .replace(/\u09A1\u09BC/g, '\u09DC')
+    .replace(/\u09A2\u09BC/g, '\u09DD')
+    .replace(/\u09AF\u09BC/g, '\u09DF');
+}
+
+/**
  * Stable phonetic slug text for a Bengali-only name.
  * Hasanta drops the inherent vowel, ya-phala is "y", and a consonant followed
  * by another consonant keeps a single inherent "o" so মরিচ stays "morich".
  */
 function transliterateBengali(input: string): string {
-  const chars = Array.from(input);
+  const chars = Array.from(normalizeBengaliForSlug(input));
   let out = '';
 
   for (let i = 0; i < chars.length; i++) {
