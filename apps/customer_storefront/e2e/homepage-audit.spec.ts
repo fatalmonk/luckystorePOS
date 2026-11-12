@@ -4,10 +4,10 @@ test.describe('Storefront homepage shell audit', () => {
   test('publishes evidence-safe homepage metadata and structured data', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle('Lucky Store | Online Grocery & Daily Bazaar in Chattogram');
+    await expect(page).toHaveTitle('Lucky Store | Online Grocery in Chawkbazar, Chattogram');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Order groceries and daily bazaar essentials online from Lucky Store in Chattogram. Free delivery on ৳500+ within our delivery area, with Cash on Delivery.',
+      'Lucky Store in Chawkbazar, Chattogram since 1947. Delivery 09:00 AM–12:30 AM daily; pay Cash on Delivery or bKash after doorstep inspection.',
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -103,8 +103,15 @@ test.describe('Storefront homepage shell audit', () => {
 
     const openGraphImage = await page.locator('meta[property="og:image"]').getAttribute('content');
     const twitterImage = await page.locator('meta[name="twitter:image"]').getAttribute('content');
-    expect(openGraphImage).toContain('/lucky-store-social-share-v2.png');
-    expect(twitterImage).toContain('/lucky-store-social-share-v2.png');
+    const expectedImage = 'https://www.luckystore1947.com/lucky-store-social-share-v2.png';
+    expect(openGraphImage).toBe(expectedImage);
+    expect(twitterImage).toBe(expectedImage);
+    await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute('content', '1200');
+    await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute('content', '630');
+    await expect(page.locator('meta[name="twitter:creator"]')).toHaveAttribute(
+      'content',
+      '@luckystore1947',
+    );
 
     const localAssetPath = new URL(openGraphImage!).pathname;
     const dimensions = await page.evaluate(async (source) => {

@@ -8,13 +8,14 @@ import { JsonLd } from '../../components/seo/JsonLd';
 import { DeliveryFaqAccordion } from './DeliveryFaqAccordion';
 import {
   DELIVERY_POLICY,
+  DELIVERY_CATEGORY_LINKS,
   COVERED_AREAS,
   RETURN_RULES,
   getDeliveryFaqSchema,
 } from '../../lib/deliveryData';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store' },
+  title: { absolute: 'Online Grocery Shop in Chattogram | Lucky Store' },
   description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
   alternates: {
     canonical: DELIVERY_POLICY.canonicalUrl,
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store',
+    title: 'Online Grocery Shop in Chattogram | Lucky Store',
     description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection. View timings & areas.`,
     url: DELIVERY_POLICY.canonicalUrl,
     siteName: DELIVERY_POLICY.storeName,
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store',
+    title: 'Online Grocery Shop in Chattogram | Lucky Store',
     description: `Local grocery delivery within ${DELIVERY_POLICY.radiusKm} km of Chawkbazar, Chattogram. Free delivery on orders ৳${DELIVERY_POLICY.freeDeliveryThresholdBdt}+ with Cash on Delivery and doorstep inspection.`,
   },
 };
@@ -56,7 +57,7 @@ export default function DeliveryHubPage() {
               Chattogram Delivery Hub
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-warm-fg">
-              Online Grocery &amp; Daily Bazaar Delivery in Chattogram
+              Your Online Grocery Shop in Chattogram
             </h1>
             <p className="max-w-3xl text-base sm:text-lg leading-relaxed text-warm-muted">
               Direct doorstep delivery from Lucky Store in Chawkbazar (Est. {DELIVERY_POLICY.establishedYear}). We
@@ -65,6 +66,18 @@ export default function DeliveryHubPage() {
               Delivery.
             </p>
           </header>
+
+          <nav aria-label="Shop grocery categories" className="flex flex-wrap gap-2">
+            {DELIVERY_CATEGORY_LINKS.map(({ label, slug }) => (
+              <Link
+                key={slug}
+                href={`/category/${slug}`}
+                className="inline-flex min-h-10 items-center rounded-full border border-warm-border bg-warm-surface px-4 text-sm font-bold text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
 
           {/* Quick Stats Trust Strip */}
           <section

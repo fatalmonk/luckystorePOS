@@ -1,6 +1,9 @@
+import { CATEGORY_GROUPS, CATEGORY_RAIL_ITEMS } from './types';
+
 export const DELIVERY_POLICY = {
   storeName: 'Lucky Store',
   establishedYear: 1947,
+  shortLocation: 'Chawkbazar, Chattogram',
   hubAddress: '665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203',
   hubCoordinates: {
     latitude: '22.35500093723366',
@@ -29,6 +32,24 @@ export const DELIVERY_POLICY = {
   supportWhatsAppUrl: 'https://wa.me/8801731944544',
   canonicalUrl: 'https://www.luckystore1947.com/delivery',
 } as const;
+
+export const DELIVERY_CATEGORY_LINKS = [
+  { label: 'Rice & grains', slug: 'rice-and-grain' },
+  { label: 'Cooking oils & ghee', slug: 'oil-and-ghee' },
+  { label: 'Snacks', slug: 'snacks' },
+  { label: 'Ice cream', slug: 'ice-cream' },
+] as const;
+
+const registeredCategorySlugs = new Set([
+  ...CATEGORY_GROUPS.map(({ slug }) => slug),
+  ...CATEGORY_RAIL_ITEMS.map(({ slug }) => slug),
+]);
+
+for (const { slug } of DELIVERY_CATEGORY_LINKS) {
+  if (!registeredCategorySlugs.has(slug)) {
+    throw new Error(`Delivery page links to an unregistered category: ${slug}`);
+  }
+}
 
 export const RETURN_RULES = {
   en: {

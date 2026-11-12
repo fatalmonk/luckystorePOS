@@ -35,7 +35,7 @@ test.describe('Storefront H1 contract', () => {
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText('Online Grocery & Daily Bazaar Delivery in Chattogram');
+    await expect(h1).toHaveText('Your Online Grocery Shop in Chattogram');
   });
 
   test('localized product page has exactly one semantic H1', async ({ page }) => {

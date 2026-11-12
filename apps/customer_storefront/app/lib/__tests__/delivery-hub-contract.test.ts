@@ -7,6 +7,7 @@ import { metadata } from '../../(english)/delivery/page';
 import { JsonLd } from '../../components/seo/JsonLd';
 import {
   DELIVERY_POLICY,
+  DELIVERY_CATEGORY_LINKS,
   DELIVERY_FAQS,
   BENGALI_DELIVERY_FAQS,
   COVERED_AREAS,
@@ -15,6 +16,7 @@ import {
   getBengaliDeliveryFaqSchema,
   getDeliveryBreadcrumbSchema,
 } from '../deliveryData';
+import { CATEGORY_GROUPS, CATEGORY_RAIL_ITEMS } from '../types';
 import { middleware } from '../../../middleware';
 import { GET as getMarkdown } from '../../api/markdown/route';
 
@@ -47,7 +49,7 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
   describe('Page Metadata & Canonical Hygiene', () => {
     it('provides optimized title within SERP display length (<= 60 chars)', () => {
       const title = typeof metadata.title === 'string' ? metadata.title : (metadata.title as any)?.absolute;
-      expect(title).toBe('Grocery & Daily Bazaar Delivery in Chattogram | Lucky Store');
+      expect(title).toBe('Online Grocery Shop in Chattogram | Lucky Store');
       expect(title.length).toBeLessThanOrEqual(60);
       expect(title.length).toBeGreaterThanOrEqual(40);
     });
@@ -62,6 +64,20 @@ describe('Phase 4: Authoritative Chattogram Delivery Hub Contract', () => {
 
     it('emits absolute self-canonical targeting configured canonical URL', () => {
       expect(metadata.alternates?.canonical).toBe(DELIVERY_POLICY.canonicalUrl);
+    });
+
+    it('links only to registered category routes and includes the requested H1', () => {
+      const source = readFileSync(resolve(process.cwd(), 'app/(english)/delivery/page.tsx'), 'utf8');
+      expect(source).toContain('Your Online Grocery Shop in Chattogram');
+      expect(source).toContain('href={`/category/${slug}`}');
+      const registeredSlugs = new Set([
+        ...CATEGORY_GROUPS.map(({ slug }) => slug),
+        ...CATEGORY_RAIL_ITEMS.map(({ slug }) => slug),
+      ]);
+      expect(DELIVERY_CATEGORY_LINKS).toHaveLength(4);
+      for (const { slug } of DELIVERY_CATEGORY_LINKS) {
+        expect(registeredSlugs.has(slug), `unregistered category slug: ${slug}`).toBe(true);
+      }
     });
 
     it('derives matching OpenGraph and Twitter metadata', () => {
