@@ -29,21 +29,28 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 interface AppDrawerProps {
   open: boolean;
   onClose: () => void;
+  onReady?: () => void;
   locale?: Locale;
 }
 
-export function AppDrawer({ open, onClose, locale }: AppDrawerProps) {
+export function AppDrawer({ open, onClose, onReady, locale }: AppDrawerProps) {
   const pathname = usePathname() || '/';
   const effectiveLocale = locale ?? getLocaleFromPathname(pathname);
   const dict = getDictionary(effectiveLocale);
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const readyCalledRef = useRef(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+  useEffect(() => {
+    if (!mounted || readyCalledRef.current) return;
+    readyCalledRef.current = true;
+    onReady?.();
+  }, [mounted, onReady]);
 
   const topLinks = [
     { href: withLocale('/', effectiveLocale), label: dict.appDrawer.home, icon: House },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Fire } from '@phosphor-icons/react/dist/csr/Fire';
@@ -39,25 +39,6 @@ export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {})
   const locale = getLocaleFromPathname(pathname);
   const pagePath = stripLocalePrefix(pathname);
   const dict = getDictionary(locale);
-
-  useEffect(() => {
-    if (shouldHideDesktopRail(pathname)) return;
-    const media = window.matchMedia('(min-width: 768px)');
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const schedule = () => {
-      clearTimeout(timer);
-      if (media.matches) timer = setTimeout(() => { void ensureAuth().catch(() => {}); }, 3000);
-    };
-    const afterLoad = () => schedule();
-    if (document.readyState === 'complete') schedule();
-    else window.addEventListener('load', afterLoad, { once: true });
-    media.addEventListener('change', schedule);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('load', afterLoad);
-      media.removeEventListener('change', schedule);
-    };
-  }, [pathname, ensureAuth]);
 
   const unresolved = loading || status === 'error';
 

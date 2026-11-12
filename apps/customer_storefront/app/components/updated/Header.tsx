@@ -141,6 +141,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [drawerLoaded, setDrawerLoaded] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState<boolean>(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const popularSearches = dict.header.popularSearches as unknown as string[];
@@ -199,6 +200,10 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
   const mobileCategoriesRef = useRef<HTMLDivElement>(null);
   const desktopCategoriesRef = useRef<HTMLElement>(null);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
+  const openDrawer = useCallback(() => {
+    if (drawerLoaded) setIsDrawerOpen(true);
+    else setDrawerLoaded(true);
+  }, [drawerLoaded]);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -386,7 +391,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={openDrawer}
             className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
@@ -422,7 +427,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
         <div data-header-start className="flex min-w-0 shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={openDrawer}
             className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
@@ -571,7 +576,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
         </div>
       )}
 
-      <AppDrawer open={isDrawerOpen} onClose={closeDrawer} />
+      {drawerLoaded && <AppDrawer open={isDrawerOpen} onClose={closeDrawer} onReady={openDrawer} />}
 
       <style>{`
         @media (min-width: 1024px) {

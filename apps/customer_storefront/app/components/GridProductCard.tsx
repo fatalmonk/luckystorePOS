@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Heart } from '@phosphor-icons/react/dist/csr/Heart';
 import { formatBdt } from '../lib/formatPrice';
 import { getDisplayProductUnit } from '../lib/products/displayProductUnit';
-import { getDiscountBadgePercentage } from '../lib/deals';
+import { getDiscountBadgePercentage } from '../lib/dealSelection';
 import { toProductSlug } from '../lib/products/slugify';
 import { getProductGalleryImages } from '../lib/products/productGalleryRegistry';
 import { toBengaliNumerals, withLocale, type Locale } from '../lib/i18n/config';
