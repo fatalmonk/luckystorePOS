@@ -566,6 +566,11 @@ html.theme-transitioning .btn {
   flex: 0 0 calc((100% - 0.625rem) / 2);
   scroll-snap-align: start;
 }
+@media (max-width: 639px) {
+  .grid-reel-featured .grid-slide {
+    flex-basis: calc((100% - 0.625rem) / 1.9);
+  }
+}
 @media (min-width: 640px) {
   .grid-slide {
     flex: 0 0 min(calc((100% - 2.5rem) / 4), 17rem);

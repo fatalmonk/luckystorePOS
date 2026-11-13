@@ -237,18 +237,23 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
     activeCategory?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [activeCatalogTheme, selectedCategory]);
 
-  // Close suggestions when clicking outside or pressing Escape
+  // Close suggestions when pointer or keyboard focus leaves the search area.
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const isInsideSearch =
+    const isInsideSearch = (target: EventTarget | null) => {
+      if (!(target instanceof Node)) return false;
+      return Boolean(
         mobileOverlaySearchRef.current?.contains(target) ||
         mobileInlineSearchRef.current?.contains(target) ||
-        desktopSearchRef.current?.contains(target);
+        desktopSearchRef.current?.contains(target)
+      );
+    };
 
-      if (!isInsideSearch) {
-        setShowSuggestions(false);
-      }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!isInsideSearch(event.target)) setShowSuggestions(false);
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      if (!isInsideSearch(event.target)) setShowSuggestions(false);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -259,9 +264,11 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('focusin', handleFocusIn);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('focusin', handleFocusIn);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -389,7 +396,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
           <button
             type="button"
             onClick={openDrawer}
-            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg shadow-none transition-colors hover:bg-transparent hover:shadow-none active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -397,7 +404,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
             <List className="-translate-y-[9px]" weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
+          <Logo className="header-brand-logo -translate-y-1 min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
@@ -425,7 +432,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
           <button
             type="button"
             onClick={openDrawer}
-            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] text-warm-fg shadow-none transition-colors hover:bg-transparent hover:shadow-none active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:flex"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
@@ -467,7 +474,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
             {/* Search Submit Button */}
             <button
               type="submit"
-              className="mr-1 store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              className="mr-1 store-press flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warm-image-well text-warm-fg transition-[background-color,transform] hover:bg-warm-bg motion-safe:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               aria-label={currentLocale === 'bn' ? 'অনুসন্ধান করুন' : 'Submit search'}
             >
               <ArrowRight weight="bold" size={16} aria-hidden="true" />

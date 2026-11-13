@@ -37,7 +37,7 @@ vi.mock('../ui/Logo', () => ({
 }));
 
 vi.mock('./SearchSuggestions', () => ({
-  SearchSuggestions: () => <div>Suggestions</div>,
+  SearchSuggestions: () => <div data-testid="search-suggestions"><button type="button">Suggested item</button></div>,
 }));
 
 describe('Header catalog filter strip', () => {
@@ -57,6 +57,20 @@ describe('Header catalog filter strip', () => {
     expect(cartButtons).toHaveLength(2);
     expect(cartButtons.find((button) => button.dataset.compact === 'true')).toBeInTheDocument();
     expect(cartButtons.find((button) => button.dataset.compact === 'false')).toBeInTheDocument();
+  });
+
+  it('keeps suggestions open while focus moves into them and closes when focus leaves search', () => {
+    render(<Header />);
+
+    const searchInput = screen.getByLabelText('Search products');
+    act(() => searchInput.focus());
+    expect(screen.getByTestId('search-suggestions')).toBeInTheDocument();
+
+    act(() => screen.getByRole('button', { name: 'Suggested item' }).focus());
+    expect(screen.getByTestId('search-suggestions')).toBeInTheDocument();
+
+    act(() => screen.getAllByRole('button', { name: 'Switch to Dark mode' })[0].focus());
+    expect(screen.queryByTestId('search-suggestions')).not.toBeInTheDocument();
   });
 
   it('keeps the Bengali wishlist link in the Bengali route space', () => {

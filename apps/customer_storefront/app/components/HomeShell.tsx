@@ -115,31 +115,31 @@ export function HomeShell({
               <span className="shrink-0 font-bold text-warm-fg">{dict.popularBazaar.label}</span>
               <Link
                 href={withLocale('/category/rice-and-grain', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-warm-fg transition-[background-color,border-color,color,transform] hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.rice}
               </Link>
               <Link
                 href={withLocale('/category/oil-and-ghee', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-warm-fg transition-[background-color,border-color,color,transform] hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.oil}
               </Link>
               <Link
                 href={withLocale('/category/cooking-essentials', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-warm-fg transition-[background-color,border-color,color,transform] hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.cooking}
               </Link>
               <Link
                 href={withLocale('/category/tea-and-coffee', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-warm-fg transition-[background-color,border-color,color,transform] hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.tea}
               </Link>
               <Link
                 href={withLocale('/fortune-cookies-near-me', locale)}
-                className="shrink-0 rounded-full border border-warm-border bg-warm-surface px-3 py-1 text-warm-fg transition-colors hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-warm-border bg-warm-surface px-4 py-2 text-warm-fg transition-[background-color,border-color,color,transform] hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
               >
                 {dict.popularBazaar.fortuneCookies}
               </Link>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 const MISSING_GOOGLE_MAPS_KEY = 'missing-google-maps-key';
-const LUCKY_STORE_MAPS_URL = 'https://maps.app.goo.gl/Yd3mAphotMJiVPM97';
+export const LUCKY_STORE_MAPS_URL = 'https://maps.app.goo.gl/Yd3mAphotMJiVPM97';
 
 export interface GoogleMapEmbedProps {
   placeId?: string;
@@ -542,11 +542,11 @@ export function GoogleMapEmbed({
     if (error === MISSING_GOOGLE_MAPS_KEY) {
       return (
         <div className="flex h-full min-h-[380px] w-full flex-col justify-end rounded-[28px] border border-warm-border/80 bg-[linear-gradient(135deg,rgba(240,196,68,0.18),rgba(255,255,255,0.08)),url('/lucky-store-social-share.jpg')] bg-cover bg-center p-5 sm:p-6">
-          <div className="max-w-md rounded-[24px] border border-warm-border/80 bg-warm-surface/95 p-5 shadow-warm-md backdrop-blur">
+          <div className="max-w-md rounded-[24px] border border-warm-border/80 bg-warm-surface p-5 shadow-warm-md">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-warm-accent-dark">
               Store location
             </p>
-            <h3 className="mt-2 text-2xl font-black tracking-tight text-warm-fg">
+            <h3 className="mt-2 text-xl font-bold tracking-tight text-warm-fg">
               Lucky Store
             </h3>
             <p className="mt-2 text-sm font-semibold leading-relaxed text-warm-muted">
@@ -573,11 +573,22 @@ export function GoogleMapEmbed({
   }
 
   return (
-    <div
-      ref={mapRef}
-      className="h-full w-full rounded-[28px]"
-      aria-label="Google Map showing Lucky Store location"
-      role="application"
-    />
+    <div className="relative h-full w-full">
+      <div
+        ref={mapRef}
+        className="absolute inset-0 rounded-[28px]"
+        aria-label="Google Map showing Lucky Store location"
+        role="application"
+      />
+      <a
+        href={LUCKY_STORE_MAPS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-4 right-4 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-warm-accent/40 bg-warm-fg px-4 text-xs font-extrabold text-warm-accent shadow-xl transition hover:bg-warm-fg-strong active:scale-95"
+      >
+        <span>Open in Google Maps</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
   );
 }

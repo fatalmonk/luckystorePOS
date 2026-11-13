@@ -102,7 +102,7 @@ export function HomeTeaBanner({ locale = 'en' }: { locale?: Locale }) {
         </div>
         <Link
           href={withLocale('/category/tea-and-coffee', locale)}
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-[#003d24] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-[#003d24] px-5 text-sm font-bold text-white transition-[background-color,transform] hover:bg-[#075333] motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2"
         >
           {bn ? 'বাজার করুন' : 'Shop now'}
           <ArrowRight size={16} aria-hidden="true" />

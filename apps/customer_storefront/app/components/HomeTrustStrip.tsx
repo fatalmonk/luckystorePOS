@@ -71,11 +71,11 @@ export function HomeTrustStrip({ locale = 'en' }: { locale?: Locale }) {
           <ArrowRight size={17} weight="bold" aria-hidden="true" className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
-      <dl className="relative mt-6 grid grid-cols-2 border-t border-warm-fg/40 pt-4 sm:pt-5 lg:grid-cols-4">
+      <dl className="relative mt-6 grid grid-cols-2 border-t border-[#b8b1a4] pt-4 sm:pt-5 dark:border-white/15 lg:grid-cols-4">
         {facts.map(({ icon: Icon, iconClassName, title, detail, href }, index) => (
           <div
             key={title}
-            className={`relative grid min-h-[5.5rem] grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-x-2.5 border-warm-fg/40 py-3 sm:min-h-[4.75rem] sm:items-center sm:gap-x-3 lg:min-h-[3.75rem] lg:border-b-0 lg:px-4 lg:py-2 lg:first:pl-0 ${
+            className={`relative grid min-h-[5.5rem] grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-x-2.5 border-[#b8b1a4] py-3 sm:min-h-[4.75rem] sm:items-center sm:gap-x-3 dark:border-white/15 lg:min-h-[3.75rem] lg:border-b-0 lg:px-4 lg:py-2 lg:first:pl-0 ${
               index < 2 ? 'border-b' : ''
             } ${index % 2 === 0 ? 'border-r pr-3' : 'pl-3'} ${
               index < facts.length - 1 ? 'lg:border-r' : 'lg:border-r-0'

@@ -73,8 +73,8 @@ export function DeferredHomeShelves({
         locale={locale}
       />
       <PopularBrandsSection locale={locale} />
-      <HeritageSection locale={locale} />
       <HomeTrustStrip locale={locale} />
+      <HeritageSection locale={locale} />
     </>
   );
 }

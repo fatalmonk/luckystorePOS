@@ -123,7 +123,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               <Link
                 href={withLocale('/category', locale)}
                 data-cro="hero-primary-cta"
-                className="store-press inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[var(--color-campaign-action)] px-3 text-xs font-bold text-white hover:bg-[var(--color-campaign-action-hover)] sm:px-5 sm:text-sm"
+                className="store-press inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[var(--color-campaign-action)] px-3 text-xs font-bold text-white transition-[background-color,transform] hover:bg-[var(--color-campaign-action-hover)] motion-safe:active:scale-[0.96] sm:px-5 sm:text-sm"
               >
                 {dict.campaign.primaryCta}
                 <ArrowRight className="hidden sm:block" size={18} aria-hidden="true" />
@@ -131,7 +131,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
               <Link
                 href={withLocale('/delivery', locale)}
                 data-cro="hero-delivery-eligibility"
-                className="store-press inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[var(--color-campaign-delivery-control-border)] bg-[var(--color-campaign-delivery-control)] px-3 text-xs font-semibold text-[var(--color-campaign-ink)] sm:px-5 sm:text-sm"
+                className="store-press inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[var(--color-campaign-delivery-control-border)] bg-[var(--color-campaign-delivery-control)] px-3 text-xs font-semibold text-[var(--color-campaign-ink)] transition-[background-color,transform] motion-safe:active:scale-[0.96] sm:px-5 sm:text-sm"
               >
                 <MapPin className="hidden sm:block" size={17} aria-hidden="true" />
                 {dict.campaign.deliveryCta}

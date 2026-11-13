@@ -94,9 +94,12 @@ export function PopularBrandsSection({
 
                 <div className="mt-3 pt-2 border-t border-warm-border/50 flex items-center justify-between text-xs font-extrabold text-warm-muted group-hover:text-warm-fg transition-colors">
                   <span>{isBn ? 'পণ্য দেখুন' : 'Explore'}</span>
-                  <span className="text-warm-accent font-black transition-transform group-hover:translate-x-1" aria-hidden="true">
-                    →
-                  </span>
+                  <CaretRight
+                    size={16}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="text-warm-accent transition-transform group-hover:translate-x-0.5"
+                  />
                 </div>
               </Link>
             </div>
