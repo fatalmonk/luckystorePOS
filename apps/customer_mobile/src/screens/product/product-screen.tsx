@@ -27,6 +27,13 @@ const copy = {
     addedToCart: 'Added to Cart',
     quantity: 'Quantity',
     description: 'Product Details',
+    origin: 'Origin:',
+    highlights: 'Highlights',
+    specifications: 'Specifications',
+    usageDirections: 'How to Use',
+    storageInstructions: 'Storage',
+    faqs: 'Frequently Asked Questions',
+    underReview: 'Bengali product details are being reviewed. Please check back soon.',
     related: 'You May Also Like',
     inspection: 'Pay after doorstep inspection',
     cod: 'Cash on Delivery in Chattogram',
@@ -49,6 +56,13 @@ const copy = {
     addedToCart: 'কার্টে যোগ হয়েছে',
     quantity: 'পরিমাণ',
     description: 'পণ্যের বিবরণ',
+    origin: 'উৎপত্তি:',
+    highlights: 'বৈশিষ্ট্য',
+    specifications: 'বিস্তারিত তথ্য',
+    usageDirections: 'ব্যবহারের নিয়ম',
+    storageInstructions: 'সংরক্ষণের নিয়ম',
+    faqs: 'সাধারণ জিজ্ঞাসা',
+    underReview: 'বাংলা পণ্যের তথ্য পর্যালোচনা করা হচ্ছে। অনুগ্রহ করে পরে আবার দেখুন।',
     related: 'আরও পছন্দের পণ্য',
     inspection: 'পণ্য দেখে ডেলিভারির পর পেমেন্ট',
     cod: 'চট্টগ্রামে ক্যাশ অন ডেলিভারি',
@@ -91,7 +105,7 @@ export function ProductDetailScreen() {
     try {
       const data = await fetchProductDetail(productId, locale);
       setProduct(data.product);
-      setRelated(data.related);
+      setRelated(locale === 'bn' ? data.related.filter((item) => item.translationStatus === 'published') : data.related);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Failed to load product');
     } finally {
@@ -105,7 +119,7 @@ export function ProductDetailScreen() {
     void fetchProductDetail(productId, locale, controller.signal)
       .then((data) => {
         setProduct(data.product);
-        setRelated(data.related);
+        setRelated(locale === 'bn' ? data.related.filter((item) => item.translationStatus === 'published') : data.related);
         setError(null);
       })
       .catch((cause) => {
@@ -169,6 +183,7 @@ export function ProductDetailScreen() {
     [add],
   );
 
+  const isTranslationMissing = locale === 'bn' && product?.translationStatus === 'missing';
   const screenTitle = product?.name || text.description;
 
   if (loading) {
@@ -196,6 +211,7 @@ export function ProductDetailScreen() {
   }
 
   const isOutOfStock = product.stock <= 0;
+  const showBengaliContent = locale !== 'bn' || product.translationStatus === 'published';
 
   return (
     <View style={styles.screen}>
@@ -266,7 +282,8 @@ export function ProductDetailScreen() {
           </View>
 
           {/* Product Title */}
-          <Text style={styles.productTitle} accessibilityRole="header">{product.name}</Text>
+          {showBengaliContent ? <Text style={styles.productTitle} accessibilityRole="header">{product.name}</Text> : null}
+          {isTranslationMissing ? <Text accessibilityRole="alert" style={styles.descriptionBody}>{text.underReview}</Text> : null}
           <Text style={styles.unitText}>{product.unit}</Text>
 
           {/* Price Box */}
@@ -285,7 +302,7 @@ export function ProductDetailScreen() {
           </View>
 
           {/* Quantity Controls & Add to Cart */}
-          <View style={styles.actionRow}>
+          {showBengaliContent ? <View style={styles.actionRow}>
             <View
               style={styles.stepper}
               accessibilityRole="adjustable"
@@ -359,7 +376,7 @@ export function ProductDetailScreen() {
                 {isAdded ? `✓ ${text.addedToCart}` : text.addToCart}
               </Text>
             </Pressable>
-          </View>
+          </View> : null}
 
           {/* Trust Guarantees */}
           <View style={styles.trustGrid}>
@@ -374,7 +391,7 @@ export function ProductDetailScreen() {
           </View>
 
           {/* Description block */}
-          {product.description ? (
+          {product.description && showBengaliContent ? (
             <View style={styles.descriptionBlock}>
               <Text style={styles.descriptionHeading} accessibilityRole="header">{text.description}</Text>
               <Text style={styles.descriptionBody}>{product.description}</Text>
@@ -382,7 +399,7 @@ export function ProductDetailScreen() {
           ) : null}
 
           {/* Brand / SKU info */}
-          {(product.brand || product.sku) && (
+          {showBengaliContent && (product.brand || product.sku) && (
             <View style={styles.metaRow}>
               {product.brand && (
                 <Text style={styles.metaText}>
@@ -398,6 +415,28 @@ export function ProductDetailScreen() {
               )}
             </View>
           )}
+
+          {showBengaliContent && product.origin ? <Text style={styles.metaText}><Text style={styles.metaLabel}>{text.origin} </Text>{product.origin}</Text> : null}
+          {showBengaliContent && product.details?.highlights?.length ? (
+            <View style={styles.descriptionBlock}>
+              <Text style={styles.descriptionHeading} accessibilityRole="header">{text.highlights}</Text>
+              {product.details.highlights.map((highlight, index) => <Text key={`${index}:${highlight}`} style={styles.descriptionBody}>• {highlight}</Text>)}
+            </View>
+          ) : null}
+          {showBengaliContent && product.details?.specifications?.length ? (
+            <View style={styles.descriptionBlock}>
+              <Text style={styles.descriptionHeading} accessibilityRole="header">{text.specifications}</Text>
+              {product.details.specifications.map((specification, index) => <Text key={`${index}:${specification.label}`} style={styles.descriptionBody}>{specification.label}: {specification.value}</Text>)}
+            </View>
+          ) : null}
+          {showBengaliContent && product.details?.usageDirections ? <View style={styles.descriptionBlock}><Text style={styles.descriptionHeading} accessibilityRole="header">{text.usageDirections}</Text><Text style={styles.descriptionBody}>{product.details.usageDirections}</Text></View> : null}
+          {showBengaliContent && product.details?.storageInstructions ? <View style={styles.descriptionBlock}><Text style={styles.descriptionHeading} accessibilityRole="header">{text.storageInstructions}</Text><Text style={styles.descriptionBody}>{product.details.storageInstructions}</Text></View> : null}
+          {showBengaliContent && product.details?.faqs?.length ? (
+            <View style={styles.descriptionBlock}>
+              <Text style={styles.descriptionHeading} accessibilityRole="header">{text.faqs}</Text>
+              {product.details.faqs.map((faq, index) => <View key={`${index}:${faq.question}`}><Text style={styles.metaLabel}>{faq.question}</Text><Text style={styles.descriptionBody}>{faq.answer}</Text></View>)}
+            </View>
+          ) : null}
         </View>
 
         {/* Related Products Carousel */}

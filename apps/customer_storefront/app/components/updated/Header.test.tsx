@@ -52,7 +52,7 @@ describe('Header catalog filter strip', () => {
     expect(screen.getAllByText('Lucky Store')).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: 'Switch to Dark mode' })).toHaveLength(2);
     expect(screen.getByLabelText('Search products')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Submit search' })).toHaveClass('h-11', 'w-11');
+    expect(screen.getByRole('button', { name: 'Submit search' })).toHaveClass('h-10', 'w-10');
     const cartButtons = screen.getAllByRole('button', { name: 'Cart' });
     expect(cartButtons).toHaveLength(2);
     expect(cartButtons.find((button) => button.dataset.compact === 'true')).toBeInTheDocument();

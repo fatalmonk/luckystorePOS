@@ -1,9 +1,13 @@
 import { getCachedProductBySlug } from '../products/getCachedProduct';
 import { getCachedCrossSellProducts, prepareCrossSell } from '../products/getCachedCrossSell';
 import { getEnrichedProductData } from '../products/productEnrichment';
+import {
+  getPublishedItemTranslations,
+  type LocalizedProductDetails,
+  type PublishedItemTranslation,
+} from '../products/productTranslations';
 import { createAnonymousStorefrontProductRepository, createProductId } from '../products/index';
 import type { Product } from '../products/types';
-import { supabase } from '../supabase';
 
 export type MobileLocale = 'en' | 'bn';
 
@@ -23,6 +27,9 @@ export interface MobileProductDetailDto {
   nutrition?: string;
   brand?: string;
   sku?: string;
+  origin?: string;
+  details?: LocalizedProductDetails;
+  translationStatus?: 'published' | 'missing';
   bengaliName?: string;
   bengaliDescription?: string;
 }
@@ -37,15 +44,16 @@ export function toMobileProductDto(
   product: Product,
   locale: MobileLocale,
   enrichment?: any,
+  translation?: PublishedItemTranslation | null,
 ): MobileProductDetailDto {
   const imageUrl = product.imageUrl ?? product.image_url;
-  const effectiveName = locale === 'bn' && product.bengaliName
-    ? product.bengaliName
-    : (enrichment?.exactName || product.name);
-
-  const effectiveDescription = locale === 'bn' && product.bengaliDescription
-    ? product.bengaliDescription
-    : (enrichment?.summary || product.description || '');
+  const isBengali = locale === 'bn';
+  const effectiveName = isBengali
+    ? translation?.name ?? ''
+    : enrichment?.exactName || product.name;
+  const effectiveDescription = isBengali
+    ? translation?.description ?? ''
+    : enrichment?.summary || product.description || '';
 
   return {
     id: product.id,
@@ -56,15 +64,25 @@ export function toMobileProductDto(
     unit: product.unit || 'pc',
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
-    ...(product.badge ? { badge: product.badge } : {}),
-    category: product.category?.trim() || 'General',
+    ...(!isBengali && product.badge ? { badge: product.badge } : {}),
+    category: isBengali ? '' : product.category?.trim() || 'General',
     ...(product.categoryId || product.category_id ? { categoryId: product.categoryId ?? product.category_id } : {}),
     description: effectiveDescription,
-    ...(product.nutrition ? { nutrition: product.nutrition } : {}),
+    ...(!isBengali && product.nutrition ? { nutrition: product.nutrition } : {}),
     ...(product.brand ? { brand: product.brand } : {}),
     ...(product.sku ? { sku: product.sku } : {}),
-    ...(product.bengaliName ? { bengaliName: product.bengaliName } : {}),
-    ...(product.bengaliDescription ? { bengaliDescription: product.bengaliDescription } : {}),
+    ...(isBengali
+      ? {
+          translationStatus: translation ? 'published' as const : 'missing' as const,
+          ...(translation?.origin ? { origin: translation.origin } : {}),
+          ...(translation?.details ? { details: translation.details } : {}),
+          ...(translation ? { bengaliName: translation.name } : {}),
+          ...(translation?.description ? { bengaliDescription: translation.description } : {}),
+        }
+      : {
+          ...(product.bengaliName ? { bengaliName: product.bengaliName } : {}),
+          ...(product.bengaliDescription ? { bengaliDescription: product.bengaliDescription } : {}),
+        }),
   };
 }
 
@@ -90,42 +108,27 @@ export async function getMobileProductDetail(
 
   if (!product) return null;
 
-  if (locale === 'bn' && !product.bengaliName) {
-    try {
-      const { data: trans, error: transErr } = await (supabase as any)
-        .from('item_translations')
-        .select('name, description')
-        .eq('item_id', product.id)
-        .eq('locale', 'bn')
-        .eq('review_status', 'published')
-        .maybeSingle();
-      if (transErr) {
-        console.error(`[mobile/product] Failed to fetch translation for ${product.id}:`, transErr);
-      } else if (trans) {
-        product.bengaliName = trans.name;
-        if (trans.description) {
-          product.bengaliDescription = trans.description;
-        }
-      }
-    } catch (err) {
-      console.error(`[mobile/product] Translation lookup threw for ${product.id}:`, err);
-    }
-  }
-
-  const enrichment = getEnrichedProductData(product.id) || getEnrichedProductData(idOrSlug);
-  const mainProductDto = toMobileProductDto(product, locale, enrichment);
+  const translation = locale === 'bn'
+    ? (await getPublishedItemTranslations([product.id])).get(product.id) ?? null
+    : null;
+  const enrichment = locale === 'en'
+    ? getEnrichedProductData(product.id) || getEnrichedProductData(idOrSlug)
+    : undefined;
+  const mainProductDto = toMobileProductDto(product, locale, enrichment, translation);
 
   let relatedDtos: MobileProductDetailDto[] = [];
-  try {
-    const rawCrossSell = await getCachedCrossSellProducts(
-      product.category,
-      product.categoryId || product.category_id,
-      product.id,
-    );
-    const crossSell = prepareCrossSell(rawCrossSell);
-    relatedDtos = crossSell.slice(0, 8).map((p) => toMobileProductDto(p, locale));
-  } catch (err) {
-    console.error('Failed to load cross sell for mobile product:', err);
+  if (locale === 'en') {
+    try {
+      const rawCrossSell = await getCachedCrossSellProducts(
+        product.category,
+        product.categoryId || product.category_id,
+        product.id,
+      );
+      const crossSell = prepareCrossSell(rawCrossSell);
+      relatedDtos = crossSell.slice(0, 8).map((p) => toMobileProductDto(p, locale));
+    } catch (err) {
+      console.error('Failed to load cross sell for mobile product:', err);
+    }
   }
 
   return {

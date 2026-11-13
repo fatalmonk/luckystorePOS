@@ -10,10 +10,10 @@ describe('HomeTrustStrip', () => {
     expect(screen.getByText('Your Neighborhood Family Grocer')).toBeInTheDocument();
 
     const facts = screen.getByText('Delivery coverage').closest('dl');
-    expect(facts).toHaveClass('grid-cols-2', 'border-warm-fg/40', 'lg:grid-cols-4');
+    expect(facts).toHaveClass('grid-cols-2', 'border-[#b8b1a4]', 'lg:grid-cols-4');
 
     const factItems = facts?.querySelectorAll(':scope > div');
-    expect(factItems?.[0]).toHaveClass('border-b', 'border-r', 'border-warm-fg/40');
+    expect(factItems?.[0]).toHaveClass('border-b', 'border-r', 'border-[#b8b1a4]');
     expect(factItems?.[3]).toHaveClass('lg:border-r-0');
   });
 });
