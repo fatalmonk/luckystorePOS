@@ -4,10 +4,8 @@ import Image from 'next/image';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { Phone } from '@phosphor-icons/react/dist/ssr/Phone';
 import { EnvelopeSimple } from '@phosphor-icons/react/dist/ssr/EnvelopeSimple';
-import { FacebookLogo } from '@phosphor-icons/react/dist/ssr/FacebookLogo';
-import { InstagramLogo } from '@phosphor-icons/react/dist/ssr/InstagramLogo';
-import { WhatsappLogo } from '@phosphor-icons/react/dist/ssr/WhatsappLogo';
 import { Logo } from '../ui/Logo';
+import { SocialMediaLinks } from '../SocialMediaLinks';
 
 import type { Locale } from '../../lib/i18n/config';
 import { withLocale } from '../../lib/i18n/config';
@@ -15,24 +13,6 @@ import { getDictionary } from '../../lib/i18n/dictionaries';
 
 const footerFocus =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-campaign-surface)]';
-
-const socialLinks = [
-  {
-    label: 'Facebook',
-    href: 'https://www.facebook.com/luckystore1947',
-    icon: FacebookLogo,
-  },
-  {
-    label: 'Instagram',
-    href: 'https://www.instagram.com/luckystore1947',
-    icon: InstagramLogo,
-  },
-  {
-    label: 'WhatsApp',
-    href: 'https://wa.me/8801731944544',
-    icon: WhatsappLogo,
-  },
-] as const;
 
 export function Footer({ locale = 'en' }: { locale?: Locale }) {
   const dict = getDictionary(locale);
@@ -97,8 +77,8 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8 sm:pt-12 lg:px-12">
-        <div className="grid gap-8 sm:gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:grid-cols-12 xl:gap-8">
+      <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 sm:pt-12 lg:px-12">
+        <div className="grid gap-8 sm:gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:grid-cols-12 xl:gap-10">
           <div className="min-w-0 xl:col-span-5">
             <Logo className="[&_img]:!h-10 sm:[&_img]:!h-14" locale={locale} />
 
@@ -107,7 +87,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
             </p>
 
 
-            <address className="mt-4 grid grid-cols-1 gap-x-5 gap-y-1 not-italic min-[480px]:grid-cols-2 sm:mt-5">
+            <address className="mt-5 grid grid-cols-1 gap-x-6 gap-y-1 not-italic sm:mt-6 sm:grid-cols-2">
               <a
                 href="tel:+8801731944544"
                 className={`site-footer-link min-w-0 gap-2 text-sm ${footerFocus}`}
@@ -117,39 +97,27 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
               </a>
               <a
                 href="mailto:hello@luckystore1947.com"
-                className={`site-footer-link min-w-0 gap-2 break-all text-sm ${footerFocus}`}
+                className={`site-footer-link min-w-0 gap-2 break-words text-sm ${footerFocus}`}
               >
                 <EnvelopeSimple size={18} aria-hidden="true" className="shrink-0" />
                 hello@luckystore1947.com
               </a>
-              <p className="site-footer-muted mt-1 text-sm leading-6 min-[480px]:col-span-2">
+              <p className="site-footer-muted mt-2 text-sm leading-6 sm:col-span-2">
                 665 Percival Hill Road, Emdad Park, Chawkbazar, Chattogram 4203
               </p>
             </address>
 
-            <div className="mt-4 flex items-center gap-2.5 sm:mt-5" aria-label="Lucky Store on social media">
-              {socialLinks.map(({ label, href, icon: Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0B0B0D] text-white transition-colors hover:bg-warm-accent hover:text-warm-accent-text ${footerFocus}`}
-                >
-                  <Icon size={20} weight="fill" aria-hidden="true" />
-                </a>
-              ))}
+            <div className="mt-4 sm:mt-5">
+              <SocialMediaLinks locale={locale} variant="footer" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-6 sm:border-t-0 sm:pt-0 md:gap-x-8 xl:col-span-5">
+          <div className="grid grid-cols-2 gap-x-6 border-t border-[var(--color-campaign-border)] pt-6 sm:border-t-0 sm:pt-0 md:gap-x-10 xl:col-span-5">
             <nav aria-labelledby="footer-shop-heading">
               <h2 id="footer-shop-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 {dict.footer.shopTitle}
               </h2>
-              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
+              <ul className="mt-3 space-y-1 sm:mt-4">
                 {shopLinks.map((link) => (
                   <li key={link.label}>
                     <Link href={link.href} prefetch={link.prefetch} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
@@ -160,14 +128,14 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
               </ul>
             </nav>
 
-            <nav aria-labelledby="footer-help-heading">
+            <nav aria-labelledby="footer-help-heading" className="text-right">
               <h2 id="footer-help-heading" className="text-base font-extrabold tracking-tight text-warm-fg sm:text-lg">
                 {dict.footer.helpTitle}
               </h2>
-              <ul className="mt-2 sm:mt-5 sm:space-y-2.5">
+              <ul className="mt-3 space-y-1 sm:mt-4">
                 {helpLinks.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className={`site-footer-link inline-flex min-h-11 items-center py-2 text-sm font-medium ${footerFocus}`}>
+                    <Link href={link.href} className={`site-footer-link ml-auto inline-flex min-h-11 w-fit items-center py-2 text-sm font-medium ${footerFocus}`}>
                       {link.label}
                     </Link>
                   </li>
@@ -181,7 +149,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
           </div>
         </div>
 
-        <div className="site-footer-bottom mt-8 border-t pt-5 sm:mt-12 sm:pt-6">
+        <div className="site-footer-bottom mt-8 border-t pt-5 sm:mt-10 sm:pt-6">
           <div className="flex flex-col gap-3 text-xs sm:text-[13px]">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 font-medium sm:justify-between sm:gap-4">
               <p>{locale === 'bn' ? '© লাকি স্টোর। স্থাপিত ১৯৪৭।' : '© Lucky Store. Est. 1947.'}</p>
@@ -189,7 +157,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
               <p>{locale === 'bn' ? 'চকবাজার, চট্টগ্রাম, বাংলাদেশ' : 'Chattogram, Bangladesh'}</p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-medium">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-medium sm:justify-between">
               {legalLinks.map((link) => (
                 <Link
                   key={link.label}

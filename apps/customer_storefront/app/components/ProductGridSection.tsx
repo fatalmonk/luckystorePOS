@@ -63,7 +63,7 @@ export function ProductGridSection({
         id={`grid-reel-${id}`}
         role="region"
         aria-label={`${title} products`}
-        className="grid-reel scrollbar-hide"
+        className={`grid-reel scrollbar-hide ${id === 'popular-right-now' ? 'grid-reel-featured' : ''}`}
       >
         {products.map((product, index) => (
           <div key={product.id} className="grid-slide">

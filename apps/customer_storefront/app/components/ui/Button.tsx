@@ -7,12 +7,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
   fullWidth?: boolean;
+  static?: boolean;
 }
 
 export function Button({
   variant = 'primary',
   size = 'md',
   fullWidth = false,
+  static: isStatic = false,
   children,
   className = '',
   ...props
@@ -20,9 +22,10 @@ export function Button({
   const baseStyles = `
     inline-flex items-center justify-center gap-2
     font-semibold rounded-[14px]
-    transition-all duration-[180ms] ease-[cubic-bezier(0.4,0,0.2,1)]
+    transition-[background-color,border-color,color,opacity,transform] duration-150 ease-out
     disabled:opacity-50 disabled:cursor-not-allowed
-    active:scale-[0.98]
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2
+    ${isStatic ? '' : 'active:scale-[0.96]'}
   `;
 
   const variantStyles = {

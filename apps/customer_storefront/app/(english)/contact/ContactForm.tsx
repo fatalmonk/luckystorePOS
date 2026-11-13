@@ -56,15 +56,6 @@ export function ContactForm() {
       {/* Full Viewport Embedded Map */}
       <div className="w-full h-[450px] sm:h-[280px] md:h-[320px] lg:h-[550px] rounded-[28px] overflow-hidden border border-warm-border/80 shadow-warm-md relative bg-warm-surface group">
         <GoogleMapEmbed placeId="ChIJH4nhmJAnrTARgEupScnGdJI" />
-        <a
-          href="https://maps.app.goo.gl/Yd3mAphotMJiVPM97"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 bg-warm-fg text-warm-accent px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs font-extrabold shadow-xl hover:bg-warm-fg-strong hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-10 border border-warm-accent/40"
-        >
-          <span>Open in Google Maps</span>
-          <span>↗</span>
-        </a>
       </div>
 
       {/* Form Section: Fill Up The Form If You Have Any Question */}
