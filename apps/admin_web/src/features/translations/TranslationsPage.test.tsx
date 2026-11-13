@@ -25,7 +25,7 @@ type Row = Record<string, unknown>;
 type Write = { table: string; operation: string; payload: Row; filters: Record<string, unknown> };
 let rows: Record<string, Row[]>;
 let writes: Write[];
-let writeError: { message: string } | null;
+let writeError: { code?: string; message: string } | null;
 const notify = vi.fn();
 
 function installDatabaseDouble() {
@@ -87,6 +87,15 @@ describe('TranslationsPage publication actions', () => {
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
   });
 
+  it('rejects an unverified snapshot digest in the evidence editor', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Evidence snapshot (JSON)' }), {
+      target: { value: JSON.stringify({ ...evidence, snapshotSha256: 'a'.repeat(64) }) },
+    });
+    expect(screen.getByText(/omit snapshotSha256/)).toBeInTheDocument();
+  });
+
   it('binds Mark Reviewed to the public user UUID and an unchanged persisted draft', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
@@ -133,6 +142,13 @@ describe('TranslationsPage publication actions', () => {
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0].payload).toMatchObject({ name: 'ইস্পাহানি নতুন চা 500 g', review_status: 'draft', reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, details: { summary: 'চা পাতা।' } });
     expect(writes[0].filters).toMatchObject({ tenant_id: tenantId, updated_at: draft.updated_at });
+  });
+
+  it('does not reset an unchanged published translation to draft', async () => {
+    rows.item_translations = [{ ...draft, review_status: 'published', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z', published_by: profileId, published_at: '2026-11-12T12:00:00Z' }];
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    expect(screen.getByRole('button', { name: 'Save Draft' })).toBeDisabled();
   });
 
   it('does not review or publish unsaved changes', async () => {
@@ -195,6 +211,18 @@ describe('TranslationsPage publication actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before publishing.', 'error'));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument();
+  });
+
+  it('refetches translations after a revision conflict', async () => {
+    rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
+    const { queryClient } = renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    writeError = { code: 'PGRST116', message: 'No rows returned' };
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['translations', 'item', tenantId] }));
+    await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before reviewing or publishing.', 'error'));
   });
 
   it('restricts the entire editor to authorized staff', () => {

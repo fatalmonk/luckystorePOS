@@ -116,18 +116,22 @@ export function ProductDetailScreen() {
   useEffect(() => {
     if (!productId) return;
     const controller = new AbortController();
+    setLoading(true);
+    setProduct(null);
+    setRelated([]);
     void fetchProductDetail(productId, locale, controller.signal)
       .then((data) => {
+        if (controller.signal.aborted) return;
         setProduct(data.product);
         setRelated(locale === 'bn' ? data.related.filter((item) => item.translationStatus === 'published') : data.related);
         setError(null);
       })
       .catch((cause) => {
-        if (cause instanceof Error && cause.name === 'AbortError') return;
+        if (controller.signal.aborted || (cause instanceof Error && cause.name === 'AbortError')) return;
         setError(cause instanceof Error ? cause.message : 'Failed to load product');
       })
       .finally(() => {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       });
 
     return () => controller.abort();

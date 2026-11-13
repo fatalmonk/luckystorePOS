@@ -34,18 +34,18 @@ test('product fixtures use unique URL ID prefixes', () => {
   assert.equal(new Set(prefixes(sqlIds)).size, sqlIds.length);
 });
 
-test('SEO response fixture has a published Bengali translation in every seed path', () => {
+test('SEO response fixture seeds only a Bengali draft in every seed path', () => {
   assert.match(
     seoResponseContract,
     /\/product\/aarong-dairy-pure-liquid-milk--a0740002/,
   );
   assert.match(
     sqlFixture,
-    /INSERT INTO public\.item_translations[\s\S]*?'a0740002-0000-0000-0000-000000000002'[\s\S]*?'bn'[\s\S]*?'published'/,
+    /INSERT INTO public\.item_translations[\s\S]*?'a0740002-0000-0000-0000-000000000002'[\s\S]*?'bn'[\s\S]*?'draft'/,
   );
   assert.match(
     seedSource,
-    /const itemTranslations = \[[\s\S]*?item_id: 'a0740002-0000-0000-0000-000000000002'[\s\S]*?locale: 'bn'[\s\S]*?review_status: 'published'/,
+    /const itemTranslations = \[[\s\S]*?item_id: 'a0740002-0000-0000-0000-000000000002'[\s\S]*?locale: 'bn'[\s\S]*?review_status: 'draft'/,
   );
   assert.match(
     seedSource,

@@ -120,6 +120,7 @@ describe('product detail schema validation', () => {
           price: 260,
           unit: '1 L',
           stock: 8,
+          category: '',
         },
         related: [],
       }),
@@ -136,6 +137,7 @@ describe('product detail schema validation', () => {
           price: 260,
           unit: '1 L',
           stock: 8,
+          category: 'Cooking Oil',
         },
         related: [],
       }),
@@ -150,6 +152,8 @@ describe('product detail schema validation', () => {
         price: 260,
         unit: '1 L',
         stock: 8,
+        category: '',
+        description: '',
       }),
     );
   });
@@ -163,19 +167,15 @@ describe('product detail schema validation', () => {
         price: 260,
         unit: '1 L',
         stock: 8,
+        category: 'Cooking Oil',
       }),
     );
   });
 
-  it('rejects missing translationStatus field', () => {
-    assert.throws(() =>
-      ProductDetailItemSchema.parse({
-        id: 'p1',
-        name: 'Valid',
-        price: 260,
-        unit: '1 L',
-        stock: 8,
-      }),
-    );
+  it('allows omitted English status but rejects omitted Bengali publication status', () => {
+    const product = { id: 'p1', name: 'Valid', price: 260, unit: '1 L', stock: 8, category: 'Cooking Oil' };
+    assert.equal(ProductDetailItemSchema.parse(product).name, 'Valid');
+    assert.equal(ProductDetailResponseSchema.parse({ locale: 'en', product, related: [] }).product.name, 'Valid');
+    assert.throws(() => ProductDetailResponseSchema.parse({ locale: 'bn', product, related: [] }));
   });
 });

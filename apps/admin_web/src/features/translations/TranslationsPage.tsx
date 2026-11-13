@@ -70,7 +70,7 @@ export function TranslationsPage() {
     try {
       const evidence = editing.evidenceText.trim() ? JSON.parse(editing.evidenceText) : null;
       const details = kind === 'item' && editing.detailsText.trim() ? JSON.parse(editing.detailsText) : null;
-      if (evidence !== null && !isTranslationEvidenceSnapshot(evidence)) throw new Error('Evidence needs canonical fields, source links, a SHA-256 hash and an observation timestamp.');
+      if (evidence !== null && !isTranslationEvidenceSnapshot(evidence)) throw new Error('Evidence needs canonical source fields, source links and an observation timestamp; omit snapshotSha256.');
       if (!isLocalizedProductDetails(details)) throw new Error('Localized details must use summary, highlights, specifications, usage, storage and FAQ structures.');
       parsed = { ...editing.row, evidence_snapshot: evidence, details, search_terms: [...new Set(editing.aliasesText.split('\n').map((term) => term.trim()).filter(Boolean))] };
     } catch (error) {
@@ -90,7 +90,7 @@ export function TranslationsPage() {
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
     && !isStale
-    && (action === 'save_draft' || !isDirty)
+    && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
     && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 
   const mutation = useMutation({
@@ -110,7 +110,10 @@ export function TranslationsPage() {
         if (action !== 'save_draft') query = query.eq('review_status', row.review_status);
       }
       const { error } = await query.select('id').single();
-      if (error?.code === 'PGRST116') throw new Error('Translation changed; reload before reviewing or publishing.');
+      if (error?.code === 'PGRST116') {
+        await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
+        throw new Error('Translation changed; reload before reviewing or publishing.');
+      }
       if (error) throw error;
     },
     onSuccess: async (_, { action }) => {
