@@ -17,9 +17,10 @@ type RouteContract = {
   path: string;
   canonical: string;
   alternates: Record<'en-BD' | 'bn-BD' | 'x-default', string>;
+  unpublishedAlternates?: Record<string, string>;
 };
 
-const routes = [
+const routes: RouteContract[] = [
   {
     label: 'English product',
     path: PRODUCT_PATH,
@@ -27,6 +28,10 @@ const routes = [
     alternates: {
       'en-BD': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
       'bn-BD': `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
+      'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
+    },
+    unpublishedAlternates: {
+      'en-BD': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
       'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     },
   },
@@ -39,6 +44,7 @@ const routes = [
       'bn-BD': `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
       'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     },
+    unpublishedAlternates: {},
   },
   {
     label: 'Deal of the Week',
@@ -50,7 +56,19 @@ const routes = [
       'x-default': `${PUBLIC_ORIGIN}/best/dealoftheweek`,
     },
   },
-] satisfies RouteContract[];
+];
+
+function assertAlternates(route: RouteContract, alternateMap: Record<string, string | null>, count: number, label: string) {
+  const sameAlternates = (expected: Record<string, string>) =>
+    Object.keys(alternateMap).length === Object.keys(expected).length
+    && Object.entries(expected).every(([language, url]) => alternateMap[language] === url);
+  const published = sameAlternates(route.alternates);
+  const unpublished = route.unpublishedAlternates !== undefined
+    && sameAlternates(route.unpublishedAlternates);
+  expect(published || unpublished, `${label}: alternate values match a publication state`).toBe(true);
+  expect(count, `${label}: alternate count`).toBe(Object.keys(alternateMap).length);
+  return unpublished;
+}
 
 function getTags(html: string, name: string) {
   return Array.from(html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi')), (match) => match[0]);
@@ -235,9 +253,11 @@ function assertRawSeoContract(
   expect(canonicalHrefs, `${route.label}: raw canonical value`).toEqual([route.canonical]);
   expect(head.titles, `${route.label}: raw head title count`).toHaveLength(1);
   expect(head.descriptions, `${route.label}: raw head description count`).toHaveLength(1);
-  expect(head.alternates, `${route.label}: raw head alternate count`).toHaveLength(3);
-  expect(Object.keys(alternateMap), `${route.label}: unique raw hreflang values`).toHaveLength(3);
-  expect(alternateMap, `${route.label}: raw alternate values`).toEqual(route.alternates);
+  const unpublished = assertAlternates(route, alternateMap, head.alternates.length, `${route.label}: raw head`);
+  if (unpublished && route.label === 'Bengali product') {
+    expect(head.robots.some((tag) => getAttribute(tag, 'content')?.includes('noindex')),
+      `${route.label}: unpublished page is noindex`).toBe(true);
+  }
 
   expect(body.canonicals, `${route.label}: raw body canonical count`).toHaveLength(0);
   expect(body.titles, `${route.label}: raw body title count`).toHaveLength(0);
@@ -276,11 +296,13 @@ async function assertBrowserSeoContract(page: Page, route: RouteContract, baseUr
   await expect(canonical, `${route.label}: DOM canonical value`).toHaveAttribute('href', route.canonical);
   await expect(page.locator('head title'), `${route.label}: DOM head title count`).toHaveCount(1);
   await expect(page.locator('head meta[name="description"]'), `${route.label}: DOM head description count`).toHaveCount(1);
-  await expect(alternates, `${route.label}: DOM head alternate count`).toHaveCount(3);
-
   const alternateMap = Object.fromEntries(await alternates.evaluateAll((links) =>
     links.map((link) => [link.getAttribute('hreflang'), link.getAttribute('href')])));
-  expect(alternateMap, `${route.label}: DOM alternate values`).toEqual(route.alternates);
+  const unpublished = assertAlternates(route, alternateMap, await alternates.count(), `${route.label}: DOM head`);
+  if (unpublished && route.label === 'Bengali product') {
+    await expect(page.locator('head meta[name="robots"]'), `${route.label}: unpublished page is noindex`)
+      .toHaveAttribute('content', /noindex/);
+  }
 
   await expect(page.locator('body link[rel~="canonical"]'), `${route.label}: DOM body canonical count`).toHaveCount(0);
   await expect(page.locator('body title'), `${route.label}: DOM body title count`).toHaveCount(0);

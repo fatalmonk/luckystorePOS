@@ -44,7 +44,12 @@ test.describe('Storefront H1 contract', () => {
     const h1 = page.locator('h1');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
-    await expect(h1).toHaveText(productName);
+    const robots = await page.locator('head meta[name="robots"]').getAttribute('content');
+    if (robots?.includes('noindex')) {
+      await expect(h1).toHaveText('পণ্যের বাংলা তথ্য পর্যালোচনাধীন');
+    } else {
+      await expect(h1).toHaveText(productName);
+    }
   });
 
   test('English Fortune Cookies page has exactly one semantic H1', async ({ page }) => {
