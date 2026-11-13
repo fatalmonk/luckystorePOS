@@ -13,6 +13,8 @@ describe('getSafeAuthReturnPath', () => {
     '',
     'https://example.com',
     '//example.com',
+    '/.//evil.com',
+    '/..//evil.com',
     '/\\\\example.com',
     'javascript:alert(1)',
     '/profile\nhttps://example.com',

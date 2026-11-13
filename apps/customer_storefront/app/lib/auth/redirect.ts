@@ -15,7 +15,9 @@ export function getSafeAuthReturnPath(destination: string | null | undefined): s
 
   try {
     const parsed = new URL(destination, INTERNAL_ORIGIN);
-    if (parsed.origin !== INTERNAL_ORIGIN) return DEFAULT_AUTH_RETURN_PATH;
+    if (parsed.origin !== INTERNAL_ORIGIN || parsed.pathname.startsWith('//')) {
+      return DEFAULT_AUTH_RETURN_PATH;
+    }
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
     return DEFAULT_AUTH_RETURN_PATH;
