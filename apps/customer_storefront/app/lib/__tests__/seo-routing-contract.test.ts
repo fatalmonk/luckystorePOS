@@ -171,7 +171,6 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
                 brand: 'Radhuni',
                 packageText: mockProduct.unit,
                 sourceUris: ['https://example.com/evidence/radhuni-holud'],
-                snapshotSha256: 'a'.repeat(64),
                 observedAt: '2026-11-12T10:00:00.000Z',
               },
               review_status: 'published',

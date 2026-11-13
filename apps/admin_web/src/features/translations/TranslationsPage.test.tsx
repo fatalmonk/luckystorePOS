@@ -18,7 +18,7 @@ const profileId = '40000000-0000-4000-8000-000000000001';
 const authId = '50000000-0000-4000-8000-000000000001';
 const item = { id: '10000000-0000-4000-8000-000000000001', tenant_id: tenantId, name: 'Ispahani Tea 500 g', description: 'Tea leaves, 500 g.', sku: 'TEA-500', barcode: '8941154321000', brand: 'Ispahani' };
 const category = { id: '10000000-0000-4000-8000-000000000002', tenant_id: tenantId, name: 'Tea', description: null };
-const evidence = { entityId: item.id, sourceName: item.name, sourceDescription: item.description, sku: item.sku, barcode: item.barcode, brand: item.brand, packageText: '500 g', sourceUris: ['https://manufacturer.invalid/tea-500'], snapshotSha256: 'a'.repeat(64), observedAt: '2026-11-12T10:00:00Z' };
+const evidence = { entityId: item.id, sourceName: item.name, sourceDescription: item.description, sku: item.sku, barcode: item.barcode, brand: item.brand, packageText: '500 g', sourceUris: ['https://manufacturer.invalid/tea-500'], observedAt: '2026-11-12T10:00:00Z' };
 const draft = { id: '30000000-0000-4000-8000-000000000001', tenant_id: tenantId, item_id: item.id, locale: 'bn', name: 'ইস্পাহানি চা 500 g', description: 'চা পাতা, 500 g।', search_terms: ['চা', 'cha', 'tea', 'Ispahani'], review_status: 'draft', evidence_snapshot: evidence, details: { summary: 'চা পাতা।' }, reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, updated_at: '2026-11-12T10:00:00Z' };
 
 type Row = Record<string, unknown>;
@@ -80,7 +80,6 @@ describe('TranslationsPage publication actions', () => {
     expect(screen.getByText('Ispahani')).toBeInTheDocument();
     expect(screen.getByText('500 g')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'https://manufacturer.invalid/tea-500' })).toBeInTheDocument();
-    expect(screen.getByText('a'.repeat(64))).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Review status' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Review selected/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save Draft' })).toBeInTheDocument();

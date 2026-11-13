@@ -11,7 +11,6 @@ export interface TranslationEvidenceSnapshot {
   brand: string | null;
   packageText: string | null;
   sourceUris: string[];
-  snapshotSha256: string;
   observedAt: string;
 }
 

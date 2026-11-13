@@ -32,7 +32,6 @@ const evidence: TranslationEvidenceSnapshot = {
   brand: 'Ispahani',
   packageText: '500 g',
   sourceUris: ['https://manufacturer.invalid/tea-500'],
-  snapshotSha256: 'a'.repeat(64),
   observedAt: '2026-11-12T10:00:00Z',
 };
 const translation: TranslationRow = {
@@ -124,9 +123,9 @@ describe('canTransitionTranslation', () => {
 
 describe('translation evidence and details boundaries', () => {
   it.each([
+    { ...evidence, snapshotSha256: 'a'.repeat(64) },
     { ...evidence, sourceUris: [] },
     { ...evidence, sourceUris: ['javascript:alert(1)'] },
-    { ...evidence, snapshotSha256: 'not-a-hash' },
     { ...evidence, observedAt: 'not-a-date' },
     { ...evidence, sku: undefined },
     { ...evidence, sourceName: '' },

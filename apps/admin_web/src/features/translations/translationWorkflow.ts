@@ -20,9 +20,8 @@ export function getCanonicalPackageText(name: string, description: string | null
 }
 
 export function isTranslationEvidenceSnapshot(value: unknown): value is TranslationEvidenceSnapshot {
-  if (!isObject(value) || typeof value.entityId !== 'string' || !uuid.test(value.entityId)
-    || !isText(value.sourceName) || !isTimestamp(value.observedAt)
-    || typeof value.snapshotSha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(value.snapshotSha256)) return false;
+  if (!isObject(value) || 'snapshotSha256' in value || typeof value.entityId !== 'string' || !uuid.test(value.entityId)
+    || !isText(value.sourceName) || !isTimestamp(value.observedAt)) return false;
   for (const key of ['sourceDescription', 'sku', 'barcode', 'brand', 'packageText']) {
     if (value[key] !== null && typeof value[key] !== 'string') return false;
   }

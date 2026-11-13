@@ -139,7 +139,7 @@ BEGIN
       'brand', CASE WHEN kind = 'item' THEN 'Ispahani' END,
       'packageText', CASE WHEN kind = 'item' THEN '500 g' END,
       'sourceUris', jsonb_build_array('https://manufacturer.invalid/tea'),
-      'snapshotSha256', repeat('a', 64), 'observedAt', '2026-11-12T10:00:00Z'
+      'observedAt', '2026-11-12T10:00:00Z'
     );
     snapshot_b := jsonb_build_object(
       'entityId', entity_b,
@@ -150,7 +150,7 @@ BEGIN
       'brand', CASE WHEN kind = 'item' THEN 'Private Brand' END,
       'packageText', CASE WHEN kind = 'item' THEN '250 ml' END,
       'sourceUris', jsonb_build_array('https://manufacturer.invalid/private-tea'),
-      'snapshotSha256', repeat('b', 64), 'observedAt', '2026-11-12T10:00:00Z'
+      'observedAt', '2026-11-12T10:00:00Z'
     );
 
     -- Private-tenant publication is valid editorially but must remain private.
@@ -185,6 +185,8 @@ BEGIN
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET review_status = ''reviewed'', reviewed_by = %L WHERE id = %L', translation_table, a_user, row_a), '23514');
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = ''{}''::jsonb WHERE id = %L', translation_table, row_a), '23514');
     bad_snapshot := snapshot_a || '{"sourceUris":[]}'::jsonb;
+    PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = %L::jsonb WHERE id = %L', translation_table, bad_snapshot, row_a), '23514');
+    bad_snapshot := snapshot_a || jsonb_build_object('snapshotSha256', repeat('a', 64));
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = %L::jsonb WHERE id = %L', translation_table, bad_snapshot, row_a), '23514');
 
     IF kind = 'item' THEN

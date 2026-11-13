@@ -47,7 +47,6 @@ function evidenceSnapshot(entityId = ITEM_ID) {
     brand: 'Ispahani',
     packageText: '500 g',
     sourceUris: ['https://example.com/evidence/tea-500g'],
-    snapshotSha256: 'a'.repeat(64),
     observedAt: '2026-11-12T10:00:00.000Z',
   };
 }
@@ -152,6 +151,15 @@ describe('getPublishedItemTranslations', () => {
     const { sku: _missingSku, ...incompleteEvidence } = evidenceSnapshot();
     mocks.state.response = {
       data: [publishedRow({ evidence_snapshot: incompleteEvidence })],
+      error: null,
+    };
+
+    await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
+  });
+
+  it('excludes snapshots with an unverified digest claim', async () => {
+    mocks.state.response = {
+      data: [publishedRow({ evidence_snapshot: { ...evidenceSnapshot(), snapshotSha256: 'a'.repeat(64) } })],
       error: null,
     };
 

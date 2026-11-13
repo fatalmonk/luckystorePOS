@@ -173,7 +173,6 @@ export function TranslationsPage() {
                   </dl> : <p role="alert">Canonical source is unavailable. Reload before review.</p>}
                   <dl className="space-y-3 text-sm">
                     {Object.entries({ Status: row.review_status, Reviewer: row.reviewed_by, 'Reviewed at': row.reviewed_at, Publisher: row.published_by, 'Published at': row.published_at }).map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="break-all">{value ?? 'Not yet recorded'}</dd></div>)}
-                    {parsed?.evidence_snapshot && <div><dt className="text-text-muted">Snapshot SHA-256</dt><dd className="break-all font-mono text-xs">{parsed.evidence_snapshot.snapshotSha256}</dd></div>}
                   </dl>
                   {parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                 </div>
@@ -188,8 +187,8 @@ export function TranslationsPage() {
                     <label className="block space-y-1 text-sm">SEO description<textarea lang="bn" value={editing.row.seo_description ?? ''} onChange={(event) => changeEditor({ row: { ...editing.row, seo_description: event.target.value } })} className={inputClass} rows={3} /></label>
                   </> : <label className="block space-y-1 text-sm">Localized details (JSON)<textarea value={editing.detailsText} onChange={(event) => changeEditor({ detailsText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={8} /></label>}
                   <label className="block space-y-1 text-sm">Evidence snapshot (JSON)<textarea value={editing.evidenceText} onChange={(event) => changeEditor({ evidenceText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={10} /></label>
-                  <p className="text-xs text-text-muted">Provide sourceUris, snapshotSha256 and observedAt from reliable evidence. Model/import copy always starts as draft.</p>
-                  {source && <button type="button" onClick={() => changeEditor({ evidenceText: JSON.stringify({ entityId: source.id, sourceName: source.name, sourceDescription: source.description, sku: source.sku, barcode: source.barcode, brand: source.brand, packageText: source.packageText, sourceUris: [], snapshotSha256: '', observedAt: '' }, null, 2) })} className={buttonClass}>Start canonical evidence snapshot</button>}
+                  <p className="text-xs text-text-muted">Provide sourceUris and observedAt from reliable evidence. Model/import copy always starts as draft.</p>
+                  {source && <button type="button" onClick={() => changeEditor({ evidenceText: JSON.stringify({ entityId: source.id, sourceName: source.name, sourceDescription: source.description, sku: source.sku, barcode: source.barcode, brand: source.brand, packageText: source.packageText, sourceUris: [], observedAt: '' }, null, 2) })} className={buttonClass}>Start canonical evidence snapshot</button>}
                 </div>
               </div>
               {isStale && <p role="alert" className="text-sm text-danger">Translation changed on the server. Reload before saving or reviewing.</p>}

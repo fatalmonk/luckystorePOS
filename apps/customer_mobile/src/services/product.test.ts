@@ -17,6 +17,7 @@ describe('product detail schema validation', () => {
       }],
     });
     assert.equal(response.product.origin, 'বাংলাদেশ');
+    assert.equal(response.product.category, '');
     assert.deepEqual(response.product.details?.highlights, ['বৈশিষ্ট্য']);
     assert.equal(response.related[0].translationStatus, 'published');
   });
@@ -94,6 +95,17 @@ describe('product detail schema validation', () => {
     assert.equal(parsed.translationStatus, 'missing');
     assert.ok(parsed.details);
     assert.equal(parsed.category, '');
+  });
+
+  it('rejects an English badge in a missing Bengali translation', () => {
+    assert.throws(() => ProductDetailResponseSchema.parse({
+      locale: 'bn',
+      product: {
+        id: 'p1', name: '', description: '', translationStatus: 'missing',
+        price: 100, unit: 'pc', stock: 3, category: '', badge: 'Sale',
+      },
+      related: [],
+    }));
   });
 
   it('rejects invalid locale-translationStatus combinations', () => {

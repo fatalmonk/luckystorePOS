@@ -22,7 +22,12 @@ export const revalidate = 120;
 
 const hasPublishedBengaliTranslation = React.cache(async (itemId: string): Promise<boolean> => {
   if (!isBareUuid(itemId)) return false;
-  return (await getPublishedItemTranslations([itemId])).has(itemId);
+  try {
+    return (await getPublishedItemTranslations([itemId])).has(itemId);
+  } catch {
+    console.error('Failed to determine Bengali product alternate.');
+    return false;
+  }
 });
 
 export async function generateMetadata({

@@ -37,15 +37,14 @@ DECLARE
   v_uri jsonb;
 BEGIN
   IF jsonb_typeof(p_snapshot) IS DISTINCT FROM 'object'
-     OR NOT (p_snapshot ?& ARRAY['entityId', 'sourceName', 'sourceDescription', 'sku', 'barcode', 'brand', 'packageText', 'sourceUris', 'snapshotSha256', 'observedAt']) THEN
+     OR p_snapshot ? 'snapshotSha256'
+     OR NOT (p_snapshot ?& ARRAY['entityId', 'sourceName', 'sourceDescription', 'sku', 'barcode', 'brand', 'packageText', 'sourceUris', 'observedAt']) THEN
     RETURN false;
   END IF;
   IF jsonb_typeof(p_snapshot->'entityId') <> 'string'
      OR (p_snapshot->>'entityId') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
      OR jsonb_typeof(p_snapshot->'sourceName') <> 'string'
      OR btrim(p_snapshot->>'sourceName') = ''
-     OR jsonb_typeof(p_snapshot->'snapshotSha256') <> 'string'
-     OR (p_snapshot->>'snapshotSha256') !~* '^[0-9a-f]{64}$'
      OR jsonb_typeof(p_snapshot->'observedAt') <> 'string'
      OR (p_snapshot->>'observedAt') !~* '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$' THEN
     RETURN false;
@@ -342,12 +341,5 @@ BEGIN
   END LOOP;
 END;
 $$;
-
-CREATE INDEX IF NOT EXISTS category_translations_search_terms_gin_idx
-  ON public.category_translations USING gin (search_terms);
-CREATE INDEX IF NOT EXISTS item_translations_published_lookup_idx
-  ON public.item_translations (item_id, tenant_id) WHERE review_status = 'published';
-CREATE INDEX IF NOT EXISTS category_translations_published_lookup_idx
-  ON public.category_translations (category_id, tenant_id) WHERE review_status = 'published';
 
 COMMIT;

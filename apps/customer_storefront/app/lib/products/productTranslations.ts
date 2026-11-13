@@ -117,11 +117,11 @@ function parseLocalizedProductDetails(value: unknown): LocalizedProductDetails |
 
 function hasValidEvidence(value: unknown, itemId: string): boolean {
   if (!isRecord(value)) return false;
+  if ('snapshotSha256' in value) return false;
   if (value.entityId !== itemId || !nonEmptyString(value.sourceName)) return false;
   if (!Array.isArray(value.sourceUris) || value.sourceUris.length === 0 || value.sourceUris.some((uri) => !nonEmptyString(uri))) {
     return false;
   }
-  if (typeof value.snapshotSha256 !== 'string' || !/^[a-f\d]{64}$/i.test(value.snapshotSha256)) return false;
   if (!nonEmptyString(value.observedAt) || !Number.isFinite(Date.parse(value.observedAt))) return false;
 
   return ['sourceDescription', 'sku', 'barcode', 'brand', 'packageText']
