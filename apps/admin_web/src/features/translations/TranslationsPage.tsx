@@ -132,6 +132,19 @@ export function TranslationsPage() {
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });
+  const generateMutation = useMutation({
+    mutationFn: async (requestedKind: TranslationKind) => {
+      const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body: { kind: requestedKind, limit: 10 } });
+      if (error) throw new Error('AI draft generation failed. Check provider setup or try again.');
+      if (!data || !Number.isInteger(data.generated) || !Number.isInteger(data.skipped) || !Number.isInteger(data.failed)) throw new Error('Invalid draft generation response.');
+      return data as { generated: number; skipped: number; failed: number };
+    },
+    onSuccess: async (result, requestedKind) => {
+      await queryClient.invalidateQueries({ queryKey: ['translations', requestedKind, tenantId] });
+      notify(`${result.generated} AI draft${result.generated === 1 ? '' : 's'} saved; ${result.skipped} skipped; ${result.failed} failed. Human review is required before publication.`, result.failed ? 'error' : 'success');
+    },
+    onError: (error: Error) => notify(error.message, 'error'),
+  });
 
   if (!canManage) return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
 
@@ -160,18 +173,19 @@ export function TranslationsPage() {
       <PageHeader title="Bengali translations" subtitle="Compare canonical identity and reliable evidence before reviewing localized copy." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Translation status filter">
         {(['all', 'draft', 'reviewed', 'published'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'all' ? 'All translations' : value === 'draft' ? 'Show drafts' : value}
           </button>
         ))}
       </div>
+      <div className="mb-4"><button type="button" className={buttonClass} disabled={mutation.isPending || generateMutation.isPending || translationsQuery.isLoading || catalogQuery.isLoading || Boolean(editing)} onClick={() => generateMutation.mutate(kind)}>{generateMutation.isPending ? 'Generating AI drafts…' : 'Generate AI Drafts'}</button></div>
       <Card padding="none">
         <div className="flex items-center gap-2 border-b border-border p-4"><Languages size={18} /><h2 className="font-semibold">{kind === 'item' ? 'Product' : 'Category'} translations</h2></div>
         {(translationsQuery.isLoading || catalogQuery.isLoading) && <p role="status" className="p-4 text-text-muted">Loading translations...</p>}
@@ -223,7 +237,7 @@ export function TranslationsPage() {
           ) : (
             <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description'}</p></div>
-              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.review_status}</span><button type="button" disabled={mutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : 'Edit'}</button></div>
+              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : 'Edit'}</button></div>
             </div>
           ))}
           {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
