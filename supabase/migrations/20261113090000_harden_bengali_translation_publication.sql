@@ -4,18 +4,18 @@ SET LOCAL lock_timeout = '5s';
 ALTER TABLE public.item_translations
   ADD COLUMN IF NOT EXISTS details jsonb,
   ADD COLUMN IF NOT EXISTS evidence_snapshot jsonb,
-  ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES public.users(id),
+  ADD COLUMN IF NOT EXISTS reviewed_by uuid,
   ADD COLUMN IF NOT EXISTS reviewed_at timestamptz,
-  ADD COLUMN IF NOT EXISTS published_by uuid REFERENCES public.users(id),
+  ADD COLUMN IF NOT EXISTS published_by uuid,
   ADD COLUMN IF NOT EXISTS published_at timestamptz;
 
 ALTER TABLE public.category_translations
   ADD COLUMN IF NOT EXISTS review_status text NOT NULL DEFAULT 'draft',
   ADD COLUMN IF NOT EXISTS search_terms text[] NOT NULL DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS evidence_snapshot jsonb,
-  ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES public.users(id),
+  ADD COLUMN IF NOT EXISTS reviewed_by uuid,
   ADD COLUMN IF NOT EXISTS reviewed_at timestamptz,
-  ADD COLUMN IF NOT EXISTS published_by uuid REFERENCES public.users(id),
+  ADD COLUMN IF NOT EXISTS published_by uuid,
   ADD COLUMN IF NOT EXISTS published_at timestamptz;
 
 ALTER TABLE public.item_translations ALTER COLUMN review_status SET DEFAULT 'draft';
@@ -308,6 +308,20 @@ DROP POLICY IF EXISTS category_translations_public_published ON public.category_
 CREATE POLICY category_translations_public_published ON public.category_translations FOR SELECT TO anon USING (
   translation_private.is_publication_eligible('category', category_id, tenant_id, review_status, evidence_snapshot, reviewed_by, reviewed_at, published_by, published_at)
 );
+
+-- Anon readers may retrieve published presentation fields only. The RLS policy
+-- checks private evidence and attribution as SECURITY DEFINER; it does not
+-- authorize returning those internal columns through the public Data API.
+-- Earlier migrations granted SELECT on every column, including future columns.
+REVOKE SELECT ON TABLE public.item_translations, public.category_translations FROM PUBLIC, anon;
+GRANT SELECT (
+  id, item_id, tenant_id, locale, name, description, origin,
+  search_terms, review_status, details, created_at, updated_at
+) ON public.item_translations TO anon;
+GRANT SELECT (
+  id, category_id, tenant_id, locale, name, description,
+  search_terms, review_status, seo_title, seo_description, created_at, updated_at
+) ON public.category_translations TO anon;
 
 -- Resolve the auth UUID through users.auth_id; persist users.id as attribution.
 -- Existing staff reads remain tenant-scoped and only admins/managers can mutate.

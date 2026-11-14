@@ -62,6 +62,7 @@ DECLARE
   entity_b uuid;
   kind text;
   translation_table text;
+  private_column text;
   entity_column text;
   source_name text;
   source_description text;
@@ -84,6 +85,37 @@ BEGIN
       AND a.attname IN ('reviewed_by', 'published_by')
       AND a.atttypid = 'uuid'::regtype
   ), 'both translation tables require reviewer/publisher UUID references to public.users(id)');
+
+  PERFORM pg_temp.assert_true((
+    SELECT count(*) = 4
+    FROM pg_constraint
+    WHERE conrelid IN ('public.item_translations'::regclass, 'public.category_translations'::regclass)
+      AND conname IN (
+        'item_translations_reviewed_by_fkey', 'item_translations_published_by_fkey',
+        'category_translations_reviewed_by_fkey', 'category_translations_published_by_fkey'
+      )
+      AND convalidated
+  ), 'four phased reviewer/publisher foreign keys are validated');
+
+  -- Anonymous Data API clients may read published copy, but not editorial
+  -- evidence or staff attribution. RLS is row-scoped, not column-scoped.
+  FOREACH kind IN ARRAY ARRAY['item', 'category'] LOOP
+    translation_table := kind || '_translations';
+    PERFORM pg_temp.assert_true(
+      has_column_privilege('anon', format('public.%I', translation_table), 'name', 'SELECT'),
+      kind || ': anonymous clients retain public translated names'
+    );
+    FOREACH private_column IN ARRAY ARRAY['evidence_snapshot', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at'] LOOP
+      PERFORM pg_temp.assert_true(
+        NOT has_column_privilege('anon', format('public.%I', translation_table), private_column, 'SELECT'),
+        kind || ': anonymous clients cannot SELECT ' || private_column
+      );
+    END LOOP;
+    PERFORM pg_temp.assert_true(
+      has_column_privilege('authenticated', format('public.%I', translation_table), 'evidence_snapshot', 'SELECT'),
+      kind || ': authenticated staff retain evidence SELECT subject to tenant RLS'
+    );
+  END LOOP;
 
   -- The additive-migration harness seeds these before installing the guard.
   -- Inspect legacy rows without weakening any trigger, constraint or RLS policy.
@@ -241,6 +273,16 @@ BEGIN
     SET LOCAL ROLE anon;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE id IN ($1, $2)', translation_table) INTO n USING row_a, row_b;
     PERFORM pg_temp.assert_true(n = 1, kind || ': only eligible public-store publication is visible');
+    -- A guest must be denied sensitive columns even for a published row.
+    PERFORM pg_temp.expect_failure(format(
+      'SELECT evidence_snapshot FROM public.%I WHERE id = %L', translation_table, row_a
+    ), '42501');
+    PERFORM pg_temp.expect_failure(format(
+      'SELECT reviewed_by, published_by FROM public.%I WHERE id = %L', translation_table, row_a
+    ), '42501');
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE id = $1 AND name IS NOT NULL', translation_table)
+      INTO n USING row_a;
+    PERFORM pg_temp.assert_true(n = 1, kind || ': public translation fields remain readable to anon');
 
     IF kind = 'item' THEN
       SELECT count(*) INTO n
@@ -254,8 +296,10 @@ BEGIN
       SELECT jsonb_array_length(public.search_storefront_mobile_catalog_v1(a_private_store)->'items') INTO n;
       PERFORM pg_temp.assert_true(n = 0, 'a private store in the same tenant cannot expose the mobile public catalog');
     END IF;
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE review_status <> ''published'' OR evidence_snapshot IS NULL OR reviewed_by IS NULL OR reviewed_at IS NULL OR published_by IS NULL OR published_at IS NULL', translation_table) INTO n;
-    PERFORM pg_temp.assert_true(n = 0, kind || ': legacy/incomplete publications cannot leak through RLS');
+    -- The caller must not reference private columns after public GRANT hardening.
+    -- The SECURITY DEFINER RLS predicate still tests their validity internally.
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE review_status <> ''published''', translation_table) INTO n;
+    PERFORM pg_temp.assert_true(n = 0, kind || ': reviewed-only and draft rows cannot leak through RLS');
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET name = ''anonymous edit'' WHERE id = %L', translation_table, row_a), '42501');
     RESET ROLE;
 

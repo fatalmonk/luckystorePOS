@@ -62,6 +62,7 @@ BEGIN
         ON tr.item_id = i.id
        AND tr.tenant_id = v_tenant_id
        AND tr.locale = 'bn'
+       AND tr.review_status = 'published'
        AND translation_private.is_publication_eligible(
          'item', tr.item_id, tr.tenant_id, tr.review_status, tr.evidence_snapshot,
          tr.reviewed_by, tr.reviewed_at, tr.published_by, tr.published_at
@@ -138,6 +139,7 @@ BEGIN
         ON tr.item_id = i.id
        AND tr.tenant_id = v_tenant_id
        AND tr.locale = 'bn'
+       AND tr.review_status = 'published'
        AND translation_private.is_publication_eligible(
          'item', tr.item_id, tr.tenant_id, tr.review_status, tr.evidence_snapshot,
          tr.reviewed_by, tr.reviewed_at, tr.published_by, tr.published_at

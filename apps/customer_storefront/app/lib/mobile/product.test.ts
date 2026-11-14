@@ -70,10 +70,6 @@ describe('mobile product adapter', () => {
       storageInstructions: 'ঠান্ডা ও শুষ্ক স্থানে রাখুন।',
       faqs: [{ question: 'উৎপত্তি কোথায়?', answer: 'বাংলাদেশ।' }],
     },
-    reviewedAt: '2026-11-12T11:00:00.000Z',
-    publishedAt: '2026-11-12T12:00:00.000Z',
-    reviewedBy: '20000000-0000-4000-8000-000000000001',
-    publishedBy: '30000000-0000-4000-8000-000000000001',
   };
 
   beforeEach(() => {

@@ -84,13 +84,13 @@ describe('getPublishedItemTranslations', () => {
     mocks.getAnonymousStorefrontClient.mockReturnValue({ from: mocks.from });
   });
 
-  it('returns only evidence-backed reviewed publications and validates every structured detail field', async () => {
+  it('accepts only RLS-filtered published presentation fields and validates structured details', async () => {
     mocks.state.response = {
       data: [
         publishedRow(),
         publishedRow({
           item_id: OTHER_ITEM_ID,
-          evidence_snapshot: null,
+          review_status: 'reviewed',
         }),
       ],
       error: null,
@@ -114,14 +114,16 @@ describe('getPublishedItemTranslations', () => {
         storageInstructions: 'ঠান্ডা ও শুষ্ক স্থানে রাখুন।',
         faqs: [{ question: 'এটি কোথায় তৈরি?', answer: 'প্যাকেটে বাংলাদেশ লেখা আছে।' }],
       },
-      reviewedAt: '2026-11-12T11:00:00.000Z',
-      publishedAt: '2026-11-12T12:00:00.000Z',
-      reviewedBy: '20000000-0000-4000-8000-000000000001',
-      publishedBy: '30000000-0000-4000-8000-000000000001',
     });
     expect(mocks.query.in).toHaveBeenCalledWith('item_id', [ITEM_ID, OTHER_ITEM_ID]);
-    expect(mocks.query.select).toHaveBeenCalledWith(expect.stringContaining('evidence_snapshot'));
-    expect(mocks.query.select).toHaveBeenCalledWith(expect.stringContaining('details'));
+    const projectedColumns = mocks.query.select.mock.calls[0][0] as string;
+    expect(projectedColumns).toContain('details');
+    for (const privateColumn of ['evidence_snapshot', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at']) {
+      expect(projectedColumns).not.toContain(privateColumn);
+      expect(translations.get(ITEM_ID)).not.toHaveProperty(privateColumn);
+    }
+    expect(translations.get(ITEM_ID)).not.toHaveProperty('reviewedBy');
+    expect(translations.get(ITEM_ID)).not.toHaveProperty('publishedBy');
     expect(mocks.getAnonymousStorefrontClient).toHaveBeenCalledOnce();
     expect(mocks.globalFrom).not.toHaveBeenCalled();
   });
@@ -135,47 +137,39 @@ describe('getPublishedItemTranslations', () => {
     await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
   });
 
-  it('excludes rows with mismatched evidence identity or an invalid review timeline', async () => {
+  it('does not query the anonymous Data API for malformed product IDs', async () => {
+    await expect(getPublishedItemTranslations(['not-a-uuid', '', 'abc'])).resolves.toEqual(new Map());
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it('rejects unreviewed claim fields in published presentation details', async () => {
+    mocks.state.response = {
+      data: [publishedRow({ details: { summary: 'বাংলা তথ্য', inventedClaim: 'Unverified' } })],
+      error: null,
+    };
+    await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
+  });
+
+  it('rejects non-string or empty published search aliases', async () => {
     mocks.state.response = {
       data: [
-        publishedRow({ evidence_snapshot: evidenceSnapshot(OTHER_ITEM_ID) }),
-        publishedRow({ reviewed_at: '2026-11-13T12:00:00.000Z', published_at: '2026-11-12T12:00:00.000Z' }),
+        publishedRow({ search_terms: ['valid', ''] }),
+        publishedRow({ search_terms: ['valid', 42] }),
       ],
       error: null,
     };
-
     await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
   });
 
-  it('excludes evidence snapshots that omit required canonical identity fields', async () => {
-    const { sku: _missingSku, ...incompleteEvidence } = evidenceSnapshot();
-    mocks.state.response = {
-      data: [publishedRow({ evidence_snapshot: incompleteEvidence })],
-      error: null,
-    };
-
-    await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
-  });
-
-  it('excludes snapshots with an unverified digest claim', async () => {
-    mocks.state.response = {
-      data: [publishedRow({ evidence_snapshot: { ...evidenceSnapshot(), snapshotSha256: 'a'.repeat(64) } })],
-      error: null,
-    };
-
-    await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
-  });
-
-  it('excludes rows lacking valid reviewer or publisher UUID attribution', async () => {
+  it('rejects malformed public status, locale and name despite database RLS enforcement', async () => {
     mocks.state.response = {
       data: [
-        publishedRow({ reviewed_by: null }),
-        publishedRow({ published_by: 'not-a-uuid' }),
-        publishedRow({ reviewed_by: '10000000-0000-4000-8000-000000000009', published_by: '' }),
+        publishedRow({ review_status: 'reviewed' }),
+        publishedRow({ locale: 'en' }),
+        publishedRow({ name: '' }),
       ],
       error: null,
     };
-
     await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
   });
 

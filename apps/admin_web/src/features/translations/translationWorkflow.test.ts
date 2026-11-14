@@ -35,6 +35,7 @@ const evidence: TranslationEvidenceSnapshot = {
   observedAt: '2026-11-12T10:00:00Z',
 };
 const translation: TranslationRow = {
+  kind: 'item',
   id: '30000000-0000-4000-8000-000000000001',
   item_id: source.id,
   tenant_id: source.tenantId,
@@ -115,7 +116,7 @@ describe('canTransitionTranslation', () => {
 
   it('applies the same evidence and actor gates to categories', () => {
     const categorySource = { ...source, name: 'Tea', description: null, sku: null, barcode: null, brand: null, packageText: null };
-    const category = { ...translation, item_id: undefined, category_id: source.id, evidence_snapshot: { ...evidence, sourceName: 'Tea', sourceDescription: null, sku: null, barcode: null, brand: null, packageText: null }, details: undefined, seo_title: 'চা', seo_description: 'চা কিনুন।' };
+    const category: TranslationRow = { ...translation, kind: 'category', item_id: undefined, category_id: source.id, evidence_snapshot: { ...evidence, sourceName: 'Tea', sourceDescription: null, sku: null, barcode: null, brand: null, packageText: null }, details: undefined, seo_title: 'চা', seo_description: 'চা কিনুন।' };
     expect(canTransitionTranslation('draft', 'reviewed', context({ source: categorySource, translation: category }))).toBe(true);
     expect(canTransitionTranslation('draft', 'published', context({ action: 'publish', source: categorySource, translation: category }))).toBe(false);
   });

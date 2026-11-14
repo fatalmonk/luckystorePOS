@@ -18,10 +18,6 @@ export interface PublishedItemTranslation {
   origin: string | null;
   searchTerms: string[];
   details: LocalizedProductDetails | null;
-  reviewedAt: string;
-  publishedAt: string;
-  reviewedBy: string;
-  publishedBy: string;
 }
 
 type TranslationRow = {
@@ -32,12 +28,7 @@ type TranslationRow = {
   origin?: unknown;
   search_terms?: unknown;
   details?: unknown;
-  evidence_snapshot?: unknown;
   review_status?: unknown;
-  reviewed_at?: unknown;
-  published_at?: unknown;
-  reviewed_by?: unknown;
-  published_by?: unknown;
 };
 
 const DETAIL_KEYS = new Set([
@@ -115,31 +106,13 @@ function parseLocalizedProductDetails(value: unknown): LocalizedProductDetails |
   return details;
 }
 
-function hasValidEvidence(value: unknown, itemId: string): boolean {
-  if (!isRecord(value)) return false;
-  if ('snapshotSha256' in value) return false;
-  if (value.entityId !== itemId || !nonEmptyString(value.sourceName)) return false;
-  if (!Array.isArray(value.sourceUris) || value.sourceUris.length === 0 || value.sourceUris.some((uri) => !nonEmptyString(uri))) {
-    return false;
-  }
-  if (!nonEmptyString(value.observedAt) || !Number.isFinite(Date.parse(value.observedAt))) return false;
-
-  return ['sourceDescription', 'sku', 'barcode', 'brand', 'packageText']
-    .every((key) => Object.prototype.hasOwnProperty.call(value, key)
-      && (value[key] === null || typeof value[key] === 'string'));
-}
-
 function parsePublishedRow(row: TranslationRow): PublishedItemTranslation | null {
-  if (!nonEmptyString(row.item_id) || row.locale !== 'bn' || row.review_status !== 'published') return null;
-  if (!nonEmptyString(row.name) || !hasValidEvidence(row.evidence_snapshot, row.item_id)) return null;
-  if (!nonEmptyString(row.reviewed_at) || !nonEmptyString(row.published_at)) return null;
-  if (!nonEmptyString(row.reviewed_by) || !isBareUuid(row.reviewed_by) || !nonEmptyString(row.published_by) || !isBareUuid(row.published_by)) {
-    return null;
-  }
-
-  const reviewedTime = Date.parse(row.reviewed_at);
-  const publishedTime = Date.parse(row.published_at);
-  if (!Number.isFinite(reviewedTime) || !Number.isFinite(publishedTime) || reviewedTime > publishedTime) return null;
+  // The anon RLS predicate verifies canonical source evidence, reviewer
+  // attribution and publication timing before these public columns are read.
+  // Do not re-fetch internal evidence/user IDs into the public storefront.
+  if (!nonEmptyString(row.item_id) || !isBareUuid(row.item_id)
+      || row.locale !== 'bn' || row.review_status !== 'published'
+      || !nonEmptyString(row.name)) return null;
 
   const description = nullableString(row.description);
   const origin = nullableString(row.origin);
@@ -155,10 +128,6 @@ function parsePublishedRow(row: TranslationRow): PublishedItemTranslation | null
     origin,
     searchTerms,
     details,
-    reviewedAt: row.reviewed_at,
-    publishedAt: row.published_at,
-    reviewedBy: row.reviewed_by,
-    publishedBy: row.published_by,
   };
 }
 
@@ -182,7 +151,7 @@ export async function getPublishedItemTranslations(
 
   const { data, error } = await (getAnonymousStorefrontClient() as any)
     .from('item_translations')
-    .select('item_id, locale, name, description, origin, search_terms, details, evidence_snapshot, review_status, reviewed_at, published_at, reviewed_by, published_by')
+    .select('item_id, locale, name, description, origin, search_terms, details, review_status')
     .in('item_id', uniqueIds)
     .eq('locale', 'bn')
     .eq('review_status', 'published');

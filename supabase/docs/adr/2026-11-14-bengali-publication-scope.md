@@ -25,3 +25,15 @@ If distinct stores need different Bengali approval states, the model must be cha
 ## Publication revocation freshness
 
 The Bengali product detail route deliberately renders dynamically so that withdrawn or evidence-invalidated translations are checked on each request instead of relying on a time-based ISR page. This applies only to the publication-sensitive Bengali product route, not the entire storefront. Monitor request volume and database egress before considering cache optimization; any future cache must support immediate invalidation for review revocation and canonical evidence drift.
+
+## Anonymous presentation fields and editorial privacy
+
+The anonymous Data API grant is now column-scoped. Public translation reads may retrieve catalog identity, locale, review status, localized presentation fields and timestamps used by the storefront, but may **not** read `evidence_snapshot`, `reviewed_by`, `reviewed_at`, `published_by`, or `published_at`. The RLS predicate checks those private fields through the existing secured database function. The storefront publication reader deliberately requests only permitted public columns, with the database as the authoritative evidence/attribution gate. Authenticated staff retain tenant-scoped access for editorial review.
+
+A public `SELECT *` is intentionally unsupported. Add new public fields to the column allowlist only after security review.
+
+## Safe publication foreign-key rollout
+
+The publication-hardening migration adds nullable reviewer/publisher UUID columns without inline foreign-key validation. New migrations `20261114122652` and `20261114122748` respectively add the four reviewer/publisher foreign keys as `NOT VALID` (enforcing future writes) and validate preexisting rows in a separate phase. Both phases set bounded lock and statement timeouts. The original hardening migration still includes PostgreSQL DDL that can obtain `AccessExclusiveLock`; this design reduces validation work inside that transaction but does **not** prove a zero-lock deployment. Check row counts, lock contention and migration duration on the dedicated test project before production rollout. Neither remote project was migrated during development.
+
+The mobile catalog RPC additionally checks `tr.review_status = 'published'` in both translation joins, while preserving the trusted eligibility and details validators. This permits the published partial index to be considered; query-planner performance improvement is not claimed without `EXPLAIN` measurements.
