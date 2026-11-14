@@ -115,6 +115,22 @@ BEGIN
       has_column_privilege('authenticated', format('public.%I', translation_table), 'evidence_snapshot', 'SELECT'),
       kind || ': authenticated staff retain evidence SELECT subject to tenant RLS'
     );
+    FOREACH private_column IN ARRAY ARRAY['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN'] LOOP
+      PERFORM pg_temp.assert_true(
+        NOT has_table_privilege('anon', format('public.%I', translation_table), private_column),
+        kind || ': anonymous clients must not have ' || private_column || ' table privileges'
+      );
+    END LOOP;
+    FOREACH private_column IN ARRAY ARRAY['TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN'] LOOP
+      PERFORM pg_temp.assert_true(
+        NOT has_table_privilege('authenticated', format('public.%I', translation_table), private_column),
+        kind || ': authenticated staff must not have ' || private_column || ' maintenance privileges'
+      );
+    END LOOP;
+    PERFORM pg_temp.assert_true(
+      has_table_privilege('authenticated', format('public.%I', translation_table), 'UPDATE'),
+      kind || ': authenticated staff retain UPDATE subject to tenant RLS'
+    );
   END LOOP;
 
   -- The additive-migration harness seeds these before installing the guard.
@@ -300,7 +316,15 @@ BEGIN
     -- The SECURITY DEFINER RLS predicate still tests their validity internally.
     EXECUTE format('SELECT count(*) FROM public.%I WHERE review_status <> ''published''', translation_table) INTO n;
     PERFORM pg_temp.assert_true(n = 0, kind || ': reviewed-only and draft rows cannot leak through RLS');
-    PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET name = ''anonymous edit'' WHERE id = %L', translation_table, row_a), '42501');
+    -- Privilege rejection can raise 42501; RLS rejection may instead affect zero rows.
+    -- Both outcomes are acceptable, but any successful row modification is not.
+    BEGIN
+      EXECUTE format('UPDATE public.%I SET name = ''anonymous edit'' WHERE id = %L', translation_table, row_a);
+      GET DIAGNOSTICS n = ROW_COUNT;
+      PERFORM pg_temp.assert_true(n = 0, kind || ': anonymous UPDATE must affect zero rows');
+    EXCEPTION WHEN insufficient_privilege THEN
+      NULL;
+    END;
     RESET ROLE;
 
     -- A changed canonical source invalidates public visibility and publication.
