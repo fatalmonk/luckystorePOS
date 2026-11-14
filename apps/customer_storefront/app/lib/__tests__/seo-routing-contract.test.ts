@@ -4,6 +4,8 @@ import { isProductSitemapEligible } from '../../sitemap';
 import { getCanonicalCategorySlug } from '../types';
 
 const mockTranslationMaybeSingle = vi.hoisted(() => vi.fn());
+const mockTranslationFrom = vi.hoisted(() => vi.fn());
+const mockSupabaseRpc = vi.hoisted(() => vi.fn());
 
 const mockUpdateSession = vi.fn(async () => new Response(null, { status: 200 }));
 
@@ -41,29 +43,35 @@ vi.mock('next/font/google', () => ({
   Noto_Sans_Bengali: () => ({ variable: 'font-bengali' }),
 }));
 
-// Mock Supabase
-vi.mock('../supabase', () => {
-  const createQuery = () => {
-    const filters: Record<string, unknown> = {};
-    const query = {
-      select: vi.fn(() => query),
-      eq: vi.fn((column: string, value: unknown) => {
-        filters[column] = value;
-        return query;
-      }),
-      in: vi.fn(() => query),
-      maybeSingle: vi.fn(() => mockTranslationMaybeSingle(filters)),
-    };
+function createTranslationQuery() {
+  const filters: Record<string, unknown> = {};
+  const query: Record<string, any> = {};
+  query.select = vi.fn(() => query);
+  query.eq = vi.fn((column: string, value: unknown) => {
+    filters[column] = value;
     return query;
-  };
+  });
+  query.in = vi.fn((column: string, value: unknown) => {
+    filters[column] = value;
+    return query;
+  });
+  query.maybeSingle = vi.fn(() => mockTranslationMaybeSingle(filters));
+  query.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
+    Promise.resolve(mockTranslationMaybeSingle(filters)).then(resolve, reject);
+  return query;
+}
 
-  return {
-    supabase: {
-      from: vi.fn(() => createQuery()),
-      rpc: vi.fn(),
-    },
-  };
-});
+// Mock both client entry points so publication reads remain deterministic.
+vi.mock('../supabase', () => ({
+  supabase: {
+    from: mockTranslationFrom,
+    rpc: mockSupabaseRpc,
+  },
+}));
+
+vi.mock('../supabase/anonymousStorefront', () => ({
+  getAnonymousStorefrontClient: () => ({ from: mockTranslationFrom }),
+}));
 
 // Mock CategoryShell to inspect rendered props
 vi.mock('../../(english)/category/CategoryShell', () => ({
@@ -139,16 +147,38 @@ vi.mock('../products/getCachedCrossSell', () => ({
 describe('SEO & Routing Contract Tests (Phase 2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTranslationFrom.mockImplementation(() => createTranslationQuery());
     mockTranslationMaybeSingle.mockImplementation(async (filters: Record<string, unknown>) => {
       const published = filters.locale === 'bn' && filters.review_status === 'published';
+      const filteredIds = Array.isArray(filters.item_id) ? filters.item_id : [filters.item_id];
+      const itemId = filteredIds.find((value): value is string => typeof value === 'string');
       return {
-        data: published
-          ? {
-              item_id: filters.item_id,
-              name: 'রাঁধুনি হলুদ গুঁড়া ১০০ গ্রাম',
+        data: published && itemId
+          ? [{
+              item_id: itemId,
+              locale: 'bn',
+              name: 'রাঁধুনি হলুদ গুঁড়া 100 g',
               description: 'বিশুদ্ধ হলুদের গুঁড়া',
               origin: 'বাংলাদেশ',
-            }
+              search_terms: ['হলুদ গুঁড়া', 'holud gura', 'turmeric powder'],
+              details: null,
+              evidence_snapshot: {
+                entityId: itemId,
+                sourceName: mockProduct.name,
+                sourceDescription: mockProduct.description,
+                sku: null,
+                barcode: null,
+                brand: 'Radhuni',
+                packageText: mockProduct.unit,
+                sourceUris: ['https://example.com/evidence/radhuni-holud'],
+                observedAt: '2026-11-12T10:00:00.000Z',
+              },
+              review_status: 'published',
+              reviewed_at: '2026-11-12T11:00:00.000Z',
+              published_at: '2026-11-12T12:00:00.000Z',
+              reviewed_by: '20000000-0000-4000-8000-000000000001',
+              published_by: '30000000-0000-4000-8000-000000000001',
+            }]
           : null,
         error: null,
       };

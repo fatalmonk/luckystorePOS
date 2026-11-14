@@ -222,7 +222,7 @@ ON CONFLICT (id) DO UPDATE SET
   image_url = EXCLUDED.image_url,
   description = EXCLUDED.description;
 
--- 6. Published Bengali translation used by the hreflang E2E contract.
+-- 6. Unattributed Bengali draft. Publication requires a separate authenticated review.
 INSERT INTO public.item_translations (
   item_id, tenant_id, locale, name, description, review_status
 )
@@ -232,7 +232,7 @@ VALUES (
   'bn',
   'আরং ডেইরি বিশুদ্ধ তরল দুধ',
   'নির্ধারিত স্টোরফ্রন্ট E2E ফিক্সচার।',
-  'published'
+  'draft'
 )
 ON CONFLICT (item_id, locale) DO UPDATE SET
   tenant_id = EXCLUDED.tenant_id,

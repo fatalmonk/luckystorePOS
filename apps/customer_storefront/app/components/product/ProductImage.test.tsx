@@ -51,6 +51,23 @@ describe('ProductImage', () => {
     expect(screen.getByRole('img', { name: 'Broken item image unavailable' })).toBeInTheDocument();
   });
 
+  it('localizes a missing-image fallback in Bengali', () => {
+    render(<ProductImage alt={'\u099a\u09be'} category="Tea" sizes="100px" locale="bn" />);
+    const fallback = screen.getByTestId('product-image-fallback');
+    expect(fallback.getAttribute('aria-label')).toContain('\u099a\u09be');
+    expect(fallback.getAttribute('aria-label')).toContain('\u099b\u09ac\u09bf');
+    expect(fallback.getAttribute('aria-label')).not.toMatch(/image|unavailable/i);
+  });
+
+  it('keeps the Bengali locale when a loaded image fails', () => {
+    render(<ProductImage src="https://example.com/broken.webp" alt={'\u099a\u09be'} category="Tea" sizes="100px" locale="bn" />);
+    fireEvent.error(screen.getByRole('img', { name: '\u099a\u09be' }));
+    const fallback = screen.getByTestId('product-image-fallback');
+    expect(fallback.getAttribute('aria-label')).toContain('\u099a\u09be');
+    expect(fallback.getAttribute('aria-label')).toContain('\u099b\u09ac\u09bf');
+    expect(fallback.getAttribute('aria-label')).not.toMatch(/image|unavailable/i);
+  });
+
   it('requests responsive image candidates for product photos', () => {
     render(
       <ProductImage

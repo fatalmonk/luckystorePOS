@@ -1,198 +1,246 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { Languages, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { useNotify } from '@/components/NotificationContext';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/ui/card';
+import { canTransitionTranslation, getCanonicalPackageText, isLocalizedProductDetails, isTranslationEvidenceSnapshot } from './translationWorkflow';
+import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow } from './translationTypes';
 
-type ReviewStatus = 'draft' | 'reviewed' | 'published';
-type TranslationRow = {
-  id: string;
-  item_id?: string;
-  category_id?: string;
-  name: string;
-  description: string | null;
-  review_status: ReviewStatus;
-};
-type CatalogRow = { id: string; name: string; description?: string | null };
+type CatalogRow = { id: string; tenant_id: string; name: string; description: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
+type Editor = { row: TranslationRow; aliasesText: string; evidenceText: string; detailsText: string; humanReviewConfirmed: boolean };
+const client = supabase as unknown as SupabaseClient;
+const translationTable = (kind: TranslationKind) => kind === 'item' ? 'item_translations' : 'category_translations';
+const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary';
+const buttonClass = 'min-h-11 rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50';
 
-const translationTable = (kind: 'item' | 'category') =>
-  kind === 'item' ? 'item_translations' : 'category_translations';
+function translationContent(row: TranslationRow) {
+  return {
+    name: row.name.trim(),
+    description: row.description?.trim() || null,
+    search_terms: row.search_terms,
+    evidence_snapshot: row.evidence_snapshot,
+    ...(row.kind === 'item' ? { details: row.details ?? null } : { seo_title: row.seo_title?.trim() || null, seo_description: row.seo_description?.trim() || null }),
+  };
+}
 
 export function TranslationsPage() {
   const { tenantId, user } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
-  const [kind, setKind] = useState<'item' | 'category'>('item');
-  const [statusFilter, setStatusFilter] = useState<ReviewStatus | 'all'>('all');
-  const [editing, setEditing] = useState<TranslationRow | null>(null);
-  const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
-  const canManage = user?.role === 'admin' || user?.role === 'manager';
+  const [kind, setKind] = useState<TranslationKind>('item');
+  const [statusFilter, setStatusFilter] = useState<TranslationReviewStatus | 'all'>('all');
+  const [editing, setEditing] = useState<Editor | null>(null);
+  const canManage = Boolean(user && user.tenantId === tenantId && (user.role === 'admin' || user.role === 'manager'));
 
-  const catalogQuery = useQuery<CatalogRow[]>({
+  const catalogQuery = useQuery<CanonicalTranslationSource[]>({
     queryKey: ['translation-catalog', kind, tenantId],
     enabled: Boolean(tenantId && canManage),
     queryFn: async () => {
-      const table = kind === 'item' ? 'items' : 'categories';
-      let query = (supabase as any).from(table).select('id, name, description').eq('tenant_id', tenantId).order('name');
-      if (kind === 'item') query = query.eq('is_active', true);
-      else query = query.eq('active', true);
-      const { data, error } = await query;
+      const fields = kind === 'item' ? 'id, tenant_id, name, description, sku, barcode, brand' : 'id, tenant_id, name, description';
+      const { data, error } = await client.from(kind === 'item' ? 'items' : 'categories')
+        .select(fields).eq('tenant_id', tenantId).eq(kind === 'item' ? 'is_active' : 'active', true).order('name');
       if (error) throw error;
-      return (data ?? []) as CatalogRow[];
+      return ((data ?? []) as unknown as CatalogRow[]).map((row) => ({
+        id: row.id, tenantId: row.tenant_id, name: row.name, description: row.description ?? null,
+        sku: row.sku ?? null, barcode: row.barcode ?? null, brand: row.brand ?? null,
+        packageText: kind === 'item' ? getCanonicalPackageText(row.name, row.description) : null,
+      }));
     },
   });
-
   const translationsQuery = useQuery<TranslationRow[]>({
     queryKey: ['translations', kind, tenantId],
     enabled: Boolean(tenantId && canManage),
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from(translationTable(kind))
-        .select(`id, ${kind === 'item' ? 'item_id' : 'category_id'}, name, description, review_status`)
-        .eq('tenant_id', tenantId)
-        .order('updated_at', { ascending: false });
+      const { data, error } = await client.from(translationTable(kind))
+        .select(`id, ${kind}_id, tenant_id, locale, name, description, search_terms, review_status, evidence_snapshot, reviewed_by, reviewed_at, published_by, published_at, updated_at, ${kind === 'item' ? 'details' : 'seo_title, seo_description'}`)
+        .eq('tenant_id', tenantId).eq('locale', 'bn').order('updated_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as TranslationRow[];
+      // Each table determines the discriminant; it is not a database column.
+      const rows = (data ?? []) as unknown as Array<Record<string, unknown>>;
+      return rows.map((row) => ({ ...row, kind })) as unknown as TranslationRow[];
     },
   });
+  const sources = new Map((catalogQuery.data ?? []).map((row) => [row.id, row]));
+  const source = editing ? sources.get(editing.row.kind === 'item' ? editing.row.item_id : editing.row.category_id) ?? null : null;
+  let parsed: TranslationRow | null = null;
+  let parseError: string | null = null;
+  if (editing) {
+    try {
+      const evidence = editing.evidenceText.trim() ? JSON.parse(editing.evidenceText) : null;
+      const details = editing.row.kind === 'item' && editing.detailsText.trim() ? JSON.parse(editing.detailsText) : null;
+      if (evidence !== null && !isTranslationEvidenceSnapshot(evidence)) throw new Error('Evidence needs canonical source fields, source links and an observation timestamp; omit snapshotSha256.');
+      if (!isLocalizedProductDetails(details)) throw new Error('Localized details must use summary, highlights, specifications, usage, storage and FAQ structures.');
+      const search_terms = [...new Set(editing.aliasesText.split('\n').map((term) => term.trim()).filter(Boolean))];
+      parsed = editing.row.kind === 'item'
+        ? { ...editing.row, evidence_snapshot: evidence, search_terms, details }
+        : { ...editing.row, evidence_snapshot: evidence, search_terms };
+    } catch (error) {
+      parseError = error instanceof SyntaxError ? 'Evidence and details must be valid JSON.' : (error as Error).message;
+    }
+  }
+  const persisted = (translationsQuery.data ?? []).find((row) => row.id === editing?.row.id);
+  const isStale = Boolean(persisted && editing && (
+    persisted.updated_at !== editing.row.updated_at
+    || persisted.review_status !== editing.row.review_status
+    || persisted.reviewed_by !== editing.row.reviewed_by
+    || persisted.reviewed_at !== editing.row.reviewed_at
+    || persisted.published_by !== editing.row.published_by
+    || persisted.published_at !== editing.row.published_at
+  ));
+  const isDirty = !parsed || !persisted || JSON.stringify(translationContent(parsed)) !== JSON.stringify(translationContent(persisted));
+  const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
+  const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
+    && !isStale
+    && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
+    && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 
-  const saveMutation = useMutation({
-    mutationFn: async (row: TranslationRow) => {
-      const isNew = row.id.startsWith('new:');
-      if (!row.name.trim()) throw new Error('Bengali name is required.');
-      if (isNew) {
-        const { error } = await (supabase as any).from(translationTable(kind)).insert({
-          ...(kind === 'item' ? { item_id: row.item_id } : { category_id: row.category_id }),
-          tenant_id: tenantId,
-          locale: 'bn',
-          name: row.name.trim(),
-          description: row.description?.trim() || null,
-          review_status: row.review_status,
+  const mutation = useMutation({
+    mutationFn: async ({ row, action, humanReviewConfirmed }: { row: TranslationRow; action: TranslationAction; humanReviewConfirmed: boolean }) => {
+      const target = action === 'save_draft' ? 'draft' : action === 'mark_reviewed' ? 'reviewed' : 'published';
+      if ((action !== 'save_draft' && isDirty) || !canTransitionTranslation(row.review_status, target, {
+        actor: user, translation: row, source, action, humanReviewConfirmed,
+      })) throw new Error('Save the draft, complete its evidence and confirm human review before this action.');
+      const payload = action === 'save_draft'
+        ? { ...translationContent(row), review_status: 'draft', reviewed_by: null, reviewed_at: null, published_by: null, published_at: null }
+        : action === 'mark_reviewed' ? { review_status: 'reviewed', reviewed_by: user!.id } : { review_status: 'published', published_by: user!.id };
+      let query;
+      if (row.id.startsWith('new:')) {
+        query = client.from(translationTable(row.kind)).insert({
+          ...payload,
+          ...(row.kind === 'item' ? { item_id: row.item_id } : { category_id: row.category_id }),
+          tenant_id: tenantId, locale: 'bn',
         });
-        if (error) throw error;
-        return;
+      } else {
+        query = client.from(translationTable(row.kind)).update(payload).eq('id', row.id).eq('tenant_id', tenantId).eq('updated_at', row.updated_at);
+        if (action !== 'save_draft') query = query.eq('review_status', row.review_status);
       }
-      const { error } = await (supabase as any)
-        .from(translationTable(kind))
-        .update({ name: row.name.trim(), description: row.description?.trim() || null, review_status: row.review_status, updated_at: new Date().toISOString() })
-        .eq('id', row.id)
-        .eq('tenant_id', tenantId);
+      const { error } = await query.select('id').single();
+      if (error?.code === 'PGRST116') {
+        await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
+        throw new Error('Translation changed; reload before reviewing or publishing.');
+      }
       if (error) throw error;
     },
-    onSuccess: async () => {
+    onSuccess: async (_, { action }) => {
       setEditing(null);
       await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
-      notify('Translation saved.', 'success');
+      notify(action === 'save_draft' ? 'Draft saved. Review is required before publication.' : action === 'mark_reviewed' ? 'Translation reviewed. Publish is a separate action.' : 'Translation published.', 'success');
+    },
+    onError: (error: Error) => notify(error.message, 'error'),
+  });
+  const generateMutation = useMutation({
+    mutationFn: async (requestedKind: TranslationKind) => {
+      const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body: { kind: requestedKind, limit: 10 } });
+      if (error) throw new Error('AI draft generation failed. Check provider setup or try again.');
+      if (!data || !Number.isInteger(data.generated) || !Number.isInteger(data.skipped) || !Number.isInteger(data.failed)) throw new Error('Invalid draft generation response.');
+      return data as { generated: number; skipped: number; failed: number };
+    },
+    onSuccess: async (result, requestedKind) => {
+      await queryClient.invalidateQueries({ queryKey: ['translations', requestedKind, tenantId] });
+      notify(`${result.generated} AI draft${result.generated === 1 ? '' : 's'} saved; ${result.skipped} skipped; ${result.failed} failed. Human review is required before publication.`, result.failed ? 'error' : 'success');
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });
 
-  const bulkReviewMutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { error } = await (supabase as any)
-        .from(translationTable(kind))
-        .update({ review_status: 'reviewed', updated_at: new Date().toISOString() })
-        .in('id', ids)
-        .eq('tenant_id', tenantId)
-        .eq('review_status', 'draft');
-      if (error) throw error;
-    },
-    onSuccess: async () => {
-      setSelectedDraftIds(new Set());
-      await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
-      notify('Selected drafts marked as reviewed.', 'success');
-    },
-    onError: (error: Error) => notify(error.message, 'error'),
+  if (!canManage) return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
+
+  const startEditing = (row: TranslationRow) => setEditing({
+    row, aliasesText: row.search_terms.join('\n'), evidenceText: row.evidence_snapshot ? JSON.stringify(row.evidence_snapshot, null, 2) : '',
+    detailsText: row.kind === 'item' && row.details ? JSON.stringify(row.details, null, 2) : '', humanReviewConfirmed: false,
   });
-
-  if (!canManage) {
-    return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
-  }
-
-  const translatedIds = new Set((translationsQuery.data ?? []).map((row) => kind === 'item' ? row.item_id : row.category_id));
-  const visibleTranslations = (translationsQuery.data ?? []).filter((row) => statusFilter === 'all' || row.review_status === statusFilter);
-  const untranslated = statusFilter === 'all' ? (catalogQuery.data ?? []).filter((row) => !translatedIds.has(row.id)) : [];
+  const changeEditor = (changes: Partial<Editor>) => {
+    if (editing) setEditing({ ...editing, ...changes, humanReviewConfirmed: false });
+  };
+  const translatedIds = new Set((translationsQuery.data ?? []).map((row) => row.kind === 'item' ? row.item_id : row.category_id));
+  const newRows: TranslationRow[] = statusFilter === 'all' ? (catalogQuery.data ?? []).filter((row) => !translatedIds.has(row.id)).map((row): TranslationRow => {
+    const base = {
+      id: `new:${row.id}`, tenant_id: tenantId, locale: 'bn' as const, name: '', description: null,
+      search_terms: [], review_status: 'draft' as const, evidence_snapshot: null,
+      reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, updated_at: '',
+    };
+    return kind === 'item'
+      ? { ...base, kind: 'item', item_id: row.id, details: null }
+      : { ...base, kind: 'category', category_id: row.id, seo_title: null, seo_description: null };
+  }) : [];
+  const visibleRows = [...newRows, ...(translationsQuery.data ?? []).filter((row) => statusFilter === 'all' || row.review_status === statusFilter)];
 
   return (
-    <div className="p-6">
-      <PageHeader title="Bengali translations" subtitle="Review localized catalog copy before it becomes public." />
+    <div className="p-4 md:p-6">
+      <PageHeader title="Bengali translations" subtitle="Compare canonical identity and reliable evidence before reviewing localized copy." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-4 py-2 text-sm font-semibold ${kind === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Translation status filter">
         {(['all', 'draft', 'reviewed', 'published'] as const).map((value) => (
-          <button key={value} type="button" aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); setSelectedDraftIds(new Set()); }} className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize ${statusFilter === value ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'all' ? 'All translations' : value === 'draft' ? 'Show drafts' : value}
           </button>
         ))}
       </div>
-      <Card>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
-            <div className="flex items-center gap-2"><Languages size={18} /><span className="font-semibold">{kind === 'item' ? 'Product' : 'Category'} translations</span></div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => {
-                const draftIds = visibleTranslations.filter((row) => row.review_status === 'draft').map((row) => row.id);
-                setSelectedDraftIds((current) => current.size === draftIds.length ? new Set() : new Set(draftIds));
-              }} className="rounded-lg border border-border px-3 py-2 text-sm font-semibold">
-                {selectedDraftIds.size && selectedDraftIds.size === visibleTranslations.filter((row) => row.review_status === 'draft').length ? 'Unselect drafts' : 'Select all drafts'}
-              </button>
-              <button type="button" disabled={!selectedDraftIds.size || bulkReviewMutation.isPending} onClick={() => bulkReviewMutation.mutate(Array.from(selectedDraftIds))} className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
-                {bulkReviewMutation.isPending ? 'Reviewing…' : `Review selected${selectedDraftIds.size ? ` (${selectedDraftIds.size})` : ''}`}
-              </button>
-            </div>
-          </div>
-        {(translationsQuery.isLoading || catalogQuery.isLoading) && <p className="p-4 text-text-muted">Loading translations…</p>}
-        {translationsQuery.isError && (
-          <div className="space-y-2 p-4 text-red-400">
-            <p>Could not load translations.</p>
-            <p className="text-sm">{(translationsQuery.error as Error).message}</p>
-            <button type="button" onClick={() => translationsQuery.refetch()} className="rounded-lg border border-red-400/40 px-3 py-2 text-sm font-semibold">
-              Retry
-            </button>
-          </div>
-        )}
+      <div className="mb-4"><button type="button" className={buttonClass} disabled={mutation.isPending || generateMutation.isPending || translationsQuery.isLoading || catalogQuery.isLoading || Boolean(editing)} onClick={() => generateMutation.mutate(kind)}>{generateMutation.isPending ? 'Generating AI drafts…' : 'Generate AI Drafts'}</button></div>
+      <Card padding="none">
+        <div className="flex items-center gap-2 border-b border-border p-4"><Languages size={18} /><h2 className="font-semibold">{kind === 'item' ? 'Product' : 'Category'} translations</h2></div>
+        {(translationsQuery.isLoading || catalogQuery.isLoading) && <p role="status" className="p-4 text-text-muted">Loading translations...</p>}
+        {(translationsQuery.isError || catalogQuery.isError) && <div role="alert" className="space-y-2 p-4 text-danger">
+          <p>Could not load translations or canonical catalog data.</p>
+          <p className="text-sm">{(translationsQuery.error ?? catalogQuery.error)?.message}</p>
+          <button type="button" onClick={() => { void translationsQuery.refetch(); void catalogQuery.refetch(); }} className={buttonClass}>Retry</button>
+        </div>}
         <div className="divide-y divide-border">
-          {untranslated.map((source) => {
-            const newId = `new:${source.id}`;
-            return (
-              <div key={source.id} className="flex items-center justify-between gap-3 p-4">
-                <div><p className="font-semibold">{source.name}</p><p className="text-sm text-text-muted">{source.description || 'No description'}</p></div>
-                {editing?.id === newId ? (
-                  <div className="grid w-full gap-3 md:grid-cols-[1fr_160px_auto]">
-                    <div className="space-y-2">
-                      <input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} placeholder="Bengali name" className="w-full rounded-lg border border-border bg-surface px-3 py-2" aria-label="Bengali name" autoFocus />
-                      <textarea value={editing.description ?? ''} onChange={(event) => setEditing({ ...editing, description: event.target.value })} placeholder="Bengali description (optional)" className="w-full rounded-lg border border-border bg-surface px-3 py-2" aria-label="Bengali description" rows={2} />
-                    </div>
-                    <select value={editing.review_status} onChange={(event) => setEditing({ ...editing, review_status: event.target.value as ReviewStatus })} className="rounded-lg border border-border bg-surface px-3 py-2" aria-label="Review status"><option value="draft">Draft</option><option value="reviewed">Reviewed</option><option value="published">Published</option></select>
-                    <button type="button" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate(editing)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white"><Save size={16} />Add</button>
-                  </div>
-                ) : <button type="button" onClick={() => setEditing({ id: newId, ...(kind === 'item' ? { item_id: source.id } : { category_id: source.id }), name: '', description: null, review_status: 'draft' })} className="rounded-lg border border-border px-3 py-2 text-sm font-semibold">Add Bengali</button>}
-              </div>
-            );
-          })}
-          {visibleTranslations.map((row) => (
-            <div key={row.id} className="grid gap-3 p-4 md:grid-cols-[1fr_160px_auto] md:items-center">
-              {editing?.id === row.id ? (
-                <div className="space-y-2">
-                  <input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} className="w-full rounded-lg border border-border bg-surface px-3 py-2" aria-label="Bengali name" />
-                  <textarea value={editing.description ?? ''} onChange={(event) => setEditing({ ...editing, description: event.target.value })} className="w-full rounded-lg border border-border bg-surface px-3 py-2" aria-label="Bengali description" rows={2} />
+          {visibleRows.map((row) => editing?.row.id === row.id ? (
+            <fieldset key={row.id} disabled={mutation.isPending} className="min-w-0 space-y-4 p-4">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="min-w-0 space-y-4">
+                  <h3 className="font-semibold">Canonical source</h3>
+                  {source ? <dl className="space-y-3 text-sm">
+                    {Object.entries({ Name: source.name, Description: source.description, SKU: source.sku, Barcode: source.barcode, Brand: source.brand, 'Package text': source.packageText }).map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="break-words">{value ?? 'None'}</dd></div>)}
+                  </dl> : <p role="alert">Canonical source is unavailable. Reload before review.</p>}
+                  <dl className="space-y-3 text-sm">
+                    {Object.entries({ Status: row.review_status, Reviewer: row.reviewed_by, 'Reviewed at': row.reviewed_at, Publisher: row.published_by, 'Published at': row.published_at }).map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="break-all">{value ?? 'Not yet recorded'}</dd></div>)}
+                  </dl>
+                  {parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                 </div>
-              ) : <div className="flex items-start gap-3">
-                {row.review_status === 'draft' && <input type="checkbox" checked={selectedDraftIds.has(row.id)} onChange={() => setSelectedDraftIds((current) => { const next = new Set(current); if (next.has(row.id)) next.delete(row.id); else next.add(row.id); return next; })} aria-label={`Select ${row.name}`} className="mt-1 h-4 w-4" />}
-                <div><p className="font-semibold">{row.name}</p><p className="text-sm text-text-muted">{row.description || 'No description'}</p></div>
-              </div>}
-              {editing?.id === row.id ? <select value={editing.review_status} onChange={(event) => setEditing({ ...editing, review_status: event.target.value as ReviewStatus })} className="rounded-lg border border-border bg-surface px-3 py-2" aria-label="Review status"><option value="draft">Draft</option><option value="reviewed">Reviewed</option><option value="published">Published</option></select> : <span className="text-sm capitalize text-text-muted">{row.review_status}</span>}
-              {editing?.id === row.id ? <button type="button" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate(editing)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white"><Save size={16} />Save</button> : <button type="button" onClick={() => setEditing(row)} className="rounded-lg border border-border px-3 py-2 text-sm font-semibold">Edit</button>}
+                <div className="min-w-0 space-y-3">
+                  <h3 className="font-semibold">Bengali presentation</h3>
+                  <label className="block space-y-1 text-sm">Bengali name<input lang="bn" value={editing.row.name} onChange={(event) => changeEditor({ row: { ...editing.row, name: event.target.value } })} className={inputClass} /></label>
+                  <label className="block space-y-1 text-sm">Bengali description<textarea lang="bn" value={editing.row.description ?? ''} onChange={(event) => changeEditor({ row: { ...editing.row, description: event.target.value } })} className={inputClass} rows={3} /></label>
+                  <label className="block space-y-1 text-sm">Search aliases<textarea value={editing.aliasesText} onChange={(event) => changeEditor({ aliasesText: event.target.value })} className={inputClass} rows={3} /></label>
+                  <p className="text-xs text-text-muted">One alias per line. Include Bengali, Banglish, English and the canonical Latin brand.</p>
+                  {editing.row.kind === 'category' ? <>
+                    <label className="block space-y-1 text-sm">SEO title<input lang="bn" value={editing.row.kind === 'category' ? editing.row.seo_title ?? '' : ''} onChange={(event) => changeEditor({ row: editing.row.kind === 'category' ? { ...editing.row, seo_title: event.target.value } : editing.row })} className={inputClass} /></label>
+                    <label className="block space-y-1 text-sm">SEO description<textarea lang="bn" value={editing.row.kind === 'category' ? editing.row.seo_description ?? '' : ''} onChange={(event) => changeEditor({ row: editing.row.kind === 'category' ? { ...editing.row, seo_description: event.target.value } : editing.row })} className={inputClass} rows={3} /></label>
+                  </> : <label className="block space-y-1 text-sm">Localized details (JSON)<textarea value={editing.detailsText} onChange={(event) => changeEditor({ detailsText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={8} /></label>}
+                  <label className="block space-y-1 text-sm">Evidence snapshot (JSON)<textarea value={editing.evidenceText} onChange={(event) => changeEditor({ evidenceText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={10} /></label>
+                  <p className="text-xs text-text-muted">Provide sourceUris and observedAt from reliable evidence. Model/import copy always starts as draft.</p>
+                  {source && <button type="button" onClick={() => changeEditor({ evidenceText: JSON.stringify({ entityId: source.id, sourceName: source.name, sourceDescription: source.description, sku: source.sku, barcode: source.barcode, brand: source.brand, packageText: source.packageText, sourceUris: [], observedAt: '' }, null, 2) })} className={buttonClass}>Start canonical evidence snapshot</button>}
+                </div>
+              </div>
+              {isStale && <p role="alert" className="text-sm text-danger">Translation changed on the server. Reload before saving or reviewing.</p>}
+              {parseError && <p role="alert" className="text-sm text-danger">{parseError}</p>}
+              <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I checked the Bengali copy, identity, package, aliases and claims against the evidence.</span></label>
+              <p className="text-sm text-text-muted">Save changes as draft first. Review and publication are separate actions; the database records the acting user and timestamps.</p>
+              <div className="flex flex-wrap gap-2">
+                {([['save_draft', 'draft', 'Save Draft'], ['mark_reviewed', 'reviewed', 'Mark Reviewed'], ['publish', 'published', 'Publish']] as const).map(([action, status, label]) => <button key={action} type="button" disabled={mutation.isPending || !canAct(action, status)} onClick={() => { if (parsed) mutation.mutate({ row: parsed, action, humanReviewConfirmed: editing.humanReviewConfirmed }); }} className={`${buttonClass} inline-flex items-center gap-2 ${action === 'publish' ? 'bg-primary text-primary-on' : 'bg-surface'}`}>
+                  {action === 'save_draft' && <Save size={16} />}{label}
+                </button>)}
+                <button type="button" onClick={() => setEditing(null)} className={buttonClass}>Cancel</button>
+              </div>
+            </fieldset>
+          ) : (
+            <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+              <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description'}</p></div>
+              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : 'Edit'}</button></div>
             </div>
           ))}
-          {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleTranslations.length && !untranslated.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
+          {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
         </div>
       </Card>
     </div>
