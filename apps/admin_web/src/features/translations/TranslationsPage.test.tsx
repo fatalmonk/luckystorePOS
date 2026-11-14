@@ -73,6 +73,16 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('TranslationsPage publication actions', () => {
+  it('opens draft review explicitly and explains missing evidence', async () => {
+    rows.item_translations = [{ ...draft, evidence_snapshot: null }];
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(screen.getByRole('heading', { name: 'Review Bengali translation' })).toBeInTheDocument();
+    expect(screen.getByText('Add reliable source evidence before approval using the evidence fields above.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  });
+
   it('generates saved drafts and shows them in the draft queue without publishing', async () => {
     rows.item_translations = [];
     vi.mocked(supabase.functions.invoke).mockImplementation(async () => {
@@ -110,7 +120,7 @@ describe('TranslationsPage publication actions', () => {
   });
   it('shows canonical identity and evidence beside Bengali fields without a status selector or bulk review', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     expect(screen.getByText('Ispahani Tea 500 g')).toBeInTheDocument();
     expect(screen.getByText('TEA-500')).toBeInTheDocument();
     expect(screen.getByText('8941154321000')).toBeInTheDocument();
@@ -126,7 +136,7 @@ describe('TranslationsPage publication actions', () => {
 
   it('rejects an unverified snapshot digest in the evidence editor', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Evidence snapshot (JSON)' }), {
       target: { value: JSON.stringify({ ...evidence, snapshotSha256: 'a'.repeat(64) }) },
     });
@@ -135,7 +145,7 @@ describe('TranslationsPage publication actions', () => {
 
   it('binds Mark Reviewed to the public user UUID and an unchanged persisted draft', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Mark Reviewed' }));
     await waitFor(() => expect(writes).toHaveLength(1));
@@ -146,7 +156,7 @@ describe('TranslationsPage publication actions', () => {
   it('uses a separate Publish action and preserves the prior reviewer', async () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
@@ -163,7 +173,7 @@ describe('TranslationsPage publication actions', () => {
   ])('keeps publication disabled for ineligible rows: %#', async (row) => {
     rows.item_translations = [row];
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     if (row.review_status === 'draft') expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
@@ -173,7 +183,7 @@ describe('TranslationsPage publication actions', () => {
   it('requires saving edited reviewed copy as draft and clears prior attribution', async () => {
     rows.item_translations = [{ ...draft, review_status: 'published', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z', published_by: profileId, published_at: '2026-11-12T12:00:00Z' }];
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Bengali name' }), { target: { value: 'ইস্পাহানি নতুন চা 500 g' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     await waitFor(() => expect(writes).toHaveLength(1));
@@ -184,14 +194,14 @@ describe('TranslationsPage publication actions', () => {
   it('does not reset an unchanged published translation to draft', async () => {
     rows.item_translations = [{ ...draft, review_status: 'published', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z', published_by: profileId, published_at: '2026-11-12T12:00:00Z' }];
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     expect(screen.getByRole('button', { name: 'Save Draft' })).toBeDisabled();
   });
 
   it('does not review or publish unsaved changes', async () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Bengali description' }), { target: { value: 'নতুন বিবরণ।' } });
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
@@ -204,7 +214,7 @@ describe('TranslationsPage publication actions', () => {
     { reviewed_by: profileId },
   ])('disables all writes when a refetch changes workflow or revision metadata: %#', async (change) => {
     const { queryClient } = renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled();
     await act(async () => { queryClient.setQueryData(['translations', 'item', tenantId], [{ ...draft, ...change }]); });
@@ -243,7 +253,7 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     writeError = { message: 'Translation changed; reload before publishing.' };
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before publishing.', 'error'));
@@ -253,7 +263,7 @@ describe('TranslationsPage publication actions', () => {
   it('refetches translations after a revision conflict', async () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     const { queryClient } = renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     writeError = { code: 'PGRST116', message: 'No rows returned' };

@@ -209,7 +209,7 @@ export function TranslationsPage() {
                   {parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                 </div>
                 <div className="min-w-0 space-y-3">
-                  <h3 className="font-semibold">Bengali presentation</h3>
+                  <h3 className="font-semibold">Review Bengali translation</h3>
                   <label className="block space-y-1 text-sm">Bengali name<input lang="bn" value={editing.row.name} onChange={(event) => changeEditor({ row: { ...editing.row, name: event.target.value } })} className={inputClass} /></label>
                   <label className="block space-y-1 text-sm">Bengali description<textarea lang="bn" value={editing.row.description ?? ''} onChange={(event) => changeEditor({ row: { ...editing.row, description: event.target.value } })} className={inputClass} rows={3} /></label>
                   <label className="block space-y-1 text-sm">Search aliases<textarea value={editing.aliasesText} onChange={(event) => changeEditor({ aliasesText: event.target.value })} className={inputClass} rows={3} /></label>
@@ -225,6 +225,16 @@ export function TranslationsPage() {
               </div>
               {isStale && <p role="alert" className="text-sm text-danger">Translation changed on the server. Reload before saving or reviewing.</p>}
               {parseError && <p role="alert" className="text-sm text-danger">{parseError}</p>}
+              <div role="status" className="rounded-lg border border-border bg-surface p-3 text-sm">
+                <p className="font-semibold">Review checklist</p>
+                <ul className="list-disc pl-5">
+                  <li>Compare the Bengali copy with the canonical source shown above.</li>
+                  {!parsed?.evidence_snapshot && <li>Add reliable source evidence before approval using the evidence fields above.</li>}
+                  {isDirty && <li>Save your changes as a draft before marking it reviewed.</li>}
+                  {!editing.humanReviewConfirmed && <li>Confirm the human review checkbox below.</li>}
+                </ul>
+                <p>Mark Reviewed approves this draft. Publish is a separate action.</p>
+              </div>
               <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I checked the Bengali copy, identity, package, aliases and claims against the evidence.</span></label>
               <p className="text-sm text-text-muted">Save changes as draft first. Review and publication are separate actions; the database records the acting user and timestamps.</p>
               <div className="flex flex-wrap gap-2">
@@ -237,7 +247,7 @@ export function TranslationsPage() {
           ) : (
             <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description'}</p></div>
-              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : 'Edit'}</button></div>
+              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : 'Edit'}</button></div>
             </div>
           ))}
           {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
