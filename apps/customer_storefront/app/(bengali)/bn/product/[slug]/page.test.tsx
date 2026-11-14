@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { toProductSlug } from '../../../../lib/products/slugify';
 import { getCachedProductBySlug } from '../../../../lib/products/getCachedProduct';
 import { getPublishedItemTranslations } from '../../../../lib/products/productTranslations';
-import BengaliProductPage, { generateMetadata } from './page';
+import BengaliProductPage, { dynamic, generateMetadata } from './page';
 
 const mocks = vi.hoisted(() => {
   const translationQuery: Record<string, any> = {};
@@ -47,7 +47,7 @@ vi.mock('../../../../components/BottomNav', () => ({
 }));
 vi.mock('../../../../(english)/product/[slug]/ProductClient', () => ({
   default: ({ product, localizedProduct, localizedDetails, galleryImages }: any) => (
-    <article>
+    <article data-hydration-product={JSON.stringify(product)}>
       <h1>{localizedProduct?.name}</h1>
       <p>{localizedProduct?.description}</p>
       <p>{localizedProduct?.origin}</p>
@@ -79,7 +79,10 @@ vi.mock('next/navigation', () => ({
 const product = {
   id: '4dc60601-5883-4ab4-98a7-d5e8b1ca8adb',
   name: 'Ispahani Mirzapore Best Leaf Tea 500 g',
+  originalName: 'Ispahani Mirzapore Best Leaf Tea 500 g',
   description: 'English source description must never render on Bengali routes.',
+  nutrition: 'English-only nutrition text must never be serialized.',
+  searchTerms: ['English-only search term'],
   price: 500,
   unit: '500 g',
   stock: 8,
@@ -113,6 +116,10 @@ const translation = {
 };
 
 describe('Bengali product publication boundary', () => {
+  it('requires request-time rendering so revoked translations are not held by ISR', () => {
+    expect(dynamic).toBe('force-dynamic');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getCachedProductBySlug).mockResolvedValue(product as never);
@@ -161,6 +168,23 @@ describe('Bengali product publication boundary', () => {
     expect(document.body.textContent).toContain('500 g');
     expect(document.body.textContent).toContain('৳500');
     expect(document.body.textContent).not.toContain(product.description);
+    const hydrationProduct = JSON.parse(
+      document.querySelector('article')?.getAttribute('data-hydration-product') || '{}',
+    );
+    expect(hydrationProduct).toMatchObject({
+      id: product.id,
+      name: translation.name,
+      description: translation.details.summary,
+      origin: translation.origin,
+      stock: product.stock,
+      price: product.price,
+      sku: product.sku,
+    });
+    for (const excluded of ['originalName', 'nutrition', 'searchTerms', 'bengaliDescription']) {
+      expect(hydrationProduct).not.toHaveProperty(excluded);
+    }
+    expect(JSON.stringify(hydrationProduct)).not.toContain(product.description);
+    expect(JSON.stringify(hydrationProduct)).not.toContain(product.name);
     expect(document.body.textContent).not.toContain('English image alternative must not render');
     expect(document.body.textContent).not.toContain('English package claim must not render');
     expect(jsonLd).toMatchObject({

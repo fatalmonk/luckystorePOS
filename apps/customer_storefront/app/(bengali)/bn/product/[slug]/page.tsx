@@ -16,7 +16,9 @@ import type { ProductEnrichment } from '../../../../lib/products/productEnrichme
 import type { Product } from '../../../../lib/products/types';
 import ProductClient from '../../../../(english)/product/[slug]/ProductClient';
 
-export const revalidate = 120;
+// Editorial withdrawal and source-evidence drift must take effect on the
+// next request; a time-based ISR window could serve revoked Bengali copy.
+export const dynamic = 'force-dynamic';
 
 type BengaliProductRecord = {
   product: Product;
@@ -131,6 +133,37 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+/**
+ * Serialize only the canonical commerce fields required by the buying UI.
+ * English names/descriptions and unpublished translation candidates must not
+ * hitch a ride in the React Server Component payload of the Bengali route.
+ */
+function toBengaliClientProduct(
+  product: Product,
+  translation: PublishedItemTranslation,
+): Product {
+  return {
+    id: product.id,
+    name: translation.name,
+    description: getPublishedDescription(translation),
+    emoji: product.emoji,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    unit: product.unit,
+    category: product.category,
+    categoryId: product.categoryId,
+    category_id: product.category_id,
+    stock: product.stock,
+    availabilityUnknown: product.availabilityUnknown,
+    imageUrl: product.imageUrl,
+    image_url: product.image_url,
+    brand: product.brand,
+    origin: translation.origin ?? undefined,
+    sku: product.sku,
+    barcode: product.barcode,
+  };
+}
+
 function BengaliProductUnderReview() {
   return (
     <>
@@ -184,7 +217,7 @@ export default async function BengaliProductPage({ params }: { params: Promise<{
         images={productImages}
       />
       <ProductClient
-        product={record.product}
+        product={toBengaliClientProduct(record.product, record.translation)}
         crossSell={[]}
         radhuniPackVariants={[]}
         locale="bn"

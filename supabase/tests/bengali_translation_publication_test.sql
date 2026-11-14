@@ -48,6 +48,8 @@ DECLARE
   t_a uuid := gen_random_uuid();
   t_b uuid := gen_random_uuid();
   a_user uuid := gen_random_uuid();
+  a_public_store_2 uuid;
+  a_private_store uuid;
   b_user uuid := gen_random_uuid();
   cat_a uuid := gen_random_uuid();
   cat_b uuid := gen_random_uuid();
@@ -113,6 +115,15 @@ BEGIN
   INSERT INTO public.stores (tenant_id, name, code, metadata) VALUES
     (t_a, 'Translation public store', 'translation-' || t_a, '{"is_public_storefront":true}'),
     (t_b, 'Translation private store', 'translation-' || t_b, '{"is_public_storefront":false}');
+  -- The schema permits one translation per tenant item/locale, not per store.
+  -- A second public store in tenant A shares published copy. A private store
+  -- in that same tenant must still be denied by the mobile storefront RPC.
+  INSERT INTO public.stores (tenant_id, name, code, metadata)
+    VALUES (t_a, 'Second public store', 'translation-public-2-' || t_a, '{"is_public_storefront":true}')
+    RETURNING id INTO a_public_store_2;
+  INSERT INTO public.stores (tenant_id, name, code, metadata)
+    VALUES (t_a, 'Private store in tenant A', 'translation-private-' || t_a, '{"is_public_storefront":false}')
+    RETURNING id INTO a_private_store;
   INSERT INTO auth.users (id, email) VALUES
     (a_user, a_user || '@translation.invalid'), (b_user, b_user || '@translation.invalid');
   INSERT INTO public.users (id, auth_id, email, role, tenant_id) VALUES
@@ -230,6 +241,19 @@ BEGIN
     SET LOCAL ROLE anon;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE id IN ($1, $2)', translation_table) INTO n USING row_a, row_b;
     PERFORM pg_temp.assert_true(n = 1, kind || ': only eligible public-store publication is visible');
+
+    IF kind = 'item' THEN
+      SELECT count(*) INTO n
+      FROM jsonb_array_elements(
+        public.search_storefront_mobile_catalog_v1(a_public_store_2)->'items'
+      ) AS entry
+      WHERE entry->>'id' = item_a::text
+        AND entry->>'bengali_name' = 'ইস্পাহানি চা 500 g';
+      PERFORM pg_temp.assert_true(n = 1, 'a second public store in the same tenant sees the shared published item translation');
+
+      SELECT jsonb_array_length(public.search_storefront_mobile_catalog_v1(a_private_store)->'items') INTO n;
+      PERFORM pg_temp.assert_true(n = 0, 'a private store in the same tenant cannot expose the mobile public catalog');
+    END IF;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE review_status <> ''published'' OR evidence_snapshot IS NULL OR reviewed_by IS NULL OR reviewed_at IS NULL OR published_by IS NULL OR published_at IS NULL', translation_table) INTO n;
     PERFORM pg_temp.assert_true(n = 0, kind || ': legacy/incomplete publications cannot leak through RLS');
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET name = ''anonymous edit'' WHERE id = %L', translation_table, row_a), '42501');

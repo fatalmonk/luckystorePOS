@@ -12,17 +12,31 @@ const PUBLIC_ORIGIN = 'https://www.luckystore1947.com';
 const PRODUCT_PATH = '/product/aarong-dairy-pure-liquid-milk--a0740002';
 const BENGALI_PRODUCT_PATH = `/bn${PRODUCT_PATH}`;
 
+type PublicationState = 'published' | 'unpublished';
+
+// The CI seed creates an unreviewed Bengali draft. A separate published-fixture
+// run must explicitly set its expected state; never infer it from page output.
+const expectedProductPublicationState = (() => {
+  const value = process.env.SEO_FIXTURE_PRODUCT_PUBLICATION_STATE || 'unpublished';
+  if (value !== 'published' && value !== 'unpublished') {
+    throw new Error('SEO_FIXTURE_PRODUCT_PUBLICATION_STATE must be published or unpublished');
+  }
+  return value as PublicationState;
+})();
+
 type RouteContract = {
   label: string;
   path: string;
   canonical: string;
   alternates: Record<'en-BD' | 'bn-BD' | 'x-default', string>;
   unpublishedAlternates?: Record<string, string>;
+  expectedPublicationState?: PublicationState;
 };
 
 const routes: RouteContract[] = [
   {
     label: 'English product',
+    expectedPublicationState: expectedProductPublicationState,
     path: PRODUCT_PATH,
     canonical: `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     alternates: {
@@ -37,6 +51,7 @@ const routes: RouteContract[] = [
   },
   {
     label: 'Bengali product',
+    expectedPublicationState: expectedProductPublicationState,
     path: BENGALI_PRODUCT_PATH,
     canonical: `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
     alternates: {
@@ -59,15 +74,15 @@ const routes: RouteContract[] = [
 ];
 
 function assertAlternates(route: RouteContract, alternateMap: Record<string, string | null>, count: number, label: string) {
-  const sameAlternates = (expected: Record<string, string>) =>
-    Object.keys(alternateMap).length === Object.keys(expected).length
-    && Object.entries(expected).every(([language, url]) => alternateMap[language] === url);
-  const published = sameAlternates(route.alternates);
-  const unpublished = route.unpublishedAlternates !== undefined
-    && sameAlternates(route.unpublishedAlternates);
-  expect(published || unpublished, `${label}: alternate values match a publication state`).toBe(true);
-  expect(count, `${label}: alternate count`).toBe(Object.keys(alternateMap).length);
-  return unpublished;
+  const expected = route.expectedPublicationState === 'unpublished'
+    ? route.unpublishedAlternates
+    : route.alternates;
+  if (!expected) {
+    throw new Error(`${label}: missing independently specified alternate contract`);
+  }
+  expect(alternateMap, `${label}: alternates for the expected publication state`).toEqual(expected);
+  expect(count, `${label}: alternate count`).toBe(Object.keys(expected).length);
+  return route.expectedPublicationState === 'unpublished';
 }
 
 function getTags(html: string, name: string) {
@@ -331,6 +346,24 @@ test.describe('SEO response contract semantics', () => {
     expect(() => assertExpectedHttp200(500, 'fixture route')).toThrow(
       'SEO response contract failure: fixture route returned HTTP 500',
     );
+  });
+
+  test('[semantics] draft and published alternate contracts cannot be mistaken for each other', () => {
+    const english = routes[0];
+    const bengali = routes[1];
+    for (const route of [english, bengali]) {
+      const draft = { ...route, expectedPublicationState: 'unpublished' as const };
+      const published = { ...route, expectedPublicationState: 'published' as const };
+      const draftMap = route.unpublishedAlternates ?? {};
+      expect(() => assertAlternates(draft, draftMap, Object.keys(draftMap).length, 'draft'))
+        .not.toThrow();
+      expect(() => assertAlternates(draft, route.alternates, 3, 'draft cannot pass as published'))
+        .toThrow();
+      expect(() => assertAlternates(published, route.alternates, 3, 'published'))
+        .not.toThrow();
+      expect(() => assertAlternates(published, draftMap, Object.keys(draftMap).length, 'published cannot pass as draft'))
+        .toThrow();
+    }
   });
 
   test('[semantics] non-local targets require provenance while localhost may omit it', () => {
