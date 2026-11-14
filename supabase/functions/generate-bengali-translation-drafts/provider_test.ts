@@ -11,3 +11,9 @@ Deno.test('pins exact free model without provider or paid fallback', () => {
   assertEquals('models' in body, false);
   assertEquals('response_format' in body, false);
 });
+Deno.test('provider receives only translation inputs, not previous row revision metadata', () => {
+  const source = { id: 'item', name: 'Tea', description: null, previous: { id: 'private-row', updated_at: 'revision' } };
+  const body = providerRequest([source]);
+  const payload = JSON.parse(body.messages[1].content);
+  assertEquals(payload, [{ id: 'item', name: 'Tea', description: null }]);
+});

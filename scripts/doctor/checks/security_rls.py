@@ -30,6 +30,68 @@ SEARCH_PATH_RE = re.compile(
 )
 
 
+def _executable_sql(content: str) -> str:
+    """Blank line and nested block comments without changing SQL offsets."""
+    output: list[str] = []
+    i = 0
+    while i < len(content):
+        if content[i] in ("'", '"'):
+            quote = content[i]
+            start = i
+            i += 1
+            while i < len(content):
+                if content[i] == quote:
+                    i += 1
+                    if i < len(content) and content[i] == quote:
+                        i += 1
+                    else:
+                        break
+                else:
+                    i += 1
+            output.append(content[start:i])
+        elif content.startswith("--", i):
+            end = content.find("\n", i)
+            if end < 0:
+                end = len(content)
+            output.append(" " * (end - i))
+            i = end
+        elif content.startswith("/*", i):
+            start = i
+            depth = 1
+            i += 2
+            while i < len(content) and depth:
+                if content.startswith("/*", i):
+                    depth += 1
+                    i += 2
+                elif content.startswith("*/", i):
+                    depth -= 1
+                    i += 2
+                else:
+                    i += 1
+            output.append("".join("\n" if char == "\n" else " " for char in content[start:i]))
+        else:
+            output.append(content[i])
+            i += 1
+    return "".join(output)
+
+
+def _private_table_revoked(table: str, sql: str) -> bool:
+    """Require an effective explicit revoke for every client role in migration SQL."""
+    permissions = {role: False for role in ("public", "anon", "authenticated")}
+    pattern = re.compile(
+        rf"\b(?P<verb>GRANT|REVOKE)\s+(?P<privileges>[^;]*?)\s+ON\s+TABLE\s+{re.escape(table)}\s+(?:TO|FROM)\s+(?P<roles>[^;]+);",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(sql):
+        roles = {role.strip().lower() for role in match.group("roles").split(",")}
+        for role in permissions.keys() & roles:
+            if match.group("verb").upper() == "GRANT":
+                permissions[role] = False
+            elif match.group("privileges").strip().upper() == "ALL":
+                permissions[role] = True
+    return all(permissions.values())
+
+
 def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
     """Audit PostgreSQL security: missing RLS on created tables and insecure SECURITY DEFINER."""
     start_time = time.time()
@@ -61,9 +123,16 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
                 path for path in migration_files if str(path.relative_to(repo_root)) in changed_paths
             ]
 
+    # Read all migrations for effective grant order, including later grants to
+    # private tables created in an earlier migration.
+    permission_sql = "\n".join(
+        _executable_sql(path.read_text(encoding="utf-8"))
+        for path in sorted(migrations_dir.glob("*.sql"))
+    )
+
     for file_path in migration_files:
         try:
-            content = file_path.read_text(encoding="utf-8")
+            content = _executable_sql(file_path.read_text(encoding="utf-8"))
         except Exception:
             continue
 
@@ -83,10 +152,7 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
         for tbl in created_tables:
             if tbl in ignored_tables:
                 continue
-            if tbl.startswith("translation_private.") and re.search(
-                rf"REVOKE\s+ALL\s+ON\s+TABLE\s+{re.escape(tbl)}\s+FROM\s+PUBLIC\s*,\s*anon\s*,\s*authenticated",
-                content, re.IGNORECASE,
-            ):
+            if tbl.startswith("translation_private.") and _private_table_revoked(tbl, permission_sql):
                 continue
             if tbl not in enabled_rls_tables:
                 findings.append(

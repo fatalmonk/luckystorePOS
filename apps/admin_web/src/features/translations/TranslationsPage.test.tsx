@@ -20,6 +20,7 @@ const authId = '50000000-0000-4000-8000-000000000001';
 const item = { id: '10000000-0000-4000-8000-000000000001', tenant_id: tenantId, name: 'Ispahani Tea 500 g', description: 'Tea leaves, 500 g.', sku: 'TEA-500', barcode: '8941154321000', brand: 'Ispahani' };
 const category = { id: '10000000-0000-4000-8000-000000000002', tenant_id: tenantId, name: 'Tea', description: null };
 const evidence = { entityId: item.id, sourceName: item.name, sourceDescription: item.description, sku: item.sku, barcode: item.barcode, brand: item.brand, packageText: '500 g', sourceUris: ['https://manufacturer.invalid/tea-500'], observedAt: '2026-11-12T10:00:00Z' };
+const ramenEvidence = { key: 'b79a6606', matched: true, issue: null, entry: { exactName: 'Samyang Buldak Ramen 2X Cup 70g', netQuantity: '70g' }, links: [{ url: 'https://buldak.com/us/product/buldak-ramen-2x-cup/', title: 'Buldak Ramen 2X Cup', verifiedAt: '2026-11-12', evidenceRef: 'manufacturer' }], missing: [], supportedFacts: 'Pack size: 70g' };
 const draft = { id: '30000000-0000-4000-8000-000000000001', tenant_id: tenantId, item_id: item.id, locale: 'bn', name: 'ইস্পাহানি চা 500 g', description: 'চা পাতা, 500 g।', search_terms: ['চা', 'cha', 'tea', 'Ispahani'], review_status: 'draft', evidence_snapshot: evidence, details: { summary: 'চা পাতা।' }, reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, updated_at: '2026-11-12T10:00:00Z' };
 
 type Row = Record<string, unknown>;
@@ -81,6 +82,15 @@ beforeEach(() => {
   vi.mocked(useAuth).mockReturnValue({ tenantId, storeId: '70000000-0000-4000-8000-000000000001', user: { id: profileId, authId, tenantId, storeId: '70000000-0000-4000-8000-000000000001', role: 'manager', name: 'Reviewer' }, loading: false, session: null, signOut: vi.fn() });
   installDatabaseDouble();
   vi.mocked(supabase.functions.invoke).mockReset();
+  vi.mocked(supabase.functions.invoke).mockImplementation(async (_name, options) => {
+    if ((options?.body as { kind?: string })?.kind === 'evidence') {
+      const itemId = (options?.body as { itemId: string }).itemId;
+      return { data: { evidence: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? ramenEvidence :
+        { key: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? '4d20b020' : null, matched: itemId === '29e60fea-429c-4b7d-b639-406471a6623b', issue: 'No registry match', entry: null, links: [], missing: [], supportedFacts: null },
+        snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
+    }
+    return { data: null, error: null } as never;
+  });
 });
 
 afterEach(cleanup);
@@ -97,7 +107,7 @@ describe('TranslationsPage publication actions', () => {
   });
 
   it('passes exact empty-draft item IDs to the Edge Function', async () => {
-    rows.item_translations = [{ ...draft, description: null }];
+    rows.item_translations = [{ ...draft, description: '' }];
     vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);
     renderPage();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
@@ -105,6 +115,16 @@ describe('TranslationsPage publication actions', () => {
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', {
       body: { kind: 'item', limit: 10, itemIds: [item.id] },
     }));
+  });
+
+  it('does not enable review if registry evidence cannot be loaded', async () => {
+    rows.item_translations = [{ ...draft, evidence_snapshot: null }];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: null, error: new Error('unavailable') } as never);
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(await screen.findByText(/Could not load registry evidence/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
   });
 
   it('prepares an exact Samyang 2X manufacturer snapshot for one-click draft saving', async () => {
@@ -115,12 +135,13 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [{ ...draft, item_id: ramen.id, description: null, evidence_snapshot: null }];
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
-    expect(screen.getByText(/Exact production registry match:/)).toBeInTheDocument();
+    expect(await screen.findByText(/Exact production registry match:/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Buldak Ramen 2X Cup.*Open manufacturer source/i })).toHaveAttribute(
       'href', 'https://buldak.com/us/product/buldak-ramen-2x-cup/',
     );
     expect(screen.queryByRole('textbox', { name: /JSON/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Prepare evidence snapshot' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect((writes[0].payload.evidence_snapshot as { entityId: string }).entityId).toBe(ramen.id);
@@ -134,7 +155,7 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [{ ...draft, item_id: biscuits.id, description: null, evidence_snapshot: null }];
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
-    expect(screen.getByText(/No openable product-specific source/)).toBeInTheDocument();
+    expect(await screen.findByText(/No openable product-specific source/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked/ }));
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
     expect(writes).toHaveLength(0);
@@ -150,7 +171,9 @@ describe('TranslationsPage publication actions', () => {
     persistWrites = true;
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    await screen.findByText(/Exact production registry match:/);
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Prepare evidence snapshot' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0].payload).toMatchObject({ review_status: 'draft', evidence_snapshot: { entityId: ramen.id } });
@@ -230,6 +253,7 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Mark Reviewed' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toEqual({ table: 'item_translations', operation: 'update', payload: { review_status: 'reviewed', reviewed_by: profileId }, filters: { id: draft.id, tenant_id: tenantId, review_status: 'draft', updated_at: draft.updated_at } });
@@ -242,6 +266,7 @@ describe('TranslationsPage publication actions', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toEqual({ table: 'item_translations', operation: 'update', payload: { review_status: 'published', published_by: profileId }, filters: { id: draft.id, tenant_id: tenantId, review_status: 'reviewed', updated_at: draft.updated_at } });
@@ -299,7 +324,7 @@ describe('TranslationsPage publication actions', () => {
     const { queryClient } = renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
-    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled());
     await act(async () => { queryClient.setQueryData(['translations', 'item', tenantId], [{ ...draft, ...change }]); });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled());
     expect(screen.getByRole('button', { name: 'Save Draft' })).toBeDisabled();
@@ -338,6 +363,7 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before publishing.', 'error'));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument();
@@ -350,6 +376,7 @@ describe('TranslationsPage publication actions', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     writeError = { code: 'PGRST116', message: 'No rows returned' };
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['translations', 'item', tenantId] }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before reviewing or publishing.', 'error'));

@@ -83,6 +83,7 @@ describe('mobile catalog adapter', () => {
       originalPrice: 210,
       stock: 3,
       categoryId: 'c1',
+      category: 'চাল ও শস্য',
     });
   });
 

@@ -4,7 +4,7 @@ import { allowedOrigin, canGenerate, parseBatch, validRequest, type Source } fro
 
 // One pinned free model. No alternate provider or paid fallback.
 import { providerConfig, providerRequest } from './provider.ts';
-import { resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
+import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
 import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,9 +21,9 @@ serve(async (request) => {
   let body: unknown;
   try { body = await request.json(); } catch { return respond(400, { error: 'Invalid JSON request' }); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return respond(400, { error: 'Invalid request' });
-  const { kind, limit, itemIds } = body as Record<string, unknown>;
-  if (!validRequest(kind, limit)) {
-    return respond(400, { error: 'kind and limit (1–10) are required' });
+  const { kind, limit, itemIds, itemId } = body as Record<string, unknown>;
+  if (kind === 'evidence' ? (typeof itemId !== 'string' || !uuid.test(itemId) || itemIds !== undefined || limit !== undefined) : (!validRequest(kind, limit) || itemId !== undefined)) {
+    return respond(400, { error: 'Invalid evidence lookup or generation request' });
   }
   // Targeted regeneration is scoped to the requesting tenant, never arbitrary IDs.
   const requestedIds = itemIds === undefined ? null : itemIds;
@@ -41,6 +41,14 @@ serve(async (request) => {
   if (authError || !authData.user) return respond(401, { error: 'Invalid session' });
   const { data: profile, error: profileError } = await db.from('users').select('id, tenant_id, role').eq('auth_id', authData.user.id).single();
   if (profileError || !profile || !uuid.test(profile.tenant_id) || !canGenerate(profile.role, profile.tenant_id, profile.tenant_id)) return respond(403, { error: 'Manager access required' });
+  if (kind === 'evidence') {
+    const { data: item, error } = await db.from('items').select('id, tenant_id, name, description, sku, barcode, brand')
+      .eq('id', itemId).eq('tenant_id', profile.tenant_id).single();
+    if (error || !item || item.tenant_id !== profile.tenant_id) return respond(404, { error: 'Product not found' });
+    const source = { ...item, packageText: item.name.match(/\b\d+(?:\.\d+)?\s*(?:kg|gm|g|ml|l|pcs?|pieces?|grams?|litres?|liters?)\b/i)?.[0]
+      ?? item.description?.match(/\b\d+(?:\.\d+)?\s*(?:kg|gm|g|ml|l|pcs?|pieces?|grams?|litres?|liters?)\b/i)?.[0] ?? null };
+    return respond(200, { evidence: resolveRegistryEvidence(source), snapshot: registrySnapshot(source) });
+  }
   const config = providerConfig(Deno.env.get('OPENROUTER_API_KEY'));
   // A narrowly scoped, verified-source fallback can work even when the free provider is unavailable.
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
@@ -135,7 +143,7 @@ serve(async (request) => {
         const { data, error } = await db.from(table).update({ description: draft.description })
           .eq('id', source.previous.id).eq('tenant_id', profile.tenant_id)
           .eq('review_status', 'draft').eq('updated_at', source.previous.updated_at)
-          .is('description', null).select('id').maybeSingle();
+          .or('description.is.null,description.eq.').select('id').maybeSingle();
         if (error || !data) failures.push({ id: source.id, reason: 'Draft was changed or could not be updated' });
         else { generated++; if (fallback) fallbackGenerated++; }
         continue;

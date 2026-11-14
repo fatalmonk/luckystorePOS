@@ -2,6 +2,7 @@
 // Fail-closed public API check against dedicated Lucky Store Testing only.
 // Never call real entity IDs or use service_role for negative write probes.
 import { randomUUID } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const TEST_REF = 'grxxenvdhfwzafzyykgo';
@@ -75,7 +76,7 @@ async function main() {
   if (results.some(x => !x.pass)) process.exitCode = 1;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   main().catch(error => {
     console.error('Translation API preflight failed: ' + error.message);
     process.exitCode = 1;

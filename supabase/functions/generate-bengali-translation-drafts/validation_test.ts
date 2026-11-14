@@ -61,3 +61,20 @@ Deno.test('empty or missing canonical descriptions cannot authorize unsupported 
   assertEquals(Boolean(validateDraft({ ...source, description: null },
     { ...valid, description: null }).draft), true);
 });
+Deno.test('Bengali package synonyms preserve quantities but reject changes', () => {
+  for (const [english, bengali] of [['6 pcs', '৬ পিস'], ['2 pack', '২ প্যাক']]) {
+    const product = { ...source, name: `Ispahani Tea ${english}`, description: null };
+    const row = { ...valid, name: `Ispahani চা ${bengali}`, description: null };
+    assertEquals(Boolean(validateDraft(product, row).draft), true);
+    assertEquals(Boolean(validateDraft(product, { ...row, name: row.name.replace('২', '৩').replace('৬', '৭') }).error), true);
+  }
+  assertEquals(Boolean(validateDraft({ ...source, name: 'Ispahani Tea 2 pack', description: null },
+    { ...valid, name: 'Ispahani চা ২ প্যাকেট', description: null }).error), true);
+});
+Deno.test('evidence-only descriptions reject unsupported claims and empty copy', () => {
+  const product = { ...source, description: null, evidenceDescription: 'Pack size: 500 g' };
+  assertEquals(Boolean(validateDraft(product, valid).error), true);
+  assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা 500 g, সুস্বাদু।' }).error), true);
+  assertEquals(Boolean(validateDraft(product, { ...valid, description: '  ' }).error), true);
+  assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা, 500 g।' }, 'চা পাতা, 500 g।').draft), true);
+});

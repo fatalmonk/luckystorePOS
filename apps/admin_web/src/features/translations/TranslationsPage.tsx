@@ -8,7 +8,7 @@ import { useNotify } from '@/components/NotificationContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui/card';
 import { canTransitionTranslation, getCanonicalPackageText } from './translationWorkflow';
-import { registrySnapshot, resolveRegistryEvidence } from '../../../../../supabase/functions/_shared/translation-registry-evidence';
+import type { RegistryEvidenceResult } from '../../../../../supabase/functions/_shared/translation-registry-evidence';
 import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow, TranslationEvidenceSnapshot } from './translationTypes';
 
 type CatalogRow = { id: string; tenant_id: string; name: string; description: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
@@ -67,7 +67,18 @@ export function TranslationsPage() {
   });
   const sources = new Map((catalogQuery.data ?? []).map((row) => [row.id, row]));
   const source = editing ? sources.get(editing.row.kind === 'item' ? editing.row.item_id : editing.row.category_id) ?? null : null;
-  const resolvedEvidence = source && editing?.row.kind === 'item' ? resolveRegistryEvidence(source) : null;
+  const evidenceQuery = useQuery<{ evidence: RegistryEvidenceResult; snapshot: TranslationEvidenceSnapshot | null }>({
+    queryKey: ['translation-registry-evidence', tenantId, source],
+    enabled: Boolean(canManage && source && editing?.row.kind === 'item'),
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', {
+        body: { kind: 'evidence', itemId: source!.id },
+      });
+      if (error || !data?.evidence) throw error ?? new Error('Could not load registry evidence');
+      return data;
+    },
+  });
+  const resolvedEvidence = evidenceQuery.data?.evidence ?? null;
   const parsed: TranslationRow | null = editing ? {
     ...editing.row, evidence_snapshot: editing.evidenceSnapshot,
     search_terms: [...new Set(editing.aliasesText.split('\n').map(term => term.trim()).filter(Boolean))],
@@ -85,7 +96,7 @@ export function TranslationsPage() {
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
     && !isStale
-    && (action === 'save_draft' || editing?.row.kind !== 'item' || (!source?.sku?.startsWith('CANVA-TEST-') && !resolvedEvidence?.entry) || Boolean(resolvedEvidence?.matched && resolvedEvidence.links.length && parsed?.description?.trim()))
+    && (action === 'save_draft' || editing?.row.kind !== 'item' || (resolvedEvidence !== null && ((!source?.sku?.startsWith('CANVA-TEST-') && !resolvedEvidence.entry) || Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim()))))
     && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
     && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 
@@ -158,12 +169,16 @@ export function TranslationsPage() {
   if (!canManage) return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
 
   const startEditing = (row: TranslationRow) => {
-    const record = sources.get(row.kind === 'item' ? row.item_id : row.category_id);
     setEditing({
       row, aliasesText: row.search_terms.join('\n'),
-      evidenceSnapshot: row.evidence_snapshot ?? (row.kind === 'item' && record ? registrySnapshot(record) : null),
+      evidenceSnapshot: row.evidence_snapshot,
       humanReviewConfirmed: false,
     });
+  };
+  const prepareEvidence = () => {
+    if (editing && evidenceQuery.data?.snapshot && !editing.evidenceSnapshot) {
+      changeEditor({ evidenceSnapshot: evidenceQuery.data.snapshot });
+    }
   };
   const changeEditor = (changes: Partial<Editor>) => {
     if (editing) setEditing({ ...editing, ...changes, humanReviewConfirmed: false });
@@ -221,6 +236,8 @@ export function TranslationsPage() {
                   </dl>
                   {editing.row.kind === 'item' && <section aria-label="Registry evidence" className="space-y-2 rounded-lg border border-border p-3 text-sm">
                     <h4 className="font-semibold">Source evidence</h4>
+                    {evidenceQuery.isLoading && <p role="status">Loading registry evidence...</p>}
+                    {evidenceQuery.isError && <p role="alert">Could not load registry evidence. Retry before review.</p>}
                     {resolvedEvidence?.matched ? <p>Exact production registry match: {resolvedEvidence.entry?.exactName} — {resolvedEvidence.entry?.netQuantity} (ID {resolvedEvidence.key})</p> : <p role="alert" className="text-danger">{resolvedEvidence?.issue ?? 'No exact production registry mapping.'}</p>}
                     {resolvedEvidence?.links.map(link => <div key={link.url} className="break-words">
                       <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-text-link underline">{link.title} — Open manufacturer source</a>
@@ -228,6 +245,7 @@ export function TranslationsPage() {
                     </div>)}
                     {resolvedEvidence?.missing.map(message => <p key={message} className="text-text-muted">Evidence missing: {message}</p>)}
                     {!resolvedEvidence?.links.length && <p role="alert">Evidence missing: No openable product-specific source. This product must remain a draft until packaging photos or manufacturer proof can be checked.</p>}
+                    {evidenceQuery.data?.snapshot && !editing.evidenceSnapshot && <button type="button" className={buttonClass} onClick={prepareEvidence}>Prepare evidence snapshot</button>}
                     {editing.evidenceSnapshot && <p>Canonical evidence snapshot prepared for this item. {isDirty ? 'Save Draft to persist it.' : 'Saved evidence is ready for review.'}</p>}
                   </section>}
                   {editing.row.kind === 'item' && !resolvedEvidence?.links.length && parsed?.evidence_snapshot?.sourceUris.map((uri, index) =>

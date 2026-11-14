@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache';
 import { getCachedCategoriesOrThrow } from '../products/getCachedCategories';
 import { createProductId, type Product } from '../products/types';
 import { BENGALI_CATEGORY_NAMES } from '../products/getHomePageData';
-import { getCategoryGroup, normalizeCategorySlug } from '../types';
+import { getCanonicalCategorySlug, getCategoryGroup, normalizeCategorySlug } from '../types';
 import type { Category } from '../products/types';
 import { WordMatchEmojiResolver } from '../products/parsers/EmojiResolver';
 import { STOREFRONT_STORE_ID } from '../products/constants';
@@ -119,7 +119,7 @@ function mapProductDto(
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
     ...(locale === 'en' && product.badge ? { badge: product.badge } : {}),
-    category: locale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(resolvedCategory)] ?? '') : resolvedCategory,
+    category: locale === 'bn' ? (BENGALI_CATEGORY_NAMES[getCanonicalCategorySlug(resolvedCategory)] ?? '') : resolvedCategory,
     ...(catId ? { categoryId: catId } : {}),
     ...(description ? { description } : {}),
   };

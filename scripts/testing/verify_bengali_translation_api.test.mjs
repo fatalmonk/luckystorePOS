@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, symlinkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { TEST_REF, targetFromEnv, probes, verifyApi } from './verify_bengali_translation_api.mjs';
 
 const approved = {
@@ -7,6 +11,21 @@ const approved = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder',
   E2E_SUPABASE_PROJECT_REF: TEST_REF,
 };
+test('symlink invocation runs the preflight and fails closed without test credentials', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'bengali-api-preflight-'));
+  try {
+    const link = join(dir, 'verify.mjs');
+    symlinkSync(new URL('./verify_bengali_translation_api.mjs', import.meta.url), link);
+    const result = spawnSync(process.execPath, [link], {
+      encoding: 'utf8',
+      env: { PATH: process.env.PATH ?? '' },
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Translation API preflight failed: Missing dedicated Testing URL/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 test('only explicit Testing/Security project is accepted', () => {
   assert.equal(targetFromEnv(approved).origin, approved.NEXT_PUBLIC_SUPABASE_URL);
   for (const candidate of [

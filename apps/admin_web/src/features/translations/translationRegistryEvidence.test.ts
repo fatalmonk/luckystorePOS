@@ -41,4 +41,10 @@ describe('Testing item to exact production registry evidence', () => {
     expect(resolveRegistryEvidence({ ...original, name: 'Samyang' }).matched).toBe(false);
     expect(resolveRegistryEvidence({ ...original, sku: 'CANVA-TEST-deadbeef' }).matched).toBe(false);
   });
+  it('matches attached gram suffixes without accepting a different size', () => {
+    const marks = five[2];
+    expect(resolveRegistryEvidence({ ...marks, name: 'Marks Powder 1000grams' }).matched).toBe(true);
+    expect(resolveRegistryEvidence({ ...marks, name: 'Marks Powder 1000g' }).matched).toBe(true);
+    expect(resolveRegistryEvidence({ ...marks, name: 'Marks Powder 500grams' }).matched).toBe(false);
+  });
 });

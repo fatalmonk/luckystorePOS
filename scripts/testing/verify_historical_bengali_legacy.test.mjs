@@ -71,3 +71,19 @@ test('Bengali mobile catalog v2 filters before pagination and preserves strict a
   assert.match(sql, /\^https:\/\//);
   assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.search_storefront_mobile_catalog_v2/);
 });
+
+test('forward migration shares the public-store rule and sorts Bengali pages by eligible translation name', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/20261115090000_align_bengali_mobile_public_store_and_sort.sql', import.meta.url), 'utf8');
+  assert.match(sql, /CREATE OR REPLACE FUNCTION translation_private\.is_public_storefront\(p_metadata jsonb\)/);
+  assert.match(sql, /p_metadata @> '[\{]\"is_public_storefront\":true[\}]'::jsonb/);
+  assert.equal((sql.match(/translation_private\.is_public_storefront\(s\.metadata\)/g) || []).length, 3,
+    'legacy eligibility and both mobile RPCs use the same predicate');
+  assert.doesNotMatch(sql, /is_public_storefront'\)::boolean/);
+  const v2 = sql.split('CREATE OR REPLACE FUNCTION public.search_storefront_mobile_catalog_v2(')[1];
+  assert.ok(v2, 'v2 is redefined in the forward migration');
+  assert.match(v2, /WITH matching_items AS MATERIALIZED \([\s\S]*?tr\.name AS bengali_name/);
+  assert.equal((v2.match(/CASE WHEN v_sort = 'name-asc' AND v_locale = 'bn' THEN m\.bengali_name END ASC/g) || []).length, 2,
+    'row number and page selection use the same Bengali sort key');
+  assert.equal((v2.match(/translation_private\.is_publication_eligible\(/g) || []).length, 2);
+  assert.equal((v2.match(/translation_private\.is_legacy_item_publication_eligible\(/g) || []).length, 2);
+});

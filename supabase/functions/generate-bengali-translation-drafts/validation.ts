@@ -8,18 +8,18 @@ export const canGenerate = (role: unknown, profileTenant: unknown, recordTenant:
 const bengali = /[\u0980-\u09ff]/u;
 // Match longer ASCII units first. Bengali numerals are normalized before
 // comparing source quantities, so they cannot bypass numeric-claim guards.
-const quantity = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?\s*(?:kg|gm|mg|g|ml|liters?|litres?|ltr|lb|l|oz|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার)/giu;
+const quantity = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?\s*(?:kg|grams?|gm|mg|g|ml|liters?|litres?|ltr|lb|l|oz|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার|পিস|প্যাক)(?![\p{L}\p{M}])/giu;
 const numbers = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?/gu;
 const bengaliDigits = '০১২৩৪৫৬৭৮৯';
 const normalize = (value: string) => value.toLowerCase()
   .replace(/[০-৯]/g, digit => String(bengaliDigits.indexOf(digit)))
   .replace(/\s+/g, '')
   .replace(/liters?|litres?|ltr|লিটার/g, 'l')
-  .replace(/গ্রাম|gm/g, 'g').replace(/কেজি/g, 'kg').replace(/মিলি/g, 'ml')
-  .replace(/pieces?|pcs?/g, 'pcs');
+  .replace(/গ্রাম|grams?|gm/g, 'g').replace(/কেজি/g, 'kg').replace(/মিলি/g, 'ml')
+  .replace(/pieces?|pcs?|পিস/g, 'pcs').replace(/প্যাক/g, 'pack');
 const tokens = (value: string, pattern: RegExp) => [...value.matchAll(pattern)].map((match) => normalize(match[0])).sort();
 
-export function validateDraft(source: Source, value: unknown): { draft?: Draft; error?: string } {
+export function validateDraft(source: Source, value: unknown, verifiedDescription?: string): { draft?: Draft; error?: string } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return { error: 'Invalid model row' };
   const row = value as Record<string, unknown>;
   if (Object.keys(row).some((key) => !['id', 'name', 'description', 'search_terms'].includes(key))) return { error: 'Unexpected model fields' };
@@ -34,6 +34,9 @@ export function validateDraft(source: Source, value: unknown): { draft?: Draft; 
   }
   const name = row.name.trim();
   const description = typeof row.description === 'string' ? row.description.trim() : null;
+  if ((hasCanonicalDescription || hasEvidence) && !description) return { error: 'Bengali description is required when supported facts exist' };
+  // Numeric checks cannot verify semantic claims in Bengali. Evidence-only copy must be a vetted template.
+  if (!hasCanonicalDescription && hasEvidence && description !== verifiedDescription) return { error: 'Description contains unverified claims' };
   for (const [canonical, translated] of [[source.name, name], ...(hasCanonicalDescription ? [[source.description ?? '', description ?? '']] : [])]) {
     if (JSON.stringify(tokens(canonical, numbers)) !== JSON.stringify(tokens(translated, numbers))
       || JSON.stringify(tokens(canonical, quantity)) !== JSON.stringify(tokens(translated, quantity))) return { error: 'Numeric or package identity changed' };
