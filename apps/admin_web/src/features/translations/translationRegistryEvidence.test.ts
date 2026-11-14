@@ -25,6 +25,15 @@ describe('Testing item to exact production registry evidence', () => {
       expect(result.missing.some(message => message.includes('No product-specific'))).toBe(true);
     }
   });
+  it('matches exact litre quantities and preserves manufacturer-backed claims', () => {
+    const vim = { id: '64567924-1111-4111-8111-111111111111',
+      name: 'Vim Dish Washing Liquid 1L', sku: 'CANVA-TEST-64567924', brand: 'Vim' };
+    const match = resolveRegistryEvidence(vim);
+    expect(match.matched).toBe(true);
+    expect(match.links.length).toBeGreaterThan(0);
+    expect(match.supportedFacts).toContain('1 Litre');
+    expect(resolveRegistryEvidence({ ...vim, name: 'Vim Dish Washing Liquid 2L' }).matched).toBe(false);
+  });
   it('rejects variant substitution, wrong size, brand-only match and a forged mapping', () => {
     const original = five[4];
     expect(resolveRegistryEvidence({ ...original, name: 'Samyang Buldak Ramen 2X Cup 70g' }).matched).toBe(false);

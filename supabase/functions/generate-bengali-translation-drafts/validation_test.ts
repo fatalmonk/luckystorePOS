@@ -37,3 +37,27 @@ Deno.test('preserves canonical BelleAme brand and protected variants', () => {
   assertEquals(Boolean(validateDraft(s, { ...row, name: row.name.replace('BelleAme', 'Bellame') }).error), true);
   assertEquals(Boolean(validateDraft(s, { ...row, name: row.name.replace('Original', 'অরিজিনাল') }).error), true);
 });
+
+Deno.test('unit alternatives preserve lb, litres and gm instead of prefix matching', () => {
+  const onePound = { ...source, name: 'Ispahani Tea 1 lb', description: null };
+  const validPound = { ...valid, name: 'Ispahani চা 1 lb', description: null };
+  assertEquals(Boolean(validateDraft(onePound, validPound).draft), true);
+  assertEquals(Boolean(validateDraft(onePound, { ...validPound, name: 'Ispahani চা 1 l' }).error), true);
+  assertEquals(Boolean(validateDraft({ ...onePound, name: 'Ispahani Tea 1 gm' }, { ...validPound, name: 'Ispahani চা 1 g' }).draft), true);
+});
+Deno.test('Bengali-digit quantities are normalized and unsupported quantities rejected', () => {
+  const canonical = { ...source, description: null };
+  const approved = { ...valid, description: null, name: 'Ispahani চা ৫০০ গ্রাম' };
+  assertEquals(Boolean(validateDraft(canonical, approved).draft), true);
+  assertEquals(Boolean(validateDraft(canonical, { ...approved, name: 'Ispahani চা ৭৫০ গ্রাম' }).error), true);
+  const factSource = { ...canonical, evidenceDescription: 'Pack size 500 g' };
+  assertEquals(Boolean(validateDraft(factSource, { ...valid, name: approved.name,
+    description: 'প্যাকেট ৭৫০ গ্রাম' }).error), true);
+});
+Deno.test('empty or missing canonical descriptions cannot authorize unsupported copy', () => {
+  assertEquals(Boolean(validateDraft({ ...source, description: '' }, valid).error), true);
+  assertEquals(Boolean(validateDraft({ ...source, description: 'Tea leaves, 500 g.' },
+    { ...valid, description: null }).error), true);
+  assertEquals(Boolean(validateDraft({ ...source, description: null },
+    { ...valid, description: null }).draft), true);
+});

@@ -29,3 +29,8 @@ Deno.test('variant, size and SKU substitution cannot use a verified template', (
     { ...base, sku: 'CANVA-TEST-deadbeef' },
   ]) assertEquals(evidenceFallbackDraft(row), null);
 });
+
+Deno.test('manufacturer-backed fallback ignores unrelated numeric claims in English copy', () => {
+  const enriched = { ...base, description: 'Imported summary with an unrelated claim about 40 percent.' };
+  assertEquals(Boolean(evidenceFallbackDraft(enriched)?.description), true);
+});

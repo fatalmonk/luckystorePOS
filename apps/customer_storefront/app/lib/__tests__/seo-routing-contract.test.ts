@@ -591,15 +591,18 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
         expect(meta.robots).toEqual({ index: false, follow: true });
       });
 
-      it('propagates genuine Bengali translation query failures', async () => {
+      it('fails closed to noindex when Bengali publication query is temporarily unavailable', async () => {
         const queryError = { code: '08006', message: 'connection failure' };
         mockTranslationMaybeSingle.mockResolvedValue({ data: null, error: queryError });
         const log = vi.spyOn(console, 'error').mockImplementation(() => {});
         const { generateMetadata } = await import('../../(bengali)/bn/product/[slug]/page');
-
-        await expect(generateMetadata({
+        const meta = await generateMetadata({
           params: Promise.resolve({ slug: 'radhuni-holud-gura-100gm--029b62d8' }),
-        })).rejects.toBe(queryError);
+        });
+        expect(meta.robots).toEqual({ index: false, follow: true });
+        expect(meta.alternates).toEqual({
+          canonical: 'https://www.luckystore1947.com/bn/product/radhuni-holud-gura-100gm--029b62d8',
+        });
         log.mockRestore();
       });
     });

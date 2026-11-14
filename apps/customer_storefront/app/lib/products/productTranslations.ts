@@ -164,8 +164,10 @@ export async function getPublishedItemTranslations(
       );
       return new Map();
     }
+    // Translation is optional presentation data. Never let an outage expose
+    // untranslated English copy or fail the entire product page.
     console.error('Failed to read Bengali product translations.', { code: error.code });
-    throw error;
+    return new Map();
   }
 
   const translations = new Map<string, PublishedItemTranslation>();

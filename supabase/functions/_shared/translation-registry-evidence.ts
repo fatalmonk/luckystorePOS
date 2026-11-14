@@ -14,11 +14,11 @@ export type RegistryEvidenceResult = {
 };
 
 const records = registry as Record<string, RegistryEntry>;
-const packageToken = /\b(\d+(?:\.\d+)?)\s*(kg|gm|g|ml|l|ltr|pcs?|pieces?)\b/i;
+const packageToken = /\b(\d+(?:\.\d+)?)\s*(kg|gm|g|ml|liters?|litres?|ltr|l|pieces?|pcs?)\b/i;
 const quantity = (raw: string) => {
   const match = raw.match(packageToken);
   if (!match) return null;
-  const units: Record<string, string> = { gm: 'g', g: 'g', kg: 'kg', ml: 'ml', l: 'l', ltr: 'l', pc: 'pcs', pcs: 'pcs', piece: 'pcs', pieces: 'pcs' };
+  const units: Record<string, string> = { gm: 'g', g: 'g', kg: 'kg', ml: 'ml', l: 'l', ltr: 'l', liter: 'l', liters: 'l', litre: 'l', litres: 'l', pc: 'pcs', pcs: 'pcs', piece: 'pcs', pieces: 'pcs' };
   return Number(match[1]) + units[match[2].toLowerCase()];
 };
 const normalizeName = (name: string) => name.toLowerCase().replace(/\bgrams?\b/g, 'g').replace(/\bgm\b/g, 'g').replace(/[^a-z0-9]+/g, '');

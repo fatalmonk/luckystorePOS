@@ -120,7 +120,7 @@ serve(async (request) => {
     for (const source of candidates) {
       const modelResult = results.get(source.id);
       // A name-only response must not masquerade as a completed description.
-      const needsDescription = Boolean(!source.description && source.evidenceDescription);
+      const needsDescription = Boolean(source.description?.trim() || source.evidenceDescription?.trim());
       const incompleteModelDraft = needsDescription && !modelResult?.draft?.description;
       const fallback = (!modelResult?.draft || incompleteModelDraft) ? evidenceFallbackDraft(source) : null;
       const draft = fallback ?? (incompleteModelDraft ? null : modelResult?.draft);

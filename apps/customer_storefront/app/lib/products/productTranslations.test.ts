@@ -188,12 +188,12 @@ describe('getPublishedItemTranslations', () => {
     errorSpy.mockRestore();
   });
 
-  it('propagates unexpected query failures instead of misreporting an outage as missing publication', async () => {
+  it('fails closed on unexpected query failures without exposing English content', async () => {
     const queryError = { code: '08006', message: 'connection failure' };
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.state.response = { data: null, error: queryError };
 
-    await expect(getPublishedItemTranslations([ITEM_ID])).rejects.toBe(queryError);
+    await expect(getPublishedItemTranslations([ITEM_ID])).resolves.toEqual(new Map());
     expect(errorSpy).toHaveBeenCalledWith(
       'Failed to read Bengali product translations.',
       { code: '08006' },

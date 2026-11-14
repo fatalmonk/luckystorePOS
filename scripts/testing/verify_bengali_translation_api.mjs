@@ -27,6 +27,8 @@ export function probes(uuid = randomUUID) {
   ]) {
     const base = '/rest/v1/' + table;
     output.push({ label: label + ': public name', method: 'GET', path: base + '?select=id,name&limit=1', expected: [200] });
+    output.push({ label: label + ': drafts not public', method: 'GET',
+      path: base + '?select=id,review_status&review_status=neq.published&limit=1', expected: [200], emptyArray: true });
     for (const field of ['evidence_snapshot', 'reviewed_by', 'published_by']) {
       output.push({ label: label + ': private ' + field, method: 'GET', path: base + '?select=' + field + '&limit=1', expected: [401, 403] });
     }
@@ -47,6 +49,7 @@ export async function verifyApi(target, options = {}) {
   const results = [];
   for (const check of checks) {
     let status = null;
+    let emptyArrayVerified = !check.emptyArray;
     try {
       const response = await fetcher(target.origin + check.path, {
         method: check.method, headers,
@@ -54,8 +57,12 @@ export async function verifyApi(target, options = {}) {
         signal: AbortSignal.timeout(10000), redirect: 'error',
       });
       status = response.status;
+      if (check.emptyArray && status === 200) {
+        const data = await response.json();
+        emptyArrayVerified = Array.isArray(data) && data.length === 0;
+      }
     } catch { /* Any network error fails closed. */ }
-    results.push({ label: check.label, status, pass: check.expected.includes(status) });
+    results.push({ label: check.label, status, pass: check.expected.includes(status) && emptyArrayVerified });
   }
   return results;
 }

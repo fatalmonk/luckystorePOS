@@ -6,9 +6,17 @@ export const canGenerate = (role: unknown, profileTenant: unknown, recordTenant:
   (role === 'admin' || role === 'manager') && typeof profileTenant === 'string' && profileTenant === recordTenant;
 
 const bengali = /[\u0980-\u09ff]/u;
-const quantity = /\d+(?:[.,]\d+)?\s*(?:kg|g|gm|mg|ml|l|ltr|litre|liter|oz|lb|pcs?|pieces?|pack|ct|কেজি|গ্রাম|মিলি|লিটার)/giu;
-const numbers = /\d+(?:[.,]\d+)?/gu;
-const normalize = (value: string) => value.toLowerCase().replace(/\s+/g, '').replace(/gm/g, 'g').replace(/ltr|litre|liter/g, 'l');
+// Match longer ASCII units first. Bengali numerals are normalized before
+// comparing source quantities, so they cannot bypass numeric-claim guards.
+const quantity = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?\s*(?:kg|gm|mg|g|ml|liters?|litres?|ltr|lb|l|oz|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার)/giu;
+const numbers = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?/gu;
+const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+const normalize = (value: string) => value.toLowerCase()
+  .replace(/[০-৯]/g, digit => String(bengaliDigits.indexOf(digit)))
+  .replace(/\s+/g, '')
+  .replace(/liters?|litres?|ltr|লিটার/g, 'l')
+  .replace(/গ্রাম|gm/g, 'g').replace(/কেজি/g, 'kg').replace(/মিলি/g, 'ml')
+  .replace(/pieces?|pcs?/g, 'pcs');
 const tokens = (value: string, pattern: RegExp) => [...value.matchAll(pattern)].map((match) => normalize(match[0])).sort();
 
 export function validateDraft(source: Source, value: unknown): { draft?: Draft; error?: string } {
@@ -17,20 +25,23 @@ export function validateDraft(source: Source, value: unknown): { draft?: Draft; 
   if (Object.keys(row).some((key) => !['id', 'name', 'description', 'search_terms'].includes(key))) return { error: 'Unexpected model fields' };
   if (row.id !== source.id || typeof row.name !== 'string' || !bengali.test(row.name)
     || !row.name.trim() || row.name.length > 240) return { error: 'Invalid identity or Bengali name' };
-  if (source.description === null && !source.evidenceDescription && row.description !== null) return { error: 'Description lacks evidence' };
-  if ((source.description !== null || source.evidenceDescription) && row.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
+  const hasCanonicalDescription = Boolean(source.description?.trim());
+  const hasEvidence = Boolean(source.evidenceDescription?.trim());
+  if (!hasCanonicalDescription && !hasEvidence && row.description !== null) return { error: 'Description lacks evidence' };
+  if ((hasCanonicalDescription || hasEvidence) && row.description === null) return { error: 'Bengali description is required when supported facts exist' };
+  if ((hasCanonicalDescription || hasEvidence) && row.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
     return { error: 'Invalid Bengali description' };
   }
   const name = row.name.trim();
   const description = typeof row.description === 'string' ? row.description.trim() : null;
-  for (const [canonical, translated] of [[source.name, name], ...(source.description !== null ? [[source.description ?? '', description ?? '']] : [])]) {
+  for (const [canonical, translated] of [[source.name, name], ...(hasCanonicalDescription ? [[source.description ?? '', description ?? '']] : [])]) {
     if (JSON.stringify(tokens(canonical, numbers)) !== JSON.stringify(tokens(translated, numbers))
       || JSON.stringify(tokens(canonical, quantity)) !== JSON.stringify(tokens(translated, quantity))) return { error: 'Numeric or package identity changed' };
   }
   for (const variant of ['Original', '2X', 'Best of']) {
     if (source.name.includes(variant) && !name.includes(variant)) return { error: 'Protected variant changed' };
   }
-  if (source.description === null && source.evidenceDescription && description) {
+  if (!hasCanonicalDescription && hasEvidence && source.evidenceDescription && description) {
     const facts = source.evidenceDescription;
     for (const token of tokens(description, numbers)) {
       if (!tokens(facts, numbers).includes(token)) return { error: 'Description contains unsupported numeric claim' };

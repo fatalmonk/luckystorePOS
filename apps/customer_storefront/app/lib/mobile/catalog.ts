@@ -16,6 +16,7 @@ const DEFAULT_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
   || 'supabase-url-not-configured';
 
 interface MobileCatalogRpcOptions {
+  locale: MobileLocale;
   query: string;
   categoryIds: string[] | null;
   inStockOnly: boolean;
@@ -26,7 +27,7 @@ interface MobileCatalogRpcOptions {
 
 const fetchMobileCatalogRpc = unstable_cache(
   async (options: MobileCatalogRpcOptions) => {
-    const { data, error } = await (supabase as any).rpc('search_storefront_mobile_catalog_v1', {
+    const params = {
       p_store_id: STOREFRONT_STORE_ID,
       p_query: options.query,
       p_category_ids: options.categoryIds,
@@ -34,7 +35,10 @@ const fetchMobileCatalogRpc = unstable_cache(
       p_sort: options.sort,
       p_limit: options.limit,
       p_offset: options.offset,
-    });
+    };
+    const { data, error } = options.locale === 'bn'
+      ? await (supabase as any).rpc('search_storefront_mobile_catalog_v2', { ...params, p_locale: 'bn' })
+      : await (supabase as any).rpc('search_storefront_mobile_catalog_v1', params);
     if (error) {
       console.error('Mobile catalog RPC failed:', { code: error.code ?? 'unknown' });
       throw new Error('Mobile catalog service temporarily unavailable');
@@ -45,7 +49,7 @@ const fetchMobileCatalogRpc = unstable_cache(
     }
     return data as { items: Record<string, unknown>[]; total: number };
   },
-  ['storefront-mobile-catalog-v1', DEFAULT_SUPABASE_URL],
+  ['storefront-mobile-catalog-locale-v2', DEFAULT_SUPABASE_URL],
   { revalidate: 60, tags: ['storefront-catalog-search', 'storefront-mobile-catalog'] },
 );
 
@@ -101,8 +105,8 @@ function mapProductDto(
   categoryMap?: Map<string, string>,
 ): MobileCatalogProduct {
   const imageUrl = product.imageUrl ?? product.image_url;
-  const name = (locale === 'bn' && product.bengaliName) ? product.bengaliName : product.name;
-  const description = (locale === 'bn' && product.bengaliDescription) ? product.bengaliDescription : product.description;
+  const name = locale === 'bn' ? product.bengaliName?.trim() ?? '' : product.name;
+  const description = locale === 'bn' ? product.bengaliDescription?.trim() ?? '' : product.description;
   const catId = product.categoryId || product.category_id;
   const resolvedCategory = product.category?.trim() || (catId && categoryMap?.get(catId)) || 'General';
   return {
@@ -114,8 +118,8 @@ function mapProductDto(
     unit: product.unit || 'pc',
     stock: product.stock,
     ...(imageUrl ? { imageUrl } : {}),
-    ...(product.badge ? { badge: product.badge } : {}),
-    category: resolvedCategory,
+    ...(locale === 'en' && product.badge ? { badge: product.badge } : {}),
+    category: locale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(resolvedCategory)] ?? '') : resolvedCategory,
     ...(catId ? { categoryId: catId } : {}),
     ...(description ? { description } : {}),
   };
@@ -162,7 +166,7 @@ export function toMobileCatalog(
     parentId: cat.parentId ?? cat.parent_id ?? null,
   }));
 
-  let filtered = allProducts;
+  let filtered = locale === 'bn' ? allProducts.filter(p => Boolean(p.bengaliName?.trim())) : allProducts;
 
   if (searchTerm) {
     filtered = filtered.filter((p) =>
@@ -246,6 +250,7 @@ export async function getMobileCatalog(query: MobileCatalogQuery = {}): Promise<
   const sort = ['price-asc', 'price-desc', 'name-asc'].includes(requestedSort) ? requestedSort : 'best';
 
   const data = await fetchMobileCatalogRpc({
+    locale,
     query: query.q?.trim().toLowerCase() ?? '',
     categoryIds: categoryIds?.sort() ?? null,
     inStockOnly: Boolean(query.inStockOnly),
@@ -253,6 +258,13 @@ export async function getMobileCatalog(query: MobileCatalogQuery = {}): Promise<
     limit,
     offset,
   });
+
+  // Fail closed if the locale-gated RPC ever returns untranslated catalog rows.
+  // Do not repair invalid pages by client filtering: it would corrupt totals.
+  if (locale === 'bn' && data.items.some(row =>
+    typeof row.bengali_name !== 'string' || !row.bengali_name.trim())) {
+    throw new Error('Bengali mobile catalog publication contract failed');
+  }
 
   const categoryById = new Map((rawCategories ?? []).map((category) => [category.id, category]));
   const categoryNameById = new Map((rawCategories ?? []).map((category) => [category.id, category.name]));

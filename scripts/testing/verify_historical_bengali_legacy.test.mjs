@@ -43,3 +43,31 @@ test('no mass review, fabricated evidence, or update of existing translated desc
   assert.doesNotMatch(migration,/INSERT\s+INTO\s+public\.item_translations/i);
   assert.match(bridge,/legacy_bengali_manifest/);
 });
+
+test('all 100 historical Bengali names and descriptions are captured in Git independently of database state', () => {
+  const snapshot = JSON.parse(readFileSync(new URL('../../supabase/data/historical-bengali-publications-2026-09-15.json', import.meta.url),'utf8'));
+  assert.equal(snapshot.schema, 'luckystore.bengali-legacy-content/v1');
+  const records = snapshot.records;
+  assert.equal(records.length,100);
+  assert.equal(new Set(records.map(x=>x.translation_id)).size,100);
+  assert.deepEqual(records.map(x=>x.translation_id).sort(),extractManifest(migration).map(x=>x[0]).sort());
+  for(const row of records){
+    assert.equal(row.locale, 'bn');
+    assert.equal(row.review_status, 'published');
+    assert.ok(row.name.trim());
+    assert.ok(row.description.trim());
+    assert.ok(row.created_at.startsWith('2026-09-15'));
+    assert.ok(row.updated_at.startsWith('2026-09-15'));
+  }
+});
+
+test('Bengali mobile catalog v2 filters before pagination and preserves strict and legacy publication checks', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/20261114212128_enforce_bengali_mobile_catalog_locale.sql',import.meta.url),'utf8');
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.search_storefront_mobile_catalog_v2/);
+  assert.match(sql, /p_locale\s+text\s+DEFAULT 'en'/);
+  assert.match(sql, /v_locale = 'en' OR tr\.id IS NOT NULL/);
+  assert.equal((sql.match(/translation_private\.is_legacy_item_publication_eligible\(tr\.id,tr\.item_id,tr\.tenant_id\)/g)||[]).length,2);
+  assert.equal((sql.match(/translation_private\.is_publication_eligible\(/g)||[]).length,2);
+  assert.match(sql, /\^https:\/\//);
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.search_storefront_mobile_catalog_v2/);
+});

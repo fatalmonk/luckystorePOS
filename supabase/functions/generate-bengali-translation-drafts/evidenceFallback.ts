@@ -24,5 +24,5 @@ export function evidenceFallbackDraft(source: Source): Draft | null {
     id: source.id, name: expected.name, description: expected.description,
     search_terms: [source.name, expected.name],
   };
-  return validateDraft({ ...source, evidenceDescription: match.supportedFacts }, proposed).draft ?? null;
+  return validateDraft({ ...source, description: null, evidenceDescription: match.supportedFacts }, proposed).draft ?? null;
 }
