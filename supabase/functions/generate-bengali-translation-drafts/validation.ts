@@ -27,6 +27,9 @@ export function validateDraft(source: Source, value: unknown): { draft?: Draft; 
     if (JSON.stringify(tokens(canonical, numbers)) !== JSON.stringify(tokens(translated, numbers))
       || JSON.stringify(tokens(canonical, quantity)) !== JSON.stringify(tokens(translated, quantity))) return { error: 'Numeric or package identity changed' };
   }
+  for (const variant of ['Original', '2X', 'Best of']) {
+    if (source.name.includes(variant) && !name.includes(variant)) return { error: 'Protected variant changed' };
+  }
   const translated = `${name} ${description ?? ''}`;
   if (source.brand && !translated.toLowerCase().includes(source.brand.toLowerCase())) return { error: 'Brand was not preserved' };
   if (!Array.isArray(row.search_terms) || row.search_terms.some((term) => typeof term !== 'string' || !term.trim() || term.length > 100)

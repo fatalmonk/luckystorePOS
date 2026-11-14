@@ -2,9 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { allowedOrigin, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
-// Fixed low-cost providers only. Credentials remain server-side Supabase secrets.
-const openAiModel = 'gpt-4o-mini';
-const openRouterModel = 'google/gemini-2.5-flash';
+// One pinned free model. No alternate provider or paid fallback.
+import { providerConfig, providerRequest } from './provider.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 serve(async (request) => {
@@ -32,13 +31,8 @@ serve(async (request) => {
   if (authError || !authData.user) return respond(401, { error: 'Invalid session' });
   const { data: profile, error: profileError } = await db.from('users').select('id, tenant_id, role').eq('auth_id', authData.user.id).single();
   if (profileError || !profile || !uuid.test(profile.tenant_id) || !canGenerate(profile.role, profile.tenant_id, profile.tenant_id)) return respond(403, { error: 'Manager access required' });
-  const openAiKey = Deno.env.get('OPENAI_API_KEY');
-  const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
-  const key = openAiKey || openRouterKey;
-  const providerUrl = openAiKey ? 'https://api.openai.com/v1/chat/completions'
-    : 'https://openrouter.ai/api/v1/chat/completions';
-  const model = openAiKey ? openAiModel : openRouterModel;
-  if (!key) return respond(503, { error: 'AI provider unavailable' });
+  const config = providerConfig(Deno.env.get('OPENROUTER_API_KEY'));
+  if (!config) return respond(503, { error: 'OpenRouter configuration unavailable' });
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
   const catalog = kind === 'item' ? 'items' : 'categories';
   const foreignKey = kind === 'item' ? 'item_id' : 'category_id';
@@ -68,20 +62,25 @@ serve(async (request) => {
     }
     if (!candidates.length) return respond(200, { generated: 0, skipped, failed: 0 });
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const timeout = setTimeout(() => controller.abort(), 55000);
     let provider: Response;
     try {
-      provider = await fetch(providerUrl, {
+      provider = await fetch(config.url, {
         method: 'POST', signal: controller.signal,
-        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, temperature: 0, max_tokens: 3000, response_format: { type: 'json_object' }, messages: [
-          { role: 'system', content: 'Translate only canonical product/category name and description into Bengali. Return JSON {"translations":[{"id":"...","name":"...","description":null or "...","search_terms":["..."]}]}. Exactly one row for each input id. Preserve Latin brand, variant, all numeric tokens, weights and units verbatim. Do not add claims, sizes, ingredients, or attributes. If source description is null return null. Search terms must include the canonical English name. No markdown.' },
-          { role: 'user', content: JSON.stringify(candidates) },
-        ] }),
+        headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(providerRequest(candidates)),
       });
     } catch { return respond(503, { error: 'AI provider unavailable' }); }
     finally { clearTimeout(timeout); }
-    if (!provider.ok) return respond(503, { error: 'AI provider unavailable' });
+    if (!provider.ok) {
+      let code = 'unknown';
+      try {
+        const failure = await provider.json();
+        if (typeof failure?.error?.code === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(failure.error.code)) code = failure.error.code;
+      } catch { /* Never log raw provider bodies or credentials. */ }
+      console.error(JSON.stringify({ event: 'translation_provider_error', provider: 'openrouter', status: provider.status, code }));
+      return respond(503, { error: 'AI provider unavailable', code });
+    }
     let content: unknown;
     try { content = (await provider.json()).choices?.[0]?.message?.content; } catch { return respond(502, { error: 'Invalid AI provider response' }); }
     if (typeof content !== 'string' || content.length > 30000) return respond(502, { error: 'Invalid AI provider response' });

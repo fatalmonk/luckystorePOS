@@ -29,3 +29,11 @@ Deno.test('rejects unauthorized origins, roles, tenants and oversized batches', 
   assertEquals(validRequest('category', 10), true);
   assertEquals(Boolean(validateDraft(source, { ...valid, claims: ['unverified'] }).error), true);
 });
+
+Deno.test('preserves canonical BelleAme brand and protected variants', () => {
+  const s = { id: source.id, name: 'BelleAme Chocolate Biscuits Original 135g', brand: 'BelleAme', description: null };
+  const row = { id: s.id, name: 'BelleAme চকলেট বিস্কুট Original 135g', description: null, search_terms: [] };
+  assertEquals(Boolean(validateDraft(s, row).draft), true);
+  assertEquals(Boolean(validateDraft(s, { ...row, name: row.name.replace('BelleAme', 'Bellame') }).error), true);
+  assertEquals(Boolean(validateDraft(s, { ...row, name: row.name.replace('Original', 'অরিজিনাল') }).error), true);
+});
