@@ -8,12 +8,15 @@ from pathlib import Path
 
 from ..core.models import Finding, ModuleResult, Severity
 
+# Preserve schema qualification so private schema names are not misclassified
+# as public table names. The translation_private schema is deliberately not exposed
+# through PostgREST and its tables explicitly revoke all client privileges.
 CREATE_TABLE_RE = re.compile(
-    r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)",
+    r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?P<schema>[a-zA-Z0-9_]+)\.)?(?P<table>[a-zA-Z0-9_]+)",
     re.IGNORECASE,
 )
 ENABLE_RLS_RE = re.compile(
-    r"\bALTER\s+TABLE\s+(?:ONLY\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
+    r"\bALTER\s+TABLE\s+(?:ONLY\s+)?(?:(?P<schema>[a-zA-Z0-9_]+)\.)?(?P<table>[a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
     re.IGNORECASE,
 )
 SEC_DEFINER_RE = re.compile(
@@ -67,14 +70,23 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
         rel_path = str(file_path.relative_to(repo_root))
 
         # Check tables created vs RLS enabled
-        created_tables = set(CREATE_TABLE_RE.findall(content))
-        enabled_rls_tables = set(ENABLE_RLS_RE.findall(content))
+        created_tables = {(m.group("schema") or "public").lower() + "." + m.group("table").lower()
+                          for m in CREATE_TABLE_RE.finditer(content)}
+        enabled_rls_tables = {(m.group("schema") or "public").lower() + "." + m.group("table").lower()
+                              for m in ENABLE_RLS_RE.finditer(content)}
 
-        # Disregard internal or temp tables
-        ignored_tables = {"spatial_ref_sys", "schema_migrations"}
+        # translation_private is a non-exposed schema with no client table grants.
+        # It uses SECURITY DEFINER predicates with fixed empty search_path and
+        # explicitly REVOKEs client privileges in the creating migration.
+        ignored_tables = {"public.spatial_ref_sys", "public.schema_migrations"}
 
         for tbl in created_tables:
-            if tbl.lower() in ignored_tables:
+            if tbl in ignored_tables:
+                continue
+            if tbl.startswith("translation_private.") and re.search(
+                rf"REVOKE\s+ALL\s+ON\s+TABLE\s+{re.escape(tbl)}\s+FROM\s+PUBLIC\s*,\s*anon\s*,\s*authenticated",
+                content, re.IGNORECASE,
+            ):
                 continue
             if tbl not in enabled_rls_tables:
                 findings.append(

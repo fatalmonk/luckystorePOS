@@ -30,6 +30,33 @@ class SecurityRlsDetectorTests(unittest.TestCase):
 
         self.assertEqual([], result.findings)
 
+    def test_private_schema_table_with_explicit_revoke_is_not_misclassified_as_public_table(self) -> None:
+        sql = '''
+        CREATE SCHEMA IF NOT EXISTS translation_private;
+        CREATE TABLE IF NOT EXISTS translation_private.legacy_item_approvals (translation_id uuid);
+        REVOKE ALL ON TABLE translation_private.legacy_item_approvals
+          FROM PUBLIC, anon, authenticated, service_role;
+        CREATE TABLE public.catalog_import_batches (id uuid);
+        ALTER TABLE public.catalog_import_batches ENABLE ROW LEVEL SECURITY;
+        '''
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            migrations = root / "supabase" / "migrations"
+            migrations.mkdir(parents=True)
+            (migrations / "001_private.sql").write_text(sql, encoding="utf-8")
+            result = security_rls.run(root)
+        self.assertEqual([], result.findings)
+
+    def test_private_schema_without_client_revoke_still_requires_rls(self) -> None:
+        sql = "CREATE TABLE translation_private.unsafe (id uuid);"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            migrations = root / "supabase" / "migrations"
+            migrations.mkdir(parents=True)
+            (migrations / "001_private.sql").write_text(sql, encoding="utf-8")
+            result = security_rls.run(root)
+        self.assertIn("sec-rls-missing", [x.rule_id for x in result.findings])
+
     def test_unsafe_search_path_remains_a_finding(self) -> None:
         sql = """
         CREATE FUNCTION public.unsafe() RETURNS void
