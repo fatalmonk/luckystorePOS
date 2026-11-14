@@ -398,6 +398,9 @@ verify_jwt = true
 [functions.extract-receipt-vision]
 verify_jwt = true
 
+[functions.generate-bengali-translation-drafts]
+verify_jwt = true
+
 [functions.import-inventory]
 verify_jwt = true
 

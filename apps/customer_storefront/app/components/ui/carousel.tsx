@@ -78,7 +78,7 @@ function Carousel({ opts, plugins, setApi, className, children, ...props }: Caro
         className={['relative', className].filter(Boolean).join(' ')}
         onKeyDownCapture={onKeyDownCapture}
         role="region"
-        aria-roledescription="carousel"
+        aria-roledescription={props['aria-roledescription'] ?? 'carousel'}
         tabIndex={0}
       >
         {children}
@@ -101,7 +101,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       {...props}
       role="group"
-      aria-roledescription="slide"
+      aria-roledescription={props['aria-roledescription'] ?? 'slide'}
       className={['min-w-0 shrink-0 grow-0 basis-full pl-3', className].filter(Boolean).join(' ')}
     />
   );

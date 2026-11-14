@@ -12,16 +12,31 @@ const PUBLIC_ORIGIN = 'https://www.luckystore1947.com';
 const PRODUCT_PATH = '/product/aarong-dairy-pure-liquid-milk--a0740002';
 const BENGALI_PRODUCT_PATH = `/bn${PRODUCT_PATH}`;
 
+type PublicationState = 'published' | 'unpublished';
+
+// The CI seed creates an unreviewed Bengali draft. A separate published-fixture
+// run must explicitly set its expected state; never infer it from page output.
+const expectedProductPublicationState = (() => {
+  const value = process.env.SEO_FIXTURE_PRODUCT_PUBLICATION_STATE || 'unpublished';
+  if (value !== 'published' && value !== 'unpublished') {
+    throw new Error('SEO_FIXTURE_PRODUCT_PUBLICATION_STATE must be published or unpublished');
+  }
+  return value as PublicationState;
+})();
+
 type RouteContract = {
   label: string;
   path: string;
   canonical: string;
   alternates: Record<'en-BD' | 'bn-BD' | 'x-default', string>;
+  unpublishedAlternates?: Record<string, string>;
+  expectedPublicationState?: PublicationState;
 };
 
-const routes = [
+const routes: RouteContract[] = [
   {
     label: 'English product',
+    expectedPublicationState: expectedProductPublicationState,
     path: PRODUCT_PATH,
     canonical: `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     alternates: {
@@ -29,9 +44,14 @@ const routes = [
       'bn-BD': `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
       'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     },
+    unpublishedAlternates: {
+      'en-BD': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
+      'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
+    },
   },
   {
     label: 'Bengali product',
+    expectedPublicationState: expectedProductPublicationState,
     path: BENGALI_PRODUCT_PATH,
     canonical: `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
     alternates: {
@@ -39,6 +59,7 @@ const routes = [
       'bn-BD': `${PUBLIC_ORIGIN}${BENGALI_PRODUCT_PATH}`,
       'x-default': `${PUBLIC_ORIGIN}${PRODUCT_PATH}`,
     },
+    unpublishedAlternates: {},
   },
   {
     label: 'Deal of the Week',
@@ -50,7 +71,19 @@ const routes = [
       'x-default': `${PUBLIC_ORIGIN}/best/dealoftheweek`,
     },
   },
-] satisfies RouteContract[];
+];
+
+function assertAlternates(route: RouteContract, alternateMap: Record<string, string | null>, count: number, label: string) {
+  const expected = route.expectedPublicationState === 'unpublished'
+    ? route.unpublishedAlternates
+    : route.alternates;
+  if (!expected) {
+    throw new Error(`${label}: missing independently specified alternate contract`);
+  }
+  expect(alternateMap, `${label}: alternates for the expected publication state`).toEqual(expected);
+  expect(count, `${label}: alternate count`).toBe(Object.keys(expected).length);
+  return route.expectedPublicationState === 'unpublished';
+}
 
 function getTags(html: string, name: string) {
   return Array.from(html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi')), (match) => match[0]);
@@ -235,9 +268,11 @@ function assertRawSeoContract(
   expect(canonicalHrefs, `${route.label}: raw canonical value`).toEqual([route.canonical]);
   expect(head.titles, `${route.label}: raw head title count`).toHaveLength(1);
   expect(head.descriptions, `${route.label}: raw head description count`).toHaveLength(1);
-  expect(head.alternates, `${route.label}: raw head alternate count`).toHaveLength(3);
-  expect(Object.keys(alternateMap), `${route.label}: unique raw hreflang values`).toHaveLength(3);
-  expect(alternateMap, `${route.label}: raw alternate values`).toEqual(route.alternates);
+  const unpublished = assertAlternates(route, alternateMap, head.alternates.length, `${route.label}: raw head`);
+  if (unpublished && route.label === 'Bengali product') {
+    expect(head.robots.some((tag) => getAttribute(tag, 'content')?.includes('noindex')),
+      `${route.label}: unpublished page is noindex`).toBe(true);
+  }
 
   expect(body.canonicals, `${route.label}: raw body canonical count`).toHaveLength(0);
   expect(body.titles, `${route.label}: raw body title count`).toHaveLength(0);
@@ -276,11 +311,13 @@ async function assertBrowserSeoContract(page: Page, route: RouteContract, baseUr
   await expect(canonical, `${route.label}: DOM canonical value`).toHaveAttribute('href', route.canonical);
   await expect(page.locator('head title'), `${route.label}: DOM head title count`).toHaveCount(1);
   await expect(page.locator('head meta[name="description"]'), `${route.label}: DOM head description count`).toHaveCount(1);
-  await expect(alternates, `${route.label}: DOM head alternate count`).toHaveCount(3);
-
   const alternateMap = Object.fromEntries(await alternates.evaluateAll((links) =>
     links.map((link) => [link.getAttribute('hreflang'), link.getAttribute('href')])));
-  expect(alternateMap, `${route.label}: DOM alternate values`).toEqual(route.alternates);
+  const unpublished = assertAlternates(route, alternateMap, await alternates.count(), `${route.label}: DOM head`);
+  if (unpublished && route.label === 'Bengali product') {
+    await expect(page.locator('head meta[name="robots"]'), `${route.label}: unpublished page is noindex`)
+      .toHaveAttribute('content', /noindex/);
+  }
 
   await expect(page.locator('body link[rel~="canonical"]'), `${route.label}: DOM body canonical count`).toHaveCount(0);
   await expect(page.locator('body title'), `${route.label}: DOM body title count`).toHaveCount(0);
@@ -309,6 +346,24 @@ test.describe('SEO response contract semantics', () => {
     expect(() => assertExpectedHttp200(500, 'fixture route')).toThrow(
       'SEO response contract failure: fixture route returned HTTP 500',
     );
+  });
+
+  test('[semantics] draft and published alternate contracts cannot be mistaken for each other', () => {
+    const english = routes[0];
+    const bengali = routes[1];
+    for (const route of [english, bengali]) {
+      const draft = { ...route, expectedPublicationState: 'unpublished' as const };
+      const published = { ...route, expectedPublicationState: 'published' as const };
+      const draftMap = route.unpublishedAlternates ?? {};
+      expect(() => assertAlternates(draft, draftMap, Object.keys(draftMap).length, 'draft'))
+        .not.toThrow();
+      expect(() => assertAlternates(draft, route.alternates, 3, 'draft cannot pass as published'))
+        .toThrow();
+      expect(() => assertAlternates(published, route.alternates, 3, 'published'))
+        .not.toThrow();
+      expect(() => assertAlternates(published, draftMap, Object.keys(draftMap).length, 'published cannot pass as draft'))
+        .toThrow();
+    }
   });
 
   test('[semantics] non-local targets require provenance while localhost may omit it', () => {

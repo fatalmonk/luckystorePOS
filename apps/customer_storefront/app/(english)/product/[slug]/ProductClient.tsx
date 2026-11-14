@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { toProductSlug } from '../../../lib/products/slugify';
 import { withLocale, type Locale } from '../../../lib/i18n/config';
-import { BENGALI_CATEGORY_NAMES, getCanonicalCategorySlug, normalizeCategorySlug } from '../../../lib/types';
+import { getCanonicalCategorySlug, normalizeCategorySlug } from '../../../lib/types';
 import React, { useEffect } from 'react';
 import { Header } from '../../../components/updated/Header';
 import { BottomNav } from '../../../components/BottomNav';
@@ -23,6 +23,7 @@ import { trackViewItem } from '../../../lib/analytics';
 import { getBrandHref } from '../../../lib/brandsData';
 import { getDictionary } from '../../../lib/i18n/dictionaries';
 import { getDisplayProductUnit } from '../../../lib/products/displayProductUnit';
+import type { LocalizedProductDetails, PublishedItemTranslation } from '../../../lib/products/productTranslations';
 
 interface ProductClientProps {
   product: Product;
@@ -33,6 +34,8 @@ interface ProductClientProps {
   productCanonicalUrl?: string;
   enrichment?: ProductEnrichment;
   galleryImages?: ProductEnrichment['galleryImages'];
+  localizedProduct?: Pick<PublishedItemTranslation, 'name' | 'description' | 'origin'>;
+  localizedDetails?: LocalizedProductDetails;
 }
 
 export function getCategoryBreadcrumbHref(category: string, locale: Locale): string {
@@ -40,7 +43,18 @@ export function getCategoryBreadcrumbHref(category: string, locale: Locale): str
   return withLocale(`/category/${canonical}`, locale);
 }
 
-function ProductContent({ product, crossSell, radhuniPackVariants = [], locale = 'en', productUrlName, productCanonicalUrl, enrichment, galleryImages: providedGalleryImages }: ProductClientProps) {
+function ProductContent({
+  product,
+  crossSell,
+  radhuniPackVariants = [],
+  locale = 'en',
+  productUrlName,
+  productCanonicalUrl,
+  enrichment,
+  galleryImages: providedGalleryImages,
+  localizedProduct,
+  localizedDetails,
+}: ProductClientProps) {
   const { showToast } = useToast();
   const { cart, addToCart, updateQty } = useCartContext();
   const { addViewed } = useRecentlyViewed();
@@ -56,10 +70,12 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   const qtyInCart = cart.find((c) => c.id === product.id)?.qty || 0;
   const isBn = locale === 'bn';
   const dict = getDictionary(locale);
-  const displayEnrichment = isBn && enrichment?.localizedContent?.bn
-    ? { ...enrichment, ...enrichment.localizedContent.bn }
-    : enrichment;
-  const displayName = (isBn && product.name) ? product.name : (displayEnrichment?.exactName || product.name);
+  const displayEnrichment = isBn ? undefined : enrichment;
+  const displayName = isBn ? localizedProduct?.name || '' : (displayEnrichment?.exactName || product.name);
+  const displayFaqs = isBn ? localizedDetails?.faqs : displayEnrichment?.faqs;
+  const displayHighlights = isBn ? localizedDetails?.highlights : displayEnrichment?.highlights;
+  const displayUsageDirections = isBn ? localizedDetails?.usageDirections : displayEnrichment?.usageDirections;
+  const displayStorageInstructions = isBn ? localizedDetails?.storageInstructions : displayEnrichment?.storageInstructions;
 
   const stockStatus = product.availabilityUnknown
     ? { text: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable', color: 'text-warm-muted', bg: 'bg-warm-image-well', aria: isBn ? 'দাম পুরোনো হতে পারে · অর্ডার বন্ধ' : 'Snapshot: price may be outdated · ordering unavailable' }
@@ -72,7 +88,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   const handleAdd = () => {
     if (product.availabilityUnknown) return;
     if (product.stock <= 0) {
-      showToast('Sorry, this item is out of stock');
+      showToast(isBn ? 'দুঃখিত, পণ্যটির স্টক বর্তমানে শেষ' : 'Sorry, this item is out of stock');
       return;
     }
     addToCart(product);
@@ -88,9 +104,19 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   };
 
   const productUrl = withLocale(`/product/${toProductSlug(productUrlName ?? product.name, product.id)}`, locale);
-  const localizedSummary = isBn ? enrichment?.localizedContent?.bn?.summary : undefined;
-  const overviewText = localizedSummary || ((isBn && product.description) ? product.description : (displayEnrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`));
-  const productBrand = displayEnrichment?.brand || product.brand;
+  const reviewedDescription = isBn && localizedProduct?.description
+    ? localizedProduct.description.trim()
+    : undefined;
+  const overviewText = isBn
+    ? localizedProduct
+      ? localizedDetails?.summary || reviewedDescription
+      : undefined
+    : displayEnrichment?.summary || product.description || `Order ${displayName} for local doorstep delivery in Chattogram.`;
+  const additionalOverviewText = reviewedDescription && reviewedDescription !== overviewText
+    ? reviewedDescription
+    : undefined;
+  const productBrand = isBn ? product.brand : displayEnrichment?.brand || product.brand;
+  const displayOrigin = isBn ? localizedProduct?.origin : product.origin;
   const brandHref = getBrandHref(productBrand, locale);
   const galleryImages = providedGalleryImages !== undefined
     ? providedGalleryImages
@@ -100,31 +126,46 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
         ? [{ url: product.image_url, alt: displayName }]
         : [];
 
-  // Specifications: derive catalog SKU dynamically, then append editorial or fallback specs
-  const displayUnit = getDisplayProductUnit(displayName, displayEnrichment?.netQuantity || product.unit);
+  // Canonical identifiers and package units remain unchanged in both locales.
+  const displayUnit = getDisplayProductUnit(displayName, isBn ? product.unit : displayEnrichment?.netQuantity || product.unit);
   const genericUnit = /^(?:pc|pcs|piece|pieces)$/i.test(product.unit?.trim() || '');
-  const productSpecifications = displayEnrichment?.specifications || [
-    ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
-    ...(product.category ? [{ label: 'Category', value: product.category }] : []),
-    ...(displayUnit ? [{ label: 'Net Quantity', value: displayUnit }] : []),
-    { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
-    { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
-  ];
-  const specifications = [
-    ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
-    ...productSpecifications.map((spec) =>
-      spec.label.toLowerCase() === 'net quantity' && genericUnit && displayUnit
-        ? { ...spec, value: displayUnit }
-        : spec,
-    ),
-  ];
+  const reservedLocalizedLabels = new Set([
+    'brand', 'ব্র্যান্ড',
+    'store sku', 'sku', 'দোকানের sku',
+    'net quantity', 'পরিমাণ',
+    'origin', 'উৎপত্তি',
+  ]);
+  const specifications = isBn
+    ? [
+        ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
+        ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
+        ...(displayUnit ? [{ label: 'Net Quantity', value: displayUnit }] : []),
+        ...(displayOrigin ? [{ label: 'উৎপত্তি', value: displayOrigin }] : []),
+        ...(localizedDetails?.specifications || []).filter(
+          (specification) => !reservedLocalizedLabels.has(specification.label.trim().toLocaleLowerCase()),
+        ),
+      ]
+    : [
+        ...(product.sku ? [{ label: 'Store SKU', value: product.sku }] : []),
+        ...(displayEnrichment?.specifications || [
+          ...(productBrand ? [{ label: 'Brand', value: productBrand }] : []),
+          ...(product.category ? [{ label: 'Category', value: product.category }] : []),
+          ...(displayUnit ? [{ label: 'Net Quantity', value: displayUnit }] : []),
+          { label: 'Fulfillment', value: 'Direct from Lucky Store Chawkbazar' },
+          { label: 'Inspection Guarantee', value: '100% doorstep inspection prior to payment' },
+        ]).map((spec) =>
+          spec.label.toLowerCase() === 'net quantity' && genericUnit && displayUnit
+            ? { ...spec, value: displayUnit }
+            : spec,
+        ),
+      ];
 
   return (
     <>
-      {displayEnrichment?.faqs && displayEnrichment.faqs.length > 0 && (
-        <FaqJsonLd items={displayEnrichment.faqs} />
+      {displayFaqs && displayFaqs.length > 0 && (
+        <FaqJsonLd items={displayFaqs} />
       )}
-      <Header />
+      <Header locale={locale} />
 
       <main id="main-content" className="flex-1 pb-28 md:pb-12">
           <div className="mx-auto mt-1 min-h-full max-w-[var(--container-storefront)] rounded-t-warm-panel bg-warm-bg px-[var(--space-page-x)] md:mt-3">
@@ -137,8 +178,10 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                 {
                   label: product.availabilityUnknown
                     ? isBn ? 'সব পণ্য' : 'All products'
-                    : isBn ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(product.category)] || product.category) : product.category,
-                  href: product.availabilityUnknown ? withLocale('/category', locale) : getCategoryBreadcrumbHref(product.category, locale),
+                    : isBn ? 'সব পণ্য' : product.category,
+                  href: product.availabilityUnknown || isBn
+                    ? withLocale('/category', locale)
+                    : getCategoryBreadcrumbHref(product.category, locale),
                 },
                 { label: displayName, href: productUrl },
               ]}
@@ -153,6 +196,7 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                 productName={displayName}
                 category={product.category}
                 sizes="(max-width: 768px) 100vw, 50vw"
+                locale={locale}
               />
             </div>
 
@@ -206,25 +250,25 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                     <button
                       onClick={() => handleUpdateQty(-1)}
                       className="store-press w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-                      aria-label="Decrease quantity"
+                      aria-label={isBn ? 'পরিমাণ কমান' : 'Decrease quantity'}
                     >
                       −
                     </button>
                     <QtyNumber
                       qty={qtyInCart}
                       className="font-bold text-sm min-w-[28px] text-center"
-                      aria-label={`Quantity ${qtyInCart} in cart`}
+                      aria-label={isBn ? `কার্টে পরিমাণ ${qtyInCart}` : `Quantity ${qtyInCart} in cart`}
                     />
                     <button
                       onClick={() => handleUpdateQty(1)}
                       disabled={qtyInCart >= product.stock}
                       className="store-press w-12 h-12 rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center text-base font-bold hover:bg-warm-accent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
-                      aria-label="Increase quantity"
+                      aria-label={isBn ? 'পরিমাণ বাড়ান' : 'Increase quantity'}
                     >
                       +
                     </button>
                     <span className="ml-2 text-sm font-semibold text-warm-muted">
-                      {formatBdt(product.price * qtyInCart)} total
+                      {formatBdt(product.price * qtyInCart)} {isBn ? 'মোট' : 'total'}
                     </span>
                   </div>
                 ) : product.availabilityUnknown ? (
@@ -242,16 +286,16 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
                       type="button"
                       disabled
                       className="h-12 flex-1 cursor-not-allowed rounded-warm-control border border-warm-border bg-warm-bg px-5 text-sm font-bold text-warm-muted"
-                      aria-label={`${displayName} is out of stock`}
+                      aria-label={isBn ? `${displayName} স্টক নেই` : `${displayName} is out of stock`}
                     >
-                      Out of stock
+                      {dict.productPage.outOfStock}
                     </button>
                     {product.category && (
                       <Link
-                        href={`/category/${encodeURIComponent(product.category)}`}
+                        href={withLocale(`/category/${encodeURIComponent(product.category)}`, locale)}
                         className="h-12 px-5 rounded-warm-control bg-warm-image-well text-warm-fg text-sm font-bold hover:bg-warm-border-light active:scale-[0.98] transition-all flex items-center justify-center"
                       >
-                        See Similar Items
+                        {isBn ? 'একই ধরনের পণ্য দেখুন' : 'See Similar Items'}
                       </Link>
                     )}
                   </div>
@@ -271,12 +315,19 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           </div>
 
           {/* Section 1: Answer-First Overview */}
-          <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
-            <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.overview}</h2>
-            <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
-              {overviewText}
-            </p>
-          </section>
+          {overviewText && (
+            <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
+              <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.overview}</h2>
+              <p className="text-sm text-warm-muted leading-relaxed max-w-3xl">
+                {overviewText}
+              </p>
+              {additionalOverviewText && (
+                <p className="mt-3 text-sm text-warm-muted leading-relaxed max-w-3xl">
+                  {additionalOverviewText}
+                </p>
+              )}
+            </section>
+          )}
 
           {locale === 'en' && (displayEnrichment?.nutrition || product.nutrition) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
@@ -368,11 +419,11 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           </section>
 
           {/* Section 3: Highlights & Guidance (if available) */}
-          {displayEnrichment?.highlights && displayEnrichment.highlights.length > 0 && (
+          {displayHighlights && displayHighlights.length > 0 && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
               <h2 className="text-base font-bold mb-3 text-warm-fg">{dict.productPage.keyFeatures}</h2>
               <ul className="space-y-2 max-w-3xl text-sm text-warm-muted">
-                {displayEnrichment.highlights.map((highlight) => (
+                {displayHighlights.map((highlight) => (
                   <li key={highlight} className="flex items-start gap-2.5">
                     <span className="text-warm-accent font-bold mt-0.5" aria-hidden="true">✓</span>
                     <span>{highlight}</span>
@@ -382,22 +433,22 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
             </section>
           )}
 
-          {(displayEnrichment?.usageDirections || displayEnrichment?.storageInstructions) && (
+          {(displayUsageDirections || displayStorageInstructions) && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
               <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
-                {displayEnrichment.usageDirections && (
+                {displayUsageDirections && (
                   <div>
                     <h3 className="text-sm font-bold text-warm-fg mb-1.5">{dict.productPage.usagePreparation}</h3>
                     <p className="text-xs sm:text-sm text-warm-muted leading-relaxed">
-                      {displayEnrichment.usageDirections}
+                      {displayUsageDirections}
                     </p>
                   </div>
                 )}
-                {displayEnrichment.storageInstructions && (
+                {displayStorageInstructions && (
                   <div>
                     <h3 className="text-sm font-bold text-warm-fg mb-1.5">{dict.productPage.storageInstructions}</h3>
                     <p className="text-xs sm:text-sm text-warm-muted leading-relaxed">
-                      {displayEnrichment.storageInstructions}
+                      {displayStorageInstructions}
                     </p>
                   </div>
                 )}
@@ -442,11 +493,11 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
           </section>
 
           {/* Section 5: Factual Product Q&A */}
-          {displayEnrichment?.faqs && displayEnrichment.faqs.length > 0 && (
+          {displayFaqs && displayFaqs.length > 0 && (
             <section className="border-t border-warm-border px-4 py-6 sm:px-6 lg:px-8">
               <h2 className="text-base font-bold mb-4 text-warm-fg">{dict.productPage.faqs}</h2>
               <div className="space-y-3 max-w-3xl">
-                {displayEnrichment.faqs.map((faq) => (
+                {displayFaqs.map((faq) => (
                   <details
                     key={faq.question}
                     className="group rounded-warm-panel border border-warm-border bg-warm-bg p-4 [&_summary::-webkit-details-marker]:hidden"
@@ -503,20 +554,20 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
               <button
                 onClick={() => handleUpdateQty(-1)}
                 className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
-                aria-label="Decrease quantity"
+                aria-label={isBn ? 'পরিমাণ কমান' : 'Decrease quantity'}
               >
                 −
               </button>
               <QtyNumber
                 qty={qtyInCart}
                 className="font-bold text-sm min-w-[24px] text-center"
-                aria-label={`Quantity ${qtyInCart} in cart`}
+                aria-label={isBn ? `কার্টে পরিমাণ ${qtyInCart}` : `Quantity ${qtyInCart} in cart`}
               />
               <button
                 onClick={() => handleUpdateQty(1)}
                 disabled={qtyInCart >= product.stock}
                 className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-warm-control border-2 border-warm-accent bg-warm-image-well text-warm-fg flex items-center justify-center font-bold text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent disabled:opacity-50"
-                aria-label="Increase quantity"
+                aria-label={isBn ? 'পরিমাণ বাড়ান' : 'Increase quantity'}
               >
                 +
               </button>
@@ -538,7 +589,18 @@ function ProductContent({ product, crossSell, radhuniPackVariants = [], locale =
   );
 }
 
-export default function ProductClient({ product, crossSell, radhuniPackVariants, locale, productUrlName, productCanonicalUrl, enrichment, galleryImages }: ProductClientProps) {
+export default function ProductClient({
+  product,
+  crossSell,
+  radhuniPackVariants,
+  locale,
+  productUrlName,
+  productCanonicalUrl,
+  enrichment,
+  galleryImages,
+  localizedProduct,
+  localizedDetails,
+}: ProductClientProps) {
   return (
     <ProductContent
       product={product}
@@ -549,6 +611,8 @@ export default function ProductClient({ product, crossSell, radhuniPackVariants,
       productCanonicalUrl={productCanonicalUrl}
       enrichment={enrichment}
       galleryImages={galleryImages}
+      localizedProduct={localizedProduct}
+      localizedDetails={localizedDetails}
     />
   );
 }

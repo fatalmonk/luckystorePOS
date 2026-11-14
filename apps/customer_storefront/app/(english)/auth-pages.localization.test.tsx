@@ -35,7 +35,7 @@ describe('Bengali auth page localization', () => {
     usePathnameMock.mockReturnValue('/bn/login');
     render(<LoginPage />);
 
-    expect(screen.getByRole('heading', { name: 'আবার স্বাগতম' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'আপনার পাড়ার দোকানে আবারও স্বাগতম।' })).toBeInTheDocument();
     expect(screen.getByLabelText('ইমেইল ঠিকানা')).toBeInTheDocument();
     expect(screen.getByLabelText('পাসওয়ার্ড')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'সাইন ইন' })).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('Bengali auth page localization', () => {
     expect(screen.getByLabelText('ইমেইল ঠিকানা')).toBeInTheDocument();
     expect(screen.getByLabelText('পাসওয়ার্ড')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'সাইন আপ' })).toBeInTheDocument();
-    expect(screen.getByText('চকবাজার, চট্টগ্রাম')).toBeInTheDocument();
+    expect(screen.getByText('চকবাজারের আমাদের দোকান থেকে অনলাইনে মুদি পণ্য কিনুন। ১৯৪৭ সাল থেকে স্থানীয় গ্রাহকদের সেবা দিচ্ছি।')).toBeInTheDocument();
     expect(screen.queryByText(/Trusted by 5,000|most reliable grocery experience/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Old Dhaka|same-day neighborhood fulfillment/i)).not.toBeInTheDocument();
   });

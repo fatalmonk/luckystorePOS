@@ -33,8 +33,8 @@ vi.mock('embla-carousel-react', () => ({
 }));
 
 vi.mock('./ProductImage', () => ({
-  ProductImage: ({ src, alt }: { src: string; alt: string }) => (
-    <span role="img" aria-label={alt} data-src={src} />
+  ProductImage: ({ src, alt, locale }: { src?: string; alt: string; locale?: string }) => (
+    <span role="img" aria-label={alt} data-src={src} data-locale={locale} />
   ),
 }));
 
@@ -108,5 +108,50 @@ describe('ProductImageGallery', () => {
 
     expect(screen.getByText('1/2 L')).toBeTruthy();
     expect(screen.getByRole('img').getAttribute('data-src')).toBe('/front.webp');
+  });
+
+  it('localizes Bengali gallery controls, role descriptions, and image counts', () => {
+    const name = '\u099a\u09be';
+    render(
+      <ProductImageGallery
+        images={images.map((image) => ({ ...image, alt: name }))}
+        productName={name}
+        category="Tea"
+        sizes="100vw"
+        locale="bn"
+      />,
+    );
+
+    const carousel = screen.getByRole('region', { name: `${name} \u09aa\u09a3\u09cd\u09af\u09c7\u09b0 \u099b\u09ac\u09bf` });
+    expect(carousel.getAttribute('aria-roledescription')).not.toBe('carousel');
+    const next = screen.getByRole('button', { name: '\u09aa\u09a3\u09cd\u09af\u09c7\u09b0 \u09aa\u09b0\u09c7\u09b0 \u099b\u09ac\u09bf' });
+    fireEvent.click(next);
+    expect(screen.getByText('\u099b\u09ac\u09bf \u09e8 / \u09e9')).toBeInTheDocument();
+    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+    expect(screen.getByText('\u099b\u09ac\u09bf \u09e7 / \u09e9')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /product image|show image/i })).toBeNull();
+    expect(screen.getAllByRole('group').every((group) => group.getAttribute('aria-roledescription') !== 'slide')).toBe(true);
+  });
+
+  it('generates Bengali alternatives and selectors when an image alternative is absent', () => {
+    const name = '\u099a\u09be';
+    render(
+      <ProductImageGallery
+        images={[{ ...images[0], alt: '' }, { ...images[1], alt: '' }]}
+        productName={name}
+        category="Tea"
+        sizes="100vw"
+        locale="bn"
+      />,
+    );
+
+    const firstAlt = `${name}, \u099b\u09ac\u09bf \u09e7`;
+    expect(screen.getByRole('img', { name: firstAlt })).toHaveAttribute('data-locale', 'bn');
+    expect(screen.getByRole('button', { name: `\u099b\u09ac\u09bf \u09e7 / \u09e8: ${firstAlt}` })).toBeInTheDocument();
+  });
+
+  it('passes the Bengali locale through to the missing-image fallback', () => {
+    render(<ProductImageGallery images={[]} productName={'\u099a\u09be'} category="Tea" sizes="100vw" locale="bn" />);
+    expect(screen.getByRole('img', { name: '\u099a\u09be' })).toHaveAttribute('data-locale', 'bn');
   });
 });

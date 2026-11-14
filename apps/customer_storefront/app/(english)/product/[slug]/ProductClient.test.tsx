@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import ProductClient from './ProductClient';
 import { createProductId } from '../../../lib/products/types';
@@ -9,6 +9,8 @@ import { toProductSlug } from '../../../lib/products/slugify';
 import { getCachedProductBySlug } from '../../../lib/products/getCachedProduct';
 import { getCachedCrossSellProducts, getCachedRadhuniPackVariants, prepareCrossSell } from '../../../lib/products/getCachedCrossSell';
 import ProductPage, { generateMetadata } from './page';
+
+const mockAddToCart = vi.hoisted(() => vi.fn());
 
 vi.mock('../../../lib/products/getCachedProduct', () => ({ getCachedProductBySlug: vi.fn() }));
 vi.mock('../../../lib/products/getCachedCrossSell', () => ({
@@ -44,7 +46,7 @@ vi.mock('../../../components/Toast', () => ({
 vi.mock('../../../components/CartProvider', () => ({
   useCartContext: () => ({
     cart: [],
-    addToCart: vi.fn(),
+    addToCart: mockAddToCart,
     updateQty: vi.fn(),
   }),
 }));
@@ -184,6 +186,13 @@ describe('ProductClient Brand Linking', () => {
     expect(screen.queryByRole('button', { name: 'Add to Cart' })).not.toBeInTheDocument();
   });
 
+  it('fails closed instead of rendering English primary copy when Bengali presentation is missing', () => {
+    const { container } = render(<ProductClient product={mockProduct} crossSell={[]} locale="bn" />);
+
+    expect(container).not.toHaveTextContent(mockProduct.name);
+    expect(container).not.toHaveTextContent(mockProduct.description);
+  });
+
   it('renders brand links to dedicated brand hub in English locale', () => {
     render(<ProductClient product={mockProduct} crossSell={[]} locale="en" />);
 
@@ -267,30 +276,84 @@ describe('ProductClient Brand Linking', () => {
     expect(screen.queryByText('Caramel: 246.23 kcal; Chocolate: 243.95 kcal')).not.toBeInTheDocument();
   });
 
-  it('renders translated Fortune enrichment on Bengali pages without unsupported packaging claims', () => {
-    const enrichment = getEnrichedProductData('41c9ad69')!;
+  it('renders only publication-gated Bengali details while preserving canonical commerce identity', () => {
+    const localizedDetails = {
+      summary: 'পর্যালোচিত বাংলা সারাংশ।',
+      highlights: ['যাচাইকৃত বাংলা বৈশিষ্ট্য'],
+      specifications: [{ label: 'প্যাকের ধরন', value: 'পাউচ' }],
+      usageDirections: 'প্যাকেটের নির্দেশনা অনুসরণ করুন।',
+      storageInstructions: 'ঠান্ডা ও শুষ্ক স্থানে রাখুন।',
+      faqs: [{ question: 'পণ্যটি কোথায় তৈরি?', answer: 'প্যাকেটে বাংলাদেশ লেখা আছে।' }],
+    };
+    const englishEnrichmentTrap = {
+      exactName: 'English enriched name must not render',
+      brand: 'Ispahani',
+      netQuantity: '500 g',
+      category: 'Tea & Coffee',
+      summary: 'English summary must not render',
+      specifications: [{ label: 'English specification', value: 'English value', evidenceRefs: [] }],
+      highlights: ['English highlight must not render'],
+      usageDirections: 'English usage must not render',
+      storageInstructions: 'English storage must not render',
+      faqs: [{ question: 'English question?', answer: 'English answer', evidenceRefs: [] }],
+      localizedContent: {
+        bn: { summary: 'Static Bengali enrichment must not bypass publication.' },
+      },
+      evidenceManifest: {},
+      fieldEvidence: {
+        exactName: [], brand: [], netQuantity: [], category: [], summary: [],
+      },
+    };
+    const canonicalProduct = {
+      ...mockProduct,
+      id: createProductId('10000000-0000-4000-8000-000000000001'),
+      name: 'Ispahani Mirzapore Best Leaf Tea 500 g',
+      description: 'English canonical description retained for commerce state.',
+      origin: 'Bangladesh',
+      brand: 'Ispahani',
+      sku: 'TEA-ISP-500',
+      price: 500,
+      unit: '500 g',
+      category: 'English category must not render',
+    };
+    mockAddToCart.mockClear();
     const { container } = render(
       <ProductClient
-        product={{
-          ...mockProduct,
-          id: createProductId('41c9ad69'),
-          name: enrichment.exactName,
-          description: enrichment.exactName,
-          brand: enrichment.brand,
-          unit: enrichment.netQuantity,
-        }}
+        product={canonicalProduct}
         crossSell={[]}
         locale="bn"
-        enrichment={enrichment}
+        enrichment={englishEnrichmentTrap as any}
+        localizedProduct={{
+          name: 'ইস্পাহানি মির্জাপুর বেস্ট লিফ চা 500 g',
+          description: 'পর্যালোচিত বাংলা পণ্যের বিবরণ।',
+          origin: 'বাংলাদেশ',
+        }}
+        localizedDetails={localizedDetails}
       />,
     );
 
-    expect(screen.getByText(/চকবাজার, চট্টগ্রামের লাকি স্টোর থেকে Fortune Basmati Rice 1KG/)).toBeInTheDocument();
-    expect(screen.getByText('প্যাকেটের তথ্য অনুযায়ী: Fortune Basmati Rice 1KG')).toBeInTheDocument();
-    expect(screen.getByText('তাপ থেকে দূরে ঠান্ডা ও শুষ্ক স্থানে রাখুন।')).toBeInTheDocument();
-    expect(screen.getByText('চকবাজার থেকে ১ কিমি ব্যাসার্ধের মধ্যে ডেলিভারি হয়। ৳৫০০ বা তার বেশি অর্ডারে ডেলিভারি ফ্রি; এর কমে ৳৪০ চার্জ।')).toBeInTheDocument();
-    expect(container).not.toHaveTextContent(/factory-sealed|Produced and distributed by Fortune|Store in a cool, dry place/i);
-    expect(container.textContent).toContain('পেমেন্টের আগে কি Fortune Basmati Rice 1KG হাতে পেয়ে পরীক্ষা করতে পারব?');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ইস্পাহানি মির্জাপুর বেস্ট লিফ চা 500 g');
+    expect(screen.getByText('পর্যালোচিত বাংলা সারাংশ।')).toBeInTheDocument();
+    expect(screen.getByText('পর্যালোচিত বাংলা পণ্যের বিবরণ।')).toBeInTheDocument();
+    expect(screen.getByText('যাচাইকৃত বাংলা বৈশিষ্ট্য')).toBeInTheDocument();
+    expect(screen.getByText('প্যাকের ধরন')).toBeInTheDocument();
+    expect(screen.getByText('পাউচ')).toBeInTheDocument();
+    expect(screen.getByText('প্যাকেটের নির্দেশনা অনুসরণ করুন।')).toBeInTheDocument();
+    expect(screen.getByText('ঠান্ডা ও শুষ্ক স্থানে রাখুন।')).toBeInTheDocument();
+    expect(screen.getByText('পণ্যটি কোথায় তৈরি?')).toBeInTheDocument();
+    expect(screen.getByText('প্যাকেটে বাংলাদেশ লেখা আছে।')).toBeInTheDocument();
+    expect(screen.getByText('বাংলাদেশ')).toBeInTheDocument();
+    expect(screen.getByText('TEA-ISP-500')).toBeInTheDocument();
+    expect(screen.getAllByText('Ispahani').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('500 g').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('৳500').length).toBeGreaterThan(0);
+    expect(container).not.toHaveTextContent(/English enriched name|English summary|English specification|English value|English highlight|English usage|English storage|English question|English answer/);
+    expect(container).not.toHaveTextContent('English category must not render');
+    expect(container).not.toHaveTextContent('English canonical description retained for commerce state.');
+    expect(container).not.toHaveTextContent('Static Bengali enrichment must not bypass publication.');
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'ব্যাগে যোগ করুন' })[0]);
+    expect(mockAddToCart).toHaveBeenCalledWith(canonicalProduct);
   });
 
   it('renders brand links to dedicated brand hub in Bengali locale', () => {

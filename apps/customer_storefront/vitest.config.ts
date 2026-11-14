@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 export default defineConfig({
   test: {
@@ -13,7 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      'next/image.js': path.resolve(__dirname, '../../node_modules/next/image.js'),
+      'next/image.js': require.resolve('next/image'),
     },
   },
 });

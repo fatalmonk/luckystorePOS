@@ -2,11 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import type { Locale } from '../../lib/i18n/config';
+import { getDictionary } from '../../lib/i18n/dictionaries';
 import { buildOptimizedImageUrl } from '../../lib/image-loader';
 import { CategoryIcon, resolveCategoryIcon } from '../icons/CategoryIcons';
 
 interface ProductImageFallbackProps {
   alt: string;
+  locale?: Locale;
   category?: string | null;
   iconSize?: number;
   className?: string;
@@ -14,6 +17,7 @@ interface ProductImageFallbackProps {
 
 export function ProductImageFallback({
   alt,
+  locale = 'en',
   category,
   iconSize = 42,
   className = '',
@@ -24,7 +28,7 @@ export function ProductImageFallback({
   return (
     <div
       role="img"
-      aria-label={`${alt} image unavailable`}
+      aria-label={getDictionary(locale).productGallery.imageUnavailable.replace('{name}', alt).trim()}
       data-testid="product-image-fallback"
       className={`absolute inset-0 flex flex-col items-center justify-center gap-2 bg-warm-image-well px-3 text-warm-muted ${className}`}
     >
@@ -46,6 +50,7 @@ export function ProductImageFallback({
 interface ProductImageProps {
   src?: string | null;
   alt: string;
+  locale?: Locale;
   category?: string | null;
   sizes: string;
   priority?: boolean;
@@ -162,6 +167,7 @@ function BackgroundRemovedImage({
 export function ProductImage({
   src,
   alt,
+  locale = 'en',
   category,
   sizes,
   priority = false,
@@ -265,6 +271,7 @@ export function ProductImage({
       ) : (
         <ProductImageFallback
           alt={alt}
+          locale={locale}
           category={category}
           iconSize={iconSize}
           className={fallbackClassName}

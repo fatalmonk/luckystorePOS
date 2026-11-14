@@ -12,6 +12,7 @@ on:
       # the storefront contract; all other migrations keep storefront coverage.
       - '!supabase/migrations/**_admin_*.sql'
       - 'scripts/ci/**'
+      - 'scripts/testing/**'
       - 'supabase/seed/**'
       - '.github/workflows/storefront.yml'
   pull_request:
@@ -24,6 +25,7 @@ on:
       # Keep this in sync with the push filter above.
       - '!supabase/migrations/**_admin_*.sql'
       - 'scripts/ci/**'
+      - 'scripts/testing/**'
       - 'supabase/seed/**'
       - '.github/workflows/storefront.yml'
 
@@ -48,6 +50,10 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci
       - run: node --test scripts/ci/seed_test_storefront.test.js
+      - run: node --test scripts/testing/verify_bengali_translation_api.test.mjs
+      - run: node --test scripts/testing/verify_historical_bengali_legacy.test.mjs
+      - run: python3 -m unittest scripts.doctor.checks.test_detector_regressions_test
+      - run: cd apps/customer_storefront && npx vitest run app/lib/mobile/catalog.test.ts
       - run: npm run lint --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx tsc --noEmit
 
@@ -88,6 +94,9 @@ jobs:
 
       - name: Preflight Test Supabase Environment
         run: node scripts/ci/preflight_test_env.js
+
+      - name: Verify Bengali translation public API security
+        run: node scripts/testing/verify_bengali_translation_api.mjs
 
       - name: Prepare deterministic banner fixtures
         working-directory: apps/customer_storefront

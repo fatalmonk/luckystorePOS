@@ -8,12 +8,15 @@ from pathlib import Path
 
 from ..core.models import Finding, ModuleResult, Severity
 
+# Preserve schema qualification so private schema names are not misclassified
+# as public table names. The translation_private schema is deliberately not exposed
+# through PostgREST and its tables explicitly revoke all client privileges.
 CREATE_TABLE_RE = re.compile(
-    r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)",
+    r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?P<schema>[a-zA-Z0-9_]+)\.)?(?P<table>[a-zA-Z0-9_]+)",
     re.IGNORECASE,
 )
 ENABLE_RLS_RE = re.compile(
-    r"\bALTER\s+TABLE\s+(?:ONLY\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
+    r"\bALTER\s+TABLE\s+(?:ONLY\s+)?(?:(?P<schema>[a-zA-Z0-9_]+)\.)?(?P<table>[a-zA-Z0-9_]+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\b",
     re.IGNORECASE,
 )
 SEC_DEFINER_RE = re.compile(
@@ -25,6 +28,68 @@ SEARCH_PATH_RE = re.compile(
     r"\bSET\s+search_path\s*(?:=|TO)\s*(?:pg_catalog(?:\s*,\s*public)?|public(?:\s*,\s*(?:extensions\s*,\s*)?pg_temp)?|pg_temp)\s*(?=\s*(?:AS\b|LANGUAGE\b|STABLE\b|IMMUTABLE\b|VOLATILE\b|PARALLEL\b|COST\b|ROWS\b|SECURITY\b|LEAKPROOF\b|SET\b|;|$))",
     re.IGNORECASE,
 )
+
+
+def _executable_sql(content: str) -> str:
+    """Blank line and nested block comments without changing SQL offsets."""
+    output: list[str] = []
+    i = 0
+    while i < len(content):
+        if content[i] in ("'", '"'):
+            quote = content[i]
+            start = i
+            i += 1
+            while i < len(content):
+                if content[i] == quote:
+                    i += 1
+                    if i < len(content) and content[i] == quote:
+                        i += 1
+                    else:
+                        break
+                else:
+                    i += 1
+            output.append(content[start:i])
+        elif content.startswith("--", i):
+            end = content.find("\n", i)
+            if end < 0:
+                end = len(content)
+            output.append(" " * (end - i))
+            i = end
+        elif content.startswith("/*", i):
+            start = i
+            depth = 1
+            i += 2
+            while i < len(content) and depth:
+                if content.startswith("/*", i):
+                    depth += 1
+                    i += 2
+                elif content.startswith("*/", i):
+                    depth -= 1
+                    i += 2
+                else:
+                    i += 1
+            output.append("".join("\n" if char == "\n" else " " for char in content[start:i]))
+        else:
+            output.append(content[i])
+            i += 1
+    return "".join(output)
+
+
+def _private_table_revoked(table: str, sql: str) -> bool:
+    """Require an effective explicit revoke for every client role in migration SQL."""
+    permissions = {role: False for role in ("public", "anon", "authenticated")}
+    pattern = re.compile(
+        rf"\b(?P<verb>GRANT|REVOKE)\s+(?P<privileges>[^;]*?)\s+ON\s+TABLE\s+{re.escape(table)}\s+(?:TO|FROM)\s+(?P<roles>[^;]+);",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(sql):
+        roles = {role.strip().lower() for role in match.group("roles").split(",")}
+        for role in permissions.keys() & roles:
+            if match.group("verb").upper() == "GRANT":
+                permissions[role] = False
+            elif match.group("privileges").strip().upper() == "ALL":
+                permissions[role] = True
+    return all(permissions.values())
 
 
 def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
@@ -58,23 +123,36 @@ def run(repo_root: Path, quick: bool = False, ci: bool = False) -> ModuleResult:
                 path for path in migration_files if str(path.relative_to(repo_root)) in changed_paths
             ]
 
+    # Read all migrations for effective grant order, including later grants to
+    # private tables created in an earlier migration.
+    permission_sql = "\n".join(
+        _executable_sql(path.read_text(encoding="utf-8"))
+        for path in sorted(migrations_dir.glob("*.sql"))
+    )
+
     for file_path in migration_files:
         try:
-            content = file_path.read_text(encoding="utf-8")
+            content = _executable_sql(file_path.read_text(encoding="utf-8"))
         except Exception:
             continue
 
         rel_path = str(file_path.relative_to(repo_root))
 
         # Check tables created vs RLS enabled
-        created_tables = set(CREATE_TABLE_RE.findall(content))
-        enabled_rls_tables = set(ENABLE_RLS_RE.findall(content))
+        created_tables = {(m.group("schema") or "public").lower() + "." + m.group("table").lower()
+                          for m in CREATE_TABLE_RE.finditer(content)}
+        enabled_rls_tables = {(m.group("schema") or "public").lower() + "." + m.group("table").lower()
+                              for m in ENABLE_RLS_RE.finditer(content)}
 
-        # Disregard internal or temp tables
-        ignored_tables = {"spatial_ref_sys", "schema_migrations"}
+        # translation_private is a non-exposed schema with no client table grants.
+        # It uses SECURITY DEFINER predicates with fixed empty search_path and
+        # explicitly REVOKEs client privileges in the creating migration.
+        ignored_tables = {"public.spatial_ref_sys", "public.schema_migrations"}
 
         for tbl in created_tables:
-            if tbl.lower() in ignored_tables:
+            if tbl in ignored_tables:
+                continue
+            if tbl.startswith("translation_private.") and _private_table_revoked(tbl, permission_sql):
                 continue
             if tbl not in enabled_rls_tables:
                 findings.append(

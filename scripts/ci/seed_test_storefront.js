@@ -206,7 +206,7 @@ async function runViaServiceRoleClient(url, key) {
   const { error: iErr } = await supabase.from('items').upsert(products, { onConflict: 'id' });
   if (iErr) throw iErr;
 
-  // 5. Published Bengali translation used by the hreflang E2E contract.
+  // 5. Unattributed Bengali draft. Publication requires a separate authenticated review.
   const itemTranslations = [
     {
       item_id: 'a0740002-0000-0000-0000-000000000002',
@@ -214,7 +214,7 @@ async function runViaServiceRoleClient(url, key) {
       locale: 'bn',
       name: 'আরং ডেইরি বিশুদ্ধ তরল দুধ',
       description: 'নির্ধারিত স্টোরফ্রন্ট E2E ফিক্সচার।',
-      review_status: 'published',
+      review_status: 'draft',
     },
   ];
   const { error: translationErr } = await supabase

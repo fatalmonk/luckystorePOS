@@ -11,34 +11,23 @@ import { isBareUuid, toProductSlug } from '../../../lib/products/slugify';
 import { getEnrichedProductData } from '../../../lib/products/productEnrichment';
 import { getProductGalleryImages } from '../../../lib/products/productGalleryRegistry';
 import { ProductJsonLd } from '../../../components/seo/ProductJsonLd';
-import { supabase } from '../../../lib/supabase';
-import { isMissingItemTranslationsTableError } from '../../../lib/translationErrors';
 import {
   buildProductMetadata,
   formatProductMetaDescription,
 } from '../../../lib/products/productMetadata';
+import { getPublishedItemTranslations } from '../../../lib/products/productTranslations';
 import ProductClient from './ProductClient';
 
 export const revalidate = 120;
 
 const hasPublishedBengaliTranslation = React.cache(async (itemId: string): Promise<boolean> => {
   if (!isBareUuid(itemId)) return false;
-
-  const { data, error } = await (supabase as any)
-    .from('item_translations')
-    .select('item_id')
-    .eq('item_id', itemId)
-    .eq('locale', 'bn')
-    .eq('review_status', 'published')
-    .maybeSingle();
-
-  if (error) {
-    if (isMissingItemTranslationsTableError(error)) return false;
-    console.error('Failed to resolve Bengali product publication status', { itemId, error });
-    throw error;
+  try {
+    return (await getPublishedItemTranslations([itemId])).has(itemId);
+  } catch {
+    console.error('Failed to determine Bengali product alternate.');
+    return false;
   }
-
-  return Boolean(data);
 });
 
 export async function generateMetadata({

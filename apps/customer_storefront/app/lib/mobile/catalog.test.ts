@@ -64,7 +64,8 @@ describe('mobile catalog adapter', () => {
     });
 
     expect(rpc).toHaveBeenCalledTimes(1);
-    expect(rpc).toHaveBeenCalledWith('search_storefront_mobile_catalog_v1', {
+    expect(rpc).toHaveBeenCalledWith('search_storefront_mobile_catalog_v2', {
+      p_locale: 'bn',
       p_store_id: '4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd',
       p_query: 'চাল',
       p_category_ids: ['c1'],
@@ -82,7 +83,21 @@ describe('mobile catalog adapter', () => {
       originalPrice: 210,
       stock: 3,
       categoryId: 'c1',
+      category: 'চাল ও শস্য',
     });
+  });
+
+  it('fails closed instead of leaking English-only items into Bengali catalog totals', async () => {
+    vi.mocked(getCachedCategoriesOrThrow).mockResolvedValue(dummyCategories);
+    rpc.mockResolvedValue({
+      data: { total: 1, items: [{ id: '11111111-1111-4111-8111-111111111111',
+        name: 'English-only', description: 'Unapproved English summary', price: 12,
+        mrp: 12, sellable_qty: 5, category: 'Rice & Grains' }] }, error: null,
+    });
+    await expect(getMobileCatalog({ locale: 'bn', q: 'untranslated-v2-guard' }))
+      .rejects.toThrow('Bengali mobile catalog publication contract failed');
+    expect(rpc).toHaveBeenCalledWith('search_storefront_mobile_catalog_v2',
+      expect.objectContaining({ p_locale: 'bn' }));
   });
 
   it('keeps an exact empty-page total and normalizes invalid sort values to best', async () => {
@@ -125,6 +140,8 @@ describe('mobile catalog adapter', () => {
       category: 'rice-and-grain',
       stock: 10,
       description: 'Aromatic rice',
+      bengaliName: 'চিনিগুঁড়া চাল ১ কেজি',
+      bengaliDescription: 'সুগন্ধি চাল',
     },
     {
       id: createProductId('p2'),
