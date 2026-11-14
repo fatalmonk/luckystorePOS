@@ -27,6 +27,7 @@ type Write = { table: string; operation: string; payload: Row; filters: Record<s
 let rows: Record<string, Row[]>;
 let writes: Write[];
 let writeError: { code?: string; message: string } | null;
+let persistWrites = false;
 const notify = vi.fn();
 
 function installDatabaseDouble() {
@@ -37,6 +38,17 @@ function installDatabaseDouble() {
     const resolve = () => {
       if (operation !== 'select') {
         writes.push({ table, operation, payload, filters: { ...filters } });
+        if (persistWrites && !writeError && operation === 'update') {
+          const index = (rows[table] ?? []).findIndex(entry => entry.id === filters.id);
+          if (index !== -1) {
+            const at = `2026-11-15T02:00:${String(writes.length).padStart(2, '0')}Z`;
+            const saved = { ...rows[table][index], ...payload, updated_at: at,
+              ...(payload.review_status === 'reviewed' ? { reviewed_at: at } : {}),
+              ...(payload.review_status === 'published' ? { published_at: at } : {}) };
+            rows[table][index] = saved;
+            return { data: saved, error: null };
+          }
+        }
         return { data: writeError ? null : { id: String(payload.id ?? filters.id ?? '60000000-0000-4000-8000-000000000001') }, error: writeError };
       }
       return { data: rows[table] ?? [], error: null };
@@ -62,6 +74,7 @@ function renderPage() {
 beforeEach(() => {
   writes = [];
   writeError = null;
+  persistWrites = false;
   rows = { items: [item], categories: [category], item_translations: [draft], category_translations: [] };
   notify.mockReset();
   vi.mocked(useNotify).mockReturnValue({ notify } as never);
@@ -78,9 +91,81 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
     expect(screen.getByRole('heading', { name: 'Review Bengali translation' })).toBeInTheDocument();
-    expect(screen.getByText('Add reliable source evidence before approval using the evidence fields above.')).toBeInTheDocument();
+    expect(screen.getByText('An openable source link must be available and its exact product claims checked before approval.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
     expect(writes).toHaveLength(0);
+  });
+
+  it('passes exact empty-draft item IDs to the Edge Function', async () => {
+    rows.item_translations = [{ ...draft, description: null }];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);
+    renderPage();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
+    fireEvent.click(await screen.findByRole('button', { name: 'Generate AI Drafts' }));
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', {
+      body: { kind: 'item', limit: 10, itemIds: [item.id] },
+    }));
+  });
+
+  it('prepares an exact Samyang 2X manufacturer snapshot for one-click draft saving', async () => {
+    const ramen = { ...item, id: '1aafa29f-07ca-4f04-a702-549c1720bd6a',
+      name: 'Samyang Buldak Ramen 2X Cup 70g', description: null,
+      sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
+    rows.items = [ramen];
+    rows.item_translations = [{ ...draft, item_id: ramen.id, description: null, evidence_snapshot: null }];
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(screen.getByText(/Exact production registry match:/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Buldak Ramen 2X Cup.*Open manufacturer source/i })).toHaveAttribute(
+      'href', 'https://buldak.com/us/product/buldak-ramen-2x-cup/',
+    );
+    expect(screen.queryByRole('textbox', { name: /JSON/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    await waitFor(() => expect(writes).toHaveLength(1));
+    expect((writes[0].payload.evidence_snapshot as { entityId: string }).entityId).toBe(ramen.id);
+  });
+
+  it('blocks BelleAme review when only packaging notes exist without links', async () => {
+    const biscuits = { ...item, id: '29e60fea-429c-4b7d-b639-406471a6623b',
+      name: 'BelleAme Chocolate Digestive Biscuits 135g', description: null,
+      sku: 'CANVA-TEST-4d20b020', brand: 'BelleAme', barcode: null };
+    rows.items = [biscuits];
+    rows.item_translations = [{ ...draft, item_id: biscuits.id, description: null, evidence_snapshot: null }];
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(screen.getByText(/No openable product-specific source/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked/ }));
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  });
+
+  it('keeps the saved Samyang draft open for human review and only publishes after a separate click', async () => {
+    const ramen = { ...item, id: '1aafa29f-07ca-4f04-a702-549c1720bd6a',
+      name: 'Samyang Buldak Ramen 2X Cup 70g', description: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
+    rows.items = [ramen];
+    rows.item_translations = [{ ...draft, item_id: ramen.id, name: 'Samyang Buldak রামেন 2X কাপ 70g',
+      description: 'Samyang Buldak Ramen 2X Cup 70g হলো 70g ওজনের কাপ নুডলস।',
+      evidence_snapshot: null }];
+    persistWrites = true;
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    await waitFor(() => expect(writes).toHaveLength(1));
+    expect(writes[0].payload).toMatchObject({ review_status: 'draft', evidence_snapshot: { entityId: ramen.id } });
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked/ }));
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Reviewed' }));
+    await waitFor(() => expect(writes).toHaveLength(2));
+    expect(writes[1].payload.review_status).toBe('reviewed');
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled();
+    expect(writes).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    await waitFor(() => expect(writes).toHaveLength(3));
+    expect(writes[2].payload.review_status).toBe('published');
+    expect(await screen.findByText(/Saved published record/)).toBeInTheDocument();
   });
 
   it('generates saved drafts and shows them in the draft queue without publishing', async () => {
@@ -134,19 +219,17 @@ describe('TranslationsPage publication actions', () => {
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
   });
 
-  it('rejects an unverified snapshot digest in the evidence editor', async () => {
+  it('does not expose JSON editors for source evidence or product details', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Evidence snapshot (JSON)' }), {
-      target: { value: JSON.stringify({ ...evidence, snapshotSha256: 'a'.repeat(64) }) },
-    });
-    expect(screen.getByText(/omit snapshotSha256/)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /JSON/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Source matching and snapshot creation are automatic/)).toBeInTheDocument();
   });
 
   it('binds Mark Reviewed to the public user UUID and an unchanged persisted draft', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Mark Reviewed' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toEqual({ table: 'item_translations', operation: 'update', payload: { review_status: 'reviewed', reviewed_by: profileId }, filters: { id: draft.id, tenant_id: tenantId, review_status: 'draft', updated_at: draft.updated_at } });
@@ -158,7 +241,7 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toEqual({ table: 'item_translations', operation: 'update', payload: { review_status: 'published', published_by: profileId }, filters: { id: draft.id, tenant_id: tenantId, review_status: 'reviewed', updated_at: draft.updated_at } });
@@ -174,7 +257,7 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [row];
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     if (row.review_status === 'draft') expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
     expect(writes).toHaveLength(0);
@@ -202,7 +285,7 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Bengali description' }), { target: { value: 'নতুন বিবরণ।' } });
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     expect(writes).toHaveLength(0);
@@ -215,7 +298,7 @@ describe('TranslationsPage publication actions', () => {
   ])('disables all writes when a refetch changes workflow or revision metadata: %#', async (change) => {
     const { queryClient } = renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled();
     await act(async () => { queryClient.setQueryData(['translations', 'item', tenantId], [{ ...draft, ...change }]); });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled());
@@ -254,7 +337,7 @@ describe('TranslationsPage publication actions', () => {
     writeError = { message: 'Translation changed; reload before publishing.' };
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith('Translation changed; reload before publishing.', 'error'));
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument();
@@ -264,7 +347,7 @@ describe('TranslationsPage publication actions', () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     const { queryClient } = renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Edit/ }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the Bengali copy/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     writeError = { code: 'PGRST116', message: 'No rows returned' };
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));

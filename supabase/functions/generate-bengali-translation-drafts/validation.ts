@@ -1,4 +1,4 @@
-export type Source = { id: string; name: string; description: string | null; brand?: string | null };
+export type Source = { id: string; name: string; description: string | null; brand?: string | null; sku?: string | null; evidenceDescription?: string | null };
 export type Draft = { id: string; name: string; description: string | null; search_terms: string[] };
 export const allowedOrigin = (origin: string | null) => !origin || ['https://admin.luckystore1947.com', 'http://localhost:5173', 'http://127.0.0.1:5173'].includes(origin);
 export const validRequest = (kind: unknown, limit: unknown) => (kind === 'item' || kind === 'category') && Number.isInteger(limit) && (limit as number) >= 1 && (limit as number) <= 10;
@@ -17,18 +17,27 @@ export function validateDraft(source: Source, value: unknown): { draft?: Draft; 
   if (Object.keys(row).some((key) => !['id', 'name', 'description', 'search_terms'].includes(key))) return { error: 'Unexpected model fields' };
   if (row.id !== source.id || typeof row.name !== 'string' || !bengali.test(row.name)
     || !row.name.trim() || row.name.length > 240) return { error: 'Invalid identity or Bengali name' };
-  if (source.description === null && row.description !== null) return { error: 'Description was invented' };
-  if (source.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
+  if (source.description === null && !source.evidenceDescription && row.description !== null) return { error: 'Description lacks evidence' };
+  if ((source.description !== null || source.evidenceDescription) && row.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
     return { error: 'Invalid Bengali description' };
   }
   const name = row.name.trim();
   const description = typeof row.description === 'string' ? row.description.trim() : null;
-  for (const [canonical, translated] of [[source.name, name], [source.description ?? '', description ?? '']]) {
+  for (const [canonical, translated] of [[source.name, name], ...(source.description !== null ? [[source.description ?? '', description ?? '']] : [])]) {
     if (JSON.stringify(tokens(canonical, numbers)) !== JSON.stringify(tokens(translated, numbers))
       || JSON.stringify(tokens(canonical, quantity)) !== JSON.stringify(tokens(translated, quantity))) return { error: 'Numeric or package identity changed' };
   }
   for (const variant of ['Original', '2X', 'Best of']) {
     if (source.name.includes(variant) && !name.includes(variant)) return { error: 'Protected variant changed' };
+  }
+  if (source.description === null && source.evidenceDescription && description) {
+    const facts = source.evidenceDescription;
+    for (const token of tokens(description, numbers)) {
+      if (!tokens(facts, numbers).includes(token)) return { error: 'Description contains unsupported numeric claim' };
+    }
+    for (const token of tokens(description, quantity)) {
+      if (!tokens(facts, quantity).includes(token)) return { error: 'Description contains unsupported package claim' };
+    }
   }
   const translated = `${name} ${description ?? ''}`;
   if (source.brand && !translated.toLowerCase().includes(source.brand.toLowerCase())) return { error: 'Brand was not preserved' };

@@ -7,11 +7,12 @@ import { useAuth } from '@/lib/AuthContext';
 import { useNotify } from '@/components/NotificationContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui/card';
-import { canTransitionTranslation, getCanonicalPackageText, isLocalizedProductDetails, isTranslationEvidenceSnapshot } from './translationWorkflow';
-import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow } from './translationTypes';
+import { canTransitionTranslation, getCanonicalPackageText } from './translationWorkflow';
+import { registrySnapshot, resolveRegistryEvidence } from '../../../../../supabase/functions/_shared/translation-registry-evidence';
+import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow, TranslationEvidenceSnapshot } from './translationTypes';
 
 type CatalogRow = { id: string; tenant_id: string; name: string; description: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
-type Editor = { row: TranslationRow; aliasesText: string; evidenceText: string; detailsText: string; humanReviewConfirmed: boolean };
+type Editor = { row: TranslationRow; aliasesText: string; evidenceSnapshot: TranslationEvidenceSnapshot | null; humanReviewConfirmed: boolean };
 const client = supabase as unknown as SupabaseClient;
 const translationTable = (kind: TranslationKind) => kind === 'item' ? 'item_translations' : 'category_translations';
 const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary';
@@ -66,22 +67,11 @@ export function TranslationsPage() {
   });
   const sources = new Map((catalogQuery.data ?? []).map((row) => [row.id, row]));
   const source = editing ? sources.get(editing.row.kind === 'item' ? editing.row.item_id : editing.row.category_id) ?? null : null;
-  let parsed: TranslationRow | null = null;
-  let parseError: string | null = null;
-  if (editing) {
-    try {
-      const evidence = editing.evidenceText.trim() ? JSON.parse(editing.evidenceText) : null;
-      const details = editing.row.kind === 'item' && editing.detailsText.trim() ? JSON.parse(editing.detailsText) : null;
-      if (evidence !== null && !isTranslationEvidenceSnapshot(evidence)) throw new Error('Evidence needs canonical source fields, source links and an observation timestamp; omit snapshotSha256.');
-      if (!isLocalizedProductDetails(details)) throw new Error('Localized details must use summary, highlights, specifications, usage, storage and FAQ structures.');
-      const search_terms = [...new Set(editing.aliasesText.split('\n').map((term) => term.trim()).filter(Boolean))];
-      parsed = editing.row.kind === 'item'
-        ? { ...editing.row, evidence_snapshot: evidence, search_terms, details }
-        : { ...editing.row, evidence_snapshot: evidence, search_terms };
-    } catch (error) {
-      parseError = error instanceof SyntaxError ? 'Evidence and details must be valid JSON.' : (error as Error).message;
-    }
-  }
+  const resolvedEvidence = source && editing?.row.kind === 'item' ? resolveRegistryEvidence(source) : null;
+  const parsed: TranslationRow | null = editing ? {
+    ...editing.row, evidence_snapshot: editing.evidenceSnapshot,
+    search_terms: [...new Set(editing.aliasesText.split('\n').map(term => term.trim()).filter(Boolean))],
+  } as TranslationRow : null;
   const persisted = (translationsQuery.data ?? []).find((row) => row.id === editing?.row.id);
   const isStale = Boolean(persisted && editing && (
     persisted.updated_at !== editing.row.updated_at
@@ -95,6 +85,7 @@ export function TranslationsPage() {
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
     && !isStale
+    && (action === 'save_draft' || editing?.row.kind !== 'item' || (!source?.sku?.startsWith('CANVA-TEST-') && !resolvedEvidence?.entry) || Boolean(resolvedEvidence?.matched && resolvedEvidence.links.length && parsed?.description?.trim()))
     && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
     && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 
@@ -118,26 +109,44 @@ export function TranslationsPage() {
         query = client.from(translationTable(row.kind)).update(payload).eq('id', row.id).eq('tenant_id', tenantId).eq('updated_at', row.updated_at);
         if (action !== 'save_draft') query = query.eq('review_status', row.review_status);
       }
-      const { error } = await query.select('id').single();
+      const { data, error } = await query.select('*').single();
       if (error?.code === 'PGRST116') {
         await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
         throw new Error('Translation changed; reload before reviewing or publishing.');
       }
       if (error) throw error;
+      return data;
     },
-    onSuccess: async (_, { action }) => {
-      setEditing(null);
-      await queryClient.invalidateQueries({ queryKey: ['translations', kind, tenantId] });
+    onSuccess: async (saved, { action, row }) => {
+      await queryClient.invalidateQueries({ queryKey: ['translations', row.kind, tenantId] });
+      if (action === 'publish') {
+        setEditing(null);
+      } else if (saved && saved.updated_at && saved.id) {
+        const updated = { ...row, ...saved, kind: row.kind } as TranslationRow;
+        setEditing(previous => previous?.row.id === row.id ? {
+          ...previous, row: updated, aliasesText: updated.search_terms.join('\n'),
+          evidenceSnapshot: updated.evidence_snapshot,
+          humanReviewConfirmed: action === 'mark_reviewed' ? previous.humanReviewConfirmed : false,
+        } : previous);
+      } else {
+        // Some insert adapters do not return a complete row. Avoid presenting stale revision data.
+        setEditing(null);
+      }
       notify(action === 'save_draft' ? 'Draft saved. Review is required before publication.' : action === 'mark_reviewed' ? 'Translation reviewed. Publish is a separate action.' : 'Translation published.', 'success');
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });
   const generateMutation = useMutation({
     mutationFn: async (requestedKind: TranslationKind) => {
-      const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body: { kind: requestedKind, limit: 10 } });
+      const emptyDraftItemIds = requestedKind === 'item'
+        ? (translationsQuery.data ?? []).filter(row => row.kind === 'item' && row.review_status === 'draft' && !row.description)
+          .map(row => row.item_id).slice(0, 10)
+        : [];
+      const body = { kind: requestedKind, limit: 10, ...(emptyDraftItemIds.length ? { itemIds: emptyDraftItemIds } : {}) };
+      const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body });
       if (error) throw new Error('AI draft generation failed. Check provider setup or try again.');
       if (!data || !Number.isInteger(data.generated) || !Number.isInteger(data.skipped) || !Number.isInteger(data.failed)) throw new Error('Invalid draft generation response.');
-      return data as { generated: number; skipped: number; failed: number };
+      return data as { generated: number; skipped: number; failed: number; fallbackGenerated?: number };
     },
     onSuccess: async (result, requestedKind) => {
       await queryClient.invalidateQueries({ queryKey: ['translations', requestedKind, tenantId] });
@@ -148,10 +157,14 @@ export function TranslationsPage() {
 
   if (!canManage) return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
 
-  const startEditing = (row: TranslationRow) => setEditing({
-    row, aliasesText: row.search_terms.join('\n'), evidenceText: row.evidence_snapshot ? JSON.stringify(row.evidence_snapshot, null, 2) : '',
-    detailsText: row.kind === 'item' && row.details ? JSON.stringify(row.details, null, 2) : '', humanReviewConfirmed: false,
-  });
+  const startEditing = (row: TranslationRow) => {
+    const record = sources.get(row.kind === 'item' ? row.item_id : row.category_id);
+    setEditing({
+      row, aliasesText: row.search_terms.join('\n'),
+      evidenceSnapshot: row.evidence_snapshot ?? (row.kind === 'item' && record ? registrySnapshot(record) : null),
+      humanReviewConfirmed: false,
+    });
+  };
   const changeEditor = (changes: Partial<Editor>) => {
     if (editing) setEditing({ ...editing, ...changes, humanReviewConfirmed: false });
   };
@@ -206,36 +219,52 @@ export function TranslationsPage() {
                   <dl className="space-y-3 text-sm">
                     {Object.entries({ Status: row.review_status, Reviewer: row.reviewed_by, 'Reviewed at': row.reviewed_at, Publisher: row.published_by, 'Published at': row.published_at }).map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="break-all">{value ?? 'Not yet recorded'}</dd></div>)}
                   </dl>
-                  {parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
+                  {editing.row.kind === 'item' && <section aria-label="Registry evidence" className="space-y-2 rounded-lg border border-border p-3 text-sm">
+                    <h4 className="font-semibold">Source evidence</h4>
+                    {resolvedEvidence?.matched ? <p>Exact production registry match: {resolvedEvidence.entry?.exactName} — {resolvedEvidence.entry?.netQuantity} (ID {resolvedEvidence.key})</p> : <p role="alert" className="text-danger">{resolvedEvidence?.issue ?? 'No exact production registry mapping.'}</p>}
+                    {resolvedEvidence?.links.map(link => <div key={link.url} className="break-words">
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-text-link underline">{link.title} — Open manufacturer source</a>
+                      <p className="text-text-muted">Registry last verified: {link.verifiedAt ?? 'Not recorded'}. Open and check this exact variant and size before confirming review.</p>
+                    </div>)}
+                    {resolvedEvidence?.missing.map(message => <p key={message} className="text-text-muted">Evidence missing: {message}</p>)}
+                    {!resolvedEvidence?.links.length && <p role="alert">Evidence missing: No openable product-specific source. This product must remain a draft until packaging photos or manufacturer proof can be checked.</p>}
+                    {editing.evidenceSnapshot && <p>Canonical evidence snapshot prepared for this item. {isDirty ? 'Save Draft to persist it.' : 'Saved evidence is ready for review.'}</p>}
+                  </section>}
+                  {editing.row.kind === 'item' && !resolvedEvidence?.links.length && parsed?.evidence_snapshot?.sourceUris.map((uri, index) =>
+                    <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
+                  {editing.row.kind === 'category' && parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                 </div>
                 <div className="min-w-0 space-y-3">
                   <h3 className="font-semibold">Review Bengali translation</h3>
                   <label className="block space-y-1 text-sm">Bengali name<input lang="bn" value={editing.row.name} onChange={(event) => changeEditor({ row: { ...editing.row, name: event.target.value } })} className={inputClass} /></label>
+                  {editing.row.kind === 'item' && !editing.row.description?.trim() && <p role="status" className="text-sm text-text-muted">{resolvedEvidence?.supportedFacts
+                    ? 'Bengali description is missing. Use Generate AI Drafts from the list to fill it from linked facts before reviewing.'
+                    : 'Bengali description is missing. No independently openable product evidence is available; this item must stay a draft.'}</p>}
                   <label className="block space-y-1 text-sm">Bengali description<textarea lang="bn" value={editing.row.description ?? ''} onChange={(event) => changeEditor({ row: { ...editing.row, description: event.target.value } })} className={inputClass} rows={3} /></label>
                   <label className="block space-y-1 text-sm">Search aliases<textarea value={editing.aliasesText} onChange={(event) => changeEditor({ aliasesText: event.target.value })} className={inputClass} rows={3} /></label>
                   <p className="text-xs text-text-muted">One alias per line. Include Bengali, Banglish, English and the canonical Latin brand.</p>
                   {editing.row.kind === 'category' ? <>
                     <label className="block space-y-1 text-sm">SEO title<input lang="bn" value={editing.row.kind === 'category' ? editing.row.seo_title ?? '' : ''} onChange={(event) => changeEditor({ row: editing.row.kind === 'category' ? { ...editing.row, seo_title: event.target.value } : editing.row })} className={inputClass} /></label>
                     <label className="block space-y-1 text-sm">SEO description<textarea lang="bn" value={editing.row.kind === 'category' ? editing.row.seo_description ?? '' : ''} onChange={(event) => changeEditor({ row: editing.row.kind === 'category' ? { ...editing.row, seo_description: event.target.value } : editing.row })} className={inputClass} rows={3} /></label>
-                  </> : <label className="block space-y-1 text-sm">Localized details (JSON)<textarea value={editing.detailsText} onChange={(event) => changeEditor({ detailsText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={8} /></label>}
-                  <label className="block space-y-1 text-sm">Evidence snapshot (JSON)<textarea value={editing.evidenceText} onChange={(event) => changeEditor({ evidenceText: event.target.value })} className={`${inputClass} font-mono text-xs`} rows={10} /></label>
-                  <p className="text-xs text-text-muted">Provide sourceUris and observedAt from reliable evidence. Model/import copy always starts as draft.</p>
-                  {source && <button type="button" onClick={() => changeEditor({ evidenceText: JSON.stringify({ entityId: source.id, sourceName: source.name, sourceDescription: source.description, sku: source.sku, barcode: source.barcode, brand: source.brand, packageText: source.packageText, sourceUris: [], observedAt: '' }, null, 2) })} className={buttonClass}>Start canonical evidence snapshot</button>}
+                  </> : <section className="space-y-1 text-sm"><h4 className="font-semibold">Saved Bengali product details</h4>
+                    {editing.row.details?.summary ? <p>{editing.row.details.summary}</p> : <p className="text-text-muted">No additional Bengali details saved.</p>}
+                    {editing.row.details?.specifications?.map((spec, index) => <p key={index}>{spec.label}: {spec.value}</p>)}
+                  </section>}
+                  <p className="text-xs text-text-muted">Source matching and snapshot creation are automatic. Evidence without a verifiable link remains blocked. No JSON editing is required.</p>
                 </div>
               </div>
               {isStale && <p role="alert" className="text-sm text-danger">Translation changed on the server. Reload before saving or reviewing.</p>}
-              {parseError && <p role="alert" className="text-sm text-danger">{parseError}</p>}
               <div role="status" className="rounded-lg border border-border bg-surface p-3 text-sm">
                 <p className="font-semibold">Review checklist</p>
                 <ul className="list-disc pl-5">
                   <li>Compare the Bengali copy with the canonical source shown above.</li>
-                  {!parsed?.evidence_snapshot && <li>Add reliable source evidence before approval using the evidence fields above.</li>}
+                  {!parsed?.evidence_snapshot && <li>An openable source link must be available and its exact product claims checked before approval.</li>}
                   {isDirty && <li>Save your changes as a draft before marking it reviewed.</li>}
                   {!editing.humanReviewConfirmed && <li>Confirm the human review checkbox below.</li>}
                 </ul>
                 <p>Mark Reviewed approves this draft. Publish is a separate action.</p>
               </div>
-              <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I checked the Bengali copy, identity, package, aliases and claims against the evidence.</span></label>
+              <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I opened and checked the linked sources, Bengali copy, exact product identity, package size, aliases and claims.</span></label>
               <p className="text-sm text-text-muted">Save changes as draft first. Review and publication are separate actions; the database records the acting user and timestamps.</p>
               <div className="flex flex-wrap gap-2">
                 {([['save_draft', 'draft', 'Save Draft'], ['mark_reviewed', 'reviewed', 'Mark Reviewed'], ['publish', 'published', 'Publish']] as const).map(([action, status, label]) => <button key={action} type="button" disabled={mutation.isPending || !canAct(action, status)} onClick={() => { if (parsed) mutation.mutate({ row: parsed, action, humanReviewConfirmed: editing.humanReviewConfirmed }); }} className={`${buttonClass} inline-flex items-center gap-2 ${action === 'publish' ? 'bg-primary text-primary-on' : 'bg-surface'}`}>
@@ -246,7 +275,7 @@ export function TranslationsPage() {
             </fieldset>
           ) : (
             <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description'}</p></div>
+              <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description — evidence may be missing'}</p>{row.review_status === 'published' && <p className="text-xs text-text-muted">Saved published record · {row.published_at ?? 'timestamp unavailable'} · Publisher {row.published_by ?? 'not recorded'}</p>}</div>
               <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : 'Edit'}</button></div>
             </div>
           ))}
