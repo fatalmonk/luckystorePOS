@@ -48,6 +48,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci
       - run: node --test scripts/ci/seed_test_storefront.test.js
+      - run: node --test scripts/testing/verify_bengali_translation_api.test.mjs
       - run: npm run lint --workspace=customer_storefront
       - run: cd apps/customer_storefront && npx tsc --noEmit
 
@@ -88,6 +89,9 @@ jobs:
 
       - name: Preflight Test Supabase Environment
         run: node scripts/ci/preflight_test_env.js
+
+      - name: Verify Bengali translation public API security
+        run: node scripts/testing/verify_bengali_translation_api.mjs
 
       - name: Prepare deterministic banner fixtures
         working-directory: apps/customer_storefront
