@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import { allowedOrigin, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
+import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
 // One pinned free model. No alternate provider or paid fallback.
 import { providerConfig, providerRequest } from './provider.ts';
@@ -50,6 +50,7 @@ serve(async (request) => {
     return respond(200, { evidence: resolveRegistryEvidence(source), snapshot: registrySnapshot(source) });
   }
   const config = providerConfig(Deno.env.get('OPENROUTER_API_KEY'));
+  const batchLimit = boundedGenerationLimit(limit as number);
   // A narrowly scoped, verified-source fallback can work even when the free provider is unavailable.
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
   const catalog = kind === 'item' ? 'items' : 'categories';
@@ -59,7 +60,7 @@ serve(async (request) => {
   let skipped = 0;
   try {
     // Bounded scan avoids one request consuming unlimited database and provider resources.
-    for (let offset = 0; offset < 10000 && candidates.length < (limit as number); offset += 50) {
+    for (let offset = 0; offset < 10000 && candidates.length < batchLimit; offset += 50) {
       let query = db.from(catalog).select(fields)
         .eq('tenant_id', profile.tenant_id).eq(kind === 'item' ? 'is_active' : 'active', true);
       if (requestedIds) query = query.in('id', requestedIds as string[]);
@@ -81,7 +82,7 @@ serve(async (request) => {
         const evidenceDescription = resolved?.matched ? resolved.supportedFacts : null;
         // Existing empty drafts are enhanced only if exact registry-backed facts exist.
         if (previous && !evidenceDescription && !record.description) { skipped++; continue; }
-        if (candidates.length < (limit as number)) candidates.push({
+        if (candidates.length < batchLimit) candidates.push({
           id: record.id, name: record.name, description: record.description, sku: kind === 'item' ? record.sku : null,
           brand: kind === 'item' ? record.brand : null, evidenceDescription,
           ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at } } : {}),
@@ -92,6 +93,7 @@ serve(async (request) => {
     if (!candidates.length) return respond(200, { generated: 0, skipped, failed: 0 });
     let results: ReturnType<typeof parseBatch> = new Map();
     let providerUnavailable = !config;
+    let providerOutcome = config ? 'unknown' : 'missing_api_key';
     if (config) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 55000);
@@ -104,13 +106,17 @@ serve(async (request) => {
         if (provider.ok) {
           const body = await provider.json();
           const content: unknown = body?.choices?.[0]?.message?.content;
-          if (typeof content === 'string' && content.length <= 30000) {
+          if (typeof content === 'string' && content.trim() && content.length <= 30000) {
             results = parseBatch(content, candidates);
+            providerOutcome = [...results.values()].some(row => row.draft) ? 'valid_output' : 'rejected_output';
           } else {
             providerUnavailable = true;
+            providerOutcome = body?.choices?.[0]?.finish_reason === 'length'
+              ? 'output_truncated' : 'empty_or_invalid_content';
           }
         } else {
           providerUnavailable = true;
+          providerOutcome = `upstream_http_${provider.status}`;
           let code = 'unknown';
           try {
             const failure = await provider.json();
@@ -120,6 +126,7 @@ serve(async (request) => {
         }
       } catch {
         providerUnavailable = true;
+        providerOutcome = 'upstream_network_or_timeout';
       } finally { clearTimeout(timeout); }
     }
     let generated = 0;
@@ -158,7 +165,15 @@ serve(async (request) => {
         else failures.push({ id: source.id, reason: 'Draft could not be saved' });
       } else { generated++; if (fallback) fallbackGenerated++; }
     }
-    if (providerUnavailable && generated === 0) return respond(503, { error: 'AI provider unavailable and no source-backed fallback' });
-    return respond(200, { generated, skipped, failed: failures.length, fallbackGenerated, failures: failures.slice(0, 10) });
+    // Safe structured diagnostics: never log generated text, tokens, names or source details.
+    console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'dots-studio/dots-3-note-preview:free',
+      providerOutcome, candidates: candidates.length, generated, failed: failures.length, skipped }));
+    if (providerUnavailable && generated === 0) return respond(503, {
+      error: providerOutcome === 'missing_api_key' ? 'OpenRouter API key not configured'
+        : `Free AI provider unavailable (${providerOutcome})`,
+      generated, skipped, failed: failures.length, failures: failures.slice(0, 10),
+    });
+    return respond(200, { generated, skipped, failed: failures.length, fallbackGenerated,
+      providerOutcome, failures: failures.slice(0, 10) });
   } catch { return respond(502, { error: 'Draft generation failed' }); }
 });

@@ -2,6 +2,7 @@ export type Source = { id: string; name: string; description: string | null; bra
 export type Draft = { id: string; name: string; description: string | null; search_terms: string[] };
 export const allowedOrigin = (origin: string | null) => !origin || ['https://admin.luckystore1947.com', 'http://localhost:5173', 'http://127.0.0.1:5173'].includes(origin);
 export const validRequest = (kind: unknown, limit: unknown) => (kind === 'item' || kind === 'category') && Number.isInteger(limit) && (limit as number) >= 1 && (limit as number) <= 10;
+export const boundedGenerationLimit = (requested: number) => Math.min(Math.max(1, requested), 3);
 export const canGenerate = (role: unknown, profileTenant: unknown, recordTenant: unknown) =>
   (role === 'admin' || role === 'manager') && typeof profileTenant === 'string' && profileTenant === recordTenant;
 
@@ -62,21 +63,34 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
 }
 
 export function parseBatch(content: string, sources: Source[]): Map<string, { draft?: Draft; error?: string }> {
+  // The JSON Schema contract is checked again locally: an extra or malformed row
+  // must never be saved as a different product. Partial valid responses may be
+  // saved individually instead of discarding the entire batch.
+  const trimmed = content.trim();
+  const candidate = trimmed.startsWith('```')
+    ? trimmed.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '').trim()
+    : trimmed;
   let parsed: unknown;
-  try { parsed = JSON.parse(content); } catch { return new Map(sources.map((source) => [source.id, { error: 'Invalid model JSON' }])); }
-  if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as Record<string, unknown>).translations)) {
-    return new Map(sources.map((source) => [source.id, { error: 'Invalid model response' }]));
+  try { parsed = JSON.parse(candidate); } catch {
+    return new Map(sources.map((source) => [source.id, { error: 'Model returned invalid JSON' }]));
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)
+    || Object.keys(parsed).some(key => key !== 'translations')
+    || !Array.isArray((parsed as Record<string, unknown>).translations)) {
+    return new Map(sources.map(source => [source.id, { error: 'Invalid structured model response' }]));
   }
   const rows = (parsed as { translations: unknown[] }).translations;
   const counts = new Map<string, number>();
-  for (const row of rows) if (row && typeof row === 'object' && typeof (row as { id?: unknown }).id === 'string') {
-    const id = (row as { id: string }).id;
-    counts.set(id, (counts.get(id) ?? 0) + 1);
+  const byId = new Map<string, unknown>();
+  for (const row of rows) {
+    if (row && typeof row === 'object' && !Array.isArray(row)
+      && typeof (row as { id?: unknown }).id === 'string') {
+      const id = (row as { id: string }).id;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+      byId.set(id, row);
+    }
   }
-  if (rows.length !== sources.length || [...counts.keys()].some((id) => !sources.some((source) => source.id === id))) {
-    return new Map(sources.map((source) => [source.id, { error: 'Model entity set mismatch' }]));
-  }
-  return new Map(sources.map((source) => [source.id, counts.get(source.id) === 1
-    ? validateDraft(source, rows.find((row) => (row as { id?: unknown })?.id === source.id))
-    : { error: 'Missing or duplicate model entity' }]));
+  return new Map(sources.map(source => [source.id, counts.get(source.id) === 1
+    ? validateDraft(source, byId.get(source.id))
+    : { error: 'Model omitted or duplicated this product' }]));
 }

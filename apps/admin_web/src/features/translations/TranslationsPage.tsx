@@ -151,17 +151,34 @@ export function TranslationsPage() {
     mutationFn: async (requestedKind: TranslationKind) => {
       const emptyDraftItemIds = requestedKind === 'item'
         ? (translationsQuery.data ?? []).filter(row => row.kind === 'item' && row.review_status === 'draft' && !row.description)
-          .map(row => row.item_id).slice(0, 10)
+          .map(row => row.item_id).slice(0, 3)
         : [];
-      const body = { kind: requestedKind, limit: 10, ...(emptyDraftItemIds.length ? { itemIds: emptyDraftItemIds } : {}) };
+      const body = { kind: requestedKind, limit: 3, ...(emptyDraftItemIds.length ? { itemIds: emptyDraftItemIds } : {}) };
       const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body });
-      if (error) throw new Error('AI draft generation failed. Check provider setup or try again.');
+      if (error) {
+        // Supabase functions return an HTTP Response on failed invocations.
+        // Surface the server's bounded diagnostic, never response headers or tokens.
+        const response = (error as { context?: unknown }).context;
+        let detail: string | null = null;
+        if (response instanceof Response) {
+          try {
+            const body = await response.json();
+            if (typeof body?.error === 'string' && body.error.length <= 200) detail = body.error;
+          } catch { /* Provider may return non-JSON on an outage. */ }
+        }
+        throw new Error(detail ? `AI draft generation: ${detail}` : 'AI draft generation request failed. Check provider availability.');
+      }
       if (!data || !Number.isInteger(data.generated) || !Number.isInteger(data.skipped) || !Number.isInteger(data.failed)) throw new Error('Invalid draft generation response.');
-      return data as { generated: number; skipped: number; failed: number; fallbackGenerated?: number };
+      return data as { generated: number; skipped: number; failed: number; fallbackGenerated?: number; failures?: Array<{ id: string; reason: string }> };
     },
     onSuccess: async (result, requestedKind) => {
       await queryClient.invalidateQueries({ queryKey: ['translations', requestedKind, tenantId] });
-      notify(`${result.generated} AI draft${result.generated === 1 ? '' : 's'} saved; ${result.skipped} skipped; ${result.failed} failed. Human review is required before publication.`, result.failed ? 'error' : 'success');
+      const reasons = [...new Set((result.failures ?? []).map(f => f.reason))].slice(0, 2);
+      const details = reasons.length ? ` Reasons: ${reasons.join('; ')}.` : '';
+      const summary = result.generated === 0 && result.failed === 0 && result.skipped === 0
+        ? 'No eligible translations found.'
+        : `${result.generated} AI draft${result.generated === 1 ? '' : 's'} saved; ${result.skipped} skipped; ${result.failed} failed.${details}`;
+      notify(`${summary} Human review is required before publication.`, result.failed ? 'error' : 'success');
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });

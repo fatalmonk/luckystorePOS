@@ -6,6 +6,10 @@ Deploy this function only to a specifically authorized Testing or Production env
 
 Local checks: `deno test supabase/functions/generate-bengali-translation-drafts/validation_test.ts`; `cd apps/admin_web && npm test -- src/features/translations/TranslationsPage.test.tsx`.
 
-Pinned model: `nvidia/nemotron-3-ultra-550b-a55b:free`, direct hosted OpenRouter HTTPS endpoint, provider fallback disabled. OpenAI secrets are ignored. Provider deadline is 55 seconds; output budget is 6,000 tokens; all returned rows are validated and saved only as drafts. Protected variants Original, 2X and Best of must be preserved.
+Pinned model: `dots-studio/dots-3-note-preview:free`, a recently live-qualified free OpenRouter model advertising structured JSON Schema output. The prior Nemotron Ultra free endpoint did not advertise structured output and produced zero saved drafts despite successful HTTP requests. Direct hosted OpenRouter HTTPS endpoint, paid/provider fallback disabled. OpenAI secrets are ignored. Provider deadline is 55 seconds; output budget is 6,000 tokens; all returned rows are validated and saved only as drafts. Protected variants Original, 2X and Best of must be preserved.
 
 Managers can request one tenant-scoped evidence record from the same JWT-protected function using kind=evidence and itemId=UUID. This fetch is read-only and does not invoke the AI provider. Full registry data remains server-side, out of the browser bundle. The review UI requires preparing the returned evidence snapshot and separately saving, confirming and publishing it.
+
+Provider diagnostics: the Edge Function logs a content-free summary (`providerOutcome`, candidate count, generated and failure counts). The admin UI displays short validation reasons. Structured JSON is enforced at the provider when supported and validated independently per product; invalid or missing rows never publish.
+
+The admin button requests at most three products per click. This reduces provider response latency and lets a single malformed item fail independently without discarding the valid drafts. Repeated clicks generate additional drafts, which always require manual review and publication.

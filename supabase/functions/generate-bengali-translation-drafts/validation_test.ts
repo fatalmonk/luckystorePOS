@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts';
-import { allowedOrigin, canGenerate, parseBatch, validRequest, validateDraft } from './validation.ts';
+import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, validateDraft } from './validation.ts';
 
 const source = { id: '10000000-0000-4000-8000-000000000001', name: 'Ispahani Tea 500 g', description: 'Tea leaves, 500 g.', brand: 'Ispahani' };
 const valid = { id: source.id, name: 'Ispahani চা 500 g', description: 'চা পাতা, 500 g।', search_terms: ['চা'] };
@@ -77,4 +77,32 @@ Deno.test('evidence-only descriptions reject unsupported claims and empty copy',
   assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা 500 g, সুস্বাদু।' }).error), true);
   assertEquals(Boolean(validateDraft(product, { ...valid, description: '  ' }).error), true);
   assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা, 500 g।' }, 'চা পাতা, 500 g।').draft), true);
+});
+
+Deno.test('safe fenced JSON is accepted but unrelated prose is rejected', () => {
+  const content = '```json\n' + JSON.stringify({ translations: [valid] }) + '\n```';
+  assertEquals(Boolean(parseBatch(content, [source]).get(source.id)?.draft), true);
+  assertEquals(Boolean(parseBatch('Here is JSON ' + JSON.stringify({translations:[valid]}), [source]).get(source.id)?.error), true);
+});
+Deno.test('partial batch preserves valid product but flags missing and duplicates separately', () => {
+  const second = { ...source, id: '10000000-0000-4000-8000-000000000002',
+    name: 'Ispahani Tea 250 g', description: 'Tea leaves, 250 g.' };
+  const third = { ...source, id: '10000000-0000-4000-8000-000000000003',
+    name: 'Ispahani Tea 150 g', description: 'Tea leaves, 150 g.' };
+  const response = parseBatch(JSON.stringify({ translations:[valid, { ...valid, id: third.id }, { ...valid, id: third.id }] }), [source, second, third]);
+  assertEquals(Boolean(response.get(source.id)?.draft), true);
+  assertEquals(Boolean(response.get(second.id)?.error), true);
+  assertEquals(Boolean(response.get(third.id)?.error), true);
+});
+Deno.test('malformed product cannot replace a different product even if output count matches', () => {
+  const second = { ...source, id: '10000000-0000-4000-8000-000000000002' };
+  const response = parseBatch(JSON.stringify({translations:[{...valid,id:'unknown'},valid]}),[source,second]);
+  assertEquals(Boolean(response.get(source.id)?.draft),true);
+  assertEquals(Boolean(response.get(second.id)?.error),true);
+});
+
+Deno.test('server caps generations at three even when an older admin sends limit ten', () => {
+  assertEquals(boundedGenerationLimit(10), 3);
+  assertEquals(boundedGenerationLimit(3), 3);
+  assertEquals(boundedGenerationLimit(1), 1);
 });
