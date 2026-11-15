@@ -27,6 +27,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
+Server-side Supabase auth sync also requires the Hostinger runtime variable
+`SUPABASE_SYNC_WEBHOOK_SECRET`. Configure the same secret in the Supabase auth
+webhook's `x-webhook-secret` request header. The endpoint fails closed with
+HTTP 503 when this runtime variable is missing; do not use a public `NEXT_PUBLIC_`
+variable for it.
+
 ### Build and release
 
 - Normal releases use [the Hostinger GitHub Actions workflow](.github/workflows/storefront-hostinger.yml), not a manual dashboard upload.

@@ -1,5 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createWishlistItem, deleteWishlistItem, fetchWishlistItems } from '../wishlist';
+
+const ok = (body: unknown) => ({ ok: true, json: async () => body });
+const fail = (status: number, error: string) => ({ ok: false, status, json: async () => ({ error }) });
+
+function stubFetch(...responses: Array<ReturnType<typeof ok> | ReturnType<typeof fail>>) {
+  const fetchMock = vi.fn();
+  for (const response of responses) fetchMock.mockResolvedValueOnce(response);
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('createWishlistItem', () => {
   beforeEach(() => {
@@ -10,25 +24,18 @@ describe('createWishlistItem', () => {
     const mockItem = {
       id: 'wl-1',
       product_id: 'prod-1',
-      customer_fingerprint: 'fp-123',
       product_name: 'Milk',
       created_at: new Date().toISOString(),
     };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ item: mockItem }),
-      })
-    );
+    const fetchMock = stubFetch(ok({ productIds: [] }), ok({ item: mockItem }));
 
-    const result = await createWishlistItem('prod-1', 'fp-123', 'Milk');
+    const result = await createWishlistItem('prod-1', 'Milk');
     expect(result.product_id).toBe('prod-1');
-    expect(result.customer_fingerprint).toBe('fp-123');
-    expect(fetch).toHaveBeenCalledWith('/api/wishlist', {
+    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/wishlist?initialize=1');
+    expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId: 'prod-1', fingerprint: 'fp-123', productName: 'Milk', phone: undefined }),
+      body: JSON.stringify({ productId: 'prod-1', productName: 'Milk', phone: undefined }),
     });
   });
 
@@ -36,55 +43,94 @@ describe('createWishlistItem', () => {
     const mockItem = {
       id: 'wl-2',
       product_id: 'prod-2',
-      customer_fingerprint: 'fp-456',
       customer_phone: '+880****5678',
       product_name: 'Bread',
       created_at: new Date().toISOString(),
     };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ item: mockItem }),
-      })
-    );
+    stubFetch(ok({ productIds: [] }), ok({ item: mockItem }));
 
-    const result = await createWishlistItem('prod-2', 'fp-456', 'Bread', '+880****5678');
+    const result = await createWishlistItem('prod-2', 'Bread', '+880****5678');
     expect(result.customer_phone).toBe('+880****5678');
   });
 
   it('throws on duplicate (23505 error code)', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({ error: 'Already on wishlist' }),
-      })
-    );
+    stubFetch(ok({ productIds: [] }), fail(409, 'Already on wishlist'));
 
-    await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('Already on wishlist');
+    await expect(createWishlistItem('prod-1', 'Milk')).rejects.toThrow('Already on wishlist');
   });
 
   it('throws on other DB errors', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'permission denied' }),
-      })
-    );
+    stubFetch(ok({ productIds: [] }), fail(500, 'permission denied'));
 
-    await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('permission denied');
+    await expect(createWishlistItem('prod-1', 'Milk')).rejects.toThrow('permission denied');
   });
 
   it('throws when productId is empty', async () => {
-    await expect(createWishlistItem('', 'fp-123', 'Milk')).rejects.toThrow('productId required');
+    await expect(createWishlistItem('', 'Milk')).rejects.toThrow('productId required');
   });
 
-  it('throws when fingerprint is empty', async () => {
-    await expect(createWishlistItem('prod-1', '', 'Milk')).rejects.toThrow('fingerprint required');
+  it('throws when productName is empty', async () => {
+    await expect(createWishlistItem('prod-1', '')).rejects.toThrow('productName required');
+  });
+
+  it('serializes simultaneous first-time adds behind one owner bootstrap', async () => {
+    vi.stubGlobal('navigator', { locks: undefined });
+    const trace: string[] = [];
+    let ownerBootstrapped = false;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (input === '/api/wishlist?initialize=1') {
+        trace.push('bootstrap');
+        ownerBootstrapped = true;
+        return ok({ productIds: [] });
+      }
+      if (input === '/api/wishlist' && init?.method === 'POST') {
+        trace.push(ownerBootstrapped ? 'write' : 'write-before-bootstrap');
+        return ok({ item: { id: 'wl-1', product_id: 'prod-1', product_name: 'Milk', created_at: 'now' } });
+      }
+      throw new Error(`Unexpected fetch: ${String(input)}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await Promise.all([
+      createWishlistItem('prod-1', 'Milk'),
+      createWishlistItem('prod-2', 'Bread'),
+    ]);
+
+    expect(trace).toEqual(['bootstrap', 'write', 'bootstrap', 'write']);
+    expect(trace).not.toContain('write-before-bootstrap');
+  });
+
+  it('uses the origin-wide Web Lock when available', async () => {
+    let lockTail = Promise.resolve();
+    const request = vi.fn((_name: string, operation: () => Promise<unknown>) => {
+      const queued = lockTail.then(operation, operation);
+      lockTail = queued.then(() => undefined, () => undefined);
+      return queued;
+    });
+    vi.stubGlobal('navigator', { locks: { request } });
+    let cookieValue: string | undefined;
+    const writes: Array<string | undefined> = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (input === '/api/wishlist?initialize=1') {
+        cookieValue ??= 'same-owner-cookie';
+        return ok({ productIds: [] });
+      }
+      if (input === '/api/wishlist' && init?.method === 'POST') {
+        writes.push(cookieValue);
+        return ok({ item: { id: 'wl-1', product_id: 'prod-1', product_name: 'Milk', created_at: 'now' } });
+      }
+      throw new Error(`Unexpected fetch: ${String(input)}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await Promise.all([
+      createWishlistItem('prod-1', 'Milk'),
+      createWishlistItem('prod-2', 'Bread'),
+    ]);
+
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(request).toHaveBeenCalledWith('lucky-store-wishlist-owner', expect.any(Function));
+    expect(writes).toEqual(['same-owner-cookie', 'same-owner-cookie']);
   });
 });
 
@@ -94,36 +140,24 @@ describe('deleteWishlistItem', () => {
   });
 
   it('deletes successfully', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true }),
-      })
-    );
+    const fetchMock = stubFetch(ok({ productIds: [] }), ok({ success: true }));
 
-    await expect(deleteWishlistItem('prod-1', 'fp-123')).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/wishlist?productId=prod-1&fingerprint=fp-123',
+    await expect(deleteWishlistItem('prod-1')).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/wishlist?initialize=1');
+    expect(fetchMock).toHaveBeenNthCalledWith(2,
+      '/api/wishlist?productId=prod-1',
       { method: 'DELETE' }
     );
   });
 
   it('throws on DB error', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({ error: 'RLS violation' }),
-      })
-    );
+    stubFetch(ok({ productIds: [] }), fail(400, 'RLS violation'));
 
-    await expect(deleteWishlistItem('prod-1', 'fp-123')).rejects.toThrow('RLS violation');
+    await expect(deleteWishlistItem('prod-1')).rejects.toThrow('RLS violation');
   });
 
   it('throws when productId is empty', async () => {
-    await expect(deleteWishlistItem('', 'fp-123')).rejects.toThrow('productId required');
+    await expect(deleteWishlistItem('')).rejects.toThrow('productId required');
   });
 });
 
@@ -133,47 +167,23 @@ describe('fetchWishlistItems', () => {
   });
 
   it('returns array of product_ids', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ productIds: ['prod-1', 'prod-2'] }),
-      })
-    );
+    const fetchMock = stubFetch(ok({ productIds: ['prod-1', 'prod-2'] }));
 
-    const result = await fetchWishlistItems('fp-123');
+    const result = await fetchWishlistItems();
     expect(result).toEqual(['prod-1', 'prod-2']);
-    expect(fetch).toHaveBeenCalledWith('/api/wishlist?fingerprint=fp-123');
+    expect(fetchMock).toHaveBeenCalledWith('/api/wishlist?initialize=1');
   });
 
   it('returns empty array when no items', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ productIds: [] }),
-      })
-    );
+    stubFetch(ok({ productIds: [] }));
 
-    const result = await fetchWishlistItems('fp-123');
-    expect(result).toEqual([]);
-  });
-
-  it('returns empty array for empty fingerprint', async () => {
-    const result = await fetchWishlistItems('');
+    const result = await fetchWishlistItems();
     expect(result).toEqual([]);
   });
 
   it('throws on DB error', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'connection failed' }),
-      })
-    );
+    stubFetch(fail(500, 'connection failed'));
 
-    await expect(fetchWishlistItems('fp-123')).rejects.toThrow('connection failed');
+    await expect(fetchWishlistItems()).rejects.toThrow('connection failed');
   });
 });

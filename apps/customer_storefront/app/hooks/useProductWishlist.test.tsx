@@ -24,7 +24,6 @@ describe('useProductWishlist', () => {
     localStorage.clear();
     toggleWishlistItemServer.mockReset();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    vi.stubGlobal('crypto', { randomUUID: () => 'fingerprint-1' });
   });
 
   afterEach(() => {
