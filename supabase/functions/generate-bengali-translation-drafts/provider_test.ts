@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts';
-import { MODEL, classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
+import { MODEL, classifyInvalidRetryResponse, classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
 Deno.test('pins exact free model without provider or paid fallback', () => {
   assertEquals(MODEL, 'nvidia/nemotron-3.5-super-vl:free');
   assertEquals(providerConfig(undefined), null);
@@ -48,4 +48,34 @@ Deno.test('system instructions forbid unsupported semantic claims and enforce ex
   ]) {
     assertEquals(prompt.includes(phrase), true, phrase);
   }
+});
+
+
+Deno.test('translation prompt requires Bengali words in names, preserves identities, and includes aliases', () => {
+  const text = providerRequest([]).messages[0].content;
+  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'Human review']) {
+    assertEquals(text.includes(part), true, part);
+  }
+  assertEquals(providerRequest([], { repairBengaliNames: true }).messages[0].content.includes('CORRECTION:'), true);
+  assertEquals(providerRequest([]).messages[0].content.includes('CORRECTION:'), false);
+});
+
+
+Deno.test('malformed successful correction response is upstream-invalid when no valid draft survives', () => {
+  const originalRejected = new Map([['first', { error: 'Bengali product name missing Bengali letters' }]]);
+  assertEquals(classifyInvalidRetryResponse(originalRejected), {
+    providerOutcome: 'upstream_invalid_response', providerUnavailable: true,
+  });
+  assertEquals(originalRejected.get('first')?.error, 'Bengali product name missing Bengali letters');
+});
+
+Deno.test('malformed retry preserves unrelated valid drafts and does not mark the whole provider unavailable', () => {
+  const results = new Map([
+    ['first', { draft: { id: 'first', name: 'বাংলা পণ্য' } }],
+    ['second', { error: 'Bengali product name missing Bengali letters' }],
+  ]);
+  assertEquals(classifyInvalidRetryResponse(results), {
+    providerOutcome: 'upstream_invalid_response', providerUnavailable: false,
+  });
+  assertEquals(Boolean(results.get('first')?.draft), true);
 });

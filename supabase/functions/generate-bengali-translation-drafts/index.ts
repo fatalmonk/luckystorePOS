@@ -1,9 +1,9 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
+import { allowedOrigin, bengaliNameRetrySources, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
 // One pinned free model. No alternate provider or paid fallback.
-import { classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
+import { classifyInvalidRetryResponse, classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
 import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
 import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -103,6 +103,8 @@ serve(async (request) => {
     }
     let providerUnavailable = !config;
     let providerOutcome = config ? 'unknown' : 'missing_api_key';
+    let nameRepairAttempted = 0;
+    let nameRepairRecovered = 0;
     if (config) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 55000);
@@ -123,6 +125,47 @@ serve(async (request) => {
             if (typeof content === 'string' && content.trim() && content.length <= 30000) {
               results = parseBatch(content, candidates, vettedDescriptions);
               providerOutcome = classifyProviderOutput(results, choice?.finish_reason);
+              const nameRetry = bengaliNameRetrySources(candidates, results);
+              if (nameRetry.length && !controller.signal.aborted) {
+                nameRepairAttempted = nameRetry.length;
+                // Second attempt is strictly limited to rows missing Bengali letters.
+                // Use the same single free model, abort signal, and overall deadline.
+                try {
+                  const retryResponse = await fetch(config.url, {
+                    method: 'POST', signal: controller.signal,
+                    headers: { Authorization: 'Bearer ' + config.key, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(providerRequest(nameRetry, { repairBengaliNames: true })),
+                  });
+                  if (retryResponse.ok) {
+                    const retryBody = await decodeSuccessfulProviderResponse(retryResponse);
+                    if (!retryBody.ok) {
+                      const invalidRetry = classifyInvalidRetryResponse(results);
+                      providerOutcome = invalidRetry.providerOutcome;
+                      providerUnavailable = invalidRetry.providerUnavailable;
+                    } else {
+                      const retryChoice = retryBody.body.choices?.[0];
+                      const retryText: unknown = retryChoice?.message?.content;
+                      if (typeof retryText === 'string' && retryText.trim() && retryText.length <= 30000) {
+                        const repair = parseBatch(retryText, nameRetry, vettedDescriptions);
+                        for (const source of nameRetry) {
+                          const updated = repair.get(source.id);
+                          if (updated?.draft) {
+                            results.set(source.id, updated);
+                            nameRepairRecovered++;
+                          }
+                        }
+                        if (nameRepairRecovered) providerOutcome = 'valid_output';
+                      } else {
+                        providerOutcome = retryChoice?.finish_reason === 'length'
+                          ? 'output_truncated' : 'empty_or_invalid_content';
+                        providerUnavailable = ![...results.values()].some(({ draft }) => Boolean(draft));
+                      }
+                    }
+                  }
+                } catch {
+                  // Preserve the original validation result; never save an unverified repair.
+                }
+              }
             } else {
               providerUnavailable = true;
               providerOutcome = choice?.finish_reason === 'length'
@@ -182,7 +225,8 @@ serve(async (request) => {
     }
     // Safe structured diagnostics: never log generated text, tokens, names or source details.
     console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'nvidia/nemotron-3.5-super-vl:free',
-      providerOutcome, candidates: candidates.length, generated, failed: failures.length, skipped }));
+      providerOutcome, candidates: candidates.length, nameRepairAttempted,
+      nameRepairRecovered, generated, failed: failures.length, skipped }));
     if (providerUnavailable && generated === 0) return respond(503, {
       error: providerOutcome === 'missing_api_key' ? 'OpenRouter API key not configured'
         : `Free AI provider unavailable (${providerOutcome})`,
