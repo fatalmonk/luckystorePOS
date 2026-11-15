@@ -34,6 +34,9 @@ export function TranslationsPage() {
   const queryClient = useQueryClient();
   const [kind, setKind] = useState<TranslationKind>('item');
   const [statusFilter, setStatusFilter] = useState<TranslationReviewStatus | 'all'>('all');
+  // UUID cursor survives content refreshes within this page; failed product
+  // batches advance instead of retrying the same first three indefinitely.
+  const [generationCursor, setGenerationCursor] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editor | null>(null);
   const canManage = Boolean(user && user.tenantId === tenantId && (user.role === 'admin' || user.role === 'manager'));
 
@@ -163,11 +166,28 @@ export function TranslationsPage() {
   });
   const generateMutation = useMutation({
     mutationFn: async (requestedKind: TranslationKind) => {
-      const emptyDraftItemIds = requestedKind === 'item'
-        ? (translationsQuery.data ?? []).filter(row => row.kind === 'item' && row.review_status === 'draft' && !row.description)
-          .map(row => row.item_id).slice(0, 3)
+      // Use the Edge Function's existing tenant-scoped targeted itemIds feature.
+      // Its default scan always selects the same first 3, so validation failures
+      // trap the entire catalog. Choose the next three *untranslated* UUIDs,
+      // wrapping around after the end; never use an unstable list index cursor.
+      const translated = new Set((translationsQuery.data ?? [])
+        .filter(row => row.kind === 'item').map(row => row.item_id));
+      const available = requestedKind === 'item'
+        ? (catalogQuery.data ?? []).filter(row => !translated.has(row.id))
+          .sort((a, b) => a.id.localeCompare(b.id))
         : [];
-      const body = { kind: requestedKind, limit: 3, ...(emptyDraftItemIds.length ? { itemIds: emptyDraftItemIds } : {}) };
+      const nextIndex = generationCursor
+        ? available.findIndex(row => row.id > generationCursor) : 0;
+      const start = nextIndex < 0 ? 0 : nextIndex;
+      const ordered = [...available.slice(start), ...available.slice(0, start)];
+      const attemptedIds = requestedKind === 'item'
+        ? ordered.slice(0, 3).map(row => row.id) : [];
+      const hasAlternativeBatch = available.length > attemptedIds.length;
+      if (requestedKind === 'item' && attemptedIds.length === 0) {
+        return { generated: 0, skipped: 0, failed: 0, attemptedIds, hasAlternativeBatch };
+      }
+      const body = { kind: requestedKind, limit: 3,
+        ...(requestedKind === 'item' ? { itemIds: attemptedIds } : {}) };
       const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body });
       if (error) {
         // Supabase functions return an HTTP Response on failed invocations.
@@ -183,16 +203,25 @@ export function TranslationsPage() {
         throw new Error(detail ? `AI draft generation: ${detail}` : 'AI draft generation request failed. Check provider availability.');
       }
       if (!data || !Number.isInteger(data.generated) || !Number.isInteger(data.skipped) || !Number.isInteger(data.failed)) throw new Error('Invalid draft generation response.');
-      return data as { generated: number; skipped: number; failed: number; fallbackGenerated?: number; failures?: Array<{ id: string; reason: string }> };
+      return { ...data, attemptedIds, hasAlternativeBatch } as {
+        generated: number; skipped: number; failed: number;
+        attemptedIds: string[]; hasAlternativeBatch: boolean;
+        fallbackGenerated?: number; failures?: Array<{ id: string; reason: string }>;
+      };
     },
     onSuccess: async (result, requestedKind) => {
+      if (requestedKind === 'item' && result.attemptedIds.length) {
+        setGenerationCursor(result.attemptedIds[result.attemptedIds.length - 1]);
+      }
       await queryClient.invalidateQueries({ queryKey: ['translations', requestedKind, tenantId] });
       const reasons = [...new Set((result.failures ?? []).map(f => f.reason))].slice(0, 2);
       const details = reasons.length ? ` Reasons: ${reasons.join('; ')}.` : '';
       const summary = result.generated === 0 && result.failed === 0 && result.skipped === 0
         ? 'No eligible translations found.'
         : `${result.generated} AI draft${result.generated === 1 ? '' : 's'} saved; ${result.skipped} skipped; ${result.failed} failed.${details}`;
-      notify(`${summary} Human review is required before publication.`, result.failed ? 'error' : 'success');
+      const nextBatch = requestedKind === 'item' && result.failed > 0 && result.hasAlternativeBatch
+        ? ' Next click will select different untranslated products.' : '';
+      notify(`${summary}${nextBatch} Human review is required before publication.`, result.failed ? 'error' : 'success');
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });
@@ -232,7 +261,7 @@ export function TranslationsPage() {
       <PageHeader title="Bengali translations" subtitle="Compare canonical identity and reliable evidence before reviewing localized copy." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setGenerationCursor(null); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}

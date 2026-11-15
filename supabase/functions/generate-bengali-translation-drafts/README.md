@@ -16,3 +16,25 @@ The admin button requests at most three products per click. This reduces provide
 
 For evidence-only sources, only exact manufacturer-backed vetted templates can authorize model-generated descriptions. Invalid model claims return their specific validation error (rather than a misleading empty-description error). Provider outcomes distinguish truncated valid-looking content, malformed HTTP 200 JSON, and network failures. The provider output ceiling is 6,000 tokens for a maximum three-item batch; this is a cap, not a target.
 \nName generation repair: require Bengali-script product words, not merely Bengali numerals. A single same-provider correction attempt is permitted ONLY for exact-ID rows rejected because their names contain no Bengali letters; it shares the original 55-second deadline and all identity/quantity/evidence validation. This does not repair other rejection types or permit automatic publishing. Log only the repair attempt/recovery counts, never model text.\n
+### Free-model envelope and candidate progression (Nov 15, 2026)
+An isolated replay of the pinned free model via Kilo/OmniRoute returned
+a one-key 'rows' JSON envelope instead of 'translations'. Direct production
+OpenRouter responses were not captured, so the live cause needs deployment
+verification. The parser accepts ONLY
+these two known wrappers; every item must still pass the unchanged strict
+UUID, brand, numeric, package, description, alias, and evidence checks.
+An isolated three-product live model replay produced 'rows' and all three
+translations passed the strict validator with that one-key normalization.
+This does not certify the live production provider or independently verify
+semantic marketing claims; human review and exact-source evidence remain
+mandatory.
+
+The admin Generate AI Drafts button selects up to three NEW untranslated
+canonical item IDs through the existing tenant-guarded itemIds parameter.
+It advances its UUID cursor after each attempted batch, including completely
+rejected responses, and wraps through the untranslated catalog on subsequent
+clicks. It deliberately does not keep retrying empty pre-existing draft rows
+or the first failing items. Reviewed/published products are never targeted;
+the Edge Function independently rechecks tenant, roles and existing statuses.
+Candidate progression is scoped to the current admin page session and
+to products; category generation retains server-default selection.

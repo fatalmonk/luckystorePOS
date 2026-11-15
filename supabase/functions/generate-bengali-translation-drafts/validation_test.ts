@@ -176,3 +176,19 @@ Deno.test('evidence-only invalid claims cannot trigger Bengali name retry', () =
   assertEquals(result.error, 'Description contains unverified claims');
   assertEquals(bengaliNameRetrySources([evidenceOnly], new Map([[source.id, result]])).length, 0);
 });
+
+
+Deno.test('known free-model rows envelope is accepted only with full per-product validation', () => {
+  const alternative = JSON.stringify({ rows: [valid] });
+  assertEquals(Boolean(parseBatch(alternative, [source]).get(source.id)?.draft), true);
+  const wrongId = JSON.stringify({ rows: [{ ...valid, id: 'different' }] });
+  assertEquals(parseBatch(wrongId, [source]).get(source.id)?.error, 'Model omitted or duplicated this product');
+  const wrongQuantity = JSON.stringify({ rows: [{ ...valid, name: 'Ispahani চা 250 g' }] });
+  assertEquals(parseBatch(wrongQuantity, [source]).get(source.id)?.error, 'Numeric or package identity changed');
+  for (const invalid of [
+    { rows: [valid], translations: [valid] }, { data: [valid] },
+    { rows: [valid], unrelated: true }, [valid],
+  ]) {
+    assertEquals(parseBatch(JSON.stringify(invalid), [source]).get(source.id)?.error, 'Invalid structured model response');
+  }
+});
