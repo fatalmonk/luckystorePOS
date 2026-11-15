@@ -3,7 +3,7 @@
 - Storefront Next.js 16.4.5 / React 19; admin React 19 / Vite; mobile Flutter / Expo SDK 57; backend Supabase, Cloudflare Workers / R2
 
 ## Current Task
-- 20261112-bn-phase0-foundation: Branch `kilo/bn-phase0-foundation` (worktree `.worktrees/bn-phase0`) executes Phase 0 of the Bengali plan. Task 3 done: static page pairs use the shared builder; next is cross-model review.
+- 20261115-auth-boundaries: Maintain fail-closed webhook authentication and server-validated guest wishlist ownership.
 
 ## Decisions
 - 20261112-bn-static-alternates: about/terms/return-policy/delivery (en + bn) use `buildLocaleAlternates`; emitted URLs are unchanged. The Bengali layout exports `openGraph.locale: 'bn_BD'` (alternate `en_BD`); pages that set their own `openGraph` still override it. Other pages keep hand-written alternates until Phase 2.
@@ -13,13 +13,12 @@
 - 20261112-product-evidence: Draft covers 100 IDs / 127 URLs: 13 MATCHED, 37 PARTIAL, 44 UNAVAILABLE, 5 CONFLICT, 1 REDIRECT_ALIAS; MATCHED evidence does not prove stock or publication readiness.
 - 20261110-thin-content: Under 300 words alone is not an SEO defect; 193 pages are conditional expansion candidates. Preserve distinct SKUs/locales and prioritize only with dated GSC/commerce evidence.
 - 20261110-pr614-616: PR #614 removed unsupported unit-price shipping details; PR #616 corrected Cadbury 13.2 g identity. Production deployment and physical-pack verification remain separate.
-- 20261110-dove-storefront-release: PR #610 merged; exact English/Bengali duplicate redirects are implemented, browse fallback excludes the duplicate, and stale-cart cleanup remains.
-- 20261110-dove-reconciliation: Owner-confirmed stock is 4; plan `2 + 2 -> 4 + 0`, preserve duplicate history, and revalidate before deactivation.
-- 20261110-dove-storefront: PR #610 merged as `53ec205b`; production deployment and image bytes remain unverified.
-- 20261109-perfbee-title-integrity: Bengali titles preserve exact localized prices; no artificial zero-padding.
-- 20261109-canonical-head-placement: `htmlLimitedBots: /.*/` keeps generated metadata in `<head>`; dynamic-route TTFB may increase.
+- 20261110-dove: PR #610 merged as `53ec205b`; exact English/Bengali duplicate redirects, browse fallback exclusion, and owner-confirmed `2 + 2 -> 4 + 0` stock plan; production image bytes remain unverified.
+- 20261109-seo-metadata: Bengali titles preserve exact localized prices; `htmlLimitedBots: /.*/` keeps metadata in `<head>`, with possible dynamic-route TTFB cost.
 - 20261109-security-headers-config: X-Frame-Options, Referrer-Policy, and X-Content-Type-Options are configured and tested; production preservation remains unverified.
 - 20261112-public-asset-cache: PR #622 merged as `7ddb5631`; version-controlled storefront images use `public, max-age=2592000, stale-while-revalidate=86400`. The shared constant generates LiteSpeed `.htaccess` and Node response policy; deployment smoke checks require the exact 24-hour revalidation directive.
+- 20261115-guest-wishlist-auth: Webhook sync requires `SUPABASE_SYNC_WEBHOOK_SECRET`; wishlist ownership uses a one-year expiring HttpOnly cookie signed with the server-only Supabase service key. Client fingerprints are ignored; legacy rows remain unclaimed until an authenticated migration is designed.
+- 20261112-storefront-followup: PRs #627–631 stabilized Bengali slugs, restored tea/logo presentation, reduced and versioned Bengali logos (153 KB to 72.5 KB each), deferred motion and trimmed home CSS, and updated canonical/security metadata, admin noindex, Chattogram delivery content, and category/product SEO.
 - 20261110-pr609-production-smoke: Bounded production sample and build identity are recorded in `seo/evidence/2026-11-10/pr609-post-merge-smoke.md`; results do not clear sitewide PerfBee groups.
 - 20261109-perfbee-p1-hreflang: Added six English/Bengali product alternate reciprocity tests.
 - 20261109-branch-cleanup: Removed stale local/remote branches only at verified merged or closed PR heads; preserved open PRs and dirty worktrees.
@@ -48,4 +47,4 @@
 - 20261108-task-tracking: `tasks/todo.md` reflects the remaining E6 backlog.
 
 ## Next
-- Add Daily Pushti 1kg and Power 50g only after confirming matching catalog UUIDs; verify 1kg nutrition directly. No live catalog writes, image sync, or deployment.
+- Before a storefront deployment, verify `SUPABASE_SYNC_WEBHOOK_SECRET` in Hostinger and decide whether legacy wishlist rows need a separate authenticated migration.
