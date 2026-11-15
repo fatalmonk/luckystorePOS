@@ -94,15 +94,23 @@ export function TranslationsPage() {
   ));
   const isDirty = !parsed || !persisted || JSON.stringify(translationContent(parsed)) !== JSON.stringify(translationContent(persisted));
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
+  // Publishing an already-reviewed production translation must not depend on
+  // another live AI/evidence lookup. The transition guard below independently
+  // checks the persisted snapshot against the current canonical item, reviewer,
+  // authenticated actor, and explicit human confirmation.
+  const canPublishWithSavedEvidence = Boolean(
+    parsed && source && parsed.review_status === 'reviewed' && editing?.row.kind === 'item'
+    && !source.sku?.startsWith('CANVA-TEST-')
+    && parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim(),
+  );
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
     && !isStale
-    // An exact canonical snapshot with saved HTTPS sources may be reviewed by a
-    // real human for production SKUs even without a manufacturer catalogue URL.
-    // Testing CANVA-TEST records still require registry-backed manufacturer links.
-    && (action === 'save_draft' || editing?.row.kind !== 'item' || (resolvedEvidence !== null
-      && (source?.sku?.startsWith('CANVA-TEST-')
-        ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim())
-        : Boolean(parsed?.evidence_snapshot?.sourceUris.length && parsed?.description?.trim()))))
+    && (action === 'save_draft' || editing?.row.kind !== 'item'
+      || (action === 'publish' && canPublishWithSavedEvidence)
+      || (resolvedEvidence !== null
+        && (source?.sku?.startsWith('CANVA-TEST-')
+          ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim())
+          : Boolean(parsed?.evidence_snapshot?.sourceUris.length && parsed?.description?.trim()))))
     && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
     && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 
@@ -309,7 +317,9 @@ export function TranslationsPage() {
                   {isDirty && <li>Save your changes as a draft before marking it reviewed.</li>}
                   {!editing.humanReviewConfirmed && <li>Confirm the human review checkbox below.</li>}
                 </ul>
-                <p>Mark Reviewed approves this draft. Publish is a separate action.</p>
+                <p>{row.review_status === 'reviewed'
+                  ? 'This translation is reviewed. Check its saved evidence, confirm the verification checkbox, then select Publish below.'
+                  : 'Mark Reviewed approves this draft. Publish is a separate action.'}</p>
               </div>
               <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I opened and checked the linked sources, Bengali copy, exact product identity, package size, aliases and claims.</span></label>
               <p className="text-sm text-text-muted">Save changes as draft first. Review and publication are separate actions; the database records the acting user and timestamps.</p>
@@ -323,7 +333,7 @@ export function TranslationsPage() {
           ) : (
             <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description — evidence may be missing'}</p>{row.review_status === 'published' && <p className="text-xs text-text-muted">Saved published record · {row.published_at ?? 'timestamp unavailable'} · Publisher {row.published_by ?? 'not recorded'}</p>}</div>
-              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : 'Edit'}</button></div>
+              <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : row.review_status === 'reviewed' ? 'Publish…' : 'Edit'}</button></div>
             </div>
           ))}
           {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
