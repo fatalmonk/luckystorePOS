@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-const WEBHOOK_SECRET = process.env.SUPABASE_SYNC_WEBHOOK_SECRET || 'my-super-secret-webhook-key';
+import { timingSafeEqual } from 'node:crypto';
 
 export async function POST(request: Request) {
   try {
-    const signature = request.headers.get('x-webhook-secret');
+    const webhookSecret = process.env.SUPABASE_SYNC_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error('Missing SUPABASE_SYNC_WEBHOOK_SECRET');
+      return NextResponse.json({ error: 'Webhook is not configured' }, { status: 503 });
+    }
 
-    if (signature !== WEBHOOK_SECRET) {
+    const signature = request.headers.get('x-webhook-secret');
+    const expected = Buffer.from(webhookSecret, 'utf8');
+    const received = Buffer.from(signature ?? '', 'utf8');
+
+    if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

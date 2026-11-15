@@ -10,7 +10,6 @@ describe('createWishlistItem', () => {
     const mockItem = {
       id: 'wl-1',
       product_id: 'prod-1',
-      customer_fingerprint: 'fp-123',
       product_name: 'Milk',
       created_at: new Date().toISOString(),
     };
@@ -22,13 +21,12 @@ describe('createWishlistItem', () => {
       })
     );
 
-    const result = await createWishlistItem('prod-1', 'fp-123', 'Milk');
+    const result = await createWishlistItem('prod-1', 'Milk');
     expect(result.product_id).toBe('prod-1');
-    expect(result.customer_fingerprint).toBe('fp-123');
     expect(fetch).toHaveBeenCalledWith('/api/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId: 'prod-1', fingerprint: 'fp-123', productName: 'Milk', phone: undefined }),
+      body: JSON.stringify({ productId: 'prod-1', productName: 'Milk', phone: undefined }),
     });
   });
 
@@ -36,7 +34,6 @@ describe('createWishlistItem', () => {
     const mockItem = {
       id: 'wl-2',
       product_id: 'prod-2',
-      customer_fingerprint: 'fp-456',
       customer_phone: '+880****5678',
       product_name: 'Bread',
       created_at: new Date().toISOString(),
@@ -49,7 +46,7 @@ describe('createWishlistItem', () => {
       })
     );
 
-    const result = await createWishlistItem('prod-2', 'fp-456', 'Bread', '+880****5678');
+    const result = await createWishlistItem('prod-2', 'Bread', '+880****5678');
     expect(result.customer_phone).toBe('+880****5678');
   });
 
@@ -63,7 +60,7 @@ describe('createWishlistItem', () => {
       })
     );
 
-    await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('Already on wishlist');
+    await expect(createWishlistItem('prod-1', 'Milk')).rejects.toThrow('Already on wishlist');
   });
 
   it('throws on other DB errors', async () => {
@@ -76,15 +73,15 @@ describe('createWishlistItem', () => {
       })
     );
 
-    await expect(createWishlistItem('prod-1', 'fp-123', 'Milk')).rejects.toThrow('permission denied');
+    await expect(createWishlistItem('prod-1', 'Milk')).rejects.toThrow('permission denied');
   });
 
   it('throws when productId is empty', async () => {
-    await expect(createWishlistItem('', 'fp-123', 'Milk')).rejects.toThrow('productId required');
+    await expect(createWishlistItem('', 'Milk')).rejects.toThrow('productId required');
   });
 
-  it('throws when fingerprint is empty', async () => {
-    await expect(createWishlistItem('prod-1', '', 'Milk')).rejects.toThrow('fingerprint required');
+  it('throws when productName is empty', async () => {
+    await expect(createWishlistItem('prod-1', '')).rejects.toThrow('productName required');
   });
 });
 
@@ -102,9 +99,9 @@ describe('deleteWishlistItem', () => {
       })
     );
 
-    await expect(deleteWishlistItem('prod-1', 'fp-123')).resolves.toBeUndefined();
+    await expect(deleteWishlistItem('prod-1')).resolves.toBeUndefined();
     expect(fetch).toHaveBeenCalledWith(
-      '/api/wishlist?productId=prod-1&fingerprint=fp-123',
+      '/api/wishlist?productId=prod-1',
       { method: 'DELETE' }
     );
   });
@@ -119,11 +116,11 @@ describe('deleteWishlistItem', () => {
       })
     );
 
-    await expect(deleteWishlistItem('prod-1', 'fp-123')).rejects.toThrow('RLS violation');
+    await expect(deleteWishlistItem('prod-1')).rejects.toThrow('RLS violation');
   });
 
   it('throws when productId is empty', async () => {
-    await expect(deleteWishlistItem('', 'fp-123')).rejects.toThrow('productId required');
+    await expect(deleteWishlistItem('')).rejects.toThrow('productId required');
   });
 });
 
@@ -141,9 +138,9 @@ describe('fetchWishlistItems', () => {
       })
     );
 
-    const result = await fetchWishlistItems('fp-123');
+    const result = await fetchWishlistItems();
     expect(result).toEqual(['prod-1', 'prod-2']);
-    expect(fetch).toHaveBeenCalledWith('/api/wishlist?fingerprint=fp-123');
+    expect(fetch).toHaveBeenCalledWith('/api/wishlist');
   });
 
   it('returns empty array when no items', async () => {
@@ -155,12 +152,7 @@ describe('fetchWishlistItems', () => {
       })
     );
 
-    const result = await fetchWishlistItems('fp-123');
-    expect(result).toEqual([]);
-  });
-
-  it('returns empty array for empty fingerprint', async () => {
-    const result = await fetchWishlistItems('');
+    const result = await fetchWishlistItems();
     expect(result).toEqual([]);
   });
 
@@ -174,6 +166,6 @@ describe('fetchWishlistItems', () => {
       })
     );
 
-    await expect(fetchWishlistItems('fp-123')).rejects.toThrow('connection failed');
+    await expect(fetchWishlistItems()).rejects.toThrow('connection failed');
   });
 });

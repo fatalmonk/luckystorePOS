@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   getLocalWishlist,
-  getOrCreateFingerprint,
   saveLocalWishlist,
   toggleWishlistItemServer,
 } from '../lib/wishlistHelpers';
@@ -54,8 +53,7 @@ export function useProductWishlist(productId: string, productName: string) {
   }, [productId]);
 
   const toggle = useCallback(async () => {
-    const fingerprint = getOrCreateFingerprint();
-    if (!fingerprint || pendingProductIds.has(productId)) return;
+    if (pendingProductIds.has(productId)) return;
 
     const nextState = !getLocalWishlist().includes(productId);
     pendingProductIds.add(productId);
@@ -65,7 +63,7 @@ export function useProductWishlist(productId: string, productName: string) {
     notifyWishlistChange({ productId, isWishlisted: nextState, isPending: true });
 
     try {
-      await toggleWishlistItemServer(productId, productName, fingerprint, nextState);
+      await toggleWishlistItemServer(productId, productName, nextState);
       showToast(nextState ? `Saved ${productName} to wishlist` : `Removed ${productName} from wishlist`);
     } catch (error) {
       console.error(error);

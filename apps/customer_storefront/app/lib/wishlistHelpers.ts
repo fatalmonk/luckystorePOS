@@ -2,16 +2,6 @@ import { createWishlistItem, deleteWishlistItem, fetchWishlistItems } from './wi
 
 const LOCAL_KEY = 'lucky_wishlist_ids';
 
-export function getOrCreateFingerprint(): string {
-  if (typeof window === 'undefined') return '';
-  let fingerprint = localStorage.getItem('lucky_store_fp');
-  if (!fingerprint) {
-    fingerprint = crypto.randomUUID();
-    localStorage.setItem('lucky_store_fp', fingerprint);
-  }
-  return fingerprint;
-}
-
 export function getLocalWishlist(): string[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -31,10 +21,9 @@ export function saveLocalWishlist(ids: string[]): void {
   }
 }
 
-export async function syncWishlistWithServer(fingerprint: string): Promise<string[]> {
-  if (!fingerprint) return [];
+export async function syncWishlistWithServer(): Promise<string[]> {
   try {
-    const serverIds = await fetchWishlistItems(fingerprint);
+    const serverIds = await fetchWishlistItems();
     saveLocalWishlist(serverIds);
     return serverIds;
   } catch (e) {
@@ -46,12 +35,11 @@ export async function syncWishlistWithServer(fingerprint: string): Promise<strin
 export async function toggleWishlistItemServer(
   productId: string,
   productName: string,
-  fingerprint: string,
   isWishlisted: boolean
 ): Promise<void> {
   if (isWishlisted) {
-    await createWishlistItem(productId, fingerprint, productName);
+    await createWishlistItem(productId, productName);
   } else {
-    await deleteWishlistItem(productId, fingerprint);
+    await deleteWishlistItem(productId);
   }
 }

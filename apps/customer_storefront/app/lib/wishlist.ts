@@ -1,7 +1,6 @@
 export interface WishlistItem {
   id: string;
   product_id: string;
-  customer_fingerprint: string;
   customer_phone?: string;
   product_name: string;
   created_at: string;
@@ -9,17 +8,16 @@ export interface WishlistItem {
 
 export async function createWishlistItem(
   productId: string,
-  fingerprint: string,
   productName: string,
   phone?: string
 ): Promise<WishlistItem> {
   if (!productId) throw new Error('productId required');
-  if (!fingerprint) throw new Error('fingerprint required');
+  if (!productName) throw new Error('productName required');
 
   const res = await fetch('/api/wishlist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productId, fingerprint, productName, phone }),
+    body: JSON.stringify({ productId, productName, phone }),
   });
 
   const body = await res.json();
@@ -30,13 +28,11 @@ export async function createWishlistItem(
 }
 
 export async function deleteWishlistItem(
-  productId: string,
-  fingerprint: string
+  productId: string
 ): Promise<void> {
   if (!productId) throw new Error('productId required');
-  if (!fingerprint) throw new Error('fingerprint required');
 
-  const res = await fetch(`/api/wishlist?productId=${encodeURIComponent(productId)}&fingerprint=${encodeURIComponent(fingerprint)}`, {
+  const res = await fetch(`/api/wishlist?productId=${encodeURIComponent(productId)}`, {
     method: 'DELETE',
   });
 
@@ -46,12 +42,8 @@ export async function deleteWishlistItem(
   }
 }
 
-export async function fetchWishlistItems(
-  fingerprint: string
-): Promise<string[]> {
-  if (!fingerprint) return [];
-
-  const res = await fetch(`/api/wishlist?fingerprint=${encodeURIComponent(fingerprint)}`);
+export async function fetchWishlistItems(): Promise<string[]> {
+  const res = await fetch('/api/wishlist');
   const body = await res.json();
   if (!res.ok) {
     throw new Error(body.error || `Wishlist fetch failed (${res.status})`);

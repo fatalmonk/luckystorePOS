@@ -31,6 +31,7 @@ const IGNORE_DIRS = new Set([
   '.venv',
   'playwright-report',
   '.next',
+  '.next-turbo',
   'dist',
   '.dart_tool',
   'Pods',
@@ -113,6 +114,7 @@ function shouldSkipPath(filePath) {
   if (rel.startsWith('apps/mobile_app/inspections/')) return true;
   if (rel.startsWith('apps/mobile_app/build/')) return true;
   if (rel.startsWith('apps/customer_storefront/.next/')) return true;
+  if (rel.startsWith('apps/customer_storefront/.next-turbo/')) return true;
   if (rel.startsWith('apps/customer_storefront/dist/')) return true;
   if (rel.startsWith('apps/admin_web/dist/')) return true;
   if (rel.startsWith('dist_public/')) return true;
@@ -408,6 +410,13 @@ function runSelfTest() {
       name: 'skips local worktree copies',
       rel: '.worktrees/storefront-home-ia/scripts/security/secret_scan.js',
       content: '-----BEGIN RSA PRIVATE KEY-----\n',
+      expectFinding: false,
+      expectPathScanned: false,
+    },
+    {
+      name: 'skips generated Next turbo output',
+      rel: 'apps/customer_storefront/.next-turbo/dev/server/chunks/server.js',
+      content: 'EXAMPLE_AUTH=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dGVzdHNpZ25hdHVyZXZhbHVlaGVyZQ\n',
       expectFinding: false,
       expectPathScanned: false,
     },
