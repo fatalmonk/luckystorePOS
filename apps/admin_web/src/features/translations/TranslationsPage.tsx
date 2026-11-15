@@ -261,12 +261,18 @@ export function TranslationsPage() {
                       <p className="text-text-muted">Registry last verified: {link.verifiedAt ?? 'Not recorded'}. Open and check this exact variant and size before confirming review.</p>
                     </div>)}
                     {resolvedEvidence?.missing.map(message => <p key={message} className="text-text-muted">Evidence missing: {message}</p>)}
-                    {!resolvedEvidence?.links.length && <p role="alert">Evidence missing: No openable product-specific source. This product must remain a draft until packaging photos or manufacturer proof can be checked.</p>}
+                    {!resolvedEvidence?.links.length && (!editing.evidenceSnapshot?.sourceUris.length
+                      ? <p role="alert">Evidence missing: No openable product-specific source. This product must remain a draft until packaging photos or manufacturer proof can be checked.</p>
+                      : <p className="text-text-muted">No registered manufacturer URL. Open every saved source link and independently verify the exact product, variant, size and claims before reviewing.</p>)}
                     {evidenceQuery.data?.snapshot && !editing.evidenceSnapshot && <button type="button" className={buttonClass} onClick={prepareEvidence}>Prepare evidence snapshot</button>}
                     {editing.evidenceSnapshot && <p>Canonical evidence snapshot prepared for this item. {isDirty ? 'Save Draft to persist it.' : 'Saved evidence is ready for review.'}</p>}
                   </section>}
-                  {editing.row.kind === 'item' && !resolvedEvidence?.links.length && parsed?.evidence_snapshot?.sourceUris.map((uri, index) =>
-                    <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
+                  {editing.row.kind === 'item' && parsed?.evidence_snapshot?.sourceUris.length ? <section aria-label="Saved product evidence links" className="space-y-2 text-sm">
+                    <h4 className="font-semibold">Saved product evidence URLs</h4>
+                    <p className="text-text-muted">Verify exact product identity and pack size for each source. A brand page alone does not prove an individual SKU or its claims.</p>
+                    {parsed.evidence_snapshot.sourceUris.map((uri, index) =>
+                      <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
+                  </section> : null}
                   {editing.row.kind === 'category' && parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                 </div>
                 <div className="min-w-0 space-y-3">

@@ -47655,9 +47655,10 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       PACK_FRONT: {
         source: "PACKAGING",
         evidenceRef: "On-pack front label: Sunsilk Shampoo Volume 375ml, net quantity: 375ml",
-        sourceTitle: "Sunsilk Front Packaging Label",
+        sourceTitle: "Sunsilk Volume 375 ml — blue bottle front label (Unilever seller packshot)",
+        sourceUrl: "https://images.luckystore1947.com/products/PC-SUN-VOL-375ML-unilever-20261115-v2.webp",
         skuScope: "002fbcb3-b693-44cd-b17f-03173e308b7c",
-        verifiedAt: "2026-10-11",
+        verifiedAt: "2026-11-15",
       },
       PACK_DESC: {
         source: "PACKAGING",
@@ -47676,9 +47677,18 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       MFR_SPEC: {
         source: "MANUFACTURER",
         evidenceRef: "Unilever Bangladesh Limited corporate portfolio verification for Sunsilk",
-        sourceTitle: "Unilever Bangladesh Limited Product Portfolio",
-        skuScope: "Sunsilk Master Specification",
-        verifiedAt: "2026-10-11",
+        sourceTitle: "Unilever Bangladesh Sunsilk Brand Page (brand only, not 375 ml variant)",
+        sourceUrl: "https://www.unilever.com.bd/brands/beauty-wellbeing/sunsilk/",
+        skuScope: "Sunsilk brand, not exact 375 ml SKU",
+        verifiedAt: "2026-11-15",
+      },
+      MFR_VOLUME_375: {
+        source: "MANUFACTURER",
+        evidenceRef: "Daraz listing for Sunsilk Volume 375ml identifies Unilever as the seller and shows the blue Coconut/Aloe Vera Volume bottle, front and back. Product-specific seller evidence; independently check current packaging.",
+        sourceTitle: "Unilever seller — Sunsilk Shampoo Volume 375ml on Daraz",
+        sourceUrl: "https://www.daraz.com.bd/products/sunsilk-shampoo-volume-375ml-i164384681.html",
+        skuScope: "002fbcb3-b693-44cd-b17f-03173e308b7c",
+        verifiedAt: "2026-11-15",
       },
       CATALOG_RECORD: {
         source: "LUCKY_STORE_CATALOG",

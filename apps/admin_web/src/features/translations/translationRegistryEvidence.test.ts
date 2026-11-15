@@ -41,6 +41,18 @@ describe('Testing item to exact production registry evidence', () => {
     expect(resolveRegistryEvidence({ ...original, name: 'Samyang' }).matched).toBe(false);
     expect(resolveRegistryEvidence({ ...original, sku: 'CANVA-TEST-deadbeef' }).matched).toBe(false);
   });
+  it('recognizes Sunsilk Volume 375ml with a manufacturer brand page and exact Unilever seller listing', () => {
+    const sunsilk = { id: '002fbcb3-b693-44cd-b17f-03173e308b7c',
+      name: 'Sunsilk Shampoo Volume 375 ml', sku: 'PC-SUN-VOL-375ML', brand: 'Sunsilk' };
+    const found = resolveRegistryEvidence(sunsilk);
+    expect(found.matched).toBe(true);
+    expect(found.links.map(link => link.url)).toContain('https://www.daraz.com.bd/products/sunsilk-shampoo-volume-375ml-i164384681.html');
+    expect(found.links.map(link => link.url)).toContain('https://www.unilever.com.bd/brands/beauty-wellbeing/sunsilk/');
+    expect(found.missing.some(message => message.includes('No product-specific'))).toBe(false);
+    expect(resolveRegistryEvidence({ ...sunsilk, name: 'Sunsilk Shampoo Volume 170 ml' }).matched).toBe(false);
+    expect(resolveRegistryEvidence({ ...sunsilk, name: 'Sunsilk Shampoo Hair Fall 375 ml' }).matched).toBe(false);
+    expect(resolveRegistryEvidence({ ...sunsilk, brand: 'Other' }).matched).toBe(false);
+  });
   it('matches attached gram suffixes without accepting a different size', () => {
     const marks = five[2];
     expect(resolveRegistryEvidence({ ...marks, name: 'Marks Powder 1000grams' }).matched).toBe(true);

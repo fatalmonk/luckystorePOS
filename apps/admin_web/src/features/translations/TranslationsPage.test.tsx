@@ -106,6 +106,16 @@ describe('TranslationsPage publication actions', () => {
     expect(writes).toHaveLength(0);
   });
 
+  it('shows independently saved evidence URLs without inventing registered manufacturer proof', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(await screen.findByRole('heading', { name: 'Saved product evidence URLs' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: evidence.sourceUris[0] })).toHaveAttribute('href', evidence.sourceUris[0]);
+    expect(await screen.findByText(/No registered manufacturer URL/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  });
+
   it('passes exact empty-draft item IDs to the Edge Function', async () => {
     rows.item_translations = [{ ...draft, description: '' }];
     vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);
