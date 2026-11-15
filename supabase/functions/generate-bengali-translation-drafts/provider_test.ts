@@ -49,3 +49,13 @@ Deno.test('system instructions forbid unsupported semantic claims and enforce ex
     assertEquals(prompt.includes(phrase), true, phrase);
   }
 });
+
+
+Deno.test('translation prompt requires Bengali words in names, preserves identities, and includes aliases', () => {
+  const text = providerRequest([]).messages[0].content;
+  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'Human review']) {
+    assertEquals(text.includes(part), true, part);
+  }
+  assertEquals(providerRequest([], { repairBengaliNames: true }).messages[0].content.includes('CORRECTION:'), true);
+  assertEquals(providerRequest([]).messages[0].content.includes('CORRECTION:'), false);
+});

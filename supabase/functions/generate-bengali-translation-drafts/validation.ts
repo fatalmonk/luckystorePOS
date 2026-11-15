@@ -7,6 +7,8 @@ export const canGenerate = (role: unknown, profileTenant: unknown, recordTenant:
   (role === 'admin' || role === 'manager') && typeof profileTenant === 'string' && profileTenant === recordTenant;
 
 const bengali = /[\u0980-\u09ff]/u;
+// Bengali digits alone are not a translated product name: require a Bengali letter.
+const bengaliNameLetter = /[\u0985-\u09b9\u09dc-\u09df]/u;
 // Match longer ASCII units first. Bengali numerals are normalized before
 // comparing source quantities, so they cannot bypass numeric-claim guards.
 const quantity = /[0-9\u09e6-\u09ef]+(?:[.,][0-9\u09e6-\u09ef]+)?\s*(?:kg|grams?|gm|mg|g|ml|liters?|litres?|ltr|lb|l|oz|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার|পিস|প্যাক)(?![\p{L}\p{M}])/giu;
@@ -24,8 +26,11 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
   if (!value || typeof value !== 'object' || Array.isArray(value)) return { error: 'Invalid model row' };
   const row = value as Record<string, unknown>;
   if (Object.keys(row).some((key) => !['id', 'name', 'description', 'search_terms'].includes(key))) return { error: 'Unexpected model fields' };
-  if (row.id !== source.id || typeof row.name !== 'string' || !bengali.test(row.name)
-    || !row.name.trim() || row.name.length > 240) return { error: 'Invalid identity or Bengali name' };
+  if (row.id !== source.id) return { error: 'Model changed product identity' };
+  if (typeof row.name !== 'string' || !row.name.trim() || row.name.length > 240) {
+    return { error: 'Invalid Bengali product name' };
+  }
+  if (!bengaliNameLetter.test(row.name)) return { error: 'Bengali product name missing Bengali letters' };
   const hasCanonicalDescription = Boolean(source.description?.trim());
   const hasEvidence = Boolean(source.evidenceDescription?.trim());
   if (!hasCanonicalDescription && !hasEvidence && row.description !== null) return { error: 'Description lacks evidence' };
@@ -60,6 +65,14 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
     || row.search_terms.length > 12) return { error: 'Invalid search aliases' };
   const search_terms = [...new Set([source.name, name, ...(row.search_terms as string[]).map((term) => term.trim())])];
   return { draft: { id: source.id, name, description, search_terms } };
+}
+
+export function bengaliNameRetrySources<T extends Source>(
+  sources: T[], results: ReadonlyMap<string, { error?: string }>,
+): T[] {
+  // One bounded repair pass; never retry failed identity, quantity, or evidence checks.
+  return sources.filter(source =>
+    results.get(source.id)?.error === 'Bengali product name missing Bengali letters');
 }
 
 export function parseBatch(

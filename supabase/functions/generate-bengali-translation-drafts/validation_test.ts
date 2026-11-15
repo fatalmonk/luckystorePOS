@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts';
-import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, validateDraft } from './validation.ts';
+import { allowedOrigin, bengaliNameRetrySources, boundedGenerationLimit, canGenerate, parseBatch, validRequest, validateDraft } from './validation.ts';
 
 const source = { id: '10000000-0000-4000-8000-000000000001', name: 'Ispahani Tea 500 g', description: 'Tea leaves, 500 g.', brand: 'Ispahani' };
 const valid = { id: source.id, name: 'Ispahani চা 500 g', description: 'চা পাতা, 500 g।', search_terms: ['চা'] };
@@ -128,4 +128,28 @@ Deno.test('a template for another product cannot authorize evidence-only text', 
   const other = new Map([['10000000-0000-4000-8000-000000000009', valid.description]]);
   const outcome = parseBatch(content, [evidenceOnly], other).get(source.id);
   assertEquals(outcome?.error, 'Description contains unverified claims');
+});
+
+
+Deno.test('English-only names and names with only Bengali digits are rejected as missing Bengali letters', () => {
+  const variants = ['Ispahani Tea 500 g', 'Ispahani Tea ৫০০ g'];
+  for (const name of variants) {
+    assertEquals(
+      validateDraft(source, { ...valid, name }).error,
+      'Bengali product name missing Bengali letters',
+    );
+  }
+  assertEquals(validateDraft(source, valid).draft?.id, source.id);
+});
+
+Deno.test('retry selection isolates Bengali-letter failures without weakening other guards', () => {
+  const second = { ...source, id: '10000000-0000-4000-8000-000000000002' };
+  const third = { ...source, id: '10000000-0000-4000-8000-000000000003' };
+  const rows = new Map([
+    [source.id, { error: 'Bengali product name missing Bengali letters' }],
+    [second.id, { error: 'Numeric or package identity changed' }],
+    [third.id, { error: 'Description contains unverified claims' }],
+  ]);
+  assertEquals(bengaliNameRetrySources([source, second, third], rows).map(s => s.id), [source.id]);
+  assertEquals(bengaliNameRetrySources([source, second, third], new Map()), []);
 });
