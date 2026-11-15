@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { allowedOrigin, bengaliNameRetrySources, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
 // One pinned free model. No alternate provider or paid fallback.
-import { classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
+import { classifyInvalidRetryResponse, classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
 import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
 import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -138,17 +138,28 @@ serve(async (request) => {
                   });
                   if (retryResponse.ok) {
                     const retryBody = await decodeSuccessfulProviderResponse(retryResponse);
-                    const retryText = retryBody.ok ? retryBody.body.choices?.[0]?.message?.content : null;
-                    if (typeof retryText === 'string' && retryText.trim() && retryText.length <= 30000) {
-                      const repair = parseBatch(retryText, nameRetry, vettedDescriptions);
-                      for (const source of nameRetry) {
-                        const updated = repair.get(source.id);
-                        if (updated?.draft) {
-                          results.set(source.id, updated);
-                          nameRepairRecovered++;
+                    if (!retryBody.ok) {
+                      const invalidRetry = classifyInvalidRetryResponse(results);
+                      providerOutcome = invalidRetry.providerOutcome;
+                      providerUnavailable = invalidRetry.providerUnavailable;
+                    } else {
+                      const retryChoice = retryBody.body.choices?.[0];
+                      const retryText: unknown = retryChoice?.message?.content;
+                      if (typeof retryText === 'string' && retryText.trim() && retryText.length <= 30000) {
+                        const repair = parseBatch(retryText, nameRetry, vettedDescriptions);
+                        for (const source of nameRetry) {
+                          const updated = repair.get(source.id);
+                          if (updated?.draft) {
+                            results.set(source.id, updated);
+                            nameRepairRecovered++;
+                          }
                         }
+                        if (nameRepairRecovered) providerOutcome = 'valid_output';
+                      } else {
+                        providerOutcome = retryChoice?.finish_reason === 'length'
+                          ? 'output_truncated' : 'empty_or_invalid_content';
+                        providerUnavailable = ![...results.values()].some(({ draft }) => Boolean(draft));
                       }
-                      if (nameRepairRecovered) providerOutcome = 'valid_output';
                     }
                   }
                 } catch {

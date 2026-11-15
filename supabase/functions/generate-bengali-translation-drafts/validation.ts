@@ -30,7 +30,6 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
   if (typeof row.name !== 'string' || !row.name.trim() || row.name.length > 240) {
     return { error: 'Invalid Bengali product name' };
   }
-  if (!bengaliNameLetter.test(row.name)) return { error: 'Bengali product name missing Bengali letters' };
   const hasCanonicalDescription = Boolean(source.description?.trim());
   const hasEvidence = Boolean(source.evidenceDescription?.trim());
   if (!hasCanonicalDescription && !hasEvidence && row.description !== null) return { error: 'Description lacks evidence' };
@@ -63,6 +62,9 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
   if (source.brand && !translated.toLowerCase().includes(source.brand.toLowerCase())) return { error: 'Brand was not preserved' };
   if (!Array.isArray(row.search_terms) || row.search_terms.some((term) => typeof term !== 'string' || !term.trim() || term.length > 100)
     || row.search_terms.length > 12) return { error: 'Invalid search aliases' };
+  // Only classify an English-only name as retryable AFTER identity, quantities,
+  // description evidence, protected variants, brand and aliases have passed.
+  if (!bengaliNameLetter.test(name)) return { error: 'Bengali product name missing Bengali letters' };
   const search_terms = [...new Set([source.name, name, ...(row.search_terms as string[]).map((term) => term.trim())])];
   return { draft: { id: source.id, name, description, search_terms } };
 }

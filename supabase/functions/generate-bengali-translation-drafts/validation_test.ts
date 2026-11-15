@@ -153,3 +153,26 @@ Deno.test('retry selection isolates Bengali-letter failures without weakening ot
   assertEquals(bengaliNameRetrySources([source, second, third], rows).map(s => s.id), [source.id]);
   assertEquals(bengaliNameRetrySources([source, second, third], new Map()), []);
 });
+
+
+Deno.test('name-only correction never retries a row that also violates a protected check', () => {
+  const nameOnly = { ...valid, name: source.name };
+  const cases: Array<{ label: string; source: typeof source; row: typeof valid; expected: string }> = [
+    { label: 'number', source, row: { ...nameOnly, name: 'Ispahani Tea 250 g' }, expected: 'Numeric or package identity changed' },
+    { label: 'brand', source, row: { ...nameOnly, name: 'Tea 500 g', description: 'চা পাতা, 500 g।' }, expected: 'Brand was not preserved' },
+    { label: 'search aliases', source, row: { ...nameOnly, search_terms: [''] }, expected: 'Invalid search aliases' },
+  ];
+  for (const testCase of cases) {
+    const result = validateDraft(testCase.source, testCase.row);
+    assertEquals(result.error, testCase.expected, testCase.label);
+    assertEquals(bengaliNameRetrySources([testCase.source], new Map([[testCase.source.id, result]])).length, 0, testCase.label);
+  }
+});
+
+Deno.test('evidence-only invalid claims cannot trigger Bengali name retry', () => {
+  const evidenceOnly = { ...source, description: null, evidenceDescription: 'Manufacturer fact 500 g' };
+  const wrong = { ...valid, name: source.name, description: 'ভুল দাবি, 500 g।' };
+  const result = validateDraft(evidenceOnly, wrong, 'যাচাইকৃত তথ্য, 500 g।');
+  assertEquals(result.error, 'Description contains unverified claims');
+  assertEquals(bengaliNameRetrySources([evidenceOnly], new Map([[source.id, result]])).length, 0);
+});

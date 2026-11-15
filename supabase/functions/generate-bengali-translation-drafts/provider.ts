@@ -73,6 +73,17 @@ export function classifyProviderOutput(
   return finishReason === 'length' ? 'output_truncated' : 'rejected_output';
 }
 
+// A malformed retry must not erase earlier valid drafts, but must not be
+// disguised as an ordinary translation rejection when none can be saved.
+export function classifyInvalidRetryResponse(
+  results: ReadonlyMap<string, { draft?: unknown; error?: string }>,
+): { providerOutcome: 'upstream_invalid_response'; providerUnavailable: boolean } {
+  return {
+    providerOutcome: 'upstream_invalid_response',
+    providerUnavailable: ![...results.values()].some(({ draft }) => Boolean(draft)),
+  };
+}
+
 // JSON decoding errors are not network failures. Keep the caller's diagnostic precise.
 export async function decodeSuccessfulProviderResponse(
   response: Pick<Response, 'json'>,
