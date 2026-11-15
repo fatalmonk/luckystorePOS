@@ -355,6 +355,79 @@ describe('WebMCP submit_order', () => {
     expect(sessionStorage.getItem('lucky-webmcp-checkout-identity')).toBeNull();
   });
 
+  it('restores the pending server quote after reload before any additional checkout POST', async () => {
+    const sessionStorage = createStorage();
+    const cartStorage = createStorage();
+    cartStorage.setItem('cart', JSON.stringify({ items: [CART_ITEM] }));
+    const requests: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('localStorage', cartStorage);
+    vi.stubGlobal('sessionStorage', sessionStorage);
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
+      requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+      if (requests.length === 1) {
+        return new Response(JSON.stringify({
+          ok: false, code: 'PRICE_MISMATCH', error: 'Price changed',
+          subtotal: 90, discount: 10, deliveryFee: 40, total: 130, items: [],
+        }), { status: 400 });
+      }
+      return new Response(JSON.stringify({ ok: true, order: { id: 'reload-order' } }), { status: 200 });
+    }));
+
+    const execute = WEBMCP_TOOLS.submit_order.execute;
+    const first = await execute(BASE_INPUT, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(first.requiresCustomerReview).toBe(true);
+    const persisted = JSON.parse(sessionStorage.getItem('lucky-webmcp-checkout-identity')!) as Record<string, unknown>;
+    expect(persisted.pendingQuote).toEqual({ subtotal: 90, discount: 10, deliveryFee: 40, total: 130 });
+    expect(requests).toHaveLength(1);
+
+    // A module reset simulates JS state loss across browser page reload while
+    // preserving sessionStorage, which is the browser's persistent per-tab state.
+    __resetCheckoutStateForTesting();
+    const pending = await execute(BASE_INPUT, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(pending).toMatchObject({ requiresCustomerReview: true, total: 130, discount: 10 });
+    expect(requests).toHaveLength(1);
+
+    const approved = await execute({
+      ...BASE_INPUT,
+      confirmedQuote: { subtotal: 90, discount: 10, deliveryFee: 40, total: 130 },
+    }, { signal: makeSignal() });
+    expect(approved).toMatchObject({ ok: true });
+    expect(requests).toHaveLength(2);
+    expect(requests[0].idempotencyKey).toBe(requests[1].idempotencyKey);
+    expect(requests[0].orderNumber).toBe(requests[1].orderNumber);
+    expect(requests[1].total).toBe(130);
+    expect(sessionStorage.getItem('lucky-webmcp-checkout-identity')).toBeNull();
+  });
+
+  it('rejects a malformed stored quote after reload without sending checkout', async () => {
+    const sessionStorage = createStorage();
+    const cartStorage = createStorage();
+    cartStorage.setItem('cart', JSON.stringify({ items: [CART_ITEM] }));
+    vi.stubGlobal('localStorage', cartStorage);
+    vi.stubGlobal('sessionStorage', sessionStorage);
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      ok: false, code: 'PRICE_MISMATCH', error: 'Price changed',
+      subtotal: 90, discount: 10, deliveryFee: 40, total: 130, items: [],
+    }), { status: 400 })));
+
+    const execute = WEBMCP_TOOLS.submit_order.execute;
+    await execute(BASE_INPUT, { signal: makeSignal() });
+    const key = 'lucky-webmcp-checkout-identity';
+    const record = JSON.parse(sessionStorage.getItem(key)!) as Record<string, unknown>;
+    record.pendingQuote = { subtotal: 90, discount: 10, deliveryFee: 40, total: 999 };
+    sessionStorage.setItem(key, JSON.stringify(record));
+
+    __resetCheckoutStateForTesting();
+    const blocked = await execute(BASE_INPUT, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(blocked).toMatchObject({ requiresCustomerReview: true });
+    expect(blocked.error).toContain('saved price quote is invalid');
+    const altered = await execute({
+      ...BASE_INPUT, confirmedQuote: { subtotal: 90, discount: 10, deliveryFee: 40, total: 130 },
+    }, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(altered.requiresCustomerReview).toBe(true);
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+  });
+
   // ────────────────────────────────────────────────────────────────────────────
   // New: payment method passes through correctly
   // ────────────────────────────────────────────────────────────────────────────

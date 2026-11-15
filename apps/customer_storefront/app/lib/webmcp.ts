@@ -48,11 +48,22 @@ interface CartState {
  * Used when sessionStorage is unavailable (private browsing restrictions, etc.).
  * Keyed by payloadSignature so a different cart/customer resets naturally.
  */
+type PendingCheckoutQuote = {
+  subtotal: number;
+  discount: number;
+  deliveryFee: number;
+  total: number;
+};
+
 const _memoryIdentity: {
   payloadSignature?: string;
   orderNumber?: string;
   idempotencyKey?: string;
+  pendingQuote?: PendingCheckoutQuote;
 } = {};
+
+// Corrupted stored quotes must not allow an unreviewed checkout request.
+let _invalidPendingQuoteSignature: string | undefined;
 
 /**
  * Last server-returned PRICE_MISMATCH quote, kept between calls so the
@@ -83,6 +94,43 @@ function saveCart(cart: CartState) {
 
 const CHECKOUT_IDENTITY_KEY = 'lucky-webmcp-checkout-identity';
 
+function isValidPendingQuote(value: unknown): value is PendingCheckoutQuote {
+  if (!value || typeof value !== 'object') return false;
+  const quote = value as Record<string, unknown>;
+  const fields = [quote.subtotal, quote.discount, quote.deliveryFee, quote.total];
+  return fields.every((amount) => typeof amount === 'number' && Number.isFinite(amount) && amount >= 0)
+    && Math.abs((quote.subtotal as number) + (quote.deliveryFee as number) - (quote.total as number)) <= 0.01;
+}
+
+function restorePendingQuote(identity: {
+  payloadSignature: string;
+  pendingQuote?: unknown;
+}) {
+  if (identity.pendingQuote === undefined) return;
+  if (!isValidPendingQuote(identity.pendingQuote)) {
+    _invalidPendingQuoteSignature = identity.payloadSignature;
+    return;
+  }
+  Object.assign(_lastServerQuote, { payloadSignature: identity.payloadSignature, ...identity.pendingQuote });
+}
+
+function rememberPendingQuote(
+  identity: { payloadSignature: string; orderNumber: string; idempotencyKey: string },
+  quote: PendingCheckoutQuote,
+) {
+  // Persist the quote in the SAME record as the idempotency identity so reloads
+  // cannot restore one without the other when sessionStorage works.
+  const saved = { ...identity, pendingQuote: quote };
+  Object.assign(_memoryIdentity, saved);
+  Object.assign(_lastServerQuote, { payloadSignature: identity.payloadSignature, ...quote });
+  _invalidPendingQuoteSignature = undefined;
+  try {
+    sessionStorage.setItem(CHECKOUT_IDENTITY_KEY, JSON.stringify(saved));
+  } catch {
+    // Current-page retries remain possible through module memory.
+  }
+}
+
 function getCheckoutIdentity(payloadSignature: string) {
   // Try sessionStorage first.
   try {
@@ -93,6 +141,7 @@ function getCheckoutIdentity(payloadSignature: string) {
         && typeof identity.orderNumber === 'string'
         && typeof identity.idempotencyKey === 'string') {
         Object.assign(_memoryIdentity, identity);
+        restorePendingQuote(identity);
         return identity;
       }
     }
@@ -107,6 +156,10 @@ function getCheckoutIdentity(payloadSignature: string) {
     && typeof _memoryIdentity.orderNumber === 'string'
     && typeof _memoryIdentity.idempotencyKey === 'string'
   ) {
+    restorePendingQuote({
+      payloadSignature,
+      pendingQuote: _memoryIdentity.pendingQuote,
+    });
     return {
       payloadSignature: _memoryIdentity.payloadSignature,
       orderNumber: _memoryIdentity.orderNumber,
@@ -141,6 +194,8 @@ function clearCheckoutIdentity() {
   delete _memoryIdentity.payloadSignature;
   delete _memoryIdentity.orderNumber;
   delete _memoryIdentity.idempotencyKey;
+  delete _memoryIdentity.pendingQuote;
+  _invalidPendingQuoteSignature = undefined;
 }
 
 function clearServerQuote() {
@@ -149,6 +204,20 @@ function clearServerQuote() {
   delete _lastServerQuote.discount;
   delete _lastServerQuote.deliveryFee;
   delete _lastServerQuote.total;
+  delete _memoryIdentity.pendingQuote;
+  _invalidPendingQuoteSignature = undefined;
+  try {
+    const saved = sessionStorage.getItem(CHECKOUT_IDENTITY_KEY);
+    if (saved) {
+      const identity = JSON.parse(saved) as Record<string, unknown>;
+      if (Object.hasOwn(identity, 'pendingQuote')) {
+        delete identity.pendingQuote;
+        sessionStorage.setItem(CHECKOUT_IDENTITY_KEY, JSON.stringify(identity));
+      }
+    }
+  } catch {
+    // Storage can be inaccessible; in-memory state is still cleared.
+  }
 }
 
 /**
@@ -159,6 +228,8 @@ export function __resetCheckoutStateForTesting() {
   delete _memoryIdentity.payloadSignature;
   delete _memoryIdentity.orderNumber;
   delete _memoryIdentity.idempotencyKey;
+  delete _memoryIdentity.pendingQuote;
+  _invalidPendingQuoteSignature = undefined;
   delete _lastServerQuote.payloadSignature;
   delete _lastServerQuote.subtotal;
   delete _lastServerQuote.discount;
@@ -369,8 +440,23 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
         notes: input.notes,
         paymentMethod: input.paymentMethod,
       });
+      // Restore the pending quote from the same persisted record as the checkout
+      // identity before deciding whether a new checkout POST can be sent.
+      const identity = getCheckoutIdentity(payloadSignature);
       // A changed cart, customer, or payment method invalidates prior price approval.
-      if (_lastServerQuote.payloadSignature !== payloadSignature) clearServerQuote();
+      if (_lastServerQuote.payloadSignature && _lastServerQuote.payloadSignature !== payloadSignature) {
+        clearServerQuote();
+      }
+      if (_invalidPendingQuoteSignature && _invalidPendingQuoteSignature !== payloadSignature) {
+        _invalidPendingQuoteSignature = undefined;
+      }
+
+      if (_invalidPendingQuoteSignature === payloadSignature) {
+        return {
+          error: 'The saved price quote is invalid. Change the cart to restart checkout safely.',
+          requiresCustomerReview: true,
+        };
+      }
 
       // After a mismatch, never retry checkout without a fresh, explicit confirmation.
       // In particular, a repeated unconfirmed call must not happen to succeed
@@ -386,8 +472,6 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
           requiresCustomerReview: true,
         };
       }
-
-      const identity = getCheckoutIdentity(payloadSignature);
 
       // Determine which totals to send.
       // If the customer has confirmed a server quote, use those server-computed
@@ -493,8 +577,9 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
               .every((value) => typeof value === 'number' && Number.isFinite(value) && value >= 0)
             && Math.abs(quote.subtotal + quote.deliveryFee - quote.total) <= 0.01
           ) {
-            Object.assign(_lastServerQuote, { payloadSignature, ...quote });
+            rememberPendingQuote(identity, quote);
           } else {
+            // Never retain a malformed quote as a customer-approved amount.
             clearServerQuote();
           }
 
