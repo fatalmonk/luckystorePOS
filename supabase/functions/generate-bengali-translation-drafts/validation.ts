@@ -91,12 +91,18 @@ export function parseBatch(
   try { parsed = JSON.parse(candidate); } catch {
     return new Map(sources.map((source) => [source.id, { error: 'Model returned invalid JSON' }]));
   }
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)
-    || Object.keys(parsed).some(key => key !== 'translations')
-    || !Array.isArray((parsed as Record<string, unknown>).translations)) {
+  // Some pinned free-model responses use the equivalent one-key 'rows'
+  // envelope despite the requested 'translations' JSON Schema. Accept ONLY
+  // this known alias; each individual row still passes every strict identity,
+  // package, brand, description and evidence check below.
+  const keys = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+    ? Object.keys(parsed) : [];
+  const wrapper = keys.length === 1 && (keys[0] === 'translations' || keys[0] === 'rows')
+    ? keys[0] : null;
+  if (!wrapper || !Array.isArray((parsed as Record<string, unknown>)[wrapper])) {
     return new Map(sources.map(source => [source.id, { error: 'Invalid structured model response' }]));
   }
-  const rows = (parsed as { translations: unknown[] }).translations;
+  const rows = (parsed as Record<string, unknown>)[wrapper] as unknown[];
   const counts = new Map<string, number>();
   const byId = new Map<string, unknown>();
   for (const row of rows) {

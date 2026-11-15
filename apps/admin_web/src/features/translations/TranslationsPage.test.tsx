@@ -148,15 +148,50 @@ describe('TranslationsPage publication actions', () => {
     expect(writes).toHaveLength(0);
   });
 
-  it('passes exact empty-draft item IDs to the Edge Function', async () => {
+  it('targets untranslated products instead of retrying existing empty drafts', async () => {
+    const untranslated = { ...item, id: '10000000-0000-4000-8000-000000000002', name: 'Radhuni Jira Gura 100 g' };
+    rows.items = [item, untranslated];
     rows.item_translations = [{ ...draft, description: '' }];
-    vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { generated: 0, skipped: 0, failed: 1 }, error: null,
+    } as never);
     renderPage();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
-    fireEvent.click(await screen.findByRole('button', { name: 'Generate AI Drafts' }));
+    const button = await screen.findByRole('button', { name: 'Generate AI Drafts' });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', {
-      body: { kind: 'item', limit: 3, itemIds: [item.id] },
+      body: { kind: 'item', limit: 3, itemIds: [untranslated.id] },
     }));
+  });
+
+  it('advances past rejected products and wraps to the remaining untranslated items', async () => {
+    rows.items = Array.from({ length: 5 }, (_, index) => ({
+      ...item, id: '10000000-0000-4000-8000-00000000000' + String(index + 2),
+      name: 'Test product ' + String(index + 1), sku: 'PRODUCT-' + String(index),
+    }));
+    rows.item_translations = [];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { generated: 0, skipped: 0, failed: 3,
+        failures: [{ id: rows.items[0].id, reason: 'Numeric or package identity changed' }] }, error: null,
+    } as never);
+    renderPage();
+    const button = await screen.findByRole('button', { name: 'Generate AI Drafts' });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledTimes(1));
+    expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'generate-bengali-translation-drafts', {
+      body: { kind: 'item', limit: 3, itemIds: rows.items.slice(0, 3).map(row => row.id) },
+    });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledTimes(2));
+    expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'generate-bengali-translation-drafts', {
+      body: { kind: 'item', limit: 3, itemIds: [
+        rows.items[3].id, rows.items[4].id, rows.items[0].id,
+      ] },
+    });
+    expect(notify).toHaveBeenCalledWith(expect.stringContaining('Next click will select different untranslated products'), 'error');
+    expect(writes).toHaveLength(0);
   });
 
   it('does not enable review if registry evidence cannot be loaded', async () => {
@@ -242,7 +277,7 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     expect(await screen.findByText('Not generated')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Generate AI Drafts' }));
-    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'item', limit: 3 } }));
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'item', limit: 3, itemIds: [item.id] } }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.stringContaining('1 AI draft saved'), 'success'));
     fireEvent.click(screen.getByRole('button', { name: 'Show drafts' }));
     expect(await screen.findByText(draft.name)).toBeInTheDocument();
