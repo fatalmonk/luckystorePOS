@@ -96,7 +96,13 @@ export function TranslationsPage() {
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
     && !isStale
-    && (action === 'save_draft' || editing?.row.kind !== 'item' || (resolvedEvidence !== null && ((!source?.sku?.startsWith('CANVA-TEST-') && !resolvedEvidence.entry) || Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim()))))
+    // An exact canonical snapshot with saved HTTPS sources may be reviewed by a
+    // real human for production SKUs even without a manufacturer catalogue URL.
+    // Testing CANVA-TEST records still require registry-backed manufacturer links.
+    && (action === 'save_draft' || editing?.row.kind !== 'item' || (resolvedEvidence !== null
+      && (source?.sku?.startsWith('CANVA-TEST-')
+        ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim())
+        : Boolean(parsed?.evidence_snapshot?.sourceUris.length && parsed?.description?.trim()))))
     && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
     && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
 

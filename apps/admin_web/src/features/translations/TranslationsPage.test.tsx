@@ -116,6 +116,38 @@ describe('TranslationsPage publication actions', () => {
     expect(writes).toHaveLength(0);
   });
 
+  it('lets an authorized human review a persisted production product snapshot with saved seller packaging sources', async () => {
+    const sellerEvidence = { key: '002fbcb3', matched: true, issue: null,
+      entry: { exactName: item.name, netQuantity: '500 g' }, links: [],
+      missing: ['No product-specific manufacturer page.'], supportedFacts: null };
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { evidence: sellerEvidence, snapshot: null }, error: null,
+    } as never);
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    expect(await screen.findByText(/No registered manufacturer URL/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: evidence.sourceUris[0] })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: /Open manufacturer source/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled();
+    expect(writes).toHaveLength(0);
+  });
+
+  it('still blocks a production row with missing snapshot even when seller packaging links exist', async () => {
+    rows.item_translations = [{ ...draft, evidence_snapshot: null }];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { evidence: { key: '002fbcb3', matched: true, issue: null,
+        entry: { exactName: item.name, netQuantity: '500 g' }, links: [],
+        missing: [], supportedFacts: null }, snapshot: null }, error: null,
+    } as never);
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  });
+
   it('passes exact empty-draft item IDs to the Edge Function', async () => {
     rows.item_translations = [{ ...draft, description: '' }];
     vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);

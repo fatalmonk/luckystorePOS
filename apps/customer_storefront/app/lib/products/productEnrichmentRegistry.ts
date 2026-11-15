@@ -47677,15 +47677,14 @@ export const PRODUCT_ENRICHMENTS: Record<string, ProductEnrichment> = {
       MFR_SPEC: {
         source: "MANUFACTURER",
         evidenceRef: "Unilever Bangladesh Limited corporate portfolio verification for Sunsilk",
-        sourceTitle: "Unilever Bangladesh Sunsilk Brand Page (brand only, not 375 ml variant)",
-        sourceUrl: "https://www.unilever.com.bd/brands/beauty-wellbeing/sunsilk/",
-        skuScope: "Sunsilk brand, not exact 375 ml SKU",
+        sourceTitle: "Unilever Bangladesh Sunsilk brand (brand-level context only)",
+        skuScope: "Sunsilk brand; no verified exact 375 ml product URL",
         verifiedAt: "2026-11-15",
       },
-      MFR_VOLUME_375: {
-        source: "MANUFACTURER",
-        evidenceRef: "Daraz listing for Sunsilk Volume 375ml identifies Unilever as the seller and shows the blue Coconut/Aloe Vera Volume bottle, front and back. Product-specific seller evidence; independently check current packaging.",
-        sourceTitle: "Unilever seller — Sunsilk Shampoo Volume 375ml on Daraz",
+      PACK_VOLUME_375_SELLER: {
+        source: "PACKAGING",
+        evidenceRef: "Daraz seller product listing for Sunsilk Volume 375ml shows a blue Coconut/Aloe Vera Volume bottle, front and back. Seller image is packaging evidence, NOT an independent manufacturer product specification. Inspect stock packaging before review.",
+        sourceTitle: "Retailer seller listing — Sunsilk Volume 375ml packaging photographs",
         sourceUrl: "https://www.daraz.com.bd/products/sunsilk-shampoo-volume-375ml-i164384681.html",
         skuScope: "002fbcb3-b693-44cd-b17f-03173e308b7c",
         verifiedAt: "2026-11-15",
