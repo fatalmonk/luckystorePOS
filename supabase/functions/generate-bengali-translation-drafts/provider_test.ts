@@ -1,7 +1,7 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts';
 import { MODEL, providerConfig, providerRequest } from './provider.ts';
 Deno.test('pins exact free model without provider or paid fallback', () => {
-  assertEquals(MODEL, 'dots-studio/dots-3-note-preview:free');
+  assertEquals(MODEL, 'nvidia/nemotron-3.5-super-vl:free');
   assertEquals(providerConfig(undefined), null);
   assertEquals(providerConfig(' '), null);
   assertEquals(providerConfig('test')?.url, 'https://openrouter.ai/api/v1/chat/completions');

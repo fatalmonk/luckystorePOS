@@ -166,7 +166,7 @@ serve(async (request) => {
       } else { generated++; if (fallback) fallbackGenerated++; }
     }
     // Safe structured diagnostics: never log generated text, tokens, names or source details.
-    console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'dots-studio/dots-3-note-preview:free',
+    console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'nvidia/nemotron-3.5-super-vl:free',
       providerOutcome, candidates: candidates.length, generated, failed: failures.length, skipped }));
     if (providerUnavailable && generated === 0) return respond(503, {
       error: providerOutcome === 'missing_api_key' ? 'OpenRouter API key not configured'

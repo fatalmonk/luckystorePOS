@@ -3,7 +3,7 @@ import type { Source } from './validation.ts';
 // The prior Nemotron Ultra endpoint does not advertise structured JSON outputs.
 // It returned transport-successful responses that could not be saved as valid drafts.
 // This free endpoint supports JSON Schema; there is no paid/provider fallback.
-export const MODEL = 'dots-studio/dots-3-note-preview:free';
+export const MODEL = 'nvidia/nemotron-3.5-super-vl:free';
 export function providerConfig(key: string | undefined) {
   return key?.trim() ? { key: key.trim(), url: 'https://openrouter.ai/api/v1/chat/completions' } : null;
 }
