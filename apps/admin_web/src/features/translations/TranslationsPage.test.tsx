@@ -113,7 +113,7 @@ describe('TranslationsPage publication actions', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
     fireEvent.click(await screen.findByRole('button', { name: 'Generate AI Drafts' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', {
-      body: { kind: 'item', limit: 10, itemIds: [item.id] },
+      body: { kind: 'item', limit: 3, itemIds: [item.id] },
     }));
   });
 
@@ -200,7 +200,7 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     expect(await screen.findByText('Not generated')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Generate AI Drafts' }));
-    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'item', limit: 10 } }));
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'item', limit: 3 } }));
     await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.stringContaining('1 AI draft saved'), 'success'));
     fireEvent.click(screen.getByRole('button', { name: 'Show drafts' }));
     expect(await screen.findByText(draft.name)).toBeInTheDocument();
@@ -213,17 +213,33 @@ describe('TranslationsPage publication actions', () => {
     renderPage();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Generate AI Drafts' }));
-    await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.stringContaining('AI draft generation failed'), 'error'));
+    await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.stringContaining('AI draft generation request failed'), 'error'));
     expect(screen.getByText('Not generated')).toBeInTheDocument();
     expect(writes).toHaveLength(0);
   });
+  it('reports individual model rejection reasons instead of silent zero drafts', async () => {
+    rows.item_translations = [];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { generated: 0, skipped: 0, failed: 2, failures: [
+        { id: 'first', reason: 'Model omitted or duplicated this product' },
+        { id: 'second', reason: 'Invalid Bengali description' },
+      ] }, error: null,
+    } as never);
+    renderPage();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Generate AI Drafts' }));
+    await waitFor(() => expect(notify).toHaveBeenCalledWith(
+      expect.stringContaining('Model omitted or duplicated this product'), 'error'));
+    expect(writes).toHaveLength(0);
+  });
+
   it('requests category drafts in a single bounded batch', async () => {
     vi.mocked(supabase.functions.invoke).mockResolvedValue({ data: { generated: 0, skipped: 1, failed: 0 }, error: null } as never);
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Categories' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Generate AI Drafts' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Generate AI Drafts' }));
-    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'category', limit: 10 } }));
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'category', limit: 3 } }));
     expect(writes).toHaveLength(0);
   });
   it('shows canonical identity and evidence beside Bengali fields without a status selector or bulk review', async () => {

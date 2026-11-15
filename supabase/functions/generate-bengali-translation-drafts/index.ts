@@ -1,9 +1,9 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import { allowedOrigin, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
+import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
 // One pinned free model. No alternate provider or paid fallback.
-import { providerConfig, providerRequest } from './provider.ts';
+import { classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
 import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
 import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -50,6 +50,7 @@ serve(async (request) => {
     return respond(200, { evidence: resolveRegistryEvidence(source), snapshot: registrySnapshot(source) });
   }
   const config = providerConfig(Deno.env.get('OPENROUTER_API_KEY'));
+  const batchLimit = boundedGenerationLimit(limit as number);
   // A narrowly scoped, verified-source fallback can work even when the free provider is unavailable.
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
   const catalog = kind === 'item' ? 'items' : 'categories';
@@ -59,7 +60,7 @@ serve(async (request) => {
   let skipped = 0;
   try {
     // Bounded scan avoids one request consuming unlimited database and provider resources.
-    for (let offset = 0; offset < 10000 && candidates.length < (limit as number); offset += 50) {
+    for (let offset = 0; offset < 10000 && candidates.length < batchLimit; offset += 50) {
       let query = db.from(catalog).select(fields)
         .eq('tenant_id', profile.tenant_id).eq(kind === 'item' ? 'is_active' : 'active', true);
       if (requestedIds) query = query.in('id', requestedIds as string[]);
@@ -81,7 +82,7 @@ serve(async (request) => {
         const evidenceDescription = resolved?.matched ? resolved.supportedFacts : null;
         // Existing empty drafts are enhanced only if exact registry-backed facts exist.
         if (previous && !evidenceDescription && !record.description) { skipped++; continue; }
-        if (candidates.length < (limit as number)) candidates.push({
+        if (candidates.length < batchLimit) candidates.push({
           id: record.id, name: record.name, description: record.description, sku: kind === 'item' ? record.sku : null,
           brand: kind === 'item' ? record.brand : null, evidenceDescription,
           ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at } } : {}),
@@ -91,7 +92,17 @@ serve(async (request) => {
     }
     if (!candidates.length) return respond(200, { generated: 0, skipped, failed: 0 });
     let results: ReturnType<typeof parseBatch> = new Map();
+    // Exact manufacturer templates are the only permissible evidence-only claims.
+    // Never treat arbitrary generated prose as verified manufacturer copy.
+    const vettedDescriptions = new Map<string, string>();
+    for (const source of candidates) {
+      if (!source.description?.trim() && source.evidenceDescription?.trim()) {
+        const template = evidenceFallbackDraft(source)?.description;
+        if (template) vettedDescriptions.set(source.id, template);
+      }
+    }
     let providerUnavailable = !config;
+    let providerOutcome = config ? 'unknown' : 'missing_api_key';
     if (config) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 55000);
@@ -102,15 +113,25 @@ serve(async (request) => {
           body: JSON.stringify(providerRequest(candidates)),
         });
         if (provider.ok) {
-          const body = await provider.json();
-          const content: unknown = body?.choices?.[0]?.message?.content;
-          if (typeof content === 'string' && content.length <= 30000) {
-            results = parseBatch(content, candidates);
-          } else {
+          const decoded = await decodeSuccessfulProviderResponse(provider);
+          if (!decoded.ok) {
             providerUnavailable = true;
+            providerOutcome = 'upstream_invalid_response';
+          } else {
+            const choice = decoded.body.choices?.[0];
+            const content: unknown = choice?.message?.content;
+            if (typeof content === 'string' && content.trim() && content.length <= 30000) {
+              results = parseBatch(content, candidates, vettedDescriptions);
+              providerOutcome = classifyProviderOutput(results, choice?.finish_reason);
+            } else {
+              providerUnavailable = true;
+              providerOutcome = choice?.finish_reason === 'length'
+                ? 'output_truncated' : 'empty_or_invalid_content';
+            }
           }
         } else {
           providerUnavailable = true;
+          providerOutcome = `upstream_http_${provider.status}`;
           let code = 'unknown';
           try {
             const failure = await provider.json();
@@ -120,6 +141,7 @@ serve(async (request) => {
         }
       } catch {
         providerUnavailable = true;
+        providerOutcome = 'upstream_network_or_timeout';
       } finally { clearTimeout(timeout); }
     }
     let generated = 0;
@@ -129,13 +151,13 @@ serve(async (request) => {
       const modelResult = results.get(source.id);
       // A name-only response must not masquerade as a completed description.
       const needsDescription = Boolean(source.description?.trim() || source.evidenceDescription?.trim());
-      const incompleteModelDraft = needsDescription && !modelResult?.draft?.description;
+      const incompleteModelDraft = Boolean(modelResult?.draft && needsDescription && !modelResult.draft.description);
       const fallback = (!modelResult?.draft || incompleteModelDraft) ? evidenceFallbackDraft(source) : null;
       const draft = fallback ?? (incompleteModelDraft ? null : modelResult?.draft);
       if (!draft) {
-        failures.push({ id: source.id, reason: incompleteModelDraft
-          ? 'Model returned an empty description despite available facts'
-          : modelResult?.error ?? 'AI unavailable and no linked manufacturer facts for this item' });
+        failures.push({ id: source.id, reason: modelResult?.error
+          ?? (incompleteModelDraft ? 'Model returned an empty description despite available facts'
+            : 'AI unavailable and no linked manufacturer facts for this item') });
         continue;
       }
       if (source.previous) {
@@ -158,7 +180,15 @@ serve(async (request) => {
         else failures.push({ id: source.id, reason: 'Draft could not be saved' });
       } else { generated++; if (fallback) fallbackGenerated++; }
     }
-    if (providerUnavailable && generated === 0) return respond(503, { error: 'AI provider unavailable and no source-backed fallback' });
-    return respond(200, { generated, skipped, failed: failures.length, fallbackGenerated, failures: failures.slice(0, 10) });
+    // Safe structured diagnostics: never log generated text, tokens, names or source details.
+    console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'nvidia/nemotron-3.5-super-vl:free',
+      providerOutcome, candidates: candidates.length, generated, failed: failures.length, skipped }));
+    if (providerUnavailable && generated === 0) return respond(503, {
+      error: providerOutcome === 'missing_api_key' ? 'OpenRouter API key not configured'
+        : `Free AI provider unavailable (${providerOutcome})`,
+      generated, skipped, failed: failures.length, failures: failures.slice(0, 10),
+    });
+    return respond(200, { generated, skipped, failed: failures.length, fallbackGenerated,
+      providerOutcome, failures: failures.slice(0, 10) });
   } catch { return respond(502, { error: 'Draft generation failed' }); }
 });
