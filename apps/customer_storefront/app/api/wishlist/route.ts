@@ -79,6 +79,11 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const ownerId = getOwnerId(req);
+    if (!ownerId) {
+      return NextResponse.json({ ok: false, error: 'Wishlist session required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { productId, productName, phone } = body ?? {};
 
@@ -92,8 +97,6 @@ export async function POST(req: NextRequest) {
 
     // Ownership is derived from a signed, HttpOnly cookie. Client-supplied
     // fingerprints are deliberately ignored.
-    const existingOwnerId = getOwnerId(req);
-    const ownerId = existingOwnerId ?? createOwnerId();
     const { data, error } = await getAdminClient()
       .from('wishlist')
       .insert({
@@ -115,9 +118,7 @@ export async function POST(req: NextRequest) {
       throw error;
     }
 
-    const response = NextResponse.json({ ok: true, item: data });
-    if (!existingOwnerId) setOwnerCookie(response, ownerId);
-    return response;
+    return NextResponse.json({ ok: true, item: data });
   } catch (error) {
     return internalError(error);
   }
@@ -125,8 +126,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
     const ownerId = getOwnerId(req);
-    if (!ownerId) return NextResponse.json({ ok: true, productIds: [] });
+    if (!ownerId) {
+      const response = NextResponse.json({ ok: true, productIds: [] });
+      if (searchParams.get('initialize') === '1') setOwnerCookie(response, createOwnerId());
+      return response;
+    }
 
     const { data, error } = await getAdminClient()
       .from('wishlist')

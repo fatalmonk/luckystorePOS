@@ -37,6 +37,11 @@ function ownerCookie(response: Response) {
   return value;
 }
 
+async function initializeOwnerCookie() {
+  const response = await GET(makeRequest('/api/wishlist?initialize=1'));
+  return { response, cookie: ownerCookie(response) };
+}
+
 describe('/api/wishlist ownership', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -66,15 +71,33 @@ describe('/api/wishlist ownership', () => {
     expect(mocks.createClient).not.toHaveBeenCalled();
   });
 
+  it('rejects writes until a signed owner cookie has been initialized', async () => {
+    const makeAdd = (productId: string) => POST(makeRequest('/api/wishlist', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ productId, productName: 'Tea', fingerprint: 'victim-fingerprint' }),
+    }));
+    const [response, concurrentResponse] = await Promise.all([makeAdd('product-1'), makeAdd('product-2')]);
+
+    expect(response.status).toBe(401);
+    expect(concurrentResponse.status).toBe(401);
+    expect(await response.json()).toEqual({ ok: false, error: 'Wishlist session required' });
+    expect(mocks.createClient).not.toHaveBeenCalled();
+    expect((response as Response & { cookies: { get: (name: string) => unknown } })
+      .cookies.get('wishlist_owner')).toBeUndefined();
+  });
+
   it('stores a server-generated, signed owner instead of the posted fingerprint', async () => {
     mocks.result = {
       data: { id: 'wishlist-1', product_id: 'product-1', product_name: 'Tea', created_at: 'now' },
       error: null,
     };
 
+    const { cookie, response: sessionResponse } = await initializeOwnerCookie();
+    const ownerId = cookie.split('.')[0];
     const response = await POST(makeRequest('/api/wishlist', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', cookie: `wishlist_owner=${cookie}` },
       body: JSON.stringify({
         productId: 'product-1',
         productName: 'Tea',
@@ -83,8 +106,6 @@ describe('/api/wishlist ownership', () => {
     }));
 
     expect(response.status).toBe(200);
-    const cookie = ownerCookie(response);
-    const ownerId = cookie.split('.')[0];
     expect(ownerId).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(ownerId).not.toBe('victim-fingerprint');
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
@@ -93,25 +114,26 @@ describe('/api/wishlist ownership', () => {
     }));
     expect(mocks.select).toHaveBeenCalledWith('id, product_id, product_name, customer_phone, created_at');
     expect(cookie).toMatch(/^[A-Za-z0-9_-]{43}\.\d{10,}\.[A-Za-z0-9_-]{43}$/);
-    expect((response as Response & { cookies: { get: (name: string) => { httpOnly: boolean; sameSite: string } } })
+    expect((sessionResponse as Response & { cookies: { get: (name: string) => { httpOnly: boolean; sameSite: string } } })
       .cookies.get('wishlist_owner')).toMatchObject({ httpOnly: true, sameSite: 'lax' });
   });
 
   it('accepts only a valid signed cookie for wishlist reads', async () => {
     mocks.result = { data: [{ product_id: 'product-1' }], error: null };
-    const postResponse = await POST(makeRequest('/api/wishlist', {
+    const { cookie: sessionCookie } = await initializeOwnerCookie();
+    const ownerId = sessionCookie.split('.')[0];
+    const writeResponse = await POST(makeRequest('/api/wishlist', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', cookie: `wishlist_owner=${sessionCookie}` },
       body: JSON.stringify({ productId: 'product-1', productName: 'Tea' }),
     }));
-    const cookie = ownerCookie(postResponse);
-    const ownerId = cookie.split('.')[0];
+    expect(writeResponse.status).toBe(200);
 
     mocks.createClient.mockClear();
     mocks.from.mockClear();
     mocks.eq.mockClear();
     const response = await GET(makeRequest('/api/wishlist?fingerprint=victim-fingerprint', {
-      headers: { cookie: `wishlist_owner=${cookie}` },
+      headers: { cookie: `wishlist_owner=${sessionCookie}` },
     }));
 
     expect(response.status).toBe(200);
@@ -134,12 +156,7 @@ describe('/api/wishlist ownership', () => {
 
   it('rejects an expired signed owner cookie', async () => {
     vi.useFakeTimers();
-    const postResponse = await POST(makeRequest('/api/wishlist', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ productId: 'product-1', productName: 'Tea' }),
-    }));
-    const cookie = ownerCookie(postResponse);
+    const { cookie } = await initializeOwnerCookie();
     const expiresAt = Number(cookie.split('.')[1]);
 
     vi.setSystemTime(new Date((expiresAt + 1) * 1000));
@@ -154,12 +171,7 @@ describe('/api/wishlist ownership', () => {
   });
 
   it('deletes only under the signed cookie owner, ignoring query fingerprints', async () => {
-    const postResponse = await POST(makeRequest('/api/wishlist', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ productId: 'product-1', productName: 'Tea' }),
-    }));
-    const cookie = ownerCookie(postResponse);
+    const { cookie } = await initializeOwnerCookie();
     const ownerId = cookie.split('.')[0];
 
     mocks.eq.mockClear();
