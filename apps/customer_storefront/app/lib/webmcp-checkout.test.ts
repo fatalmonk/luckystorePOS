@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkoutSchema } from './validation';
-import { __resetCheckoutStateForTesting, WEBMCP_TOOLS } from './webmcp';
+import { __resetCheckoutStateForTesting, bindWebMCPCartBridge, WEBMCP_TOOLS } from './webmcp';
+import type { CartItem } from './types';
 
 function createStorage() {
   const values = new Map<string, string>();
@@ -39,7 +40,34 @@ function makeSignal() {
 }
 
 describe('WebMCP submit_order', () => {
+  let unbind: () => void;
+
+  beforeEach(() => {
+    // Existing mocked checkout cases use the same provider-facing contract as
+    // production. A separate integration suite mounts the real React provider.
+    unbind = bindWebMCPCartBridge({
+      isReady: () => true,
+      snapshot: () => {
+        const items = JSON.parse(localStorage.getItem('lucky-cart') ?? '[]') as CartItem[];
+        const subtotal = Math.round(items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
+        const deliveryFee = subtotal >= 500 || subtotal === 0 ? 0 : 40;
+        return { items, subtotal, discount: 0, deliveryFee, total: subtotal + deliveryFee };
+      },
+      add: () => false,
+      clear: () => localStorage.setItem('lucky-cart', '[]'),
+      removePurchased: (submitted) => {
+        const items = JSON.parse(localStorage.getItem('lucky-cart') ?? '[]') as CartItem[];
+        const ordered = new Map(submitted.map(({ id, qty }) => [id, qty]));
+        localStorage.setItem('lucky-cart', JSON.stringify(items.flatMap((item) => {
+          const remaining = item.qty - (ordered.get(item.id) ?? 0);
+          return remaining > 0 ? [{ ...item, qty: remaining }] : [];
+        })));
+      },
+    });
+  });
+
   afterEach(() => {
+    unbind();
     vi.unstubAllGlobals();
     __resetCheckoutStateForTesting();
   });
@@ -49,12 +77,12 @@ describe('WebMCP submit_order', () => {
   // ────────────────────────────────────────────────────────────────────────────
   it('sends checkout-schema data and reuses identity after a lost response', async () => {
     const sessionStorage = createStorage();
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     const requests: Array<Record<string, unknown>> = [];
     let callCount = 0;
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     vi.stubGlobal('sessionStorage', sessionStorage);
@@ -90,7 +118,7 @@ describe('WebMCP submit_order', () => {
   it('returns the server quote when promotion pricing differs', async () => {
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify({ items: [CART_ITEM] }) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify([CART_ITEM]) : null,
     });
     vi.stubGlobal('sessionStorage', createStorage());
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
@@ -123,13 +151,13 @@ describe('WebMCP submit_order', () => {
   // ────────────────────────────────────────────────────────────────────────────
   it('reuses identity across PRICE_MISMATCH and confirmed retry', async () => {
     const sessionStorage = createStorage();
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     const requests: Array<Record<string, unknown>> = [];
     let callCount = 0;
 
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     vi.stubGlobal('sessionStorage', sessionStorage);
@@ -196,13 +224,13 @@ describe('WebMCP submit_order', () => {
   // New: identity preserved in module memory when sessionStorage is unavailable
   // ────────────────────────────────────────────────────────────────────────────
   it('preserves identity via module memory when sessionStorage throws', async () => {
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     const requests: Array<Record<string, unknown>> = [];
     let callCount = 0;
 
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     // sessionStorage always throws
@@ -228,10 +256,10 @@ describe('WebMCP submit_order', () => {
   // New: confirmedQuote mismatch is rejected — agent cannot fabricate amounts
   // ────────────────────────────────────────────────────────────────────────────
   it('rejects confirmedQuote that does not match the last server quote', async () => {
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     vi.stubGlobal('sessionStorage', createStorage());
@@ -272,13 +300,13 @@ describe('WebMCP submit_order', () => {
   // New: second price change re-requires review
   // ────────────────────────────────────────────────────────────────────────────
   it('requires review again when price changes a second time', async () => {
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     const requests: Array<Record<string, unknown>> = [];
     let callCount = 0;
 
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     vi.stubGlobal('sessionStorage', createStorage());
@@ -337,7 +365,7 @@ describe('WebMCP submit_order', () => {
   it('clears cart and identity on success', async () => {
     const sessionStorage = createStorage();
     const cartStorage = createStorage();
-    cartStorage.setItem('cart', JSON.stringify({ items: [CART_ITEM] }));
+    cartStorage.setItem('lucky-cart', JSON.stringify([CART_ITEM]));
 
     vi.stubGlobal('localStorage', cartStorage);
     vi.stubGlobal('sessionStorage', sessionStorage);
@@ -348,9 +376,9 @@ describe('WebMCP submit_order', () => {
     await WEBMCP_TOOLS.submit_order.execute(BASE_INPUT, { signal: makeSignal() });
 
     // Cart cleared (saveCart writes '{"items":[]}')
-    const cartRaw = cartStorage.getItem('cart');
-    const cartAfter = JSON.parse(cartRaw ?? '{"items":[1]}') as { items: unknown[] };
-    expect(cartAfter.items).toHaveLength(0);
+    const cartRaw = cartStorage.getItem('lucky-cart');
+    const cartAfter = JSON.parse(cartRaw ?? '[1]') as unknown[];
+    expect(cartAfter).toHaveLength(0);
     // Identity cleared
     expect(sessionStorage.getItem('lucky-webmcp-checkout-identity')).toBeNull();
   });
@@ -358,7 +386,7 @@ describe('WebMCP submit_order', () => {
   it('restores the pending server quote after reload before any additional checkout POST', async () => {
     const sessionStorage = createStorage();
     const cartStorage = createStorage();
-    cartStorage.setItem('cart', JSON.stringify({ items: [CART_ITEM] }));
+    cartStorage.setItem('lucky-cart', JSON.stringify([CART_ITEM]));
     const requests: Array<Record<string, unknown>> = [];
     vi.stubGlobal('localStorage', cartStorage);
     vi.stubGlobal('sessionStorage', sessionStorage);
@@ -402,7 +430,7 @@ describe('WebMCP submit_order', () => {
   it('rejects a malformed stored quote after reload without sending checkout', async () => {
     const sessionStorage = createStorage();
     const cartStorage = createStorage();
-    cartStorage.setItem('cart', JSON.stringify({ items: [CART_ITEM] }));
+    cartStorage.setItem('lucky-cart', JSON.stringify([CART_ITEM]));
     vi.stubGlobal('localStorage', cartStorage);
     vi.stubGlobal('sessionStorage', sessionStorage);
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
@@ -428,15 +456,73 @@ describe('WebMCP submit_order', () => {
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the exact ordered request items and key after a lost-response cart reorder', async () => {
+    let cart = [
+      { ...CART_ITEM, id: '029b62d8-1111-2222-3333-444455556677', name: 'Milk', price: 60 },
+      CART_ITEM,
+    ];
+    const requests: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('localStorage', {
+      ...createStorage(),
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
+    });
+    vi.stubGlobal('sessionStorage', createStorage());
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
+      requests.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+      if (requests.length === 1) throw new Error('lost response after possible server commitment');
+      return new Response(JSON.stringify({ ok: true, order: { id: 'replayed-order' } }), { status: 200 });
+    }));
+
+    const execute = WEBMCP_TOOLS.submit_order.execute;
+    await expect(execute(BASE_INPUT, { signal: makeSignal() })).rejects.toThrow('lost response');
+    cart = [...cart].reverse();
+    expect(await execute(BASE_INPUT, { signal: makeSignal() })).toMatchObject({ ok: true });
+    expect(requests).toHaveLength(2);
+    expect(requests[0].idempotencyKey).toBe(requests[1].idempotencyKey);
+    expect(requests[0].orderNumber).toBe(requests[1].orderNumber);
+    expect(requests[0].items).toEqual(requests[1].items);
+  });
+
+  it('fails closed on a corrupted persisted identity instead of creating a duplicate order', async () => {
+    const sessionStorage = createStorage();
+    vi.stubGlobal('localStorage', {
+      ...createStorage(),
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify([CART_ITEM]) : null,
+    });
+    vi.stubGlobal('sessionStorage', sessionStorage);
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('response lost'); }));
+
+    const execute = WEBMCP_TOOLS.submit_order.execute;
+    await expect(execute(BASE_INPUT, { signal: makeSignal() })).rejects.toThrow('response lost');
+    const key = 'lucky-webmcp-checkout-identity';
+    const persisted = JSON.parse(sessionStorage.getItem(key)!) as Record<string, unknown>;
+    persisted.idempotencyKey = 'corrupted-after-potential-commit';
+    sessionStorage.setItem(key, JSON.stringify(persisted));
+
+    __resetCheckoutStateForTesting();
+    const response = await execute(BASE_INPUT, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(response.requiresOrderVerification).toBe(true);
+    expect(response.error).toContain('Check order status');
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not submit if the real CartProvider has not bound', async () => {
+    unbind();
+    vi.stubGlobal('fetch', vi.fn());
+    const result = await WEBMCP_TOOLS.submit_order.execute(BASE_INPUT, { signal: makeSignal() }) as Record<string, unknown>;
+    expect(result.error).toContain('not ready');
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
   // ────────────────────────────────────────────────────────────────────────────
   // New: payment method passes through correctly
   // ────────────────────────────────────────────────────────────────────────────
   it('accepts bkash as payment method', async () => {
-    const cart = { items: [CART_ITEM] };
+    const cart = [CART_ITEM];
     const requests: Array<Record<string, unknown>> = [];
     vi.stubGlobal('localStorage', {
       ...createStorage(),
-      getItem: (key: string) => key === 'cart' ? JSON.stringify(cart) : null,
+      getItem: (key: string) => key === 'lucky-cart' ? JSON.stringify(cart) : null,
       setItem: vi.fn(),
     });
     vi.stubGlobal('sessionStorage', createStorage());

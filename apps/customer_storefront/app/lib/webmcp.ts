@@ -28,19 +28,40 @@ interface WebMCPDocument extends Document {
   };
 }
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  stock?: number;
-  availabilityUnknown?: boolean;
-  catalogSnapshotFallback?: boolean;
-  unit?: string;
+import type { CartItem, Product } from './types';
+
+/** Browser tools use the mounted CartProvider, never a second localStorage cart. */
+export interface WebMCPCartBridge {
+  isReady(): boolean;
+  snapshot(): {
+    items: CartItem[];
+    subtotal: number;
+    discount: number;
+    deliveryFee: number;
+    total: number;
+  };
+  add(product: Product, quantity: number): boolean;
+  clear(): void;
+  removePurchased(items: Array<{ id: string; qty: number }>): void;
 }
 
-interface CartState {
-  items: Product[];
+let cartBridge: WebMCPCartBridge | null = null;
+
+/** Called by WebMCPInit while it is mounted under the real CartProvider. */
+export function bindWebMCPCartBridge(bridge: WebMCPCartBridge): () => void {
+  cartBridge = bridge;
+  return () => {
+    if (cartBridge === bridge) cartBridge = null;
+  };
+}
+
+function requireCartBridge(): WebMCPCartBridge | null {
+  return cartBridge?.isReady() ? cartBridge : null;
+}
+
+function getCart() {
+  const bridge = requireCartBridge();
+  return bridge ? bridge.snapshot() : null;
 }
 
 /**
@@ -78,21 +99,12 @@ const _lastServerQuote: {
   total?: number;
 } = {};
 
-function getCart(): CartState {
-  try {
-    const raw = localStorage.getItem('cart');
-    return raw ? JSON.parse(raw) : { items: [] };
-  } catch {
-    return { items: [] };
-  }
-}
-
-function saveCart(cart: CartState) {
-  localStorage.setItem('cart', JSON.stringify(cart));
-  window.dispatchEvent(new CustomEvent('cart-updated'));
-}
-
 const CHECKOUT_IDENTITY_KEY = 'lucky-webmcp-checkout-identity';
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+// If a stored identity might identify an already-committed checkout but is
+// malformed, fail closed rather than risk creating a duplicate with a new key.
+let _invalidStoredIdentity = false;
 
 function isValidPendingQuote(value: unknown): value is PendingCheckoutQuote {
   if (!value || typeof value !== 'object') return false;
@@ -132,30 +144,56 @@ function rememberPendingQuote(
 }
 
 function getCheckoutIdentity(payloadSignature: string) {
-  // Try sessionStorage first.
+  let stored: string | null = null;
   try {
-    const saved = sessionStorage.getItem(CHECKOUT_IDENTITY_KEY);
-    if (saved) {
-      const identity = JSON.parse(saved);
-      if (identity.payloadSignature === payloadSignature
-        && typeof identity.orderNumber === 'string'
-        && typeof identity.idempotencyKey === 'string') {
-        Object.assign(_memoryIdentity, identity);
-        restorePendingQuote(identity);
-        return identity;
-      }
-    }
+    stored = sessionStorage.getItem(CHECKOUT_IDENTITY_KEY);
   } catch {
-    // sessionStorage unavailable — fall through to module-level memory.
+    // Unavailable session storage still permits the in-memory identity.
   }
 
-  // Check module-level in-memory fallback (survives within the same JS module
-  // across calls in the same page lifetime when sessionStorage is unavailable).
+  if (stored) {
+    let identity: Record<string, unknown>;
+    try {
+      const parsed: unknown = JSON.parse(stored);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid identity');
+      identity = parsed as Record<string, unknown>;
+    } catch {
+      // A corrupted record could belong to an order whose response was lost.
+      _invalidStoredIdentity = true;
+      return null;
+    }
+
+    if (identity.payloadSignature === payloadSignature) {
+      if (typeof identity.idempotencyKey === 'string' && UUID_V4.test(identity.idempotencyKey)) {
+        if (typeof identity.orderNumber !== 'string' || !identity.orderNumber.trim()) {
+          _invalidStoredIdentity = true;
+          return null;
+        }
+        _invalidStoredIdentity = false;
+        Object.assign(_memoryIdentity, identity);
+        restorePendingQuote({ payloadSignature, pendingQuote: identity.pendingQuote });
+        return {
+          payloadSignature,
+          orderNumber: identity.orderNumber,
+          idempotencyKey: identity.idempotencyKey,
+        };
+      }
+      // A malformed record could also be storage corruption *after* an order
+      // committed. Never mint a new identity without first verifying the order.
+      _invalidStoredIdentity = true;
+      return null;
+    }
+  }
+
+  // When storage is denied, retain the exact in-memory retry identity.
   if (
     _memoryIdentity.payloadSignature === payloadSignature
     && typeof _memoryIdentity.orderNumber === 'string'
+    && _memoryIdentity.orderNumber.trim().length > 0
     && typeof _memoryIdentity.idempotencyKey === 'string'
+    && UUID_V4.test(_memoryIdentity.idempotencyKey)
   ) {
+    _invalidStoredIdentity = false;
     restorePendingQuote({
       payloadSignature,
       pendingQuote: _memoryIdentity.pendingQuote,
@@ -167,25 +205,20 @@ function getCheckoutIdentity(payloadSignature: string) {
     };
   }
 
-  // Generate a fresh identity.
+  if (_invalidStoredIdentity) return null;
+
   const identity = {
     payloadSignature,
     orderNumber: `LSO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
     idempotencyKey: crypto.randomUUID(),
   };
-
-  // Persist to sessionStorage when available.
   try {
     sessionStorage.setItem(CHECKOUT_IDENTITY_KEY, JSON.stringify(identity));
   } catch {
-    // sessionStorage unavailable — keep identity only in module memory.
+    // Storage unavailable; use module memory for same-page retries.
   }
-
-  // Always mirror to module-level memory as fallback.
-  _memoryIdentity.payloadSignature = identity.payloadSignature;
-  _memoryIdentity.orderNumber = identity.orderNumber;
-  _memoryIdentity.idempotencyKey = identity.idempotencyKey;
-
+  Object.assign(_memoryIdentity, identity);
+  delete _memoryIdentity.pendingQuote;
   return identity;
 }
 
@@ -196,6 +229,7 @@ function clearCheckoutIdentity() {
   delete _memoryIdentity.idempotencyKey;
   delete _memoryIdentity.pendingQuote;
   _invalidPendingQuoteSignature = undefined;
+  _invalidStoredIdentity = false;
 }
 
 function clearServerQuote() {
@@ -230,6 +264,7 @@ export function __resetCheckoutStateForTesting() {
   delete _memoryIdentity.idempotencyKey;
   delete _memoryIdentity.pendingQuote;
   _invalidPendingQuoteSignature = undefined;
+  _invalidStoredIdentity = false;
   delete _lastServerQuote.payloadSignature;
   delete _lastServerQuote.subtotal;
   delete _lastServerQuote.discount;
@@ -314,7 +349,7 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
 
   add_to_cart: {
     description:
-      'Add a product to the shopping cart by product ID and quantity. Updates the cart in localStorage.',
+      'Add an available product by ID and quantity to the same cart shown in the Lucky Store UI.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -331,33 +366,28 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
     },
     annotations: { readOnlyHint: false, untrustedContentHint: true },
     async execute(input, { signal }) {
+      const bridge = requireCartBridge();
+      if (!bridge) return { error: 'Storefront cart is not ready. Try again after the page loads.' };
       const id = String(input.id || '');
-      const qty = Number(input.qty || 1);
+      const qty = input.qty === undefined ? 1 : Number(input.qty);
+      if (!Number.isSafeInteger(qty) || qty < 1) {
+        return { error: 'Quantity must be a positive integer.' };
+      }
 
       const prodRes = await fetch(`/api/products?id=${encodeURIComponent(id)}`, { signal });
       if (!prodRes.ok) {
         return { error: `Product not found: ${prodRes.status}` };
       }
-      const product = await prodRes.json();
-      if (product.availabilityUnknown === true || product.catalogSnapshotFallback === true) {
-        return { error: 'Product availability cannot be verified right now; it was not added to your cart.' };
+      const product = await prodRes.json() as Product & { catalogSnapshotFallback?: boolean };
+      if (product.id !== id || product.availabilityUnknown === true
+          || product.catalogSnapshotFallback === true || !Number.isFinite(product.stock)
+          || product.stock < qty) {
+        return { error: 'Product stock or availability cannot be verified for this quantity.' };
       }
-
-      const cart = getCart();
-      const existing = cart.items.find((i) => i.id === id);
-      if (existing) {
-        existing.qty += qty;
-      } else {
-        cart.items.push({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          qty,
-          unit: product.unit,
-        });
+      if (!bridge.add(product, qty)) {
+        return { error: 'Quantity exceeds available stock or cart is no longer ready.' };
       }
-      saveCart(cart);
-      return { ok: true, cart };
+      return { ok: true, cart: bridge.snapshot() };
     },
   },
 
@@ -370,8 +400,8 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
     annotations: { readOnlyHint: true },
     async execute() {
       const cart = getCart();
-      const total = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0);
-      return { ...cart, total };
+      if (!cart) return { error: 'Storefront cart is not ready. Try again after the page loads.' };
+      return cart;
     },
   },
 
@@ -383,7 +413,9 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
     },
     annotations: { readOnlyHint: false },
     async execute() {
-      saveCart({ items: [] });
+      const bridge = requireCartBridge();
+      if (!bridge) return { error: 'Storefront cart is not ready. Try again after the page loads.' };
+      bridge.clear();
       return { ok: true, message: 'Cart cleared' };
     },
   },
@@ -424,16 +456,21 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
     },
     annotations: { readOnlyHint: false, consequentialHint: true },
     async execute(input, { signal }) {
-      const cart = getCart();
-      if (!cart.items.length) {
-        return { error: 'Cart is empty' };
-      }
+      const bridge = requireCartBridge();
+      if (!bridge) return { error: 'Storefront cart is not ready. Try again after the page loads.' };
+      const cart = bridge.snapshot();
+      if (!cart.items.length) return { error: 'Cart is empty' };
 
-      // Build the payload signature from cart items + customer fields only.
-      // confirmedQuote is intentionally excluded — the quote comes from the server,
-      // not from the payload, so different quote confirmations do not reset identity.
+      // Canonicalize the transmitted item sequence, not only its fingerprint.
+      // PostgreSQL binds an idempotency key to the ordered items payload:
+      // a reordered cart after a lost response must produce the same RPC input.
+      const itemsForRequest = cart.items
+        .map(({ id, name, price, qty, unit }) => ({ id, name, price, qty, unit }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      // confirmedQuote is excluded deliberately: new server quotes do not
+      // change the idempotency identity before an order is committed.
       const payloadSignature = JSON.stringify({
-        items: cart.items.map(({ id, qty }) => ({ id, qty })).sort((a, b) => a.id.localeCompare(b.id)),
+        items: itemsForRequest.map(({ id, qty }) => ({ id, qty })),
         customerName: input.customerName,
         customerPhone: input.customerPhone,
         customerAddress: input.customerAddress,
@@ -443,6 +480,12 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
       // Restore the pending quote from the same persisted record as the checkout
       // identity before deciding whether a new checkout POST can be sent.
       const identity = getCheckoutIdentity(payloadSignature);
+      if (!identity) {
+        return {
+          error: 'Stored checkout identity could belong to an existing order. Check order status before retrying.',
+          requiresOrderVerification: true,
+        };
+      }
       // A changed cart, customer, or payment method invalidates prior price approval.
       if (_lastServerQuote.payloadSignature && _lastServerQuote.payloadSignature !== payloadSignature) {
         clearServerQuote();
@@ -534,10 +577,10 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
       } else {
         // No confirmed quote — compute from local cart. This is the first attempt.
         // The server will validate and may return PRICE_MISMATCH.
-        subtotal = Math.round(cart.items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
-        discount = 0;
-        deliveryFee = subtotal >= 500 ? 0 : 40;
-        total = Math.round((subtotal - discount + deliveryFee) * 100) / 100;
+        subtotal = cart.subtotal;
+        discount = cart.discount;
+        deliveryFee = cart.deliveryFee;
+        total = cart.total;
       }
 
       const res = await fetch('/api/checkout', {
@@ -546,7 +589,7 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
         body: JSON.stringify({
           orderNumber: identity.orderNumber,
           idempotencyKey: identity.idempotencyKey,
-          items: cart.items,
+          items: itemsForRequest,
           subtotal,
           discount,
           deliveryFee,
@@ -597,11 +640,13 @@ export const WEBMCP_TOOLS: Record<string, WebMCPTool> = {
         return { error: err.error || `Checkout failed: ${res.status}` };
       }
 
-      // Success — clear identity and any stored quote.
+      // Success: reconcile only submitted quantities, preserving additions made
+      // while the request was in flight. A missing cart bridge is an explicit
+      // error, not permission to mutate storage behind the provider.
       const order = await res.json();
-      saveCart({ items: [] });
       clearCheckoutIdentity();
       clearServerQuote();
+      bridge.removePurchased(cart.items.map(({ id, qty }) => ({ id, qty })));
       return order;
     },
   },

@@ -131,27 +131,23 @@ export function useCart() {
     }
   }, [cart, hydrated]);
 
-  const addToCart = useCallback((product: Product): boolean => {
-    if (product.stock <= 0) return false;
+  // The WebMCP cart tool and storefront UI use the same atomic quantity update.
+  // Change cartRef synchronously so consecutive tool calls see the latest cart.
+  const addToCart = useCallback((product: Product, quantity = 1): boolean => {
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) return false;
+    if (!Number.isFinite(product.stock) || product.stock <= 0) return false;
+    const previous = cartRef.current;
+    const existing = previous.find((item) => item.id === product.id);
+    if ((existing?.qty ?? 0) + quantity > (existing?.stock ?? product.stock)) return false;
 
-    const existing = cartRef.current.find((item) => item.id === product.id);
-    if (existing && existing.qty >= product.stock) return false;
-
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      let nextCart: CartItem[];
-      if (existing) {
-        if (existing.qty >= product.stock) return prev;
-        nextCart = prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      } else {
-        nextCart = [...prev, { ...product, qty: 1 }];
-      }
-      cartRef.current = nextCart;
-      return nextCart;
-    });
-    trackAddToCart({ ...product, price: getPromotionalPrice(product, promotions, pricingNow) });
+    const nextCart: CartItem[] = existing
+      ? previous.map((item) =>
+        item.id === product.id ? { ...item, qty: item.qty + quantity } : item
+      )
+      : [...previous, { ...product, qty: quantity }];
+    cartRef.current = nextCart;
+    setCart(nextCart);
+    trackAddToCart({ ...product, price: getPromotionalPrice(product, promotions, pricingNow) }, quantity);
     return true;
   }, [promotions, pricingNow]);
 
@@ -223,6 +219,37 @@ export function useCart() {
     }
   }, []);
 
+  // Remove only purchased quantities, not unrelated items or quantities added
+  // while the network request was in flight.
+  const removePurchased = useCallback((submitted: Array<{ id: string; qty: number }>) => {
+    const purchased = new Map<string, number>();
+    for (const item of submitted) {
+      if (!Number.isSafeInteger(item.qty) || item.qty <= 0) continue;
+      purchased.set(item.id, (purchased.get(item.id) ?? 0) + item.qty);
+    }
+    const nextCart = cartRef.current.flatMap((item) => {
+      const remaining = item.qty - (purchased.get(item.id) ?? 0);
+      return remaining > 0 ? [{ ...item, qty: remaining }] : [];
+    });
+    cartRef.current = nextCart;
+    setCart(nextCart);
+  }, []);
+
+  // Read current quantities and promotional totals atomically for WebMCP.
+  // cartRef is updated synchronously by cart mutations; render-derived totals
+  // may not have caught up when tools are invoked back-to-back.
+  const getCheckoutSnapshot = useCallback(() => {
+    const items = cartRef.current.map((item) => ({ ...item }));
+    const subtotal = Math.round(items.reduce(
+      (sum, item) => sum + getPromotionalPrice(item, promotions, pricingNow) * item.qty, 0,
+    ) * 100) / 100;
+    const discount = Math.round(items.reduce(
+      (sum, item) => sum + getPromotionSavings(item, promotions, pricingNow) * item.qty, 0,
+    ) * 100) / 100;
+    const deliveryFee = subtotal === 0 || subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : FREE_DELIVERY_FEE;
+    return { items, subtotal, discount, deliveryFee, total: subtotal + deliveryFee };
+  }, [promotions, pricingNow]);
+
   const syncPrices = useCallback((updates: { id: string; name?: string; price: number; mrp?: number }[]) => {
     const prices = new Map(updates.map((update) => [update.id, update]));
     setCart((prev) => {
@@ -259,6 +286,8 @@ export function useCart() {
     removeFromCart,
     undoRemove,
     clearCart,
+    removePurchased,
+    getCheckoutSnapshot,
     syncPrices,
     effectivePrice,
     totalItems,
