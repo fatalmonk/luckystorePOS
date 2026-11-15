@@ -106,3 +106,26 @@ Deno.test('server caps generations at three even when an older admin sends limit
   assertEquals(boundedGenerationLimit(3), 3);
   assertEquals(boundedGenerationLimit(1), 1);
 });
+
+
+Deno.test('evidence-only model translation requires exact vetted template passed through parseBatch', () => {
+  const evidenceOnly = { ...source, description: null, evidenceDescription: 'Pack size 500 g' };
+  const translated = { ...valid, description: 'চা পাতা, 500 g।' };
+  const content = JSON.stringify({ translations: [translated] });
+  const notVetted = parseBatch(content, [evidenceOnly]).get(source.id);
+  assertEquals(notVetted?.error, 'Description contains unverified claims');
+  assertEquals(notVetted?.draft, undefined);
+  const vetted = parseBatch(content, [evidenceOnly], new Map([[source.id, translated.description]])).get(source.id);
+  assertEquals(vetted?.draft?.description, translated.description);
+  assertEquals(vetted?.error, undefined);
+  const wrongVetted = parseBatch(content, [evidenceOnly], new Map([[source.id, 'অন্য তথ্য']])).get(source.id);
+  assertEquals(wrongVetted?.error, 'Description contains unverified claims');
+});
+
+Deno.test('a template for another product cannot authorize evidence-only text', () => {
+  const evidenceOnly = { ...source, description: null, evidenceDescription: 'Pack size 500 g' };
+  const content = JSON.stringify({ translations: [valid] });
+  const other = new Map([['10000000-0000-4000-8000-000000000009', valid.description]]);
+  const outcome = parseBatch(content, [evidenceOnly], other).get(source.id);
+  assertEquals(outcome?.error, 'Description contains unverified claims');
+});

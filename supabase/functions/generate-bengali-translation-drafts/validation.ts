@@ -62,7 +62,9 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
   return { draft: { id: source.id, name, description, search_terms } };
 }
 
-export function parseBatch(content: string, sources: Source[]): Map<string, { draft?: Draft; error?: string }> {
+export function parseBatch(
+  content: string, sources: Source[], vettedDescriptions: ReadonlyMap<string, string> = new Map(),
+): Map<string, { draft?: Draft; error?: string }> {
   // The JSON Schema contract is checked again locally: an extra or malformed row
   // must never be saved as a different product. Partial valid responses may be
   // saved individually instead of discarding the entire batch.
@@ -91,6 +93,6 @@ export function parseBatch(content: string, sources: Source[]): Map<string, { dr
     }
   }
   return new Map(sources.map(source => [source.id, counts.get(source.id) === 1
-    ? validateDraft(source, byId.get(source.id))
+    ? validateDraft(source, byId.get(source.id), vettedDescriptions.get(source.id))
     : { error: 'Model omitted or duplicated this product' }]));
 }

@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { allowedOrigin, boundedGenerationLimit, canGenerate, parseBatch, validRequest, type Source } from './validation.ts';
 
 // One pinned free model. No alternate provider or paid fallback.
-import { providerConfig, providerRequest } from './provider.ts';
+import { classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
 import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
 import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -92,6 +92,15 @@ serve(async (request) => {
     }
     if (!candidates.length) return respond(200, { generated: 0, skipped, failed: 0 });
     let results: ReturnType<typeof parseBatch> = new Map();
+    // Exact manufacturer templates are the only permissible evidence-only claims.
+    // Never treat arbitrary generated prose as verified manufacturer copy.
+    const vettedDescriptions = new Map<string, string>();
+    for (const source of candidates) {
+      if (!source.description?.trim() && source.evidenceDescription?.trim()) {
+        const template = evidenceFallbackDraft(source)?.description;
+        if (template) vettedDescriptions.set(source.id, template);
+      }
+    }
     let providerUnavailable = !config;
     let providerOutcome = config ? 'unknown' : 'missing_api_key';
     if (config) {
@@ -104,15 +113,21 @@ serve(async (request) => {
           body: JSON.stringify(providerRequest(candidates)),
         });
         if (provider.ok) {
-          const body = await provider.json();
-          const content: unknown = body?.choices?.[0]?.message?.content;
-          if (typeof content === 'string' && content.trim() && content.length <= 30000) {
-            results = parseBatch(content, candidates);
-            providerOutcome = [...results.values()].some(row => row.draft) ? 'valid_output' : 'rejected_output';
-          } else {
+          const decoded = await decodeSuccessfulProviderResponse(provider);
+          if (!decoded.ok) {
             providerUnavailable = true;
-            providerOutcome = body?.choices?.[0]?.finish_reason === 'length'
-              ? 'output_truncated' : 'empty_or_invalid_content';
+            providerOutcome = 'upstream_invalid_response';
+          } else {
+            const choice = decoded.body.choices?.[0];
+            const content: unknown = choice?.message?.content;
+            if (typeof content === 'string' && content.trim() && content.length <= 30000) {
+              results = parseBatch(content, candidates, vettedDescriptions);
+              providerOutcome = classifyProviderOutput(results, choice?.finish_reason);
+            } else {
+              providerUnavailable = true;
+              providerOutcome = choice?.finish_reason === 'length'
+                ? 'output_truncated' : 'empty_or_invalid_content';
+            }
           }
         } else {
           providerUnavailable = true;
@@ -136,13 +151,13 @@ serve(async (request) => {
       const modelResult = results.get(source.id);
       // A name-only response must not masquerade as a completed description.
       const needsDescription = Boolean(source.description?.trim() || source.evidenceDescription?.trim());
-      const incompleteModelDraft = needsDescription && !modelResult?.draft?.description;
+      const incompleteModelDraft = Boolean(modelResult?.draft && needsDescription && !modelResult.draft.description);
       const fallback = (!modelResult?.draft || incompleteModelDraft) ? evidenceFallbackDraft(source) : null;
       const draft = fallback ?? (incompleteModelDraft ? null : modelResult?.draft);
       if (!draft) {
-        failures.push({ id: source.id, reason: incompleteModelDraft
-          ? 'Model returned an empty description despite available facts'
-          : modelResult?.error ?? 'AI unavailable and no linked manufacturer facts for this item' });
+        failures.push({ id: source.id, reason: modelResult?.error
+          ?? (incompleteModelDraft ? 'Model returned an empty description despite available facts'
+            : 'AI unavailable and no linked manufacturer facts for this item') });
         continue;
       }
       if (source.previous) {
