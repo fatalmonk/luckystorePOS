@@ -11,6 +11,7 @@ import {
   clearManualCompetitorPrice,
   formatPriceGapPercent,
 } from '../../lib/api/domains/competitorPrices';
+import { products as productsApi } from '../../lib/api/domains/products';
 import { AddPriceModal } from './AddPriceModal';
 import { LinkProductModal } from './LinkProductModal';
 import { summarizeCompetitorScrapeHealth } from './scrapeHealth';
@@ -32,6 +33,44 @@ function formatMetricCount(value: number | undefined): string {
   return value == null ? '—' : value.toLocaleString();
 }
 
+type ObservationFreshness = 'Fresh' | 'Aging' | 'Stale' | 'Unknown';
+
+function getObservationFreshness(scrapedAt: string): ObservationFreshness {
+  const timestamp = Date.parse(scrapedAt);
+  if (!Number.isFinite(timestamp) || timestamp > Date.now()) return 'Unknown';
+  const age = Date.now() - timestamp;
+  if (age <= 24 * 60 * 60 * 1000) return 'Fresh';
+  if (age <= 7 * 24 * 60 * 60 * 1000) return 'Aging';
+  return 'Stale';
+}
+
+function getFreshnessClass(freshness: ObservationFreshness): string {
+  if (freshness === 'Fresh') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+  if (freshness === 'Aging') return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
+  if (freshness === 'Stale') return 'bg-rose-500/10 text-rose-600 dark:text-rose-400';
+  return 'bg-warm-surface text-warm-muted';
+}
+
+function normalizeProductName(value: string | null | undefined): string {
+  return (value ?? '').normalize('NFKC').toLocaleLowerCase('en').replace(/\s+/g, ' ').trim();
+}
+
+function latestPerCompetitor(
+  rows: CompetitorPrice[],
+  selectedCompetitor: string,
+): CompetitorPrice[] {
+  const latest = new Map<string, CompetitorPrice>();
+  for (const row of rows) {
+    if (selectedCompetitor !== 'all' && row.competitor_name !== selectedCompetitor) continue;
+    const key = row.competitor_key || row.competitor_name;
+    const previous = latest.get(key);
+    if (!previous || Date.parse(row.scraped_at) > Date.parse(previous.scraped_at)) {
+      latest.set(key, row);
+    }
+  }
+  return [...latest.values()].sort((a, b) => a.competitor_name.localeCompare(b.competitor_name));
+}
+
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   success: { label: 'OK', color: 'text-warm-success' },
   error: { label: 'Error', color: 'text-warm-danger' },
@@ -45,13 +84,13 @@ const MATCH_BADGE: Record<CompetitorPrice['match_status'], { color: string }> = 
   REJECTED: { color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
 };
 
-type ViewTab = 'all' | 'matched' | 'unmatched' | 'alerts' | 'overrides';
+type ViewTab = 'all' | 'matched' | 'unmatched' | 'alerts' | 'overrides' | 'products';
 
 export function CompetitorPricesPage() {
   const { storeId } = useAuth();
   const { notify } = useNotify();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<ViewTab>('all');
+  const [activeTab, setActiveTab] = useState<ViewTab>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCompetitor, setSelectedCompetitor] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,6 +106,17 @@ export function CompetitorPricesPage() {
     enabled: !!storeId,
   });
 
+  const {
+    data: activeProducts = [],
+    isLoading: productsLoading,
+    error: productsError,
+  } = useQuery({
+    queryKey: ['activeCatalogProducts', storeId],
+    queryFn: () => productsApi.list(),
+    enabled: !!storeId,
+    staleTime: 60_000,
+  });
+
   const { data: metrics } = useQuery({
     queryKey: ['competitorPriceCounts', storeId],
     queryFn: () => fetchCompetitorPriceCounts(storeId!),
@@ -80,6 +130,82 @@ export function CompetitorPricesPage() {
   });
 
   const scrapeHealth = useMemo(() => summarizeCompetitorScrapeHealth(prices ?? []), [prices]);
+
+  const latestObservationsByProduct = useMemo(() => {
+    const grouped = new Map<string, Map<string, CompetitorPrice>>();
+    for (const observation of prices ?? []) {
+      if (!observation.item_id) continue;
+      const competitorKey = observation.competitor_key || observation.competitor_name;
+      const itemObservations = grouped.get(observation.item_id) ?? new Map<string, CompetitorPrice>();
+      const previous = itemObservations.get(competitorKey);
+      if (!previous || Date.parse(observation.scraped_at) > Date.parse(previous.scraped_at)) {
+        itemObservations.set(competitorKey, observation);
+      }
+      grouped.set(observation.item_id, itemObservations);
+    }
+    return new Map(
+      [...grouped.entries()].map(([itemId, observations]) => [
+        itemId,
+        [...observations.values()].sort((a, b) => a.competitor_name.localeCompare(b.competitor_name)),
+      ]),
+    );
+  }, [prices]);
+
+  const unlinkedObservationsByName = useMemo(() => {
+    const grouped = new Map<string, CompetitorPrice[]>();
+    for (const observation of prices ?? []) {
+      if (observation.item_id) continue;
+      const key = normalizeProductName(observation.product_name);
+      if (!key) continue;
+      const candidates = grouped.get(key) ?? [];
+      candidates.push(observation);
+      grouped.set(key, candidates);
+    }
+    return grouped;
+  }, [prices]);
+
+  const productStats = useMemo(() => {
+    let verifiedCount = 0;
+    let unmatchedCount = 0;
+    for (const product of activeProducts) {
+      const observations = latestObservationsByProduct.get(product.id) ?? [];
+      if (observations.some((observation) => observation.match_status === 'VERIFIED')) verifiedCount += 1;
+      if (observations.length === 0) unmatchedCount += 1;
+    }
+    return {
+      totalProducts: activeProducts.length,
+      verifiedCount,
+      unmatchedCount,
+      needsReviewCount: activeProducts.length - verifiedCount,
+    };
+  }, [activeProducts, latestObservationsByProduct]);
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase('en');
+    return activeProducts
+      .filter((product) => {
+        if (!query) return true;
+        return [product.name, product.sku, product.brand]
+          .some((value) => String(value ?? '').toLocaleLowerCase('en').includes(query));
+      })
+      .map((product) => ({
+        product,
+        observations: latestPerCompetitor(
+          latestObservationsByProduct.get(product.id) ?? [],
+          selectedCompetitor,
+        ),
+        candidates: latestPerCompetitor(
+          unlinkedObservationsByName.get(normalizeProductName(product.name)) ?? [],
+          selectedCompetitor,
+        ),
+      }));
+  }, [
+    activeProducts,
+    latestObservationsByProduct,
+    searchQuery,
+    selectedCompetitor,
+    unlinkedObservationsByName,
+  ]);
 
   const clearOverrideMutation = useMutation({
     mutationFn: ({ itemId, competitorKey }: { itemId: string; competitorKey: string }) =>
@@ -345,7 +471,7 @@ export function CompetitorPricesPage() {
   ];
 
 
-  if (pricesLoading) {
+  if (pricesLoading || (activeTab === 'products' && productsLoading)) {
     return (
       <div className="competitor-prices-page p-6">
         <div className="loading-state">Loading competitor prices...</div>
@@ -378,25 +504,37 @@ export function CompetitorPricesPage() {
         </button>
       </div>
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
-          <span className="text-xs text-warm-muted font-medium">Store Observations</span>
-          <span className="text-2xl font-bold font-mono mt-1">{formatMetricCount(metrics?.total)}</span>
-        </div>
-        <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col">
-          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Linked records (Store)</span>
-          <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatMetricCount(metrics?.matched)}</span>
-        </div>
-        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col">
-          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unlinked records (Store)</span>
-          <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{formatMetricCount(metrics?.unmatched)}</span>
-        </div>
-        <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
-          <span className="text-xs text-warm-muted font-medium">Price Alerts</span>
-          <span className="text-2xl font-bold font-mono text-warm-warning mt-1">{alerts?.length || 0}</span>
-        </div>
-      </div>
+            {/* Summary KPI Cards + Products Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
+                <span className="text-xs text-warm-muted font-medium">Store Observations</span>
+                <span className="text-2xl font-bold font-mono mt-1">{formatMetricCount(metrics?.total)}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col">
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Linked records (Store)</span>
+                <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatMetricCount(metrics?.matched)}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex flex-col">
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Unlinked records (Store)</span>
+                <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{formatMetricCount(metrics?.unmatched)}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-warm-border bg-warm-surface/40 flex flex-col">
+                <span className="text-xs text-warm-muted font-medium">Price Alerts</span>
+                <span className="text-2xl font-bold font-mono text-warm-warning mt-1">{alerts?.length || 0}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 flex flex-col">
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Active Products</span>
+                <span className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400 mt-1">{productStats.totalProducts.toLocaleString()}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-sky-500/20 bg-sky-500/5 flex flex-col">
+                <span className="text-xs text-sky-600 dark:text-sky-400 font-medium">Products with Verified Links</span>
+                <span className="text-2xl font-bold font-mono text-sky-600 dark:text-sky-400 mt-1">{productStats.verifiedCount.toLocaleString()}</span>
+              </div>
+              <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col">
+                <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">Products Needing Review</span>
+                <span className="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-1">{productStats.needsReviewCount.toLocaleString()}</span>
+              </div>
+            </div>
 
       <section className="rounded-xl border border-warm-border bg-warm-surface/40 p-4" aria-label="Scraper health">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -457,6 +595,17 @@ export function CompetitorPricesPage() {
       <div className="flex min-w-0 max-w-full flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-warm-border">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0">
+          <button
+            onClick={() => setActiveTab('products')}
+            aria-pressed={activeTab === 'products'}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              activeTab === 'products'
+                ? 'bg-blue-600 text-white font-semibold'
+                : 'hover:bg-warm-surface text-blue-600 dark:text-blue-400'
+            }`}
+          >
+            Product Catalog ({formatMetricCount(productStats.totalProducts)})
+          </button>
           <button
             onClick={() => setActiveTab('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -534,26 +683,238 @@ export function CompetitorPricesPage() {
         </div>
       </div>
 
-      {/* Prices Table */}
-      <p className="text-xs text-warm-muted" aria-live="polite">
-        Showing {sortedPrices.length.toLocaleString()} loaded observations matching the current filters.
-      </p>
-      <p className="text-xs text-warm-muted md:hidden">
-        Scroll the table horizontally to compare prices and reach row actions.
-      </p>
-      <DataTable
-        data={sortedPrices}
-        columns={columns}
-        tableLabel="Competitor price observations"
-        pinFirstColumn
-        emptyMessage={
-          searchQuery.trim() || selectedCompetitor !== 'all'
-            ? 'No observations match the current search and competitor filter.'
-            : activeTab === 'matched'
-              ? 'No matched competitor prices found.'
-              : 'No competitor prices found.'
-        }
-      />
+      {activeTab === 'products' ? (
+        <section className="rounded-xl border border-warm-border bg-warm-paper" aria-label="Active product competitor prices">
+          <div className="flex flex-col gap-2 border-b border-warm-border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold">Active product price comparison</h2>
+              <p className="mt-1 text-xs text-warm-muted" aria-live="polite">
+                Showing {filteredProducts.length.toLocaleString()} of {productStats.totalProducts.toLocaleString()} active products
+                {' · '}{formatMetricCount(metrics?.total)} store observations
+              </p>
+            </div>
+            <p className="max-w-2xl text-xs text-warm-muted">
+              Gaps are shown only for fresh, successful observations with a verified product link. Older or uncertain prices remain visible with their review status.
+            </p>
+          </div>
+
+          {productsError ? (
+            <div className="m-4 rounded-lg border border-rose-500/20 bg-rose-500/5 p-4 text-sm text-rose-600 dark:text-rose-400" role="alert">
+              Could not load active products: {(productsError as Error).message}
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <p className="p-6 text-sm text-warm-muted">
+              {searchQuery.trim()
+                ? 'No active products match this search.'
+                : 'No active products are available for this store.'}
+            </p>
+          ) : (
+            <>
+              <p className="px-4 pt-3 text-xs text-warm-muted md:hidden">
+                Scroll horizontally to compare competitor prices and review exact-name unlinked observations.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="min-w-[900px] w-full text-left text-sm" aria-label="Active product competitor price comparison">
+                  <thead className="border-b border-warm-border bg-warm-surface/50 text-xs text-warm-muted">
+                    <tr>
+                      <th scope="col" className="px-4 py-3 font-medium">Product</th>
+                      <th scope="col" className="px-4 py-3 font-medium">Our Price</th>
+                      <th scope="col" className="px-4 py-3 font-medium">Latest Competitor Prices</th>
+                      <th scope="col" className="px-4 py-3 font-medium">Match Review</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-warm-border">
+                    {filteredProducts.map(({ product, observations, candidates }) => {
+                      const hasVerifiedLink = observations.some((observation) => observation.match_status === 'VERIFIED');
+                      const storePrice = product.price == null ? null : Number(product.price);
+                      return (
+                        <tr key={product.id} className="align-top hover:bg-warm-surface/30">
+                          <th scope="row" className="min-w-56 px-4 py-4 font-medium">
+                            <div className="text-warm-foreground">{product.name}</div>
+                            <div className="mt-1 flex flex-wrap gap-x-2 text-xs font-normal text-warm-muted">
+                              {product.sku && <span>SKU {product.sku}</span>}
+                              {product.brand && <span>{product.brand}</span>}
+                            </div>
+                          </th>
+                          <td className="whitespace-nowrap px-4 py-4 font-mono font-semibold">
+                            {storePrice != null && Number.isFinite(storePrice) && storePrice > 0
+                              ? formatCurrency(storePrice)
+                              : <span className="font-sans text-xs font-normal text-warm-muted">N/A</span>}
+                          </td>
+                          <td className="min-w-[28rem] px-4 py-3">
+                            {observations.length > 0 ? (
+                              <>
+                                <div className="grid gap-2 xl:grid-cols-2">
+                                {observations.map((observation) => {
+                                  const freshness = getObservationFreshness(observation.scraped_at);
+                                  const canCompare = observation.match_status === 'VERIFIED'
+                                    && observation.scrape_status === 'success'
+                                    && freshness === 'Fresh'
+                                    && storePrice != null
+                                    && Number.isFinite(storePrice)
+                                    && storePrice > 0
+                                    && Number.isFinite(observation.competitor_price)
+                                    && observation.competitor_price > 0;
+                                  const difference = canCompare && storePrice != null
+                                    ? observation.competitor_price - storePrice
+                                    : null;
+                                  return (
+                                    <article key={observation.id} className="min-w-64 rounded-lg border border-warm-border bg-warm-surface/30 p-3">
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <span className="font-semibold">{observation.competitor_name}</span>
+                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${MATCH_BADGE[observation.match_status]?.color ?? 'bg-warm-surface text-warm-muted'}`}>
+                                          {observation.match_status}
+                                        </span>
+                                      </div>
+                                      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                        <span className="font-mono text-base font-bold">
+                                          {Number.isFinite(observation.competitor_price) && observation.competitor_price > 0
+                                            ? formatCurrency(observation.competitor_price)
+                                            : 'N/A'}
+                                        </span>
+                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getFreshnessClass(freshness)}`}>
+                                          {freshness}
+                                        </span>
+                                        {observation.scrape_status && observation.scrape_status !== 'success' && (
+                                          <span className="text-[10px] text-rose-600 dark:text-rose-400">
+                                            Scrape {STATUS_BADGE[observation.scrape_status]?.label ?? observation.scrape_status}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="mt-1 text-xs text-warm-muted">
+                                        Observed {formatDateTime(observation.scraped_at)} · {observation.source}
+                                      </div>
+                                      {difference != null && storePrice != null ? (
+                                        <p className="mt-2 text-xs font-medium">
+                                          {difference === 0
+                                            ? 'Same as our price'
+                                            : `Competitor ${formatCurrency(Math.abs(difference))} ${difference < 0 ? 'lower' : 'higher'}`}
+                                          {' · '}{formatPriceGapPercent(difference / storePrice)}
+                                        </p>
+                                      ) : (
+                                        <p className="mt-2 text-xs text-warm-muted">
+                                          No current comparison until the price is fresh and the product link is verified.
+                                        </p>
+                                      )}
+                                      {observation.competitor_product_url && (
+                                        <a
+                                          href={observation.competitor_product_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="mt-2 inline-flex min-h-11 items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                                        >
+                                          View source <ExternalLink size={13} aria-hidden="true" />
+                                        </a>
+                                      )}
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                              {candidates.length > 0 && (
+                                <div className="mt-3 space-y-2">
+                                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Other exact-name unlinked observations — review before linking</p>
+                                  {candidates.map((candidate) => (
+                                    <article key={candidate.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                                      <div>
+                                        <div className="text-xs font-medium">{candidate.competitor_name} · {formatCurrency(candidate.competitor_price)}</div>
+                                        <div className="mt-1 text-[11px] text-warm-muted">
+                                          {candidate.product_name} · {formatDateTime(candidate.scraped_at)} · {getObservationFreshness(candidate.scraped_at)}
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setLinkingRecord(candidate)}
+                                        className="min-h-11 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+                                      >
+                                        Review link
+                                      </button>
+                                    </article>
+                                  ))}
+                                </div>
+                              )}
+                              </>
+                            ) : candidates.length > 0 ? (
+                              <div className="space-y-2">
+                                <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Exact-name unlinked observations — review before linking</p>
+                                {candidates.map((candidate) => (
+                                  <article key={candidate.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                                    <div>
+                                      <div className="text-xs font-medium">{candidate.competitor_name} · {formatCurrency(candidate.competitor_price)}</div>
+                                      <div className="mt-1 text-[11px] text-warm-muted">
+                                        {candidate.product_name} · {formatDateTime(candidate.scraped_at)} · {getObservationFreshness(candidate.scraped_at)}
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setLinkingRecord(candidate)}
+                                      className="min-h-11 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+                                    >
+                                      Review link
+                                    </button>
+                                  </article>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-warm-muted">No linked competitor price or exact-name candidate loaded.</span>
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4">
+                            {hasVerifiedLink ? (
+                              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                                Verified link
+                              </span>
+                            ) : (
+                              <div className="space-y-2">
+                                <span className="block text-xs font-medium text-amber-700 dark:text-amber-300">
+                                  {observations.length > 0 ? 'Linked match needs review' : candidates.length > 0 ? 'Unlinked candidate' : 'No match'}
+                                </span>
+                                {!candidates.length && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSearchQuery(product.name);
+                                      setActiveTab('unmatched');
+                                    }}
+                                    className="min-h-11 rounded-lg border border-warm-border px-3 py-2 text-xs font-medium hover:bg-warm-surface"
+                                  >
+                                    Find observations
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+      ) : (
+        <>
+          <p className="text-xs text-warm-muted" aria-live="polite">
+            Showing {sortedPrices.length.toLocaleString()} loaded observations matching the current filters.
+          </p>
+          <p className="text-xs text-warm-muted md:hidden">
+            Scroll the table horizontally to compare prices and reach row actions.
+          </p>
+          <DataTable
+            data={sortedPrices}
+            columns={columns}
+            tableLabel="Competitor price observations"
+            pinFirstColumn
+            emptyMessage={
+              searchQuery.trim() || selectedCompetitor !== 'all'
+                ? 'No observations match the current search and competitor filter.'
+                : activeTab === 'matched'
+                  ? 'No matched competitor prices found.'
+                  : 'No competitor prices found.'
+            }
+          />
+        </>
+      )}
 
       {/* Add Price Modal */}
       <AddPriceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
