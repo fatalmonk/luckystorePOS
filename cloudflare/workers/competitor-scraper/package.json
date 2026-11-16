@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "check": "npm run lint && npm run typecheck && npm test",
-    "dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run"
+    "dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "pilot:prepare": "node --experimental-strip-types scripts/prepare-meta-pilot.mjs"
   },
   "dependencies": {
     "@cloudflare/puppeteer": "1.1.0"

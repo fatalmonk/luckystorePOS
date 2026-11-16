@@ -26,23 +26,42 @@ describe("matcher", () => {
     ...overrides,
   });
 
-  it("matches by exact barcode before size filter", () => {
-    const product = makeProduct({ name: "Unknown Name 500 gm", competitor_product_id: "BAR123" });
-    const item = makeItem({ name: "Totally Different", barcode: "BAR123", package_quantity: 50 });
+  it("matches a separately declared, checksum-valid GTIN when package size agrees", () => {
+    const product = makeProduct({ name: "Unknown Name 50 gm", competitor_product_id: "retailer:sku-22", raw_data: { barcode: "8901030866203" } });
+    const item = makeItem({ name: "Different Product 50 gm", barcode: "8901030866203" });
     const result = findBestMatch(product, [item]);
     expect(result.item_id).toBe("item-1");
     expect(result.confidence).toBe(1);
   });
 
-  it("matches by exact external SKU before fuzzy matching", () => {
-    const product = makeProduct({
-      name: "Unknown Name 500 gm",
-      competitor_product_id: "EXTERNAL-123",
-    });
-    const item = makeItem({ name: "Different Product", sku: "EXTERNAL-123" });
-    const result = findBestMatch(product, [item]);
-    expect(result.item_id).toBe("item-1");
-    expect(result.confidence).toBe(1);
+  it("does not conflate external retailer product ID with barcode or local SKU", () => {
+    const product = makeProduct({ name: "Unknown Name 500 gm", competitor_product_id: "EXTERNAL-123" });
+    const item = makeItem({ name: "Different Product 500 gm", sku: "EXTERNAL-123", barcode: "EXTERNAL-123" });
+    expect(findBestMatch(product, [item]).item_id).toBeNull();
+  });
+
+  it("rejects a barcode match with the wrong package size", () => {
+    const product = makeProduct({ name: "Oil 500 ml", raw_data: { barcode: "8901030866203" } });
+    const item = makeItem({ name: "Oil 1 l", barcode: "8901030866203" });
+    expect(findBestMatch(product, [item]).item_id).toBeNull();
+  });
+
+  it("rejects invalid or ambiguous barcode data", () => {
+    const product = makeProduct({ name: "Unknown 100 g", raw_data: { barcode: "8901030866202" } });
+    const item = makeItem({ name: "Different 100 g", barcode: "8901030866202" });
+    expect(findBestMatch(product, [item]).item_id).toBeNull();
+  });
+
+  it("normalizes 1 kg and 1000 g as the same package size", () => {
+    const product=makeProduct({name:"PRAN Chinigura Rice 1 kg"});
+    const local=makeItem({name:"PRAN Chinigura Rice 1000 g"});
+    expect(findBestMatch(product,[local]).item_id).toBe('item-1');
+  });
+
+  it("normalizes 2 L and 2000 ml as the same package size", () => {
+    const product=makeProduct({name:"Fortune Rice Bran Oil 2 L"});
+    const local=makeItem({name:"Fortune Rice Bran Oil 2000 ml"});
+    expect(findBestMatch(product,[local]).item_id).toBe('item-1');
   });
 
   it("matches fuzzy when size compatible", () => {
@@ -90,7 +109,7 @@ describe("matcher", () => {
 
   it("versions every result", () => {
     const result = findBestMatch(makeProduct(), [makeItem()]);
-    expect(result.matcher_version).toBe("matcher-v1");
+    expect(result.matcher_version).toBe("matcher-v2");
   });
 
   it("matches multiple products", () => {
@@ -112,6 +131,19 @@ describe("matcher", () => {
     const item = makeItem({ name: "Nestle Maggi Noodles 12 Pack" });
     const result = findBestMatch(product, [item]);
     expect(result.item_id).toBeNull();
+  });
+
+  it("does not match an 8-pack of 62 g noodles to a single 62 g product", () => {
+    const product=makeProduct({name:"Doodles Noodles 62 g (8 Pack)"});
+    const local=makeItem({name:"Doodles Noodles 62 g"});
+    expect(findBestMatch(product,[local]).item_id).toBeNull();
+  });
+
+  it("matches identical weight and count only when both are compatible", () => {
+    const product=makeProduct({name:"Doodles Noodles 62 g (8 Pack)"});
+    const local=makeItem({name:"Doodles Noodles 62 g (8 Pack)"});
+    expect(findBestMatch(product,[local]).item_id).toBe('item-1');
+    expect(findBestMatch({...product,name:"Doodles Noodles 62 g (6 Pack)"},[local]).item_id).toBeNull();
   });
 
   it("rejects weight vs count family mismatch", () => {

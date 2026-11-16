@@ -1,0 +1,149 @@
+{
+  "summary": {
+    "catalog_items": 172,
+    "unique_ids": 172,
+    "reported_user_target": 178,
+    "unavailable_from_meta": 6,
+    "with_source_structured_size": 0,
+    "with_deterministically_normalized_pack": 108,
+    "requiring_manual_pack_review": 64,
+    "pilot_skus": 25,
+    "verified_competitor_prices": 0,
+    "authorized_competitor_feeds": 0,
+    "synthetic_exact_matches": 25,
+    "synthetic_wrong_pack_rejections": 25,
+    "limitations": [
+      "The Meta catalog has no populated structured size fields or manufacturer barcodes.",
+      "These 25 are identifiable-pack pilot candidates, not ranked best-sellers.",
+      "All competitor price fields are intentionally blank until authorized source evidence is obtained.",
+      "Synthetic matcher examples are never competitor price observations."
+    ]
+  },
+  "synthetic_fixture_results": [
+    {
+      "retailer_id": "0c6fed87-4f54-46eb-befb-7fd088c65e8d",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "0dee62d5-49e6-443d-819a-65a489492807",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "0e84cad3-d77d-47d8-aad1-a1dcac20179e",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "1465d07a-da18-4bc7-a22b-816da50bf241",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "171dec14-87ca-412d-b37e-183e0dd79add",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "18f5d5f1-d41e-40a6-82da-fb29ff6af175",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "1a1789e5-3103-4bd0-a7b8-9cc72754152a",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "1f0da8e0-ef23-4e76-9771-cfa782f6a181",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "211aa207-c261-4fd7-8f40-d8c49d4b3005",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "219bad21-0620-431a-a460-4801a3c7a78b",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "2326e34f-8852-4c53-9b56-2111af41aca9",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "25ad462e-c4f4-49d1-a239-3ecd9780d8f3",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "279dd4c5-edb0-4365-9ac6-d5cb0729a4f7",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "29642bcd-77b4-4146-8e26-d5495b1bfe47",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "2c6eeb8d-1d5b-40a3-8e7f-8a8d7ac0c32e",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "2fd8270d-63ea-4c6e-965c-3673f83b305e",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "309437ca-2058-48e9-bce3-0da0ffb42e67",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "3448ed8a-9c0b-49ab-b249-f096fbc210c7",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "381b771f-c545-47e0-8eaa-51a4a1ec1642",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "38ee3e1a-1884-43a3-9c0a-3840756ab118",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "3b7cc77f-546b-4810-b2e0-bad8fcf3701d",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "3f503fdc-b918-4e29-b251-e74ccf74b822",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "41c9ad69-3879-4991-95d4-8b45a7b8d655",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "439d9e4b-d7df-4705-87ab-ebb067f31065",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    },
+    {
+      "retailer_id": "44fd8ae1-fdea-42c0-9278-4e6216a7a2eb",
+      "exact_match": true,
+      "wrong_pack_rejected": true
+    }
+  ]
+}

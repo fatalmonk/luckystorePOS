@@ -1,6 +1,6 @@
 import type { MatchableItem, MatchResult, NormalizedProduct } from "./types.ts";
 
-export const MATCHER_VERSION = "matcher-v1";
+export const MATCHER_VERSION = "matcher-v2";
 
 const SIMILARITY_THRESHOLD = 0.92;
 const AMBIGUITY_GAP = 0.03;
@@ -11,9 +11,17 @@ const AMBIGUITY_GAP = 0.03;
 export function normalizeName(name: string): string {
   return name
     .toLowerCase()
-    .normalize("NFD")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    // Different labels for exactly the same package weight/volume compare identically.
+    .replace(/(\d+(?:\.\d+)?)\s*(kg|g|gm|ml|l|ltr|liter|litre)\b/g, (_, raw: string, unit: string) => {
+      const value = Number(raw);
+      if (unit === "kg") return `${Number((value * 1000).toFixed(3))}g`;
+      if (["l", "ltr", "liter", "litre"].includes(unit)) return `${Number((value * 1000).toFixed(3))}ml`;
+      return `${Number(value.toFixed(3))}${unit === "gm" ? "g" : unit}`;
+    })
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\b(kg|g|gm|ml|l|liter|litre|pack|pcs|piece|pieces|bottle|bottles|can|cans|box|boxes|bag|bags|sachet|sachets)\b/g, " ")
+    .replace(/\b(pack|pcs|piece|pieces|bottle|bottles|can|cans|box|boxes|bag|bags|sachet|sachets)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -160,6 +168,12 @@ function itemUnitFamily(item: MatchableItem): "weight" | "volume" | "count" | nu
 }
 
 function isCompatibleSize(item: MatchableItem, product: NormalizedProduct): boolean {
+  // Pack count is an independent dimension from gram/ml quantity. 8 x 62 g
+  // must never match a single 62 g pack, even when the mass text matches.
+  const productCount = parseCountableQuantity(product.name);
+  const itemCount = parseCountableQuantity(item.name);
+  if ((productCount === null) !== (itemCount === null)) return false;
+  if (productCount !== null && itemCount !== null && productCount !== itemCount) return false;
   const prodQty = productQuantity(product);
   const itemQty = extractQuantity(item.name) ?? item.package_quantity;
   const prodFamily = productUnitFamily(product);
@@ -233,20 +247,29 @@ export function nameSimilarity(a: string, b: string): number {
   return 1 - distance / maxLen;
 }
 
+/** Only a declared, checksum-valid manufacturer GTIN may be matched to an inventory barcode.
+ * A competitor URL slug / product identifier is NOT a manufacturer's GTIN or local SKU.
+ */
+export function validGtin(value: unknown): value is string {
+  if (typeof value !== "string" || !/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(value)) return false;
+  let sum = 0;
+  for (let index = value.length - 2, weight = 3; index >= 0; index--, weight = weight === 3 ? 1 : 3) {
+    sum += Number(value[index]) * weight;
+  }
+  return ((10 - (sum % 10)) % 10) === Number(value[value.length - 1]);
+}
+
 export function findBestMatch(product: NormalizedProduct, items: MatchableItem[]): MatchResult {
-  // Barcode/external id exact match wins immediately before size/name checks.
-  if (product.competitor_product_id) {
-    for (const item of items) {
-      if (
-        (item.barcode && item.barcode === product.competitor_product_id) ||
-        (item.sku && item.sku === product.competitor_product_id)
-      ) {
-        return {
-          item_id: item.id,
-          confidence: 1,
-          matcher_version: MATCHER_VERSION,
-        };
-      }
+  // The competitor's own product ID is not a barcode: require a separately supplied valid GTIN.
+  const declaredGtin = product.raw_data.gtin ?? product.raw_data.ean ?? product.raw_data.barcode;
+  if (validGtin(declaredGtin)) {
+    const candidates = items.filter(item => item.barcode === declaredGtin && isCompatibleSize(item, product));
+    if (candidates.length === 1) {
+      return { item_id: candidates[0]!.id, confidence: 1, matcher_version: MATCHER_VERSION };
+    }
+    // Duplicate barcode or pack-size disagreement: never silently accept a different SKU.
+    if (candidates.length > 1 || items.some(item => item.barcode === declaredGtin)) {
+      return { item_id: null, confidence: null, matcher_version: MATCHER_VERSION };
     }
   }
 

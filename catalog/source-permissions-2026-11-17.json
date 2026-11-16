@@ -1,0 +1,17 @@
+{
+  "review_date": "2026-11-17",
+  "purpose": "Non-authorizing source register for Lucky Store price intelligence pilot",
+  "notice": "A public catalog, robots Allow, or Cloudflare SOURCE_APPROVED flag is not permission to use an undocumented retailer API or bulk scraper.",
+  "production_automation": "disabled_in_this_branch",
+  "sources": [
+    {"competitor":"The Basket","site":"https://www.thebasketbd.com/","candidate_source":"authorized retailer export / product feed","public_catalog":"observed","api_contract":"not verified","permission":"unverified","automated_collection":false},
+    {"competitor":"Khulshi Mart","site":"https://www.khulshimart.com/","candidate_source":"authorized retailer export / product feed","public_catalog":"observed; indicative prices","api_contract":"not verified; robots explicitly disallows /api/","permission":"unverified","automated_collection":false},
+    {"competitor":"Agora","site":"https://agorasuperstores.com/","candidate_source":"authorized retailer export / product feed","public_catalog":"observed","api_contract":"not verified","permission":"unverified","automated_collection":false},
+    {"competitor":"Chaldal","site":"https://chaldal.com/","candidate_source":"written partnership / explicit license","public_catalog":"observed","api_contract":"not authorized","permission":"unverified","automated_collection":false},
+    {"competitor":"Shwapno","site":"https://www.shwapno.com/","candidate_source":"written partnership / explicit license","public_catalog":"observed","api_contract":"not authorized","permission":"unverified","automated_collection":false}
+  ],
+  "safe_secondary_sources": [
+    {"name":"Bangladesh Department of Agricultural Marketing","url":"https://market.dam.gov.bd/","scope":"aggregate commodity reference prices, not retailer-specific branded SKU prices","api_contract":"documented web reports; no verified stable SKU API"},
+    {"name":"World Bank monthly food prices dataset","url":"https://microdata.worldbank.org/index.php/catalog/6164/data-api","scope":"market-level commodity trends, not Chattogram retailer branded SKU prices","api_contract":"documented tables/data endpoint; separate research integration"}
+  ]
+}

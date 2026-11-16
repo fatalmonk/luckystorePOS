@@ -1,0 +1,3408 @@
+{
+  "source": "Meta snapshot (not current storefront inventory)",
+  "generated_at": "2026-11-17",
+  "rows": [
+    {
+      "retailer_id": "02e14cf4-4cd9-44ef-b74f-10eb3a6c3cc2",
+      "name": "Solecti Cookies - Standard Pack",
+      "brand": "Solecti",
+      "meta_price_bdt": 20,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/solecti-cookies-standard-pack--02e14cf4",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0419b9c3-1c2e-4c7e-8e6b-fa9cf08a46ef",
+      "name": "Twinings Pure Green Tea 25 Bags - 50 g",
+      "brand": "Twinings",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/twinings-pure-green-tea-25-bags-50-g--0419b9c3",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 50,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 25,
+          "unit": "bags"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "043ba056-fa08-428a-9d7b-cd36530f97e3",
+      "name": "Miniket Atob (Shonko) Loose",
+      "brand": "Miniket",
+      "meta_price_bdt": 72,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/miniket-atob-shonko-loose--043ba056",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0c6fed87-4f54-46eb-befb-7fd088c65e8d",
+      "name": "Taaza 500 g",
+      "brand": "Taaza",
+      "meta_price_bdt": 300,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-500-g--0c6fed87",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0c815bf1-c506-44f5-88dd-b504db60d7af",
+      "name": "Buldak Ramen Cheese Cup",
+      "brand": "Samyang",
+      "meta_price_bdt": 150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-cheese-cup--0c815bf1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0dee62d5-49e6-443d-819a-65a489492807",
+      "name": "Taaza 400 g",
+      "brand": "Taaza",
+      "meta_price_bdt": 250,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-400-g--0dee62d5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0df824fc-9abc-4aff-85ce-6ca3b128c5c1",
+      "name": "Taaza Tea Bag",
+      "brand": "Taaza",
+      "meta_price_bdt": 95,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-tea-bag--0df824fc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0e84cad3-d77d-47d8-aad1-a1dcac20179e",
+      "name": "Fortune Rice Bran Oil 2 L",
+      "brand": "Fortune",
+      "meta_price_bdt": 458,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-rice-bran-oil-2-l--0e84cad3",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "0e9bc628-f842-492a-a140-4535e3bac7bf",
+      "name": "Miniket C (Nouka) Loose",
+      "brand": "Miniket",
+      "meta_price_bdt": 57,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/miniket-c-nouka-loose--0e9bc628",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "115c5a24-a16d-41d9-b062-010b7c9f3ff3",
+      "name": "Twinings Green Tea Jasmine - 25 Bags",
+      "brand": "Twinings",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/twinings-green-tea-jasmine-25-bags--115c5a24",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 25,
+          "unit": "bags"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "12aae9bd-7ecb-4f67-9721-503e25091849",
+      "name": "Pound Cake Chocolate",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 120,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pound-cake-chocolate--12aae9bd",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "12ac0f5a-d1a6-4bf4-aad2-0a040f56fdb2",
+      "name": "Motor Daal",
+      "brand": "Motor",
+      "meta_price_bdt": 65,
+      "price_kind": "sale",
+      "source_product_url": "https://www.luckystore1947.com/product/motor-daal--12ac0f5a",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "13b4aa6f-d23d-4b84-a400-1743350c08b4",
+      "name": "Doodles Instant Noodles Masala 62 g (8 Pack)",
+      "brand": "Doodles",
+      "meta_price_bdt": 250,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-instant-noodles-masala-62-g-8-pack--13b4aa6f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 62,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 8,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1465d07a-da18-4bc7-a22b-816da50bf241",
+      "name": "Fortune Mustard Oil 1 L",
+      "brand": "Fortune",
+      "meta_price_bdt": 350,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-mustard-oil-1-l--1465d07a",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1602b5c7-b4cc-4a29-8f0c-992bdbff6aeb",
+      "name": "Twinings Green Tea & lemon - 25 Bags",
+      "brand": "Twinings",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/twinings-green-tea-lemon-25-bags--1602b5c7",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 25,
+          "unit": "bags"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "171dec14-87ca-412d-b37e-183e0dd79add",
+      "name": "Doodles Stick Noodles 150 g",
+      "brand": "Doodles",
+      "meta_price_bdt": 20,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-stick-noodles-150-g--171dec14",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 150,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "18d651fa-953f-41ea-9ec3-2b6e91cd29ca",
+      "name": "Mini Dry Cake",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/mini-dry-cake--18d651fa",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "18f5d5f1-d41e-40a6-82da-fb29ff6af175",
+      "name": "Fresh Fortified Soybean Oil 5L (Can)",
+      "brand": "Fresh",
+      "meta_price_bdt": 995,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fresh-fortified-soybean-oil-5l-can--18f5d5f1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1a1789e5-3103-4bd0-a7b8-9cc72754152a",
+      "name": "Doodles Stick Noodles Chicken Delight 300 g",
+      "brand": "Doodles",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-stick-noodles-chicken-delight-300-g--1a1789e5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 300,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1dd3e411-594c-4169-a4b0-9143a33dcf77",
+      "name": "Ispahani Mirzapore Tea Bag - 50p",
+      "brand": "Ispahani",
+      "meta_price_bdt": 95,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-mirzapore-tea-bag-50p--1dd3e411",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 50,
+          "unit": "p"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1e4a16aa-c5c5-48c6-bf47-56e212482d59",
+      "name": "Milk Mary - Family Pack",
+      "brand": "Milk",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/milk-mary-family-pack--1e4a16aa",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1ee48800-837c-4a5a-8933-aacdce574a4e",
+      "name": "Pound Cake Fruit",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 130,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pound-cake-fruit--1ee48800",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "1f0da8e0-ef23-4e76-9771-cfa782f6a181",
+      "name": "Ispahani Blender Choice Premium Tea 200g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 135,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-blender-choice-premium-tea-200g--1f0da8e0",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "211aa207-c261-4fd7-8f40-d8c49d4b3005",
+      "name": "Nescafe Americano 8g sachet",
+      "brand": "Nestle",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-americano-8g-sachet--211aa207",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 8,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "219bad21-0620-431a-a460-4801a3c7a78b",
+      "name": "Nestea Ice Tea 18g",
+      "brand": "Nestle",
+      "meta_price_bdt": 20,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nestea-ice-tea-18g--219bad21",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 18,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "2326e34f-8852-4c53-9b56-2111af41aca9",
+      "name": "BelleAme Digestive Biscuit 135 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 35,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-digestive-biscuit-135-g--2326e34f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 135,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "25ad462e-c4f4-49d1-a239-3ecd9780d8f3",
+      "name": "PRAN Chinigura Aromatic Rice 1kg",
+      "brand": "Pran",
+      "meta_price_bdt": 155,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pran-chinigura-aromatic-rice-1kg--25ad462e",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "279dd4c5-edb0-4365-9ac6-d5cb0729a4f7",
+      "name": "ABC Cup Hot Gulai Chicken Flavour - 60 g",
+      "brand": "ABC",
+      "meta_price_bdt": 184,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/abc-cup-hot-gulai-chicken-flavour-60-g--279dd4c5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 60,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "29642bcd-77b4-4146-8e26-d5495b1bfe47",
+      "name": "Olympic Tip Biscuits 200g",
+      "brand": "Olympic",
+      "meta_price_bdt": 40,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-tip-biscuits-200g--29642bcd",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "2c6eeb8d-1d5b-40a3-8e7f-8a8d7ac0c32e",
+      "name": "Fresh Fortified Soybean Oil 2L (Bottle)",
+      "brand": "Fresh",
+      "meta_price_bdt": 365,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fresh-fortified-soybean-oil-2l-bottle--2c6eeb8d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "2ebc9b49-4938-45be-8ab1-4cc2955bf4ed",
+      "name": "Nazirshail (Rahman) Loose",
+      "brand": "Nazirshail",
+      "meta_price_bdt": 92,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nazirshail-rahman-loose--2ebc9b49",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "2fd8270d-63ea-4c6e-965c-3673f83b305e",
+      "name": "BelleAme Peanut Bite Cookies 240 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 70,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-peanut-bite-cookies-240-g--2fd8270d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 240,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "309437ca-2058-48e9-bce3-0da0ffb42e67",
+      "name": "Katari Atob 25 kg (Rahman)",
+      "brand": "Katari",
+      "meta_price_bdt": 2250,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-atob-25-kg-rahman--309437ca",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "314d040d-e3d2-452e-986d-162f04254c67",
+      "name": "Nescafé 3 in 1 Instant Coffee Sticks (24 Pack)",
+      "brand": "Nestle",
+      "meta_price_bdt": 380,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescaf-3-in-1-instant-coffee-sticks-24-pack--314d040d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 24,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "315a1ef1-49ef-470e-a0ff-818aa0400739",
+      "name": "Buldak Ramen 3x Spicy",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-3x-spicy--315a1ef1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "3448ed8a-9c0b-49ab-b249-f096fbc210c7",
+      "name": "AMA Classic Coffee 1 g",
+      "brand": "Ama",
+      "meta_price_bdt": 85,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ama-classic-coffee-1-g--3448ed8a",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "381b771f-c545-47e0-8eaa-51a4a1ec1642",
+      "name": "Teer Pure Mustard Oil 500ml",
+      "brand": "Teer",
+      "meta_price_bdt": 165,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/teer-pure-mustard-oil-500ml--381b771f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "38ee3e1a-1884-43a3-9c0a-3840756ab118",
+      "name": "Radhuni Shorisha Oil 500 ml",
+      "brand": "Radhuni",
+      "meta_price_bdt": 180,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-shorisha-oil-500-ml--38ee3e1a",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "3b7cc77f-546b-4810-b2e0-bad8fcf3701d",
+      "name": "Muffin Lata Vanilla 8 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/muffin-lata-vanilla-8-g--3b7cc77f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 8,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "3f503fdc-b918-4e29-b251-e74ccf74b822",
+      "name": "Radhuni Pure Mustard Oil 1L (Bottle)",
+      "brand": "Radhuni",
+      "meta_price_bdt": 340,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-pure-mustard-oil-1l-bottle--3f503fdc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "41c9ad69-3879-4991-95d4-8b45a7b8d655",
+      "name": "Fortune Basmati Rice 1 kg",
+      "brand": "Fortune",
+      "meta_price_bdt": 400,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-basmati-rice-1-kg--41c9ad69",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "439d9e4b-d7df-4705-87ab-ebb067f31065",
+      "name": "Paijam Atob 25 kg (Boiled)",
+      "brand": "Paijam",
+      "meta_price_bdt": 1750,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/paijam-atob-25-kg-boiled--439d9e4b",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "44fd8ae1-fdea-42c0-9278-4e6216a7a2eb",
+      "name": "Maggi Fun Pack 992g",
+      "brand": "Nestle",
+      "meta_price_bdt": 340,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/maggi-fun-pack-992g--44fd8ae1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 992,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "454c2304-e8b0-438f-9782-7fe677c2d490",
+      "name": "BelleAme Choco Little Cookies 240 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 110,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-choco-little-cookies-240-g--454c2304",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 240,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "471544b6-4946-461a-bdd1-8aa356439ca3",
+      "name": "Olympic Bourbon Chocolate Cream Biscuits 150g",
+      "brand": "Olympic",
+      "meta_price_bdt": 45,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-bourbon-chocolate-cream-biscuits-150g--471544b6",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 150,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "498e5a21-10c5-48c6-86de-b5019e232feb",
+      "name": "Ispahani Mirzapore Best Leaf Tea 400g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 210,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-mirzapore-best-leaf-tea-400g--498e5a21",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4ab1e4b8-5221-424f-9ab1-363751352caa",
+      "name": "PRAN Premium Cow Ghee 400g (Tin)",
+      "brand": "Pran",
+      "meta_price_bdt": 620,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pran-premium-cow-ghee-400g-tin--4ab1e4b8",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4ab28db1-405c-4c57-acbf-a6fd64129bd7",
+      "name": "Radhuni Shorisha Oil 80 ml",
+      "brand": "Radhuni",
+      "meta_price_bdt": 35,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-shorisha-oil-80-ml--4ab28db1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 80,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4ac85021-7c35-44cc-802a-2370cc0e40d5",
+      "name": "Tip - Family Pack",
+      "brand": "Tip",
+      "meta_price_bdt": 60,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/tip-family-pack--4ac85021",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4bbb76d4-f058-430f-9fd1-87db15d71b5c",
+      "name": "Buldak Ramen Original Cup",
+      "brand": "Samyang",
+      "meta_price_bdt": 150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-original-cup--4bbb76d4",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4c7a0b18-c2ba-42a7-87e3-8c233e37e2fa",
+      "name": "Slice Pound Cake Milk",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 5,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/slice-pound-cake-milk--4c7a0b18",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4c97c0da-1da9-48d0-a7eb-3193f905af70",
+      "name": "Nutty - Family Pack",
+      "brand": "Nutty",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nutty-family-pack--4c97c0da",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4d004a30-86bc-453b-842c-7632c472f250",
+      "name": "Ispahani Blenders Choice Premium Black Tea - 400 g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 310,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-blenders-choice-premium-black-tea-400-g--4d004a30",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4d20b020-9cd3-4e9d-bada-df2b1fd9e839",
+      "name": "BelleAme Chocolate Digestive 135 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-chocolate-digestive-135-g--4d20b020",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 135,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4d85ee2e-e7a5-4ac4-b609-b627819b5004",
+      "name": "Ispahani blenders choice premium green tea - 35 g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 110,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-blenders-choice-premium-green-tea-35-g--4d85ee2e",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 35,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4eae3dff-5f07-45d9-8c3a-0acd66850061",
+      "name": "AMA 3 in 1 Coffee Mix 14 g",
+      "brand": "Ama",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ama-3-in-1-coffee-mix-14-g--4eae3dff",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 14,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4fa3ff74-fd5e-435a-a5b4-bd4968018c0c",
+      "name": "Doodles Instant Noodles Masala 62 g (24 Pack)",
+      "brand": "Doodles",
+      "meta_price_bdt": 90,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-instant-noodles-masala-62-g-24-pack--4fa3ff74",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 62,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 24,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "4ff45571-d61a-4300-ba5e-5bfedd9d7b8a",
+      "name": "Twinings Green Tea Earl Grey 20 Bags - 40 g",
+      "brand": "Twinings",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/twinings-green-tea-earl-grey-20-bags-40-g--4ff45571",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 40,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 20,
+          "unit": "bags"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "514e8004-ee85-4b3b-9e85-d414042b0357",
+      "name": "Aarong Pure Ghee 400g (Tin)",
+      "brand": "Aarong",
+      "meta_price_bdt": 650,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/aarong-pure-ghee-400g-tin--514e8004",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "547578ef-ffb9-43ac-8543-252b10c646f0",
+      "name": "Fortune Mustard Oil 80 ml",
+      "brand": "Fortune",
+      "meta_price_bdt": 35,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-mustard-oil-80-ml--547578ef",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 80,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "54cc83f8-a758-4ca3-8361-2181c93cb2d3",
+      "name": "Fortune Mustard Oil 250 ml",
+      "brand": "Fortune",
+      "meta_price_bdt": 85,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-mustard-oil-250-ml--54cc83f8",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "554ec4f5-1120-44e5-837b-2aa5c323185b",
+      "name": "Samyang Hot Chicken Flavor Carbo Ramen Noodles Cup - 80 g",
+      "brand": "Samyang",
+      "meta_price_bdt": 260,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/samyang-hot-chicken-flavor-carbo-ramen-noodles-cup-80-g--554ec4f5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 80,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "55df48ba-5fe8-4f3b-83d9-1a2fc9a644ac",
+      "name": "Rupchanda Fortified Soybean Oil 2L (Bottle)",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 365,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-fortified-soybean-oil-2l-bottle--55df48ba",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "56469b66-641c-4992-b8e9-de3a7bcfd664",
+      "name": "Sylon Cha Pata 250 g",
+      "brand": "Seylon",
+      "meta_price_bdt": 125,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/sylon-cha-pata-250-g--56469b66",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "56f81d25-2e4a-4a29-8517-253fa72615b2",
+      "name": "Katari C 25 kg (Nobanno)",
+      "brand": "Katari",
+      "meta_price_bdt": 2175,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-c-25-kg-nobanno--56f81d25",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5818b6c3-1105-448a-8dd3-393c477105bb",
+      "name": "Olympic Digestive Biscuits 150g",
+      "brand": "Olympic",
+      "meta_price_bdt": 35,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-digestive-biscuits-150g--5818b6c3",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 150,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5969b067-3bde-43b6-98af-479d5afc089b",
+      "name": "Energy Plus - Standard Pack",
+      "brand": "Energy",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/energy-plus-standard-pack--5969b067",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5ace9899-ff61-4667-8755-912bb945dbdf",
+      "name": "Katari Atob Premium Loose",
+      "brand": "Katari",
+      "meta_price_bdt": 90,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-atob-premium-loose--5ace9899",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5b8304e5-37f4-4747-9b42-591d0cb76dd7",
+      "name": "Teer Fortified Soybean Oil 1L (Poly Pack)",
+      "brand": "Teer",
+      "meta_price_bdt": 185,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/teer-fortified-soybean-oil-1l-poly-pack--5b8304e5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5c3c16ce-c08a-41a1-bab0-a779ef1e09b1",
+      "name": "Twinings Green Tea & Ginger 20 Bags - 40 g",
+      "brand": "Twinings",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/twinings-green-tea-ginger-20-bags-40-g--5c3c16ce",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 40,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 20,
+          "unit": "bags"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5c5e0c78-4235-481b-b75b-8acc6607aa1f",
+      "name": "Jirashail 25 kg (Nobanno)",
+      "brand": "Jirashail",
+      "meta_price_bdt": 2150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/jirashail-25-kg-nobanno--5c5e0c78",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5d0e4b96-0c49-41ff-8f80-ce76a62dfe8f",
+      "name": "Nescafe Creamy Latte 18g Sachet",
+      "brand": "Nestle",
+      "meta_price_bdt": 20,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-creamy-latte-18g-sachet--5d0e4b96",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 18,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5d15bf02-ed02-4187-8b62-bca3f235f54f",
+      "name": "Basmati (Golden) Banglamoti Loose",
+      "brand": "Basmati",
+      "meta_price_bdt": 100,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/basmati-golden-banglamoti-loose--5d15bf02",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5d335dc5-d027-4815-a56f-817d10e021fa",
+      "name": "Rupchanda Fortified Soybean Oil 5L (Can)",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-fortified-soybean-oil-5l-can--5d335dc5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "5ef88c8a-eace-4b90-9cd3-eefee0a32e04",
+      "name": "Seylon Tea Bag Pyramid 2 g",
+      "brand": "Seylon",
+      "meta_price_bdt": 90,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/seylon-tea-bag-pyramid-2-g--5ef88c8a",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "622f5405-bb9c-464b-8f7d-56b8838586a0",
+      "name": "Doodles Instant Noodles Ramen 62 g (8 Pack)",
+      "brand": "Doodles",
+      "meta_price_bdt": 210,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-instant-noodles-ramen-62-g-8-pack--622f5405",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 62,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 8,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "6455a97f-47ba-42de-8016-baee037c0a6c",
+      "name": "PRAN Potata Spicy Biscuits 100g",
+      "brand": "Pran",
+      "meta_price_bdt": 30,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pran-potata-spicy-biscuits-100g--6455a97f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 100,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "65825560-b557-4851-9cab-d0ed62154c4f",
+      "name": "Katari Atob (Premium) Loose",
+      "brand": "Lucky Store",
+      "meta_price_bdt": 89,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-atob-premium-loose--65825560",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "6b0bab60-843c-4f9f-a0d9-21b3364617bf",
+      "name": "Kazi Toast 250 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 60,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/kazi-toast-250-g--6b0bab60",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "6dbf8f0e-99be-46a0-9f83-d0aa041a69cd",
+      "name": "Nescafe Classic 45g Jar",
+      "brand": "Nestle",
+      "meta_price_bdt": 275,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-classic-45g-jar--6dbf8f0e",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 45,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "6ee8d55d-6f46-4364-8286-f6b699fdf364",
+      "name": "Taaza 100 g",
+      "brand": "Taaza",
+      "meta_price_bdt": 60.8,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-100-g--6ee8d55d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 100,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "70872088-78e9-4dbe-af34-c3132e154475",
+      "name": "Samyang Extreme Hot Chicken Ramen Noodles Cup - 70 g",
+      "brand": "Samyang",
+      "meta_price_bdt": 190,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/samyang-extreme-hot-chicken-ramen-noodles-cup-70-g--70872088",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 70,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "72638e44-92fa-4a80-b40a-7496b3730717",
+      "name": "Orange Biscuit - Standard Pack",
+      "brand": "Olympic",
+      "meta_price_bdt": 5,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/orange-biscuit-standard-pack--72638e44",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7397f725-22d2-40dc-a78f-382740756793",
+      "name": "Katari Atob (Rahman) Loose",
+      "brand": "Katari",
+      "meta_price_bdt": 90,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-atob-rahman-loose--7397f725",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "792e9636-8afc-4f92-ac3d-88451abc7cd4",
+      "name": "PRAN Pure Mustard Oil 500ml",
+      "brand": "Pran",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pran-pure-mustard-oil-500ml--792e9636",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7a112cfb-b767-454e-abb4-bffc88b19825",
+      "name": "Dry Cake",
+      "brand": "Dry",
+      "meta_price_bdt": 130,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/dry-cake--7a112cfb",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7bb81e11-07c4-44df-94d0-954ea893ef30",
+      "name": "Radhuni Premium Ghee 100 g",
+      "brand": "Radhuni",
+      "meta_price_bdt": 230,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-premium-ghee-100-g--7bb81e11",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 100,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7bf025a7-3632-4b1a-9ec7-8082eb2c0fd7",
+      "name": "Maggi 2-Minute Masala Noodles (8 Pack Family)",
+      "brand": "Nestle",
+      "meta_price_bdt": 150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/maggi-2-minute-masala-noodles-8-pack-family--7bf025a7",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 8,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7c2a9afb-ad80-480e-83b6-fc6db7f902a1",
+      "name": "Lexus - Family Pack",
+      "brand": "Lexus",
+      "meta_price_bdt": 25,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/lexus-family-pack--7c2a9afb",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7c3def2c-2467-45d2-b9ee-39ceeed98a0e",
+      "name": "Nescafe Hazelnut Latte",
+      "brand": "Nestle",
+      "meta_price_bdt": 30,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-hazelnut-latte--7c3def2c",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7e426c31-6d81-4962-8eae-c824d99de087",
+      "name": "Maggi 496g (Masala Flavour)",
+      "brand": "Nestle",
+      "meta_price_bdt": 200,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/maggi-496g-masala-flavour--7e426c31",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 496,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7f83c14e-0e3f-4ffa-bac2-14723131c257",
+      "name": "Chona Boot",
+      "brand": "Chona",
+      "meta_price_bdt": 80,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/chona-boot--7f83c14e",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7fd83cfc-2eac-45d1-aa90-0002ca5a0222",
+      "name": "Buldak Ramen Quattro Cheese",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-quattro-cheese--7fd83cfc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "7fe8271b-e377-4b4f-8647-88217346956f",
+      "name": "Bashundhara Fortified Soybean Oil 5L",
+      "brand": "Bashundhara",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/bashundhara-fortified-soybean-oil-5l--7fe8271b",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8058c111-72cd-40d1-81b8-34a2e50114c4",
+      "name": "Ispahani Blenders Choice Premium Black Tea - 200 g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-blenders-choice-premium-black-tea-200-g--8058c111",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "811c65a2-af34-42f9-a2ac-622bbb4c4b74",
+      "name": "Radhuni Shorisha Oil 1 L",
+      "brand": "Radhuni",
+      "meta_price_bdt": 350,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-shorisha-oil-1-l--811c65a2",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8169739f-dd49-4588-928e-837a22faa388",
+      "name": "Buldak Ramen Original",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-original--8169739f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "82ed979d-89f9-4604-949b-3de931b99074",
+      "name": "Radhuni Vinegar 280 ml",
+      "brand": "Radhuni",
+      "meta_price_bdt": 45,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-vinegar-280-ml--82ed979d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 280,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "841b013d-e7bd-46a6-9e69-282f84aa2781",
+      "name": "Buldak Ramen Rose",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-rose--841b013d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8474edd5-3d26-47d4-a2e8-6a2797dc3852",
+      "name": "Nescafe Sunrise 3in1 10g",
+      "brand": "Nestle",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-sunrise-3in1-10g--8474edd5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 10,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "85348615-f765-4b5d-9369-ddabf0dfe842",
+      "name": "Fortune Rice Bran Oil 5 L",
+      "brand": "Fortune",
+      "meta_price_bdt": 1120,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-rice-bran-oil-5-l--85348615",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8872e5de-5a81-47dd-a588-13ee337bb1cb",
+      "name": "Bashundhara Fortified Soybean Oil 2L",
+      "brand": "Bashundhara",
+      "meta_price_bdt": 365,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/bashundhara-fortified-soybean-oil-2l--8872e5de",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8acb5ba5-b086-4ba4-9ebd-19c1997b1ea2",
+      "name": "Chocolate Plus - Classic Pack",
+      "brand": "Chocolate",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/chocolate-plus-classic-pack--8acb5ba5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "8c2cafbd-c5c3-4998-b631-af22941af7a9",
+      "name": "Nescafé Classic Instant Coffee 50g Jar",
+      "brand": "Nestle",
+      "meta_price_bdt": 340,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescaf-classic-instant-coffee-50g-jar--8c2cafbd",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 50,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "90bed56b-c8c9-48e6-b56c-73ce67fc740a",
+      "name": "Jirashail (Premium) Loose",
+      "brand": "Jirashail",
+      "meta_price_bdt": 86,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/jirashail-premium-loose--90bed56b",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "90f81ddc-ef1d-4c1a-84f8-c67b6b88760c",
+      "name": "Taaza 50 g",
+      "brand": "Taaza",
+      "meta_price_bdt": 29.7,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-50-g--90f81ddc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 50,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "91f8f8aa-5264-4fe3-94cd-4dddab70af7d",
+      "name": "Miniket Atob 25 kg (Shonko)",
+      "brand": "Miniket",
+      "meta_price_bdt": 1800,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/miniket-atob-25-kg-shonko--91f8f8aa",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "975a0abc-6bc0-4635-b22b-1e4d61378d28",
+      "name": "Seylon Green Tea 1.5 g",
+      "brand": "Seylon",
+      "meta_price_bdt": 110,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/seylon-green-tea-15-g--975a0abc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1.5,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "996c03c9-e79f-4720-bde7-7ccb5364dfa5",
+      "name": "Doodles Instant Noodles Ramen 62 g (4 Pack)",
+      "brand": "Doodles",
+      "meta_price_bdt": 105,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-instant-noodles-ramen-62-g-4-pack--996c03c9",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 62,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 4,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "9a72e58f-7039-4b10-a111-b3c1c63293f1",
+      "name": "Taaza 500 g 3 star",
+      "brand": "Taaza",
+      "meta_price_bdt": 250,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/taaza-500-g-3-star--9a72e58f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "a09e3b8d-6237-4830-afae-6be3cf1ea8a9",
+      "name": "Lentils - Masur Daal",
+      "brand": "Lentils",
+      "meta_price_bdt": 100,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/lentils-masur-daal--a09e3b8d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "a1bbc055-f184-43fb-b27f-ae68cea81e3b",
+      "name": "Olympic Energy Plus Biscuits Family Pack 300g",
+      "brand": "Olympic",
+      "meta_price_bdt": 55,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-energy-plus-biscuits-family-pack-300g--a1bbc055",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 300,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "a33d73bc-6d88-4944-9945-8a28d92e58f9",
+      "name": "Nescafe 3in1 14g sachet",
+      "brand": "Nestle",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-3in1-14g-sachet--a33d73bc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 14,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "a346ed8d-6e6b-40e1-b759-52100602c0cb",
+      "name": "Slice Pound Cake Vanilla",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 30,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/slice-pound-cake-vanilla--a346ed8d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "a8a44253-31cd-4a0e-8e55-42d17e3c3aef",
+      "name": "Tip -Standard Pack",
+      "brand": "Tip",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/tip-standard-pack--a8a44253",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "aaa5278f-2c18-42da-b61f-4815fcb85dc4",
+      "name": "Rupchanda Pure Mustard Oil 250ml",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 85,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-pure-mustard-oil-250ml--aaa5278f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "ae09a3ef-5f2c-4f14-8a9c-a66c63e028b4",
+      "name": "Nescafe Classic 90g Jar",
+      "brand": "Nestle",
+      "meta_price_bdt": 475,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-classic-90g-jar--ae09a3ef",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 90,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "aeea4719-b9e1-4ce0-8b50-739dbd874f1c",
+      "name": "Ispahani Mirzapore Tea Bags (50 Pack)",
+      "brand": "Ispahani",
+      "meta_price_bdt": 130,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-mirzapore-tea-bags-50-pack--aeea4719",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [
+        {
+          "quantity": 50,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": false,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b1a686a7-9f23-47bf-8d78-925af6888271",
+      "name": "ACI Chinigura 50 kg Loose",
+      "brand": "ACI",
+      "meta_price_bdt": 8000,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/aci-chinigura-50-kg-loose--b1a686a7",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 50000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b209f469-8869-4a36-8e73-cf2fdeb833d3",
+      "name": "Shukran Rice Atosh 50 kg",
+      "brand": "Shukran",
+      "meta_price_bdt": 2800,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/shukran-rice-atosh-50-kg--b209f469",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 50000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b39aa5cc-db40-4364-a786-88a34370a37d",
+      "name": "Rupchanda Soyabean Oil 1 L",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 195,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-soyabean-oil-1-l--b39aa5cc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b3e78fa4-c3da-499d-9969-831776891539",
+      "name": "Rupchanda Soyabean Oil 5 L",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 995,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-soyabean-oil-5-l--b3e78fa4",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b402008b-5531-4b99-b0a2-3bebb4684e17",
+      "name": "Nescafe Classic 0.9g Sachet",
+      "brand": "Nestle",
+      "meta_price_bdt": 5,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-classic-09g-sachet--b402008b",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 0.9,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b54e03c0-3a1b-4818-a642-8520f907fca0",
+      "name": "Jirashail 25 kg (Bashir)",
+      "brand": "Jirashail",
+      "meta_price_bdt": 2050,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/jirashail-25-kg-bashir--b54e03c0",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b6ced47f-d3cb-415a-bfdd-3c5ebed17aee",
+      "name": "Nazirshail 25 kg (Rahman)",
+      "brand": "Nazirshail",
+      "meta_price_bdt": 2225,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nazirshail-25-kg-rahman--b6ced47f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b79a6606-3eb8-425e-bf53-57c5788dc7ea",
+      "name": "Buldak Ramen Noodles 2x Spicy Cup",
+      "brand": "Samyang",
+      "meta_price_bdt": 150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-noodles-2x-spicy-cup--b79a6606",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b8a7c6c6-c515-4e9e-99b9-d4d38e1a6354",
+      "name": "Fortune Mustard Oil 5 L",
+      "brand": "Fortune",
+      "meta_price_bdt": 1200,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fortune-mustard-oil-5-l--b8a7c6c6",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "b8d96d50-4387-4d6c-a005-6ee07bab91d3",
+      "name": "Nescafe Classic 200g Pouch",
+      "brand": "Nestle",
+      "meta_price_bdt": 950,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-classic-200g-pouch--b8d96d50",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "bb76b9b7-398b-4dbf-8cc5-30741bdf9bd2",
+      "name": "Rupchanda Fortified Soybean Oil 1L (Poly Pack)",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 185,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-fortified-soybean-oil-1l-poly-pack--bb76b9b7",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "bb97d82c-e935-4e89-9ca4-f86a7698e9cb",
+      "name": "PRAN Crispy Toast Biscuits 300g",
+      "brand": "Pran",
+      "meta_price_bdt": 60,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pran-crispy-toast-biscuits-300g--bb97d82c",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 300,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "bd8a5f9d-2e44-4190-a9e2-ce07184c9c7e",
+      "name": "Muffin Lata Chocolate 8 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/muffin-lata-chocolate-8-g--bd8a5f9d",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 8,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "be03c9b4-982d-4dfd-86f6-b78f61227511",
+      "name": "Nazirshail 25 kg (Rupchanda)",
+      "brand": "Nazirshail",
+      "meta_price_bdt": 2200,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nazirshail-25-kg-rupchanda--be03c9b4",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "be803387-baa5-4ca7-8c17-8cde2e4462ee",
+      "name": "Nescafe Classic 180g Jar",
+      "brand": "Nestle",
+      "meta_price_bdt": 970,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-classic-180g-jar--be803387",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 180,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c2d093cf-9e97-429d-ac63-37cddf8f7235",
+      "name": "Teer Fortified Soybean Oil 2L (Bottle)",
+      "brand": "Teer",
+      "meta_price_bdt": 365,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/teer-fortified-soybean-oil-2l-bottle--c2d093cf",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c40f85d0-6cb0-42f7-b80a-6253a91bfffc",
+      "name": "Slice Pound Cake Chocolate",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 35,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/slice-pound-cake-chocolate--c40f85d0",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c8a02040-9bb6-4ff6-ae76-2dda63a99766",
+      "name": "Jirashail (Nobanno) Loose",
+      "brand": "Jirashail",
+      "meta_price_bdt": 86,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/jirashail-nobanno-loose--c8a02040",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c8c16672-7bd8-40ef-90a3-b49f8685430a",
+      "name": "Muffin Lata Fruit 8 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/muffin-lata-fruit-8-g--c8c16672",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 8,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c9545957-7376-44e6-8999-c6ee8d09d33c",
+      "name": "Hello Cookies - Classic Pack",
+      "brand": "Hello",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/hello-cookies-classic-pack--c9545957",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "c9a869d2-c822-4edc-a99c-1c42f6bebddd",
+      "name": "Radhuni Shorisha Oil 250 ml",
+      "brand": "Radhuni",
+      "meta_price_bdt": 90,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-shorisha-oil-250-ml--c9a869d2",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "ce560b3f-07bc-4b18-9469-915f01cc72c7",
+      "name": "Doodles Instant Noodles Masala 62 g (12 Pack)",
+      "brand": "Doodles",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/doodles-instant-noodles-masala-62-g-12-pack--ce560b3f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 62,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [
+        {
+          "quantity": 12,
+          "unit": "pack"
+        }
+      ],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "cf478d4c-a522-4108-8fa2-4ce8a26a8cef",
+      "name": "Rupchanda Chinigura Rice 1 kg",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 175,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-chinigura-rice-1-kg--cf478d4c",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d0bdf0ae-dd95-4ea7-9a40-fdc8f3f7ce00",
+      "name": "Olympic Energy Plus Biscuits 150g",
+      "brand": "Olympic",
+      "meta_price_bdt": 30,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-energy-plus-biscuits-150g--d0bdf0ae",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 150,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d1504e43-2284-401a-9e15-ecd3efa7acde",
+      "name": "Honey Tea Bag 25 g",
+      "brand": "Taaza",
+      "meta_price_bdt": 165,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/honey-tea-bag-25-g--d1504e43",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 25,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d1ad10ed-580d-4059-94fe-7e6c366c4657",
+      "name": "Teer Fortified Soybean Oil 5L (Can)",
+      "brand": "Teer",
+      "meta_price_bdt": 900,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/teer-fortified-soybean-oil-5l-can--d1ad10ed",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 5000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d1cbaa39-40eb-4025-a262-8bf75d9a197c",
+      "name": "Muffin Bread Vanilla 324 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 180,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/muffin-bread-vanilla-324-g--d1cbaa39",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 324,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d2edf551-65b6-4c3b-a034-7ae486761d04",
+      "name": "BelleAme Chocolate Fondue Cookie 176 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 150,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-chocolate-fondue-cookie-176-g--d2edf551",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 176,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d98efa79-003e-490b-92de-664b42e4b2a7",
+      "name": "Hello Cookies - Family Pack",
+      "brand": "Hello",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/hello-cookies-family-pack--d98efa79",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d9dd0baa-0476-4d88-b64f-1a0a9ac35cc3",
+      "name": "Dry Cake (300 g)",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 145,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/dry-cake-300-g--d9dd0baa",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 300,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "d9d59ec1-4181-49ca-9012-e1c73a05e2ba",
+      "name": "Kings Pure Sunflower Oil 2 L",
+      "brand": "Kings",
+      "meta_price_bdt": 800,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/kings-pure-sunflower-oil-2-l--d9d59ec1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "da4a3060-68ab-4c84-a723-1c8326f161e7",
+      "name": "Energy Plus - Family Pack",
+      "brand": "Energy",
+      "meta_price_bdt": 50,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/energy-plus-family-pack--da4a3060",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "dcbaf446-242d-4717-902e-52e2021d4cf9",
+      "name": "Rupchanda Soyabean Oil 2 L",
+      "brand": "Rupchanda",
+      "meta_price_bdt": 390,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/rupchanda-soyabean-oil-2-l--dcbaf446",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 2000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "de52edb0-861b-435d-9b7f-ea898b25a112",
+      "name": "BelleAme Butter Toast 200 g",
+      "brand": "BelleAme",
+      "meta_price_bdt": 95,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/belleame-butter-toast-200-g--de52edb0",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "df37b129-3f76-48c7-aa2f-fed71547bcf8",
+      "name": "Radhuni Sunflower Oil 1 L",
+      "brand": "Radhuni",
+      "meta_price_bdt": 480,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-sunflower-oil-1-l--df37b129",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "dff50278-b007-4e5e-a8fa-11dd93a23675",
+      "name": "Bourbon Cookies -Classic Pack",
+      "brand": "Bourbon",
+      "meta_price_bdt": 130,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/bourbon-cookies-classic-pack--dff50278",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e02fc3c1-fb88-4c8c-8368-9e2ee3b17971",
+      "name": "Digestive -Standard Pack",
+      "brand": "Digestive",
+      "meta_price_bdt": 30,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/digestive-standard-pack--e02fc3c1",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e04a2efd-9a26-411a-9984-eaf227f72cdc",
+      "name": "Buldak Ramen Cream Carbonara",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-cream-carbonara--e04a2efd",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e4aa82b7-db5f-4f75-85e2-f7080dd7ad8d",
+      "name": "Coffee Bite Jar",
+      "brand": "Coffee",
+      "meta_price_bdt": 300,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/coffee-bite-jar--e4aa82b7",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e621afcc-b0b5-4859-8ef0-08f333e83dc0",
+      "name": "Radhuni Premium Ghee 200 g",
+      "brand": "Radhuni",
+      "meta_price_bdt": 425,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/radhuni-premium-ghee-200-g--e621afcc",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e620e5b6-fd1d-42f4-8b4b-9cc9858b3604",
+      "name": "Seylon Golden Leaf Tea 400g",
+      "brand": "Abul Khair",
+      "meta_price_bdt": 205,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/seylon-golden-leaf-tea-400g--e620e5b6",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 400,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "e65bf2e3-6348-4534-a19d-45be4a4d3775",
+      "name": "Nutty - Standard Pack",
+      "brand": "Nutty",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nutty-standard-pack--e65bf2e3",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "eb05550e-a45d-4ef9-b10c-a71207c2a700",
+      "name": "Fresh Fortified Soybean Oil 1L (Poly Pack)",
+      "brand": "Fresh",
+      "meta_price_bdt": 185,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/fresh-fortified-soybean-oil-1l-poly-pack--eb05550e",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 1000,
+          "unit": "ml"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "edc4a1c5-34cb-4581-9daa-75b92a3df8cf",
+      "name": "Olympic Milk Marie Biscuits 250g",
+      "brand": "Olympic",
+      "meta_price_bdt": 45,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/olympic-milk-marie-biscuits-250g--edc4a1c5",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 250,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "eea71e43-cae8-4b7b-b985-8d9ddf1b38c3",
+      "name": "Seylon Golden Leaf Tea 200g",
+      "brand": "Abul Khair",
+      "meta_price_bdt": 105,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/seylon-golden-leaf-tea-200g--eea71e43",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "ef60ae50-4f7b-4f75-bc93-cb14c952530c",
+      "name": "Seylon Cha Pata 500 g",
+      "brand": "Seylon",
+      "meta_price_bdt": 240,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/seylon-cha-pata-500-g--ef60ae50",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 500,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "f49fa080-07f8-4ec3-926a-6f64e315802f",
+      "name": "Buldak Ramen 2x Spicy",
+      "brand": "Samyang",
+      "meta_price_bdt": 160,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/buldak-ramen-2x-spicy--f49fa080",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "f58ee326-cc66-468d-99f8-08ad3d051dea",
+      "name": "Orange Biscuit - Family Pack",
+      "brand": "Olympic",
+      "meta_price_bdt": 40,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/orange-biscuit-family-pack--f58ee326",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "f6e32b28-f665-4e35-bff4-0fbe7df5b59f",
+      "name": "Nescafe Sunrise 3in1 10g Sachet (FREE)",
+      "brand": "Nestle",
+      "meta_price_bdt": 15,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/nescafe-sunrise-3in1-10g-sachet-free--f6e32b28",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 10,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "f95d62d0-5d1f-4cd0-9785-f9e89ba94db5",
+      "name": "Katari C (Nobanno) Loose",
+      "brand": "Katari",
+      "meta_price_bdt": 87,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/katari-c-nobanno-loose--f95d62d0",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "f96d5c79-9777-4997-959e-5edcf839e948",
+      "name": "Ispahani Mirzapore Best Leaf Tea 200g",
+      "brand": "Ispahani",
+      "meta_price_bdt": 110,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/ispahani-mirzapore-best-leaf-tea-200g--f96d5c79",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 200,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "fa88550c-9647-458b-93ce-dba39daf0182",
+      "name": "Muffin Bread Chocolate 324 g",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 180,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/muffin-bread-chocolate-324-g--fa88550c",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [
+        {
+          "quantity": 324,
+          "unit": "g"
+        }
+      ],
+      "pack_counts": [],
+      "pack_ambiguous": false,
+      "pack_quality": "normalized",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "fae4e458-7835-46da-b270-fa7c6f8cdd95",
+      "name": "Pound Cake Vanilla",
+      "brand": "Kaazi Farms",
+      "meta_price_bdt": 120,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/pound-cake-vanilla--fae4e458",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    },
+    {
+      "retailer_id": "faf35d9f-ce15-4b31-84c8-5c04c4ba4d7d",
+      "name": "Milk Plus - Classic Pack",
+      "brand": "Milk",
+      "meta_price_bdt": 10,
+      "price_kind": "regular",
+      "source_product_url": "https://www.luckystore1947.com/product/milk-plus-classic-pack--faf35d9f",
+      "source": "Meta Commerce Catalog snapshot",
+      "observed_date": "2026-11-17",
+      "pack_sizes": [],
+      "pack_counts": [],
+      "pack_ambiguous": true,
+      "pack_quality": "manual-review",
+      "source_structured_size_present": false,
+      "barcode": null
+    }
+  ]
+}
