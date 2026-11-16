@@ -101,3 +101,16 @@ Deno.test('parses sheet-count packaging from a tissue-box name', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('accepts the verified Fortune mustard-oil source', () => {
+  const result = resolveRegistryEvidence({
+    id: '1465d07a-3dd8-4d56-9d0e-0f0e10ab00a0',
+    name: 'Fortune Mustard Oil 1 L',
+    description: 'Fortune mustard oil, 1 L bottle.',
+    brand: 'Fortune',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

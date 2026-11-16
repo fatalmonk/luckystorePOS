@@ -101,6 +101,16 @@ export const registryOverrides: Record<string, {
     manufacturerUrl: 'https://fortunefoods.com/oil/fortune-rice-bran-oil',
     manufacturerTitle: 'Fortune Rice Bran Oil product page',
   },
+  '1465d07a': {
+    netQuantity: '1 L',
+    manufacturerUrl: 'https://www.fortunefoods.com/oil/fortune-kachi-ghani-mustard-oil/',
+    manufacturerTitle: 'Fortune Kachi Ghani Mustard Oil product page',
+  },
+  '091cb44a': {
+    netQuantity: '127 g',
+    manufacturerUrl: 'https://www.kelloggs.com/en-in/revised-product-price-list.html',
+    manufacturerTitle: "Kellogg's Chocos product price list",
+  },
   '1ba3a780': {
     netQuantity: '120 ml',
     manufacturerUrl: 'https://polarbd.com/en/product/cone-carnival-hazelnut/',
