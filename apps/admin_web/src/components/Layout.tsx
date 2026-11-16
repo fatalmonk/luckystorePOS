@@ -61,7 +61,6 @@ export function Layout() {
     const mainEl = mainContentRef.current || document.querySelector('.main-content');
     const keepTranslationToolbarVisible = isMobile && location.pathname.includes('/translations');
     if (keepTranslationToolbarVisible) {
-      setHeaderVisible(true);
       return;
     }
     const SCROLL_THRESHOLD = 8;
@@ -158,7 +157,7 @@ export function Layout() {
         onToggleCollapse={() => setSidebarCollapsed(c => !c)}
         collapsed={sidebarCollapsed}
         isMobile={isMobile}
-        hidden={!headerVisible}
+        hidden={!(headerVisible || (isMobile && location.pathname.includes('/translations')))}
       />
       <main ref={mainContentRef} className={`main-content ${isPosPage ? 'pos-main-content' : ''}`}>
         <Outlet />
