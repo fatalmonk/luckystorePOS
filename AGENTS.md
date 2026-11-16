@@ -22,35 +22,12 @@
 5. **Report:** Summarize work and command status.
 
 ## Project Context Maintenance
-- Treat root `context.md` as durable, shared project context, not as a per-task journal.
-- Do not update `context.md` after every task, during read-only reviews, or for temporary blockers and worktree/branch status.
-- Keep task progress and worktree-specific notes in local Codex memory or a git-ignored per-worktree note. Do not add those notes to tracked `context.md`.
-- Update `context.md` only for durable decisions, verified architecture or product facts, and unresolved blockers that matter across worktrees. Review other worktree changes before editing it.
-- Commit `context.md` only when the update is deliberate and useful to other contributors; do not include it automatically in unrelated PRs.
-- Keep `context.md` under 50 lines; summarize older history as needed. If it grows beyond 100 lines, replace it with a compact summary. On a major project pivot, archive the prior context as `context-[date].md` before resetting it.
-- Use this structure:
-  ```markdown
-  # [Project Name]
-  ## Stack
-  - [tech]: [version/purpose]
-
-  ## Current Task
-  [One-line active goal]
-
-  ## Decisions
-  - [ID]: [what was decided and why]
-
-  ## Blockers
-  - [ID]: [issue + attempted fix + status]
-
-  ## Resolved
-  - [ID]: [resolved issue + solution]
-
-  ## Next
-  [Immediate next step]
-  ```
-- Maintain one active task when this file is updated. Append durable decisions rather than deleting them unless superseded; move resolved long-lived blockers under `## Resolved`.
-- When you update it, report: `Context updated: [brief]` and `File: context.md ([line count] lines)`.
+- **Canonical project memory:** `~/Desktop/Projects/Project-Memory/projects/luckystore/context.md` is the cross-agent project handoff. Its task journal is `~/Desktop/Projects/Project-Memory/projects/luckystore/journal/YYYY-MM.md`. Read `~/Desktop/Projects/Project-Memory/AGENTS.md` and `docs/PROJECT-CONTEXT-AND-JOURNAL-POLICY.md` in that repository before writing memory. Root `context.md` in this repository is a compatibility pointer, **not a competing copy** of project state.
+- **After substantive completed tasks:** Write one dated entry to the appropriate monthly Project-Memory journal recording scope, real outcome, changed files/commit/PR, tests actually run, limitations, and next step. Explicitly label partial, blocked, and unverified outcomes; never claim that a journal was written unless its write was verified.
+- **Durable updates:** Edit Project-Memory's project `context.md` only when verified architecture, lasting decisions, objectives, or cross-task blockers change. Keep it concise; link rather than duplicate long task evidence. This does **not** authorize changes outside the scope of the current task.
+- **Fallback when local memory is inaccessible:** Some GitHub-hosted CI and cloud agents cannot read your Mac's local path. Continue using this `AGENTS.md`, `CONTEXT-MAP.md`, domain `CONTEXT.md` files and live repository/provider evidence. Report the blocked Project-Memory update in the handoff; do not fabricate access, write an alternative journal here, or request unrestricted filesystem access. The user or a locally authorized agent can append that entry later.
+- **Repository-owned documentation:** Keep domain `CONTEXT.md` files with their source components, and change them as appropriate for code maintenance. Do not treat a dated memory note as live branch, production, quota or deployment truth.
+- **Context history:** The former 50-line root context is retained in Git history, most recently at commit `117ea176` (before this change). It is archival, not a source to automatically restore when state is stale.
 
 ## Command Preferences
 - Use `rtk` prefixed commands for optimized output (e.g., `rtk grep`, `rtk read`).
