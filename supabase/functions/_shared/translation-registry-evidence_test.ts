@@ -227,3 +227,14 @@ Deno.test('uses the official MGI Super Fresh 5 L oil listing for the catalog can
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+Deno.test('uses the official Dettol Liquid 500 ml product page', () => {
+  const result = resolveRegistryEvidence({
+    id: '2c4d2729-6237-4c73-ac59-e47a96508fd3',
+    name: 'Dettol Antiseptic Liquid 500ml',
+    description: 'Dettol antiseptic liquid, 500ml bottle.',
+    brand: 'Dettol',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

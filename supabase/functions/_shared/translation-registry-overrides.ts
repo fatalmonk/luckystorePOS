@@ -227,4 +227,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.mgi.org/businessverticals/edible-oil',
     manufacturerTitle: 'MGI Super Fresh Fortified Soyabean Oil product listing',
   },
+  '2c4d2729': {
+    exactName: 'Dettol Antiseptic Liquid 500ml',
+    brand: 'Dettol',
+    netQuantity: '500 ml',
+    manufacturerUrl: 'https://www.dettol.co.uk/personal-hygiene/antiseptics/dettol-liquid/',
+    manufacturerTitle: 'Dettol Liquid 500ml official product page',
+  },
 };
