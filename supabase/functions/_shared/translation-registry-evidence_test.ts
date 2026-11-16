@@ -48,6 +48,7 @@ Deno.test('keeps LUX blocked until a product-specific manufacturer page is verif
   assertEquals(result.links.length, 0);
   assertEquals(result.missing[0], 'No product-specific manufacturer or packaging source link is available. Keep this item in draft.');
   assertEquals(result.issue, null);
+  assertEquals(result.issueCode, 'MISSING_MANUFACTURER_URL');
 });
 
 Deno.test('accepts shortened catalog names when the verified source and package size match', () => {
@@ -259,6 +260,51 @@ Deno.test('uses the official Olympic product API for Chokito Mobile 6 g', () => 
   assertEquals(result.matched, true);
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
+});
+Deno.test('uses the official Kikkoman product page for the 1 L soy sauce', () => {
+  const result = resolveRegistryEvidence({
+    id: '28984df9-0000-4b00-9000-000000000000',
+    name: 'Kikkoman All Purpose Seasoning Soy Sauce - 1 L',
+    description: 'Kikkoman All Purpose Seasoning Soy Sauce, 1L bottle.',
+    brand: 'Kikkoman',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+Deno.test('uses the official Nestlé Pakistan catalogue for NAN OPTIPRO 1 300 g', () => {
+  const result = resolveRegistryEvidence({
+    id: '2da7133d-0000-4b00-9000-000000000000',
+    name: 'Nestlé Nan Opti Pro 1 300 g',
+    description: 'Nestle NAN OPTIPRO 1 starter formula, 300g pack.',
+    brand: 'Nan',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+Deno.test('grounds Aril identity without treating missing manufacturer evidence as publishable', () => {
+  const result = resolveRegistryEvidence({
+    id: '01cc68cc-0000-4b00-9000-000000000000',
+    name: 'Aril Chewing Gum',
+    description: 'One piece of Aril Chewing Gum.',
+    brand: 'Aril',
+  });
+  assertEquals(result.identityMatched, true);
+  assertEquals(result.matched, false);
+  assertEquals(result.issue?.includes('exact package/manufacturer evidence'), true);
+});
+Deno.test('grounds Sprite identity while blocking an unspecified package size', () => {
+  const result = resolveRegistryEvidence({
+    id: '22d81b81-0000-4b00-9000-000000000000',
+    name: 'Sprite',
+    description: null,
+    brand: null,
+  });
+  assertEquals(result.identityMatched, true);
+  assertEquals(result.matched, false);
+  assertEquals(result.links.length, 1);
+  assertEquals(result.issueCode, 'IDENTITY_ONLY');
 });
 Deno.test('accepts the catalog Holud Gura alias with the official Radhuni source', () => {
   const result = resolveRegistryEvidence({

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 const root = new URL('../../', import.meta.url);
 const migration = readFileSync(new URL('../../supabase/migrations/20261114205845_preserve_historical_bengali_approvals.sql', import.meta.url), 'utf8');
+const auditMigration = readFileSync(new URL('../../supabase/migrations/20261116100000_add_bengali_translation_audit_trail.sql', import.meta.url), 'utf8');
 const bridge = readFileSync(new URL('../../system-docs/runbooks/bengali-legacy-prehardening-bridge.sql', import.meta.url), 'utf8');
 const extractManifest = source => {
   const marker = 'INSERT INTO legacy_bengali_manifest(translation_id,item_id,tenant_id,fingerprint) VALUES';
@@ -86,4 +87,16 @@ test('forward migration shares the public-store rule and sorts Bengali pages by 
     'row number and page selection use the same Bengali sort key');
   assert.equal((v2.match(/translation_private\.is_publication_eligible\(/g) || []).length, 2);
   assert.equal((v2.match(/translation_private\.is_legacy_item_publication_eligible\(/g) || []).length, 2);
+});
+
+test('translation workflow records immutable per-record audit events without granting direct writes', () => {
+  assert.match(auditMigration, /CREATE TABLE IF NOT EXISTS public\.translation_review_audit/);
+  assert.match(auditMigration, /CREATE POLICY translation_review_audit_staff_select/);
+  assert.match(auditMigration, /record_translation_audit/);
+  assert.match(auditMigration, /prevent_translation_audit_mutation/);
+  assert.match(auditMigration, /AFTER INSERT OR UPDATE ON public\.item_translations/);
+  assert.match(auditMigration, /AFTER INSERT OR UPDATE ON public\.category_translations/);
+  assert.doesNotMatch(auditMigration, /GRANT INSERT[^;]*translation_review_audit/);
+  assert.doesNotMatch(auditMigration, /GRANT UPDATE[^;]*translation_review_audit/);
+  assert.doesNotMatch(auditMigration, /GRANT DELETE[^;]*translation_review_audit/);
 });

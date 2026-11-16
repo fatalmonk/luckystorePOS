@@ -7,9 +7,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { useNotify } from '@/components/NotificationContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui/card';
-import { canTransitionTranslation, getCanonicalPackageText } from './translationWorkflow';
+import { canTransitionTranslation, getCanonicalPackageText, validateCatalogTranslation } from './translationWorkflow';
 import type { RegistryEvidenceResult } from '../../../../../supabase/functions/_shared/translation-registry-evidence';
-import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow, TranslationEvidenceSnapshot } from './translationTypes';
+import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewAuditRow, TranslationReviewStatus, TranslationRow, TranslationEvidenceSnapshot } from './translationTypes';
 
 type CatalogRow = { id: string; tenant_id: string; name: string; description?: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
 type Editor = { row: TranslationRow; aliasesText: string; evidenceUrisText: string; evidenceSnapshot: TranslationEvidenceSnapshot | null; humanReviewConfirmed: boolean };
@@ -41,6 +41,8 @@ export function TranslationsPage() {
   const [editing, setEditing] = useState<Editor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [batchReviewConfirmed, setBatchReviewConfirmed] = useState(false);
   const pageSize = 25;
   const canManage = Boolean(user && user.tenantId === tenantId && (user.role === 'admin' || user.role === 'manager'));
 
@@ -85,6 +87,17 @@ export function TranslationsPage() {
       return data;
     },
   });
+  const auditQuery = useQuery<TranslationReviewAuditRow[]>({
+    queryKey: ['translation-review-audit', tenantId, editing?.row.id],
+    enabled: Boolean(canManage && editing && !editing.row.id.startsWith('new:')),
+    queryFn: async () => {
+      const { data, error } = await client.from('translation_review_audit')
+        .select('id, translation_kind, translation_id, entity_id, from_status, to_status, action, actor_id, content_fingerprint, evidence_source_uris, created_at')
+        .eq('tenant_id', tenantId).eq('translation_id', editing!.row.id).order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as TranslationReviewAuditRow[];
+    },
+  });
   const resolvedEvidence = evidenceQuery.data?.evidence ?? null;
   const parsed: TranslationRow | null = editing ? {
     ...editing.row, evidence_snapshot: editing.evidenceSnapshot,
@@ -111,6 +124,7 @@ export function TranslationsPage() {
       : Boolean(parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim()
         && evidenceQuery.isSuccess && resolvedEvidence?.matched)),
   );
+  const basicTranslationValid = Boolean(parsed && source && validateCatalogTranslation(source, parsed).valid);
   const canAct = (action: TranslationAction, status: TranslationReviewStatus) => {
     if (!parsed || !transitionContext || isStale) return false;
     const evidenceAllowed = action === 'save_draft' || editing?.row.kind !== 'item'
@@ -120,8 +134,9 @@ export function TranslationsPage() {
         : resolvedEvidence !== null
           && (source?.sku?.startsWith('CANVA-TEST-')
             ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed.description?.trim())
-            : Boolean(parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim()));
+            : Boolean(resolvedEvidence.matched && parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim()));
     return evidenceAllowed
+      && (action === 'save_draft' || basicTranslationValid)
       && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
       && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action });
   };
@@ -235,6 +250,40 @@ export function TranslationsPage() {
     },
     onError: (error: Error) => notify(error.message, 'error'),
   });
+  const batchReviewMutation = useMutation({
+    mutationFn: async () => {
+      if (!user || !tenantId || !batchReviewConfirmed) throw new Error('Confirm that you checked every selected translation before batch review.');
+      const selectedRows = (translationsQuery.data ?? []).filter((row) => selectedIds.includes(row.id) && row.kind === 'item' && row.review_status === 'draft');
+      if (!selectedRows.length) throw new Error('Select at least one saved draft to review.');
+      const results = await Promise.all(selectedRows.map(async (row) => {
+        const rowSource = sources.get(row.item_id);
+        if (!rowSource) return { row, ok: false, reason: 'Canonical catalog source is unavailable.' };
+        const { data, error } = await supabase.functions.invoke('generate-bengali-translation-drafts', { body: { kind: 'evidence', itemId: row.item_id } });
+        if (error || !data?.evidence) return { row, ok: false, reason: 'Current evidence lookup failed.' };
+        const evidence = data.evidence as RegistryEvidenceResult;
+        const snapshot = (data.snapshot ?? row.evidence_snapshot) as TranslationEvidenceSnapshot | null;
+        const candidate = { ...row, evidence_snapshot: snapshot } as TranslationRow;
+        if (!evidence.matched || !snapshot || !validateCatalogTranslation(rowSource, candidate).valid
+          || !canTransitionTranslation('draft', 'reviewed', { actor: user, translation: candidate, source: rowSource, action: 'mark_reviewed', humanReviewConfirmed: true })) {
+          return { row, ok: false, reason: evidence.issue ?? 'Translation or evidence checks failed.' };
+        }
+        const { data: saved, error: saveError } = await client.from('item_translations').update({ review_status: 'reviewed', reviewed_by: user.id })
+          .eq('id', row.id).eq('tenant_id', tenantId).eq('updated_at', row.updated_at).eq('review_status', 'draft').select('*').single();
+        return saveError || !saved ? { row, ok: false, reason: saveError?.message ?? 'Draft changed before review.' } : { row, ok: true, reason: null };
+      }));
+      return results;
+    },
+    onSuccess: async (results) => {
+      await queryClient.invalidateQueries({ queryKey: ['translations', 'item', tenantId] });
+      setSelectedIds([]);
+      setBatchReviewConfirmed(false);
+      const reviewed = results.filter((result) => result.ok).length;
+      const failed = results.length - reviewed;
+      const reasons = [...new Set(results.filter((result) => !result.ok).map((result) => result.reason))].slice(0, 2);
+      notify(`${reviewed} translation${reviewed === 1 ? '' : 's'} marked reviewed; ${failed} blocked.${reasons.length ? ` ${reasons.join('; ')}` : ''}`, failed ? 'error' : 'success');
+    },
+    onError: (error: Error) => notify(error.message, 'error'),
+  });
 
   if (!canManage) return <div className="p-6 text-text-muted">Translation review is restricted to administrators and managers.</div>;
 
@@ -298,20 +347,22 @@ export function TranslationsPage() {
   const effectivePage = Math.min(currentPage, totalPages);
   const pagedRows = filteredRows.slice((effectivePage - 1) * pageSize, effectivePage * pageSize);
   const canGenerateForFilter = statusFilter === 'all' || statusFilter === 'draft';
+  const selectedCount = selectedIds.length;
+  const visibleDraftIds = pagedRows.filter((row) => row.review_status === 'draft' && !row.id.startsWith('new:')).map((row) => row.id);
 
   return (
     <div className="p-4 md:p-6">
       <PageHeader title="Bengali translations" subtitle="Compare canonical identity and reliable evidence before reviewing localized copy." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setGenerationCursor(null); setCurrentPage(1); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending || batchReviewMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setGenerationCursor(null); setCurrentPage(1); setEditing(null); setSelectedIds([]); setBatchReviewConfirmed(false); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Translation status filter">
         {(['all', 'draft', 'reviewed', 'published'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setCurrentPage(1); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending || batchReviewMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setCurrentPage(1); setEditing(null); setSelectedIds([]); setBatchReviewConfirmed(false); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'all' ? 'All translations' : value === 'draft' ? 'Show drafts' : value}
           </button>
         ))}
@@ -323,6 +374,12 @@ export function TranslationsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" className={buttonClass} title={!canGenerateForFilter ? 'Switch to All translations or Show drafts before generating.' : undefined} disabled={mutation.isPending || generateMutation.isPending || translationsQuery.isLoading || catalogQuery.isLoading || Boolean(editing) || !canGenerateForFilter} onClick={() => generateMutation.mutate(kind)}>{generateMutation.isPending ? 'Generating AI drafts…' : 'Generate AI Drafts'}</button>
           <span className="text-sm text-text-muted" role="status">{filteredRows.length} matching translation{filteredRows.length === 1 ? '' : 's'}</span>
+          {selectedCount > 0 && <>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={batchReviewConfirmed} onChange={(event) => setBatchReviewConfirmed(event.target.checked)} className="h-4 w-4" />Confirm I checked each selected translation</label>
+            <button type="button" className={buttonClass} disabled={!batchReviewConfirmed || batchReviewMutation.isPending || Boolean(editing)} onClick={() => batchReviewMutation.mutate()}>{batchReviewMutation.isPending ? 'Reviewing selected…' : `Review selected (${selectedCount})`}</button>
+            <button type="button" className={buttonClass} disabled={batchReviewMutation.isPending || Boolean(editing)} onClick={() => { setSelectedIds([]); setBatchReviewConfirmed(false); }}>Clear selection</button>
+          </>}
+          {visibleDraftIds.length > 0 && selectedCount === 0 && <button type="button" className={buttonClass} disabled={batchReviewMutation.isPending || Boolean(editing)} onClick={() => setSelectedIds(visibleDraftIds)}>Select visible drafts</button>}
         </div>
       </div>
       <Card padding="none">
@@ -375,6 +432,16 @@ export function TranslationsPage() {
                       <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
                   </section> : null}
                   {editing.row.kind === 'category' && parsed?.evidence_snapshot?.sourceUris.map((uri, index) => <a key={`${uri}:${index}`} href={uri} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-text-link underline">{uri}</a>)}
+                  {!editing.row.id.startsWith('new:') && <section aria-label="Review audit trail" className="space-y-2 rounded-lg border border-border p-3 text-sm">
+                    <h4 className="font-semibold">Review audit trail</h4>
+                    {auditQuery.isLoading && <p role="status">Loading audit history...</p>}
+                    {auditQuery.isError && <p role="alert">Could not load audit history.</p>}
+                    {!auditQuery.isLoading && !auditQuery.isError && !auditQuery.data?.length && <p className="text-text-muted">No recorded workflow actions yet.</p>}
+                    {auditQuery.data?.map((event) => <div key={event.id} className="border-t border-border pt-2 first:border-0 first:pt-0">
+                      <p className="font-medium">{event.action.replace('_', ' ')} · {event.from_status ?? 'new'} → {event.to_status}</p>
+                      <p className="text-text-muted">{event.created_at} · Actor {event.actor_id ?? 'system'} · Evidence links {event.evidence_source_uris.length}</p>
+                    </div>)}
+                  </section>}
                 </div>
                 <div className="min-w-0 space-y-3">
                   <h3 className="font-semibold">Review Bengali translation</h3>
@@ -400,6 +467,7 @@ export function TranslationsPage() {
                 <p className="font-semibold">Review checklist</p>
                 <ul className="list-disc pl-5">
                   <li>Compare the Bengali copy with the canonical source shown above.</li>
+                  {source && parsed && !basicTranslationValid && <li role="alert">Basic catalog translation checks failed: {validateCatalogTranslation(source, parsed).issues.join(' ')}</li>}
                   {!parsed?.evidence_snapshot && <li>An openable source link must be available and its exact product claims checked before approval.</li>}
                   {row.review_status === 'reviewed' && editing.row.kind === 'item' && (evidenceQuery.isError || (evidenceQuery.isSuccess && !resolvedEvidence?.matched))
                     && <li role="alert">Publication is disabled until the current registry evidence resolves without a conflict.</li>}
@@ -421,6 +489,7 @@ export function TranslationsPage() {
             </fieldset>
           ) : (
             <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+              {row.review_status === 'draft' && !row.id.startsWith('new:') && <label className="flex shrink-0 items-center gap-2 text-sm"><input type="checkbox" aria-label={`Select ${row.name || 'translation'}`} checked={selectedIds.includes(row.id)} disabled={mutation.isPending || batchReviewMutation.isPending || Boolean(editing)} onChange={(event) => setSelectedIds((current) => event.target.checked ? [...new Set([...current, row.id])] : current.filter((id) => id !== row.id))} className="h-4 w-4" />Select</label>}
               <div className="min-w-0"><p className="break-words font-semibold">{row.name || sources.get((row.kind === 'item' ? row.item_id : row.category_id))?.name}</p><p className="text-sm text-text-muted">{row.description || 'No description — evidence may be missing'}</p>{row.review_status === 'published' && <p className="text-xs text-text-muted">Saved published record · {row.published_at ?? 'timestamp unavailable'} · Publisher {row.published_by ?? 'not recorded'}</p>}</div>
               <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : row.review_status === 'reviewed' ? 'Publish…' : 'Edit'}</button></div>
             </div>

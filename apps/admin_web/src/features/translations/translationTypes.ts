@@ -2,6 +2,20 @@ export type TranslationReviewStatus = 'draft' | 'reviewed' | 'published';
 export type TranslationKind = 'item' | 'category';
 export type TranslationAction = 'save_draft' | 'mark_reviewed' | 'publish';
 
+export interface TranslationReviewAuditRow {
+  id: string;
+  translation_kind: TranslationKind;
+  translation_id: string;
+  entity_id: string;
+  from_status: TranslationReviewStatus | null;
+  to_status: TranslationReviewStatus;
+  action: TranslationAction;
+  actor_id: string | null;
+  content_fingerprint: string;
+  evidence_source_uris: string[];
+  created_at: string;
+}
+
 export interface TranslationEvidenceSnapshot {
   entityId: string;
   sourceName: string;

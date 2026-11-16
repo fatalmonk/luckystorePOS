@@ -5,6 +5,8 @@ import {
   isLocalizedProductDetails,
   isTranslationEvidenceSnapshot,
   matchesTranslationEvidence,
+  validateEvidenceClaims,
+  validateCatalogTranslation,
 } from './translationWorkflow';
 import type {
   CanonicalTranslationSource,
@@ -116,13 +118,20 @@ describe('canTransitionTranslation', () => {
 
   it('applies the same evidence and actor gates to categories', () => {
     const categorySource = { ...source, name: 'Tea', description: null, sku: null, barcode: null, brand: null, packageText: null };
-    const category: TranslationRow = { ...translation, kind: 'category', item_id: undefined, category_id: source.id, evidence_snapshot: { ...evidence, sourceName: 'Tea', sourceDescription: null, sku: null, barcode: null, brand: null, packageText: null }, details: undefined, seo_title: 'চা', seo_description: 'চা কিনুন।' };
+    const category: TranslationRow = { ...translation, kind: 'category', item_id: undefined, category_id: source.id, name: 'চা', description: null, search_terms: ['চা', 'tea'], evidence_snapshot: { ...evidence, sourceName: 'Tea', sourceDescription: null, sku: null, barcode: null, brand: null, packageText: null }, details: undefined, seo_title: 'চা', seo_description: 'চা কিনুন।' };
     expect(canTransitionTranslation('draft', 'reviewed', context({ source: categorySource, translation: category }))).toBe(true);
     expect(canTransitionTranslation('draft', 'published', context({ action: 'publish', source: categorySource, translation: category }))).toBe(false);
   });
 });
 
 describe('translation evidence and details boundaries', () => {
+  it('separates catalog identity checks from evidence-backed claims', () => {
+    expect(validateCatalogTranslation(source, translation)).toEqual({ valid: true, issues: [] });
+    expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani Tea 250 g' }).valid).toBe(false);
+    expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani চা 500 g', description: 'চা পাতা, 2 kg।' }).valid).toBe(false);
+    expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani Tea 500 g' }).issues).toContain('Bengali product name is missing Bengali letters.');
+  });
+
   it.each([
     { ...evidence, snapshotSha256: 'a'.repeat(64) },
     { ...evidence, sourceUris: [] },
@@ -139,6 +148,8 @@ describe('translation evidence and details boundaries', () => {
     expect(matchesTranslationEvidence({ ...evidence, sourceDescription: 'Different product' }, source)).toBe(false);
     expect(matchesTranslationEvidence({ ...evidence, sourceName: 'Another tea' }, source)).toBe(false);
     expect(matchesTranslationEvidence({ ...evidence, barcode: '000' }, source)).toBe(false);
+    expect(validateEvidenceClaims(evidence, source)).toEqual({ valid: true, issues: [] });
+    expect(validateEvidenceClaims({ ...evidence, sourceName: 'Another tea' }, source).valid).toBe(false);
   });
 
   it('extracts Latin package quantities without changing catalog identity', () => {

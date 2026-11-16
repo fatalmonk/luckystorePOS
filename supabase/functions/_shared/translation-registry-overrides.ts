@@ -147,8 +147,10 @@ export const registrySupplements: Record<string, {
   exactName: string;
   brand: string;
   netQuantity: string;
-  manufacturerUrl: string;
+  manufacturerUrl: string | null;
   manufacturerTitle: string;
+  /** Identity is grounded, but exact package/manufacturer evidence is not. */
+  identityOnly?: boolean;
 }> = {
   '35fdd44a': {
     exactName: 'Radhuni Biryani Masala 40g',
@@ -247,5 +249,43 @@ export const registrySupplements: Record<string, {
     netQuantity: '6 g',
     manufacturerUrl: 'https://admin.olympicbd.com/api/v1/categories/candy-chocolates/products',
     manufacturerTitle: 'Olympic official product API — Chokito Mobile 6g asset',
+  },
+  '28984df9': {
+    exactName: 'Kikkoman All Purpose Seasoning Soy Sauce - 1 L',
+    brand: 'Kikkoman',
+    netQuantity: '1 L',
+    manufacturerUrl: 'https://www.kikkoman.co.uk/products/detail/kikkoman-naturally-brewed-soy-sauce',
+    manufacturerTitle: 'Kikkoman Naturally Brewed Soy Sauce product page — 1 L PET',
+  },
+  '2da7133d': {
+    exactName: 'Nestlé Nan Opti Pro 1 300 g',
+    brand: 'Nan',
+    netQuantity: '300 g',
+    manufacturerUrl: 'https://www.nestle.pk/sites/g/files/pydnoa361/files/2024-02/exports-cataloge-new.pdf',
+    manufacturerTitle: 'Nestlé Pakistan export catalogue — NAN OPTIPRO 1 300 g packaging',
+  },
+  '01cc68cc': {
+    exactName: 'Aril Chewing Gum',
+    brand: 'Aril',
+    netQuantity: 'unspecified',
+    manufacturerUrl: null,
+    manufacturerTitle: 'Lucky Store catalog record — Aril Chewing Gum identity only',
+    identityOnly: true,
+  },
+  '151687d1': {
+    exactName: 'Sunsilk Lusciously Thick & Long Shampoo 375ml',
+    brand: 'Sunsilk',
+    netQuantity: '375 ml',
+    manufacturerUrl: 'https://www.sunsilk.com/lk/p/lusciously-thick-%26-long-shampoo.html/04796005653117',
+    manufacturerTitle: 'Sunsilk official variant page — size not verified for the 375 ml catalog pack',
+    identityOnly: true,
+  },
+  '22d81b81': {
+    exactName: 'Sprite',
+    brand: 'Sprite',
+    netQuantity: 'unspecified',
+    manufacturerUrl: 'https://www.coca-cola.com/bd/en/brands/sprite/products-sprite-classic',
+    manufacturerTitle: 'Coca-Cola Bangladesh Sprite product page — catalog package size unspecified',
+    identityOnly: true,
   },
 };
