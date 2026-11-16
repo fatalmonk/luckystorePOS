@@ -40,13 +40,19 @@ export function packageStandalone({ rootDir = process.cwd(), outputZip = 'storef
   const appServer = path.join(standaloneDir, 'apps/customer_storefront/server.js');
   const appServerSource = fs.readFileSync(appServer, 'utf8');
   if (!appServerSource.includes('security-headers-install.cjs')) {
-    fs.writeFileSync(appServer, `require('./security-headers-install.cjs');\n${appServerSource}`);
+    fs.writeFileSync(appServer, `require('./security-headers-install.cjs');\nrequire('./origin-gate-install.cjs');\n${appServerSource}`);
+  }
+  if (!fs.readFileSync(appServer, 'utf8').includes("require('./origin-gate-install.cjs')")) {
+    const source = fs.readFileSync(appServer, 'utf8');
+    fs.writeFileSync(appServer, `require('./origin-gate-install.cjs');\n${source}`);
   }
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers-install.cjs'));
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/origin-gate-install.cjs'), path.join(standaloneDir, 'apps/customer_storefront/origin-gate-install.cjs'));
   fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./security-headers-install.cjs');\nrequire('./apps/customer_storefront/server.js');\n`);
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'security-headers.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'security-headers-install.cjs'));
+  fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/origin-gate-install.cjs'), path.join(standaloneDir, 'origin-gate-install.cjs'));
   const { renderHtaccess } = createRequire(import.meta.url)(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'));
   const staticHtaccess = renderHtaccess({ immutableDirectory: true });
   fs.writeFileSync(path.join(destStatic, '.htaccess'), staticHtaccess);
