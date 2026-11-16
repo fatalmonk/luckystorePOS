@@ -179,3 +179,16 @@ Deno.test('uses the official PRAN Jhal Chanachur 300 g supplement', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('uses the official TEER Mustard Oil 500 ml supplement', () => {
+  const result = resolveRegistryEvidence({
+    id: '381b771f-c545-47e0-8eaa-51a4a1ec1642',
+    name: 'Teer Pure Mustard Oil 500ml',
+    description: 'TEER mustard oil, 500 ml consumer pack.',
+    brand: 'Teer',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

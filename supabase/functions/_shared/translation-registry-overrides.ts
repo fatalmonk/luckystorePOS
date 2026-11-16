@@ -199,4 +199,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.pranfoods.net/brand/product/112',
     manufacturerTitle: 'PRAN Jhal Chanachur product page',
   },
+  '381b771f': {
+    exactName: 'Teer Pure Mustard Oil 500ml',
+    brand: 'Teer',
+    netQuantity: '500 ml',
+    manufacturerUrl: 'https://www.citygroup.com.bd/brand/1',
+    manufacturerTitle: 'City Group TEER Mustard Oil product card',
+  },
 };
