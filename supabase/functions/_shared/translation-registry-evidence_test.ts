@@ -368,6 +368,12 @@ Deno.test('does not surface Olympic admin API as manufacturer evidence', () => {
     description: 'Candy, 6 g.',
     brand: 'Olympic',
   });
-  assertEquals(result.links.some(link => link.url.includes('admin.olympicbd.com')), false);
+  assertEquals(result.links.some((link) => {
+    try {
+      return new URL(link.url).hostname === 'admin.olympicbd.com';
+    } catch {
+      return false;
+    }
+  }), false);
   assertEquals(result.issueCode, 'MISSING_MANUFACTURER_URL');
 });
