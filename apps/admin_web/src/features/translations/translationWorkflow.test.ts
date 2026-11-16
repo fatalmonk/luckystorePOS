@@ -130,6 +130,7 @@ describe('translation evidence and details boundaries', () => {
     expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani Tea 250 g' }).valid).toBe(false);
     expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani চা 500 g', description: 'চা পাতা, 2 kg।' }).valid).toBe(false);
     expect(validateCatalogTranslation(source, { ...translation, name: 'Ispahani Tea 500 g' }).issues).toContain('Bengali product name is missing Bengali letters.');
+    expect(validateCatalogTranslation(source, { ...translation, description: 'Tea leaves, 500 g.' }).issues).toContain('Bengali description is missing Bengali letters.');
   });
 
   it.each([

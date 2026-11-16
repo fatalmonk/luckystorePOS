@@ -3,13 +3,12 @@ SET LOCAL lock_timeout = '5s';
 
 CREATE TABLE IF NOT EXISTS public.translation_review_audit (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  -- Audit history is retained; tenant deletion must be an explicit retention-policy operation.
-  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE RESTRICT,
+  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   translation_kind text NOT NULL CHECK (translation_kind IN ('item', 'category')),
   translation_id uuid NOT NULL,
   entity_id uuid NOT NULL,
   from_status text CHECK (from_status IS NULL OR from_status IN ('draft', 'reviewed', 'published')),
-  to_status text NOT NULL CHECK (to_status IN ('draft', 'reviewed', 'published', 'deleted')),
+  to_status text CHECK (to_status IS NULL OR to_status IN ('draft', 'reviewed', 'published')),
   action text NOT NULL CHECK (action IN ('save_draft', 'mark_reviewed', 'publish', 'delete')),
   actor_id uuid REFERENCES public.users(id),
   content_fingerprint text NOT NULL,
@@ -17,12 +16,13 @@ CREATE TABLE IF NOT EXISTS public.translation_review_audit (
   created_at timestamptz NOT NULL DEFAULT clock_timestamp()
 );
 
+-- Audit rows are tenant-scoped and follow tenant lifecycle. Translation deletes
+-- are recorded before the row disappears; tenant deletion cascades cleanly.
+
 CREATE INDEX IF NOT EXISTS translation_review_audit_entity_idx
   ON public.translation_review_audit (tenant_id, translation_kind, entity_id, created_at DESC);
 
 ALTER TABLE public.translation_review_audit ENABLE ROW LEVEL SECURITY;
--- Block direct audit-row writes, including via bypassrls service credentials.
--- The SECURITY DEFINER translation triggers remain the only intended writers.
 REVOKE ALL ON public.translation_review_audit FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT ON public.translation_review_audit TO authenticated;
 
@@ -48,38 +48,53 @@ $$;
 
 DROP TRIGGER IF EXISTS prevent_translation_review_audit_update ON public.translation_review_audit;
 CREATE TRIGGER prevent_translation_review_audit_update
-  BEFORE UPDATE OR DELETE ON public.translation_review_audit
+  BEFORE UPDATE ON public.translation_review_audit
   FOR EACH ROW EXECUTE FUNCTION translation_private.prevent_translation_audit_mutation();
 
 CREATE OR REPLACE FUNCTION translation_private.record_translation_audit()
 RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
-  v_row jsonb := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
-  v_entity_id uuid := (v_row->>(TG_ARGV[0] || '_id'))::uuid;
+  v_row jsonb;
+  v_tenant_id uuid;
+  v_translation_id uuid;
+  v_entity_id uuid;
   v_actor uuid;
   v_action text;
   v_from text;
-  v_to text := CASE WHEN TG_OP = 'DELETE' THEN 'deleted' ELSE NEW.review_status END;
+  v_to text;
   v_fingerprint text;
   v_content jsonb;
 BEGIN
+  IF TG_OP = 'DELETE' THEN
+    v_row := to_jsonb(OLD);
+    v_tenant_id := OLD.tenant_id;
+    v_translation_id := OLD.id;
+    v_entity_id := (v_row->>(TG_ARGV[0] || '_id'))::uuid;
+    v_from := OLD.review_status;
+    v_to := NULL;
+    v_action := 'delete';
+  ELSE
+    v_row := to_jsonb(NEW);
+    v_tenant_id := NEW.tenant_id;
+    v_translation_id := NEW.id;
+    v_entity_id := (v_row->>(TG_ARGV[0] || '_id'))::uuid;
+    v_to := NEW.review_status;
+  END IF;
+
   SELECT u.id INTO v_actor
     FROM public.users u
    WHERE u.auth_id = (SELECT auth.uid())
-     AND u.tenant_id = (v_row->>'tenant_id')::uuid
+     AND u.tenant_id = v_tenant_id
      AND u.role IN ('admin', 'manager');
 
   v_content := v_row - ARRAY['updated_at', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at'];
   v_fingerprint := md5(v_content::text);
 
-  IF TG_OP = 'DELETE' THEN
-    v_action := 'delete';
-    v_from := OLD.review_status;
-  ELSIF TG_OP = 'INSERT' THEN
+  IF TG_OP = 'INSERT' THEN
     v_action := 'save_draft';
     v_from := NULL;
-  ELSE
+  ELSIF TG_OP = 'UPDATE' THEN
     v_from := OLD.review_status;
     IF v_from = v_to AND v_content IS NOT DISTINCT FROM
       (to_jsonb(OLD) - ARRAY['updated_at', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at']) THEN
@@ -96,14 +111,11 @@ BEGIN
     tenant_id, translation_kind, translation_id, entity_id, from_status, to_status,
     action, actor_id, content_fingerprint, evidence_source_uris
   ) VALUES (
-    (v_row->>'tenant_id')::uuid, TG_ARGV[0], (v_row->>'id')::uuid, v_entity_id, v_from, v_to,
+    v_tenant_id, TG_ARGV[0], v_translation_id, v_entity_id, v_from, v_to,
     v_action, v_actor, v_fingerprint,
     CASE WHEN jsonb_typeof(v_row->'evidence_snapshot'->'sourceUris') = 'array'
       THEN v_row->'evidence_snapshot'->'sourceUris' ELSE '[]'::jsonb END
   );
-  IF TG_OP = 'DELETE' THEN
-    RETURN OLD;
-  END IF;
   RETURN NEW;
 END;
 $$;

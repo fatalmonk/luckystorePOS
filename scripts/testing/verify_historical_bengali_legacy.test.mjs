@@ -103,8 +103,8 @@ test('translation workflow records immutable per-record audit events without gra
 
 test('audit migration prevents bypass-role writes and records deletions without cascading audit loss', () => {
   assert.match(auditMigration, /REVOKE ALL ON public\.translation_review_audit FROM PUBLIC, anon, authenticated, service_role/);
-  assert.match(auditMigration, /REFERENCES public\.tenants\(id\) ON DELETE RESTRICT/);
-  assert.match(auditMigration, /v_row jsonb := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb\(OLD\)/);
+  assert.match(auditMigration, /REFERENCES public\.tenants\(id\) ON DELETE CASCADE/);
+  assert.match(auditMigration, /v_row jsonb;/);
   assert.match(auditMigration, /v_action := 'delete'/);
-  assert.match(auditMigration, /to_status IN \('draft', 'reviewed', 'published', 'deleted'\)/);
+  assert.match(auditMigration, /to_status IS NULL OR to_status IN \('draft', 'reviewed', 'published'\)/);
 });

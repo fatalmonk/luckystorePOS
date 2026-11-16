@@ -438,7 +438,7 @@ export function TranslationsPage() {
                     {auditQuery.isError && <p role="alert">Could not load audit history.</p>}
                     {!auditQuery.isLoading && !auditQuery.isError && !auditQuery.data?.length && <p className="text-text-muted">No recorded workflow actions yet.</p>}
                     {auditQuery.data?.map((event) => <div key={event.id} className="border-t border-border pt-2 first:border-0 first:pt-0">
-                      <p className="font-medium">{event.action.replace('_', ' ')} · {event.from_status ?? 'new'} → {event.to_status}</p>
+                      <p className="font-medium">{event.action.replace('_', ' ')} · {event.from_status ?? 'new'} → {event.to_status ?? 'deleted'}</p>
                       <p className="text-text-muted">{event.created_at} · Actor {event.actor_id ?? 'system'} · Evidence links {event.evidence_source_uris.length}</p>
                     </div>)}
                   </section>}
