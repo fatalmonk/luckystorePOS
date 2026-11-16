@@ -88,7 +88,7 @@ beforeEach(() => {
       const itemId = (options?.body as { itemId: string }).itemId;
       return { data: { evidence: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? ramenEvidence :
         { key: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? '4d20b020' : '002fbcb3', matched: itemId !== '29e60fea-429c-4b7d-b639-406471a6623b', issue: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? 'No registry match' : null, entry: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? null : { exactName: item.name, netQuantity: '500 g' }, links: [], missing: [], supportedFacts: null },
-        snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
+        snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: 'Samyang Buldak Ramen 2X Cup 70g is a 70g noodle cup.', sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
     }
     return { data: null, error: null } as never;
   });
@@ -241,7 +241,7 @@ describe('TranslationsPage publication actions', () => {
 
   it('keeps the saved Samyang draft open for human review and only publishes after a separate click', async () => {
     const ramen = { ...item, id: '1aafa29f-07ca-4f04-a702-549c1720bd6a',
-      name: 'Samyang Buldak Ramen 2X Cup 70g', description: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
+      name: 'Samyang Buldak Ramen 2X Cup 70g', description: 'Samyang Buldak Ramen 2X Cup 70g is a 70g noodle cup.', sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
     rows.items = [ramen];
     rows.item_translations = [{ ...draft, item_id: ramen.id, name: 'Samyang Buldak রামেন 2X কাপ 70g',
       description: 'Samyang Buldak Ramen 2X Cup 70g হলো 70g ওজনের কাপ নুডলস।',
@@ -320,7 +320,7 @@ describe('TranslationsPage publication actions', () => {
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith('generate-bengali-translation-drafts', { body: { kind: 'category', limit: 3 } }));
     expect(writes).toHaveLength(0);
   });
-  it('shows canonical identity and evidence beside Bengali fields without a status selector or bulk review', async () => {
+  it('shows canonical identity, evidence and per-record audit history beside Bengali fields', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Review draft|Publish…|Edit/ }));
     expect(screen.getByText('Ispahani Tea 500 g')).toBeInTheDocument();
@@ -330,10 +330,27 @@ describe('TranslationsPage publication actions', () => {
     expect(screen.getByText('500 g')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'https://manufacturer.invalid/tea-500' })).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Review status' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Review selected/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Review audit trail' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save Draft' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+  });
+
+  it('batch reviews selected exact-match drafts while preserving manual publish approval', async () => {
+    const secondItem = { ...item, id: '10000000-0000-4000-8000-000000000003', name: 'Ispahani Tea 250 g', description: 'Tea leaves, 250 g.', sku: 'TEA-250' };
+    const secondDraft = { ...draft, id: '30000000-0000-4000-8000-000000000003', item_id: secondItem.id, name: 'ইস্পাহানি চা 250 g', description: 'চা পাতা, 250 g।', evidence_snapshot: { ...evidence, entityId: secondItem.id, sourceName: secondItem.name, sourceDescription: secondItem.description, sku: secondItem.sku, packageText: '250 g' } };
+    rows.items = [item, secondItem];
+    rows.item_translations = [draft, secondDraft];
+    renderPage();
+    expect(await screen.findByRole('button', { name: 'Select visible drafts' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Select visible drafts' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Confirm I checked each selected translation/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Review selected (2)' }));
+    await waitFor(() => expect(writes).toHaveLength(2));
+    expect(writes.every((write) => write.payload.review_status === 'reviewed')).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Review selected (2)' })).not.toBeInTheDocument();
+    expect(notify).toHaveBeenCalledWith(expect.stringContaining('2 translations marked reviewed'), 'success');
+    expect(writes.every((write) => write.payload.review_status !== 'published')).toBe(true);
   });
 
   it('does not expose JSON editors for source evidence or product details', async () => {

@@ -2192,7 +2192,7 @@ a.button-outline {
 }
 
 .reminders-item.overdue {
-  border-left: 3px solid var(--color-danger);
+  background-color: var(--color-danger-bg);
 }
 
 /* Checkbox */

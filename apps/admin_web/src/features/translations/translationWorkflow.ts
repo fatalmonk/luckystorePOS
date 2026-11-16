@@ -3,6 +3,7 @@ import type {
   LocalizedProductDetails,
   TranslationEvidenceSnapshot,
   TranslationReviewStatus,
+  TranslationRow,
   TranslationTransitionContext,
 } from './translationTypes';
 
@@ -13,6 +14,60 @@ const isTimestamp = (value: unknown): value is string =>
 const isText = (value: unknown): value is string => typeof value === 'string' && Boolean(value.trim());
 const isObject = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
+const bengaliNameLetter = /[\u0985-\u09b9\u09dc-\u09df]/u;
+const numberToken = /[0-9০-৯]+(?:[.,][0-9০-৯]+)?/gu;
+const quantityToken = /[0-9০-৯]+(?:[.,][0-9০-৯]+)?\s*(?:kg|grams?|gm|mg|g|ml|liters?|litres?|ltr|l|pcs?|pieces?|pack|ct|কেজি|গ্রাম|মিলি|লিটার|পিস|প্যাক)(?![\p{L}\p{M}])/giu;
+const protectedVariants = ['Original', '2X', 'Best of'];
+const normalizeToken = (value: string) => value.toLowerCase()
+  .replace(/[০-৯]/g, (digit) => String('০১২৩৪৫৬৭৮৯'.indexOf(digit)))
+  .replace(/\s+/g, '')
+  .replace(/liters?|litres?|ltr|লিটার/g, 'l')
+  .replace(/গ্রাম|grams?|gm/g, 'g')
+  .replace(/কেজি/g, 'kg')
+  .replace(/মিলি/g, 'ml')
+  .replace(/pieces?|pcs?|পিস/g, 'pcs')
+  .replace(/প্যাক/g, 'pack');
+const sortedTokens = (value: string, pattern: RegExp) => [...value.matchAll(pattern)]
+  .map((match) => normalizeToken(match[0])).sort();
+
+export type CatalogTranslationCheck = { valid: boolean; issues: string[] };
+
+/**
+ * Catalog-only checks. These validate translation structure and identity
+ * preservation without asserting manufacturer-backed factual claims.
+ */
+export function validateCatalogTranslation(
+  source: CanonicalTranslationSource,
+  translation: Pick<TranslationRow, 'name' | 'description'> & { search_terms?: string[] },
+): CatalogTranslationCheck {
+  const issues: string[] = [];
+  const name = translation.name.trim();
+  const description = translation.description?.trim() || null;
+  const translatedText = `${name} ${description ?? ''} ${(translation.search_terms ?? []).join(' ')}`.toLowerCase();
+  if (!bengaliNameLetter.test(name)) issues.push('Bengali product name is missing Bengali letters.');
+  if (source.brand && !translatedText.includes(source.brand.toLowerCase())) issues.push('Catalog brand was not preserved.');
+  if (JSON.stringify(sortedTokens(source.name, numberToken)) !== JSON.stringify(sortedTokens(name, numberToken))) {
+    issues.push('Catalog name numeric identity changed.');
+  }
+  if (JSON.stringify(sortedTokens(source.name, quantityToken)) !== JSON.stringify(sortedTokens(name, quantityToken))) {
+    issues.push('Catalog name package identity changed.');
+  }
+  for (const variant of protectedVariants) {
+    if (source.name.includes(variant) && !name.includes(variant)) issues.push(`Protected variant "${variant}" changed.`);
+  }
+  if (source.description?.trim() && !description) issues.push('Catalog description is missing.');
+  if (description && !bengaliNameLetter.test(description)) issues.push('Bengali description is missing Bengali letters.');
+  if (!source.description?.trim() && description) issues.push('Description has no canonical catalog text to verify against.');
+  if (source.description?.trim() && description) {
+    if (JSON.stringify(sortedTokens(source.description, numberToken)) !== JSON.stringify(sortedTokens(description, numberToken))) {
+      issues.push('Catalog description numeric identity changed.');
+    }
+    if (JSON.stringify(sortedTokens(source.description, quantityToken)) !== JSON.stringify(sortedTokens(description, quantityToken))) {
+      issues.push('Catalog description package identity changed.');
+    }
+  }
+  return { valid: issues.length === 0, issues };
+}
 
 export function getCanonicalPackageText(name: string, description: string | null): string | null {
   const quantity = /\b\d+(?:\.\d+)?\s*(?:kg|gm|g|ml|l|pcs?|pieces?|grams?|litres?|liters?)\b/i;
@@ -38,6 +93,16 @@ export function matchesTranslationEvidence(value: unknown, source: CanonicalTran
     && value.barcode === source.barcode
     && value.brand === source.brand
     && value.packageText === source.packageText;
+}
+
+/** Verifies evidence snapshot identity only; does not validate factual claims. */
+export function validateEvidenceIdentity(
+  snapshot: unknown,
+  source: CanonicalTranslationSource,
+): CatalogTranslationCheck {
+  return matchesTranslationEvidence(snapshot, source)
+    ? { valid: true, issues: [] }
+    : { valid: false, issues: ['Evidence snapshot does not match the current canonical catalog record.'] };
 }
 
 export function isLocalizedProductDetails(value: unknown): value is LocalizedProductDetails | null {
@@ -67,8 +132,10 @@ export function canTransitionTranslation(
     || translation.locale !== 'bn' || !isText(translation.name)
     || !isLocalizedProductDetails(translation.details ?? null)) return false;
   if (to === 'draft') return action === 'save_draft';
+  if (translation.kind === 'item' && !source.description?.trim() && translation.details && Object.keys(translation.details).length > 0) return false;
+  if (!validateCatalogTranslation(source, translation).valid) return false;
   if (translation.id.startsWith('new:') || !context.humanReviewConfirmed
-    || !matchesTranslationEvidence(translation.evidence_snapshot, source)) return false;
+    || !validateEvidenceIdentity(translation.evidence_snapshot, source).valid) return false;
   if (from === 'draft' && to === 'reviewed') return action === 'mark_reviewed';
   return from === 'reviewed' && to === 'published' && action === 'publish'
     && typeof translation.reviewed_by === 'string' && uuid.test(translation.reviewed_by)

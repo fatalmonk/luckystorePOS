@@ -1,4 +1,5 @@
 import registry from './product-enrichment-evidence.json' with { type: 'json' };
+import { registryOverrides, registrySupplements } from './translation-registry-overrides.ts';
 
 type EvidenceRecord = { source: string; evidenceRef: string; sourceTitle: string | null; sourceUrl: string | null; skuScope: string | null; verifiedAt: string | null };
 type RegistryEntry = {
@@ -10,45 +11,111 @@ export type ProductIdentity = { id: string; name: string; description?: string |
 export type RegistryEvidenceResult = {
   key: string | null; matched: boolean; issue: string | null; entry: RegistryEntry | null;
   links: Array<{ title: string; url: string; verifiedAt: string | null; evidenceRef: string }>;
-  missing: string[]; supportedFacts: string | null;
+  missing: string[]; supportedFacts: string | null; identityMatched: boolean;
+  issueCode: 'NO_REGISTRY_ENTRY' | 'NAME_VARIANT_MISMATCH' | 'PACKAGE_MISMATCH' | 'BRAND_MISMATCH' | 'IDENTITY_ONLY' | 'MISSING_MANUFACTURER_URL' | null;
 };
 
 const records = registry as Record<string, RegistryEntry>;
-const packageToken = /\b(\d+(?:\.\d+)?)\s*(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|pieces?|pcs?)\b/i;
+// Parse explicit multipacks separately from sheet/ply dimensions.
+const packageToken = /\b(\d+\s*\/\s*\d+|\d+(?:\.\d+)?)\s*(?:[x×]\s*(\d+(?:\.\d+)?)\s*)?(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|tea\s*bags?|bags?|pieces?|pcs?|sheets?)\b/gi;
 const quantity = (raw: string) => {
-  const match = raw.match(packageToken);
+  const match = [...raw.matchAll(packageToken)][0];
   if (!match) return null;
-  const units: Record<string, string> = { gram: 'g', grams: 'g', gm: 'g', g: 'g', kg: 'kg', ml: 'ml', l: 'l', ltr: 'l', liter: 'l', liters: 'l', litre: 'l', litres: 'l', pc: 'pcs', pcs: 'pcs', piece: 'pcs', pieces: 'pcs' };
-  return Number(match[1]) + units[match[2].toLowerCase()];
+  const units: Record<string, [string, number]> = {
+    gram: ['g', 1], grams: ['g', 1], gm: ['g', 1], g: ['g', 1],
+    kg: ['g', 1000], ml: ['ml', 1], l: ['ml', 1000], ltr: ['ml', 1000],
+    liter: ['ml', 1000], liters: ['ml', 1000], litre: ['ml', 1000], litres: ['ml', 1000],
+    bag: ['bags', 1], bags: ['bags', 1], 'tea bag': ['bags', 1], 'tea bags': ['bags', 1],
+    pc: ['pcs', 1], pcs: ['pcs', 1], piece: ['pcs', 1], pieces: ['pcs', 1],
+    sheet: ['sheets', 1], sheets: ['sheets', 1],
+  };
+  const [unit, factor] = units[match[3].toLowerCase().replace(/\s+/g, ' ')] ?? [];
+  if (!unit) return null;
+  const number = (text: string) => text.includes('/')
+    ? text.split('/').map(Number).reduce((a, b) => a / b)
+    : Number(text);
+  const first = number(match[1].replace(/\s/g, ''));
+  const count = match[2] ? number(match[2]) : 1;
+  // '100x2 sheets' denotes sheets x plies, not a case of identical retail packs.
+  const multiplier = unit === 'sheets' ? 1 : count;
+  return String(Math.round(first * multiplier * factor * 10000) / 10000) + unit;
 };
 const normalizeName = (name: string) => name.toLowerCase().replace(/(\d)\s*(?:grams?|gm)\b/g, '$1g').replace(/\bgrams?\b|\bgm\b/g, 'g').replace(/[^a-z0-9]+/g, '');
 const safeUrl = (value: string | null) => value && /^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(value);
 const aliases: Record<string, string[]> = {
   '4d20b020': ['BelleAme Chocolate Digestive Biscuits 135g'],
+  '31d78d91': ['Dano Delight 500 g'],
+  '2c367e44': ['Polar Robusto (Salted Caramel)'],
+  'be49558d': ['Polar Zafran Malai 1 Liter'],
+  'bc7de70f': ['Polar Red Velvet 1L'],
+  'fcefa591': ['Polar Tornado (Strawberry)'],
+  '2e948079': ['Polar Coffee 1L'],
+  'f2d567f0': ['Polar Mango 1L'],
+  'eae60c9b': ['Polar Choco Bar (Chocolate)'],
+  '38befb1a': ['Polar Tornado (Green Apple)'],
+  'c00f9f4b': ['Polar Robusto (Chocolate)'],
+  '93930edd': ['Polar Tornado (Mango)'],
+  '54a7520e': ['Polar Doi 1 Liter'],
+  'c1895793': ['Polar Kheer 1 Liter'],
+  '0611e651': ['Polar Robusto (Vanilla)'],
+  '79e0ece1': ['Polar Kheer 1/2 Liter'],
+  '029b62d8': ['Radhuni Holud Gura 100 g'],
+  '1f4650a7': ['Radhuni Dhoniya Gura 500 g'],
+  '38ee3e1a': ['Radhuni Shorisha Oil 500 ml'],
 };
 
 export function resolveRegistryEvidence(source: ProductIdentity): RegistryEvidenceResult {
   const skuKey = source.sku?.match(/^CANVA-TEST-([a-f0-9]{8})$/i)?.[1].toLowerCase();
   // Testing SKUs carry explicit production IDs; normal catalog records use their UUID prefix.
   const key = skuKey || (source.sku?.startsWith('CANVA-TEST-') ? null : source.id.slice(0,8).toLowerCase());
-  const empty = (issue: string, entry: RegistryEntry | null = null): RegistryEvidenceResult => ({
-    key, matched: false, issue, entry, links: [], missing: [], supportedFacts: null,
+  const empty = (issue: string, entry: RegistryEntry | null = null, issueCode: RegistryEvidenceResult['issueCode'] = null): RegistryEvidenceResult => ({
+    key, matched: false, issue, entry, links: [], missing: [], supportedFacts: null, identityMatched: false, issueCode,
   });
-  if (!key || !/^[a-f0-9]{8}$/.test(key)) return empty('No valid production registry mapping on this product.');
-  const entry = records[key];
-  if (!entry || entry.slugPrefix.toLowerCase() !== key) return empty('No enrichment registry entry for the mapped production ID.');
+  if (!key || !/^[a-f0-9]{8}$/.test(key)) return empty('No valid production registry mapping on this product.', null, 'NO_REGISTRY_ENTRY');
+  const supplement = registrySupplements[key];
+  const baseEntry = supplement ? {
+    ...(records[key] ?? { slugPrefix: key, specifications: [] }),
+    slugPrefix: key,
+    exactName: supplement.exactName,
+    brand: supplement.brand,
+    netQuantity: supplement.netQuantity,
+    evidenceManifest: {
+      ...(records[key]?.evidenceManifest ?? {}),
+      MFR_SPEC: {
+        ...(records[key]?.evidenceManifest?.MFR_SPEC ?? {}),
+        source: 'MANUFACTURER',
+        evidenceRef: supplement.manufacturerUrl ?? supplement.exactName,
+        sourceTitle: supplement.manufacturerTitle,
+        sourceUrl: supplement.manufacturerUrl,
+        skuScope: supplement.exactName,
+        verifiedAt: '2026-11-16',
+      },
+    },
+  } : records[key];
+  if (!baseEntry || baseEntry.slugPrefix.toLowerCase() !== key) return empty('No enrichment registry entry for the mapped production ID.', null, 'NO_REGISTRY_ENTRY');
+  const override = registryOverrides[key];
+  const entry = override ? {
+    ...baseEntry,
+    ...(override.netQuantity ? { netQuantity: override.netQuantity } : {}),
+    evidenceManifest: {
+      ...baseEntry.evidenceManifest,
+      MFR_SPEC: {
+        ...baseEntry.evidenceManifest.MFR_SPEC,
+        source: 'MANUFACTURER',
+        sourceTitle: override.manufacturerTitle,
+        sourceUrl: override.manufacturerUrl,
+        verifiedAt: '2026-11-16',
+      },
+    },
+  } : baseEntry;
   const accepted = [entry.exactName, ...(aliases[key] ?? [])];
   if (!accepted.some(name => normalizeName(name) === normalizeName(source.name))) {
-    return empty('Product name or variant does not match the exact production registry entry.', entry);
-  }
-  const actualSizes = [...source.name.matchAll(new RegExp(packageToken.source, 'gi'))].map(match => quantity(match[0]));
-  const registrySize = quantity(entry.netQuantity);
-  if (!registrySize || !actualSizes.includes(registrySize)) {
-    return empty('Product package size does not match the production registry entry.', entry);
+    return empty('Product name or variant does not match the exact production registry entry.', entry, 'NAME_VARIANT_MISMATCH');
   }
   if (source.brand && normalizeName(source.brand) !== normalizeName(entry.brand)) {
-    return empty('Product brand conflicts with the matched registry record.', entry);
+    return empty('Product brand conflicts with the matched registry record.', entry, 'BRAND_MISMATCH');
   }
+  const identityMatched = true;
   const entries = Object.entries(entry.evidenceManifest ?? {});
   const links = entries.filter(([, record]) => record.source === 'MANUFACTURER' && safeUrl(record.sourceUrl))
     .map(([, record]) => ({
@@ -58,6 +125,19 @@ export function resolveRegistryEvidence(source: ProductIdentity): RegistryEviden
   const missing = entries.filter(([,record]) => (record.source === 'PACKAGING' || record.source === 'MANUFACTURER') && !safeUrl(record.sourceUrl))
     .map(([,record]) => (record.sourceTitle || record.source) + ': recorded claim has no openable source link.');
   if (links.length === 0) missing.unshift('No product-specific manufacturer or packaging source link is available. Keep this item in draft.');
+  if (supplement?.identityOnly) {
+    return {
+      key, matched: false,
+      issue: 'Catalog identity is grounded, but exact package/manufacturer evidence is incomplete; keep this item in draft.',
+      entry, links, missing, supportedFacts: null, identityMatched, issueCode: 'IDENTITY_ONLY',
+    };
+  }
+  const identityText = [source.name, source.description ?? ''].join(' ');
+  const actualSizes = [...identityText.matchAll(packageToken)].map(match => quantity(match[0]));
+  const registrySize = quantity(entry.netQuantity);
+  if (!registrySize || !actualSizes.includes(registrySize)) {
+    return { ...empty('Product package size does not match the production registry entry.', entry, 'PACKAGE_MISMATCH'), identityMatched };
+  }
   const supportedRefs = new Set(entries.filter(([,record]) => record.source === 'MANUFACTURER' && safeUrl(record.sourceUrl)).map(([ref]) => ref));
   const supportedSpecs = (entry.specifications ?? []).filter(spec =>
     spec.evidenceRefs.length > 0 && spec.evidenceRefs.every(ref => supportedRefs.has(ref))).slice(0, 8);
@@ -65,7 +145,8 @@ export function resolveRegistryEvidence(source: ProductIdentity): RegistryEviden
     ? ['Exact item: ' + entry.exactName, 'Pack size: ' + entry.netQuantity,
         ...supportedSpecs.map(spec => spec.label + ': ' + spec.value)].join('\n')
     : null;
-  return { key, matched: true, issue: null, entry, links, missing, supportedFacts };
+  return { key, matched: true, issue: null, entry, links, missing, supportedFacts, identityMatched,
+    issueCode: links.length ? null : 'MISSING_MANUFACTURER_URL' };
 }
 
 export function registrySnapshot(source: ProductIdentity & {
