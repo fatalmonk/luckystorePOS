@@ -41,7 +41,7 @@ describe('catalog translation validation', () => {
     expect(validateCatalogTranslation(source, translation).valid).toBe(true);
     expect(validateCatalogTranslation(source, { ...translation, name: 'ইস্পাহানি চা 250 g' }).issues).toContain('Catalog name numeric identity changed.');
     expect(validateCatalogTranslation(source, { ...translation, description: 'চা পাতা, 2 kg।' }).issues).toContain('Catalog description numeric identity changed.');
-    expect(validateCatalogTranslation(source, { ...translation, name: 'চা 500 g' }).issues).toContain('Catalog brand was not preserved.');
+    expect(validateCatalogTranslation(source, { ...translation, name: 'চা 500 g', search_terms: ['চা', 'tea'] }).issues).toContain('Catalog brand was not preserved.');
   });
 
   it('never invents a description when the canonical description is empty', () => {

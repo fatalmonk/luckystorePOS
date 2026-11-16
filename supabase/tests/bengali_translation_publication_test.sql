@@ -75,6 +75,8 @@ DECLARE
   saved_revision timestamptz;
   legacy_row record;
 BEGIN
+  PERFORM pg_temp.assert_true(translation_private.quantity_tokens('1 lb') = ARRAY['1:lb']::text[], 'database validation tokenizes pounds');
+  PERFORM pg_temp.assert_true(translation_private.quantity_tokens('1 oz') = ARRAY['1:oz']::text[], 'database validation tokenizes ounces');
   PERFORM pg_temp.assert_true((
     SELECT count(*) = 4
     FROM pg_constraint fk
@@ -241,11 +243,15 @@ BEGIN
     EXECUTE format('INSERT INTO public.%I (%I, tenant_id, name, description, search_terms) VALUES ($1, $2, $3, $4, $5) RETURNING id', translation_table, entity_column)
       INTO row_a USING entity_a, t_a,
         CASE WHEN kind = 'item' THEN 'ইস্পাহানি চা 500 g' ELSE 'চা' END,
-        CASE WHEN kind = 'item' THEN 'চা পাতা, 500 g।' ELSE NULL END,
+        CASE WHEN kind = 'item' THEN 'চা পাতা, 500 g।' ELSE 'চায়ের বিভাগ।' END,
         ARRAY[source_name, 'Ispahani'];
     EXECUTE format('SELECT updated_at FROM public.%I WHERE id = $1', translation_table) INTO saved_revision USING row_a;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE id = $1 AND review_status = ''draft'' AND reviewed_by IS NULL AND published_by IS NULL', translation_table) INTO n USING row_a;
     PERFORM pg_temp.assert_true(n = 1, kind || ': imports default to unattributed draft');
+    PERFORM pg_temp.expect_failure(
+      format('UPDATE public.%I SET source_version = %L WHERE id = %L', translation_table, repeat('a', 64), row_a),
+      '40001'
+    );
     -- Publication requires the dedicated batch RPC, while legacy review status remains supported.
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = ''{}''::jsonb WHERE id = %L', translation_table, row_a), '23514');
     bad_snapshot := snapshot_a || '{"sourceUris":[]}'::jsonb;

@@ -47,8 +47,8 @@ serve(async (request) => {
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
   const catalog = kind === 'item' ? 'items' : 'categories';
   const foreignKey = kind === 'item' ? 'item_id' : 'category_id';
-  const fields: string = kind === 'item' ? 'id, tenant_id, name, description, brand, sku, barcode' : 'id, tenant_id, name';
-  const candidates: Array<Source & { source_version: string; previous?: { id: string; updated_at: string; review_status: string } }> = [];
+  const fields: string = kind === 'item' ? 'id, tenant_id, name, description, brand, sku, barcode' : 'id, tenant_id, name, description';
+  const candidates: Array<Source & { source_version: string; previous?: { id: string; updated_at: string; review_status: string; name: string; description: string | null; search_terms: string[]; fullRegeneration: boolean } }> = [];
   let skipped = 0;
   try {
     // Bounded scan avoids one request consuming unlimited database and provider resources.
@@ -61,7 +61,7 @@ serve(async (request) => {
       if (!records?.length) break;
       const catalogRows = records as unknown as Array<Source & { tenant_id: string }>;
       const ids = catalogRows.map((record) => record.id);
-      const { data: existing, error: existingError } = await db.from(table).select(`${foreignKey}, id, name, description, review_status, source_version, updated_at`).eq('tenant_id', profile.tenant_id).eq('locale', 'bn').in(foreignKey, ids);
+      const { data: existing, error: existingError } = await db.from(table).select(`${foreignKey}, id, name, description, search_terms, review_status, source_version, updated_at`).eq('tenant_id', profile.tenant_id).eq('locale', 'bn').in(foreignKey, ids);
       if (existingError) return respond(502, { error: 'Could not read existing translations' });
       const translations = new Map((existing ?? []).map((row) => [row[foreignKey], row]));
       for (const record of catalogRows) {
@@ -72,15 +72,19 @@ serve(async (request) => {
         const currentVersion = await sourceVersion(record);
         const previousOutdated = Boolean(previous?.source_version && previous.source_version !== currentVersion);
         const explicitlyTargetedLegacy = Boolean(requestedIds?.includes(record.id) && previous && !previous.source_version);
-        const previousIsComplete = Boolean(previous?.name?.trim()) &&
-          (!record.description?.trim() || Boolean(previous?.description?.trim()));
+        const previousDescriptionIsComplete = record.description?.trim()
+          ? Boolean(previous?.description?.trim())
+          : !previous?.description?.trim();
+        const previousIsComplete = Boolean(previous?.name?.trim()) && previousDescriptionIsComplete;
         if (previous && !previousOutdated && !explicitlyTargetedLegacy
           && (previous.review_status !== 'draft' || previousIsComplete)) { skipped++; continue; }
         if (candidates.length < batchLimit) candidates.push({
-          id: record.id, name: record.name, description: kind === 'item' ? record.description : null, sku: kind === 'item' ? record.sku : null,
+          id: record.id, name: record.name, description: record.description, sku: kind === 'item' ? record.sku : null,
           barcode: kind === 'item' ? record.barcode : null, brand: kind === 'item' ? record.brand : null,
           source_version: currentVersion,
-          ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at, review_status: previous.review_status } } : {}),
+          ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at, review_status: previous.review_status,
+            name: previous.name, description: previous.description, search_terms: previous.search_terms,
+            fullRegeneration: previousOutdated || explicitlyTargetedLegacy } } : {}),
         });
       }
       if (records.length < 50) break;
@@ -187,10 +191,14 @@ serve(async (request) => {
         continue;
       }
       if (source.previous) {
-        // Keep existing translated names, reviewer decisions and aliases untouched.
-        const { data, error } = await db.from(table).update({ name: draft.name, description: draft.description,
+        // Preserve complete translated fields when filling only a missing description.
+        const { data, error } = await db.from(table).update({
+          name: source.previous.fullRegeneration || !source.previous.name?.trim() ? draft.name : source.previous.name,
+          description: !source.description?.trim() ? null
+            : source.previous.fullRegeneration ? draft.description : (source.previous.description?.trim() ? source.previous.description : draft.description),
           ...(kind === 'item' ? { details: null } : {}),
-          search_terms: draft.search_terms, source_version: source.source_version, review_status: 'draft',
+          search_terms: source.previous.fullRegeneration || !source.previous.search_terms?.length ? draft.search_terms : source.previous.search_terms,
+          source_version: source.source_version, review_status: 'draft',
           reviewed_by: null, reviewed_at: null, published_by: null, published_at: null })
           .eq('id', source.previous.id).eq('tenant_id', profile.tenant_id)
           .eq('review_status', source.previous.review_status).eq('updated_at', source.previous.updated_at).select('id').maybeSingle();

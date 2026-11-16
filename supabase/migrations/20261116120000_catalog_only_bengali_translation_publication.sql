@@ -1,6 +1,11 @@
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 
+-- The bootstrap schema defines category descriptions, but deployed databases
+-- may predate that column; make the canonical field available before hashing.
+ALTER TABLE public.categories
+  ADD COLUMN IF NOT EXISTS description text;
+
 ALTER TABLE public.item_translations
   ADD COLUMN IF NOT EXISTS source_version text;
 ALTER TABLE public.category_translations
@@ -42,7 +47,7 @@ RETURNS text[] LANGUAGE sql IMMUTABLE SET search_path = '' AS $$
         ELSE lower(match[2])
       END ORDER BY translate(lower(match[1]), '০১২৩৪৫৬৭৮৯', '0123456789'), lower(match[2])
   ), '{}'::text[])
-  FROM regexp_matches(coalesce(p_text, ''), '([0-9০-৯]+(?:[.,][0-9০-৯]+)?)\s*(kg|grams?|gm|mg|g|ml|liters?|litres?|ltr|l|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার|পিস|প্যাক)(?![[:alpha:]])', 'gi') AS match;
+  FROM regexp_matches(coalesce(p_text, ''), '([0-9০-৯]+(?:[.,][0-9০-৯]+)?)\s*(kg|grams?|gm|mg|g|ml|liters?|litres?|ltr|l|lb|oz|pieces?|pcs?|pack|ct|কেজি|গ্রাম|মিলি|লিটার|পিস|প্যাক)(?![[:alpha:]])', 'gi') AS match;
 $$;
 
 CREATE OR REPLACE FUNCTION translation_private.current_source_version(p_kind text, p_entity_id uuid, p_tenant_id uuid)
@@ -54,7 +59,7 @@ BEGIN
     SELECT concat_ws(chr(31), i.id::text, coalesce(i.name, ''), coalesce(i.description, ''), coalesce(i.sku, ''), coalesce(i.barcode, ''), coalesce(i.brand, ''))
       INTO v_canonical FROM public.items i WHERE i.id = p_entity_id AND i.tenant_id = p_tenant_id;
   ELSIF p_kind = 'category' THEN
-    SELECT concat_ws(chr(31), c.id::text, coalesce(c.name, ''), '', '', '', '')
+    SELECT concat_ws(chr(31), c.id::text, coalesce(c.name, ''), coalesce(c.description, ''), '', '', '')
       INTO v_canonical FROM public.categories c WHERE c.id = p_entity_id AND c.tenant_id = p_tenant_id;
   ELSE
     RETURN NULL;
@@ -78,7 +83,7 @@ BEGIN
   IF p_kind = 'item' THEN
     SELECT i.name, i.description, i.brand INTO v_source FROM public.items i WHERE i.id = p_entity_id AND i.tenant_id = p_tenant_id;
   ELSE
-    SELECT c.name, NULL::text AS description, NULL::text AS brand INTO v_source FROM public.categories c WHERE c.id = p_entity_id AND c.tenant_id = p_tenant_id;
+    SELECT c.name, c.description, NULL::text AS brand INTO v_source FROM public.categories c WHERE c.id = p_entity_id AND c.tenant_id = p_tenant_id;
   END IF;
   IF NOT FOUND OR p_source_version IS DISTINCT FROM translation_private.current_source_version(p_kind, p_entity_id, p_tenant_id) THEN RETURN false; END IF;
   IF coalesce(btrim(v_source.description), '') = '' THEN
@@ -119,6 +124,14 @@ BEGIN
   END IF;
   v_source_version := translation_private.current_source_version(v_kind, v_entity_id, NEW.tenant_id);
   IF v_source_version IS NULL THEN RAISE EXCEPTION 'Canonical catalog source is unavailable' USING ERRCODE = '23514'; END IF;
+  IF TG_OP = 'UPDATE' AND OLD.source_version IS NOT NULL
+     AND OLD.source_version IS DISTINCT FROM v_source_version
+     AND (NEW.name, NEW.description, NEW.search_terms) IS NOT DISTINCT FROM (OLD.name, OLD.description, OLD.search_terms) THEN
+    RAISE EXCEPTION 'Existing translation is stale; regenerate or correct it before saving' USING ERRCODE = '40001';
+  END IF;
+  IF NEW.source_version IS NOT NULL AND NEW.source_version IS DISTINCT FROM v_source_version THEN
+    RAISE EXCEPTION 'Translation source version is stale' USING ERRCODE = '40001';
+  END IF;
   NEW.updated_at := v_now;
   NEW.source_version := v_source_version;
   IF TG_OP = 'INSERT' THEN
@@ -183,6 +196,7 @@ CREATE OR REPLACE FUNCTION translation_private.is_publication_eligible(
 RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
   v_translation record;
+  v_current_source_version text;
 BEGIN
   IF p_status IS DISTINCT FROM 'published' OR p_reviewed_by IS NULL OR p_reviewed_at IS NULL
      OR p_published_by IS NULL OR p_published_at IS NULL OR p_published_at < p_reviewed_at
@@ -200,8 +214,11 @@ BEGIN
   END IF;
   IF NOT FOUND THEN RETURN false; END IF;
   IF v_translation.source_version IS NULL THEN
-    RETURN translation_private.matches_evidence(p_kind, p_entity_id, p_tenant_id, p_snapshot)
-      AND (p_kind <> 'item' OR translation_private.is_product_details(v_translation.details));
+    v_current_source_version := translation_private.current_source_version(p_kind, p_entity_id, p_tenant_id);
+    RETURN translation_private.valid_catalog_translation(p_kind, p_entity_id, p_tenant_id,
+      v_translation.name, v_translation.description, v_translation.search_terms, v_current_source_version)
+      AND (p_kind <> 'item' OR (translation_private.is_product_details(v_translation.details)
+        AND (v_translation.details IS NULL OR v_translation.details IN ('null'::jsonb, '{}'::jsonb))));
   END IF;
   RETURN translation_private.valid_catalog_translation(p_kind, p_entity_id, p_tenant_id,
     v_translation.name, v_translation.description, v_translation.search_terms, v_translation.source_version)

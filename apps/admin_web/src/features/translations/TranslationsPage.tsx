@@ -20,9 +20,12 @@ const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 
 
 function makeQueueRow(row: TranslationRow | null, source: CanonicalTranslationSource): QueueRow {
   if (!row) return { row, source, issues: ['Bengali translation is missing.'], missing: true, outdated: false };
+  const unsupportedLegacyDescription = row.review_status === 'draft' && !row.source_version
+    && !source.description?.trim() && Boolean(row.description?.trim());
   const outdated = row.source_version
     ? row.source_version !== source.sourceVersion
-    : row.review_status === 'published' && Boolean(row.evidence_snapshot && !matchesTranslationEvidence(row.evidence_snapshot, source));
+    : unsupportedLegacyDescription || row.review_status === 'published'
+      && Boolean(row.evidence_snapshot && !matchesTranslationEvidence(row.evidence_snapshot, source));
   const issues = [...validateCatalogTranslation(source, row).issues];
   if (row.kind === 'item' && row.details && Object.keys(row.details).length > 0) {
     issues.push('Localized product details are outside the catalog translation workflow. Clear them before publishing.');
@@ -50,13 +53,13 @@ export function TranslationsPage() {
   const catalogQuery = useQuery<CanonicalTranslationSource[]>({
     queryKey: ['translation-catalog', kind, tenantId], enabled: Boolean(tenantId && canManage),
     queryFn: async () => {
-      const fields = kind === 'item' ? 'id, tenant_id, name, description, sku, barcode, brand' : 'id, tenant_id, name';
+      const fields = kind === 'item' ? 'id, tenant_id, name, description, sku, barcode, brand' : 'id, tenant_id, name, description';
       const { data, error } = await client.from(kind === 'item' ? 'items' : 'categories').select(fields)
         .eq('tenant_id', tenantId).eq(kind === 'item' ? 'is_active' : 'active', true).order('name');
       if (error) throw error;
       const raw = (data ?? []) as unknown as CatalogRow[];
       return Promise.all(raw.map(async (record) => {
-        const source = { id: record.id, name: record.name, description: kind === 'item' ? record.description ?? null : null,
+        const source = { id: record.id, name: record.name, description: record.description ?? null,
           sku: record.sku ?? null, barcode: record.barcode ?? null, brand: record.brand ?? null };
         return { ...source, tenantId: record.tenant_id, sourceVersion: await catalogSourceVersion(source),
           packageText: kind === 'item' ? getCanonicalPackageText(record.name, record.description ?? null) : null };

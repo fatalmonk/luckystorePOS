@@ -12,7 +12,7 @@ export function providerRequest(sources: Source[], options: { repairBengaliNames
   return {
     model: MODEL,
     temperature: 0,
-    max_tokens: 6000,
+    max_tokens: 12000,
     reasoning: { enabled: false },
     provider: { allow_fallbacks: false, require_parameters: true },
     response_format: {

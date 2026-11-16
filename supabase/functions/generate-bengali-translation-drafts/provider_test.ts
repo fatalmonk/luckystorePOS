@@ -13,7 +13,7 @@ Deno.test('pins exact free model without provider or paid fallback', () => {
   assertEquals(body.response_format.json_schema.strict, true);
   assertEquals(body.provider.require_parameters, true);
   assertEquals(body.reasoning.enabled, false);
-  assertEquals(body.max_tokens, 6000);
+  assertEquals(body.max_tokens, 12000);
 });
 Deno.test('provider receives only translation inputs, not previous row revision metadata', () => {
   const source = { id: 'item', name: 'Tea', description: null, previous: { id: 'private-row', updated_at: 'revision' } };
@@ -44,7 +44,7 @@ Deno.test('system instructions prohibit unsupported claims and translate canonic
   for (const phrase of [
     'Do not infer milk from powder', 'Never invent claims', 'unrelated product facts',
     'canonical catalog fields', 'If the canonical description is empty, set description=null',
-    'human administrator or manager',
+    'human administrator or manager', 'exactly as written',
   ]) {
     assertEquals(prompt.includes(phrase), true, phrase);
   }

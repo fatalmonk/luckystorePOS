@@ -70,8 +70,8 @@ describe('Bengali translation queues', () => {
   it('previews English and Bengali together, then publishes all ready rows in one database action', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: /Ready to Publish/ }));
-    expect(screen.getByText(item.name)).toBeInTheDocument();
-    expect(screen.getByText('ইস্পাহানি চা 500 g')).toBeInTheDocument();
+    expect(await screen.findAllByText(item.name)).toHaveLength(2);
+    expect(await screen.findByText('ইস্পাহানি চা 500 g')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Publish Approved Translations/ }));
     await waitFor(() => expect(supabase.rpc).toHaveBeenCalledWith('publish_bengali_translations', {
       p_kind: 'item', p_translation_ids: [translation.id],
