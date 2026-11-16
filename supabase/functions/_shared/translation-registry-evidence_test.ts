@@ -166,3 +166,16 @@ Deno.test('accepts the official Igloo Vanilla 1 L page', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('uses the official PRAN Jhal Chanachur 300 g supplement', () => {
+  const result = resolveRegistryEvidence({
+    id: '17765e14-8d69-42e0-bdb6-033b6e416a21',
+    name: 'PRAN Jhal Chanachur 300g',
+    description: 'Spicy snack, 300 gm pouch.',
+    brand: 'Pran',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

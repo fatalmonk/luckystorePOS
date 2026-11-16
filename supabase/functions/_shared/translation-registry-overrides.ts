@@ -192,4 +192,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.bashundharatissue.com/bashundhara-facial-tissue-100-pcs-x-2-ply-non-perfumed/',
     manufacturerTitle: 'Bashundhara Facial Tissue product page',
   },
+  '17765e14': {
+    exactName: 'PRAN Jhal Chanachur 300g',
+    brand: 'Pran',
+    netQuantity: '300 g',
+    manufacturerUrl: 'https://www.pranfoods.net/brand/product/112',
+    manufacturerTitle: 'PRAN Jhal Chanachur product page',
+  },
 };
