@@ -234,4 +234,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.dettol.co.uk/personal-hygiene/antiseptics/dettol-liquid/',
     manufacturerTitle: 'Dettol Liquid 500ml official product page',
   },
+  '18eb3887': {
+    exactName: 'Fresh Natural Drinking Water 500ml',
+    brand: 'Fresh',
+    netQuantity: '500 ml',
+    manufacturerUrl: 'https://www.mgi.org/assets/images/newsletters/MGI-Newsletter-English_Volume-04.pdf',
+    manufacturerTitle: 'MGI newsletter — Super Fresh Drinking Water 500 ml SKU',
+  },
 };

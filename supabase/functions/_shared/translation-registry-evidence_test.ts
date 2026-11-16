@@ -238,3 +238,14 @@ Deno.test('uses the official Dettol Liquid 500 ml product page', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+Deno.test('uses the official MGI newsletter for the Fresh 500 ml water SKU', () => {
+  const result = resolveRegistryEvidence({
+    id: '18eb3887-1421-4cb2-a7d5-2e9685f9f55d',
+    name: 'Fresh Natural Drinking Water 500ml',
+    description: 'Fresh Natural Drinking Water, 500ml bottle.',
+    brand: 'Fresh',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
