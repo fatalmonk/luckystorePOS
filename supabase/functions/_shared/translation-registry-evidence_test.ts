@@ -114,3 +114,16 @@ Deno.test('accepts the verified Fortune mustard-oil source', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('uses the verified Dano Daily Pushti supplement', () => {
+  const result = resolveRegistryEvidence({
+    id: '1d87fe8d-8739-484f-acbc-f17235a15aa6',
+    name: 'Dano Daily Pushti Milk Powder 1kg',
+    description: 'Dano Daily Pushti milk powder, 1kg.',
+    brand: 'Arla',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

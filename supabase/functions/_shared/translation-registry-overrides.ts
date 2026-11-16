@@ -137,6 +137,13 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.sfbl.com.bd/our_product.php?brand_id=1&pid=12',
     manufacturerTitle: 'Radhuni Biryani Masala product page',
   },
+  '1d87fe8d': {
+    exactName: 'Dano Daily Pushti Milk Powder 1kg',
+    brand: 'Arla',
+    netQuantity: '1 kg',
+    manufacturerUrl: 'https://www.arlafoods.com.bd/brands/dano/daily-pushti-1kg/',
+    manufacturerTitle: 'Arla Dano Daily Pushti 1kg product page',
+  },
   '1f0da8e0': {
     exactName: 'Ispahani Blender Choice Premium Tea 200g',
     brand: 'Ispahani',
