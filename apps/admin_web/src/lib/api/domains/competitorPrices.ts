@@ -59,23 +59,31 @@ export async function fetchCompetitorPrices(
   storeId: string,
   filters?: CompetitorPriceFilters,
 ): Promise<CompetitorPrice[]> {
-  let q = supabase
-    .from('competitor_prices')
-    .select('*, items!competitor_prices_item_id_fkey(name, sku)')
-    .eq('store_id', storeId)
-    .order('scraped_at', { ascending: false });
+  const pageSize = 1000;
+  let rows: any[] = [];
 
-  if (filters?.itemId) q = q.eq('item_id', filters.itemId);
-  if (filters?.competitorKey) q = q.eq('competitor_key', filters.competitorKey);
-  if (filters?.dateFrom) q = q.gte('scraped_at', filters.dateFrom);
-  if (filters?.dateTo) q = q.lte('scraped_at', filters.dateTo);
-  if (filters?.matchedOnly) q = q.not('item_id', 'is', null);
-  if (filters?.unmatchedOnly) q = q.is('item_id', null);
+  for (let start = 0; ; start += pageSize) {
+    let q = supabase
+      .from('competitor_prices')
+      .select('*, items!competitor_prices_item_id_fkey(name, sku)')
+      .eq('store_id', storeId)
+      .order('scraped_at', { ascending: false })
+      .order('id', { ascending: true });
 
-  const { data, error } = await q;
-  if (error) throw error;
+    if (filters?.itemId) q = q.eq('item_id', filters.itemId);
+    if (filters?.competitorKey) q = q.eq('competitor_key', filters.competitorKey);
+    if (filters?.dateFrom) q = q.gte('scraped_at', filters.dateFrom);
+    if (filters?.dateTo) q = q.lte('scraped_at', filters.dateTo);
+    if (filters?.matchedOnly) q = q.not('item_id', 'is', null);
+    if (filters?.unmatchedOnly) q = q.is('item_id', null);
 
-  let rows = (data ?? []) as any[];
+    const { data, error } = await q.range(start, start + pageSize - 1);
+    if (error) throw error;
+
+    const page = (data ?? []) as any[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
 
   // Client-side filter for competitor name (text search not indexed)
   if (filters?.competitorKey) {
