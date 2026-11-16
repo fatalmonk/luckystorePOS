@@ -153,3 +153,16 @@ Deno.test('accepts the official GlucoMax D 350 g pack evidence', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('accepts the official Igloo Vanilla 1 L page', () => {
+  const result = resolveRegistryEvidence({
+    id: '141eec92-0000-4b00-9000-000000000000',
+    name: 'Igloo Vanilla 1 L',
+    description: 'Igloo Vanilla ice cream, 1 L tub.',
+    brand: 'Igloo',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

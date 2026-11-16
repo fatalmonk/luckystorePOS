@@ -126,6 +126,11 @@ export const registryOverrides: Record<string, {
     manufacturerUrl: 'https://www.unileverconsumercarebd.com/files/ucl-annual-report-2025.pdf',
     manufacturerTitle: 'Unilever Consumer Care annual report — GlucoMax D 350 g pouch',
   },
+  '141eec92': {
+    netQuantity: '1 L',
+    manufacturerUrl: 'https://demo-shop.igloobd.com/products/vanilla-tub-1l',
+    manufacturerTitle: 'Igloo official demo-shop Vanilla Tub 1L product page',
+  },
   '1ba3a780': {
     netQuantity: '120 ml',
     manufacturerUrl: 'https://polarbd.com/en/product/cone-carnival-hazelnut/',
