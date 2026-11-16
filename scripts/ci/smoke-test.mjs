@@ -109,7 +109,7 @@ function parseArgs() {
   return { url, expectedSha, allowCatalogSnapshotFallback };
 }
 
-function request(targetUrl, options = {}, redirectCount = 0) {
+function requestOnce(targetUrl, options = {}, redirectCount = 0) {
   return new Promise((resolve, reject) => {
     if (redirectCount > 5) {
       return reject(new Error(`Too many redirects (limit 5): ${targetUrl}`));
@@ -128,10 +128,18 @@ function request(targetUrl, options = {}, redirectCount = 0) {
       if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && !options.noFollow) {
         const nextUrl = new URL(res.headers.location, targetUrl).toString();
         res.resume();
-        return resolve(request(nextUrl, options, redirectCount + 1));
+        return resolve(requestOnce(nextUrl, options, redirectCount + 1));
       }
 
       let data = '';
+      // Node emits 'aborted'/'error' when an origin closes a response mid-body.
+      // Without an error listener the smoke process can exit unexpectedly.
+      res.on('error', reject);
+      res.on('aborted', () => {
+        const error = new Error('Response aborted before completion');
+        error.code = 'ECONNRESET';
+        reject(error);
+      });
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         resolve({
@@ -150,6 +158,31 @@ function request(targetUrl, options = {}, redirectCount = 0) {
     req.on('error', reject);
     req.end();
   });
+}
+
+const TRANSIENT_SMOKE_ERROR_CODES = new Set(['ECONNRESET', 'EPIPE']);
+
+/**
+ * Retry connection resets during read-only deploy smoke probes, not HTTP
+ * responses or application validation errors. Each retry starts a new request.
+ * Genuine 4xx/5xx/incorrect SHA responses must still fail the existing checks.
+ */
+export async function request(targetUrl, options = {}, retryPolicy = {}) {
+  const method = String(options.method || 'GET').toUpperCase();
+  const maxAttempts = ['GET', 'HEAD'].includes(method) ? 3 : 1;
+  const backoffMs = retryPolicy.backoffMs ?? 250;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await requestOnce(targetUrl, options);
+    } catch (error) {
+      const code = error?.code ?? error?.cause?.code;
+      if (!TRANSIENT_SMOKE_ERROR_CODES.has(code) || attempt === maxAttempts) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, backoffMs * attempt));
+    }
+  }
+  throw new Error('Unreachable smoke request retry state');
 }
 
 async function run() {
