@@ -38,15 +38,121 @@ export const registryOverrides: Record<string, {
   },
   '22a4cd31': {
     netQuantity: '15 g',
-    manufacturerUrl: 'https://meridiangroupbd.com/our-business/meridian-foods-ltd/products/export/',
-    manufacturerTitle: 'Meridian Foods export product catalogue',
+    manufacturerUrl: 'https://meridiangroupbd.com/our-business/meridian-foods-ltd/products/chips',
+    manufacturerTitle: 'Meridian Foods chips product catalogue',
   },
-  '22cb1b54': {
-    manufacturerUrl: 'https://www.unilever.com/files/4134f9a2-2b4b-4e0f-bd42-88dde5587951/annual-report-and-financial-statements-2016.pdf',
-    manufacturerTitle: 'Unilever LUX product range',
+  '3d203611': {
+    netQuantity: '50 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_brands.php?brand_id=1&category_id=11',
+    manufacturerTitle: 'Radhuni Panch Phoron product listing',
   },
-  '223bcafc': {
-    manufacturerUrl: 'https://www.unilever.com/files/4134f9a2-2b4b-4e0f-bd42-88dde5587951/annual-report-and-financial-statements-2016.pdf',
-    manufacturerTitle: 'Unilever LUX product range',
+  '3682155c': {
+    netQuantity: '50 g',
+    manufacturerUrl: 'https://www.sfbl.com.bd/our_product.php?brand_id=1&pid=11',
+    manufacturerTitle: 'Radhuni Kabab Masala product page',
+  },
+  '2c8787a2': {
+    netQuantity: '15 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_product.php?brand_id=1&pid=89',
+    manufacturerTitle: 'Radhuni Coriander Powder product page',
+  },
+  '1f4650a7': {
+    netQuantity: '500 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_product.php?brand_id=1&pid=89',
+    manufacturerTitle: 'Radhuni Coriander Powder product page',
+  },
+  '15b0ac41': {
+    netQuantity: '100 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_product.php?brand_id=1&pid=89',
+    manufacturerTitle: 'Radhuni Coriander Powder product page',
+  },
+  '06613f3a': {
+    netQuantity: '15 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_product.php?brand_id=1&pid=90',
+    manufacturerTitle: 'Radhuni Cumin Powder product page',
+  },
+  '029b62d8': {
+    netQuantity: '100 g',
+    manufacturerUrl: 'https://sfbl.com.bd/our_product.php?brand_id=1&pid=1',
+    manufacturerTitle: 'Radhuni Turmeric Powder product page',
+  },
+  '20aa95b4': {
+    netQuantity: '540 ml',
+    manufacturerUrl: 'https://www.sfbl.com.bd/our_product.php?brand_id=1&pid=72',
+    manufacturerTitle: 'Radhuni White Vinegar product page',
+  },
+  '2254bebd': {
+    netQuantity: '1 L',
+    manufacturerUrl: 'https://igloobd.com/product-details/french-vanilla',
+    manufacturerTitle: 'Igloo French Vanilla product page',
+  },
+  '223a9181': {
+    netQuantity: '300 g',
+    manufacturerUrl: 'https://kelloggs.com/en-in/products/corn-flakes/corn-flakes-real-honey.html',
+    manufacturerTitle: "Kellogg's Corn Flakes Real Honey product page",
+  },
+  '107272e2': {
+    netQuantity: '140 g',
+    manufacturerUrl: 'https://pepsodent.com/bd/toothpaste/sensitive-expert-by-pepsodent-gumcare-140g.html',
+    manufacturerTitle: 'Pepsodent Sensitive Expert Gumcare product page',
+  },
+  '0e84cad3': {
+    netQuantity: '2 L',
+    manufacturerUrl: 'https://fortunefoods.com/oil/fortune-rice-bran-oil',
+    manufacturerTitle: 'Fortune Rice Bran Oil product page',
+  },
+  '1ba3a780': {
+    netQuantity: '120 ml',
+    manufacturerUrl: 'https://polarbd.com/en/product/cone-carnival-hazelnut/',
+    manufacturerTitle: 'Polar Carnival Hazelnut product page',
+  },
+};
+
+/**
+ * A small set of newly verified catalog records that are not present in the
+ * generated enrichment snapshot yet. These entries stay here until the next
+ * registry rebuild so publication does not depend on an untracked fallback.
+ */
+export const registrySupplements: Record<string, {
+  exactName: string;
+  brand: string;
+  netQuantity: string;
+  manufacturerUrl: string;
+  manufacturerTitle: string;
+}> = {
+  '35fdd44a': {
+    exactName: 'Radhuni Biryani Masala 40g',
+    brand: 'Radhuni',
+    netQuantity: '40 g',
+    manufacturerUrl: 'https://www.sfbl.com.bd/our_product.php?brand_id=1&pid=12',
+    manufacturerTitle: 'Radhuni Biryani Masala product page',
+  },
+  '1f0da8e0': {
+    exactName: 'Ispahani Blender Choice Premium Tea 200g',
+    brand: 'Ispahani',
+    netQuantity: '200 g',
+    manufacturerUrl: 'https://ispahanitea.com/home/skuprice',
+    manufacturerTitle: "Ispahani Blender's Choice SKU and price list",
+  },
+  '29642bcd': {
+    exactName: 'Olympic Tip Biscuits 200g',
+    brand: 'Olympic',
+    netQuantity: '200 g',
+    manufacturerUrl: 'https://olympicbd.com/wp-content/uploads/2016/06/Product-Catalogue-0407-24.pdf',
+    manufacturerTitle: 'Olympic product catalogue',
+  },
+  '25ad462e': {
+    exactName: 'PRAN Chinigura Aromatic Rice 1kg',
+    brand: 'Pran',
+    netQuantity: '1 kg',
+    manufacturerUrl: 'https://www.pranfoods.net/brand/product/223',
+    manufacturerTitle: 'PRAN Chinigura Rice product page',
+  },
+  '1d95d6ed': {
+    exactName: 'Bashundhara Facial Tissue Box (100x2 Sheets)',
+    brand: 'Bashundhara',
+    netQuantity: '100 sheets',
+    manufacturerUrl: 'https://www.bashundharatissue.com/bashundhara-facial-tissue-100-pcs-x-2-ply-non-perfumed/',
+    manufacturerTitle: 'Bashundhara Facial Tissue product page',
   },
 };

@@ -1,5 +1,5 @@
 import registry from './product-enrichment-evidence.json' with { type: 'json' };
-import { registryOverrides } from './translation-registry-overrides.ts';
+import { registryOverrides, registrySupplements } from './translation-registry-overrides.ts';
 
 type EvidenceRecord = { source: string; evidenceRef: string; sourceTitle: string | null; sourceUrl: string | null; skuScope: string | null; verifiedAt: string | null };
 type RegistryEntry = {
@@ -15,7 +15,7 @@ export type RegistryEvidenceResult = {
 };
 
 const records = registry as Record<string, RegistryEntry>;
-const packageToken = /\b((?:\d+\s*\/\s*\d+|\d+(?:\.\d+)?))\s*(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|tea\s*bags?|bags?|pieces?|pcs?)\b/i;
+const packageToken = /\b((?:\d+\s*\/\s*\d+|\d+(?:\.\d+)?))(?:\s*x\s*\d+)?\s*(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|tea\s*bags?|bags?|pieces?|pcs?|sheets?)\b/i;
 const quantity = (raw: string) => {
   const match = raw.match(packageToken);
   if (!match) return null;
@@ -23,6 +23,7 @@ const quantity = (raw: string) => {
     gram: 'g', grams: 'g', gm: 'g', g: 'g', kg: 'kg', ml: 'ml', l: 'l', ltr: 'l',
     liter: 'l', liters: 'l', litre: 'l', litres: 'l', bag: 'bags', bags: 'bags',
     'tea bag': 'bags', 'tea bags': 'bags', pc: 'pcs', pcs: 'pcs', piece: 'pcs', pieces: 'pcs',
+    sheet: 'sheets', sheets: 'sheets',
   };
   const rawNumber = match[1].replace(/\s/g, '');
   const value = rawNumber.includes('/')
@@ -34,6 +35,21 @@ const normalizeName = (name: string) => name.toLowerCase().replace(/(\d)\s*(?:gr
 const safeUrl = (value: string | null) => value && /^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(value);
 const aliases: Record<string, string[]> = {
   '4d20b020': ['BelleAme Chocolate Digestive Biscuits 135g'],
+  '31d78d91': ['Dano Delight 500 g'],
+  '2c367e44': ['Polar Robusto (Salted Caramel)'],
+  'be49558d': ['Polar Zafran Malai 1 Liter'],
+  'bc7de70f': ['Polar Red Velvet 1L'],
+  'fcefa591': ['Polar Tornado (Strawberry)'],
+  '2e948079': ['Polar Coffee 1L'],
+  'f2d567f0': ['Polar Mango 1L'],
+  'eae60c9b': ['Polar Choco Bar (Chocolate)'],
+  '38befb1a': ['Polar Tornado (Green Apple)'],
+  'c00f9f4b': ['Polar Robusto (Chocolate)'],
+  '93930edd': ['Polar Tornado (Mango)'],
+  '54a7520e': ['Polar Doi 1 Liter'],
+  'c1895793': ['Polar Kheer 1 Liter'],
+  '0611e651': ['Polar Robusto (Vanilla)'],
+  '79e0ece1': ['Polar Kheer 1/2 Liter'],
 };
 
 export function resolveRegistryEvidence(source: ProductIdentity): RegistryEvidenceResult {
@@ -44,7 +60,24 @@ export function resolveRegistryEvidence(source: ProductIdentity): RegistryEviden
     key, matched: false, issue, entry, links: [], missing: [], supportedFacts: null,
   });
   if (!key || !/^[a-f0-9]{8}$/.test(key)) return empty('No valid production registry mapping on this product.');
-  const baseEntry = records[key];
+  const supplement = registrySupplements[key];
+  const baseEntry = records[key] ?? (supplement ? {
+    slugPrefix: key,
+    exactName: supplement.exactName,
+    brand: supplement.brand,
+    netQuantity: supplement.netQuantity,
+    evidenceManifest: {
+      MFR_SPEC: {
+        source: 'MANUFACTURER',
+        evidenceRef: supplement.manufacturerUrl,
+        sourceTitle: supplement.manufacturerTitle,
+        sourceUrl: supplement.manufacturerUrl,
+        skuScope: supplement.exactName,
+        verifiedAt: '2026-11-16',
+      },
+    },
+    specifications: [],
+  } : undefined);
   if (!baseEntry || baseEntry.slugPrefix.toLowerCase() !== key) return empty('No enrichment registry entry for the mapped production ID.');
   const override = registryOverrides[key];
   const entry = override ? {

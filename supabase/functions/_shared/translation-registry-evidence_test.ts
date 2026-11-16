@@ -36,7 +36,7 @@ Deno.test('parses fractional litres and tea-bag counts from descriptions', () =>
   assertEquals(teaBags.missing[0], 'No product-specific manufacturer or packaging source link is available. Keep this item in draft.');
 });
 
-Deno.test('accepts the verified Unilever LUX source for exact catalog sizes', () => {
+Deno.test('keeps LUX blocked until a product-specific manufacturer page is verified', () => {
   const result = resolveRegistryEvidence({
     id: '22cb1b54-6d27-42ed-95d9-df32f3709ec3',
     name: 'Lux Soap Velvet Touch 150g',
@@ -45,6 +45,59 @@ Deno.test('accepts the verified Unilever LUX source for exact catalog sizes', ()
   });
 
   assertEquals(result.matched, true);
-  assertEquals(result.links.length, 1);
+  assertEquals(result.links.length, 0);
+  assertEquals(result.missing[0], 'No product-specific manufacturer or packaging source link is available. Keep this item in draft.');
   assertEquals(result.issue, null);
+});
+
+Deno.test('accepts shortened catalog names when the verified source and package size match', () => {
+  const result = resolveRegistryEvidence({
+    id: '2c367e44-91b4-4fcf-84a3-09e9dcecdbc7',
+    name: 'Polar Robusto (Salted Caramel)',
+    description: 'Polar Robusto Salted Caramel, 92 ml stick.',
+    brand: 'Polar',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+
+Deno.test('accepts an exact manufacturer page added for a missing-url record', () => {
+  const result = resolveRegistryEvidence({
+    id: '2254bebd-d1d3-46a9-98e6-56d8e94d887d',
+    name: 'Igloo French Vanilla 1 L',
+    description: 'This 1L tub is smooth and creamy.',
+    brand: 'Igloo',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+
+Deno.test('uses a verified supplement for a catalog item missing from the generated registry', () => {
+  const result = resolveRegistryEvidence({
+    id: '35fdd44a-0f43-49dc-aeeb-1899d0e05db9',
+    name: 'Radhuni Biryani Masala 40g',
+    description: 'Radhuni Biryani Masala 40g.',
+    brand: 'Radhuni',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+
+Deno.test('parses sheet-count packaging from a tissue-box name', () => {
+  const result = resolveRegistryEvidence({
+    id: '1d95d6ed-6ce1-4cb7-8d91-8aa65d83114f',
+    name: 'Bashundhara Facial Tissue Box (100x2 Sheets)',
+    description: 'Bashundhara facial tissue, 100x2 Sheets.',
+    brand: 'Bashundhara',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
 });
