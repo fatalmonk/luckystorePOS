@@ -11,12 +11,13 @@ import { canTransitionTranslation, getCanonicalPackageText } from './translation
 import type { RegistryEvidenceResult } from '../../../../../supabase/functions/_shared/translation-registry-evidence';
 import type { CanonicalTranslationSource, TranslationAction, TranslationKind, TranslationReviewStatus, TranslationRow, TranslationEvidenceSnapshot } from './translationTypes';
 
-type CatalogRow = { id: string; tenant_id: string; name: string; description: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
-type Editor = { row: TranslationRow; aliasesText: string; evidenceSnapshot: TranslationEvidenceSnapshot | null; humanReviewConfirmed: boolean };
+type CatalogRow = { id: string; tenant_id: string; name: string; description?: string | null; sku?: string | null; barcode?: string | null; brand?: string | null };
+type Editor = { row: TranslationRow; aliasesText: string; evidenceUrisText: string; evidenceSnapshot: TranslationEvidenceSnapshot | null; humanReviewConfirmed: boolean };
 const client = supabase as unknown as SupabaseClient;
 const translationTable = (kind: TranslationKind) => kind === 'item' ? 'item_translations' : 'category_translations';
 const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary';
 const buttonClass = 'min-h-11 rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50';
+const httpsUrl = /^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i;
 
 function translationContent(row: TranslationRow) {
   return {
@@ -38,18 +39,21 @@ export function TranslationsPage() {
   // batches advance instead of retrying the same first three indefinitely.
   const [generationCursor, setGenerationCursor] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editor | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25;
   const canManage = Boolean(user && user.tenantId === tenantId && (user.role === 'admin' || user.role === 'manager'));
 
   const catalogQuery = useQuery<CanonicalTranslationSource[]>({
     queryKey: ['translation-catalog', kind, tenantId],
     enabled: Boolean(tenantId && canManage),
     queryFn: async () => {
-      const fields = kind === 'item' ? 'id, tenant_id, name, description, sku, barcode, brand' : 'id, tenant_id, name, description';
+      const fields = kind === 'item' ? 'id, tenant_id, name, description, sku, barcode, brand' : 'id, tenant_id, name';
       const { data, error } = await client.from(kind === 'item' ? 'items' : 'categories')
         .select(fields).eq('tenant_id', tenantId).eq(kind === 'item' ? 'is_active' : 'active', true).order('name');
       if (error) throw error;
       return ((data ?? []) as unknown as CatalogRow[]).map((row) => ({
-        id: row.id, tenantId: row.tenant_id, name: row.name, description: row.description ?? null,
+        id: row.id, tenantId: row.tenant_id, name: row.name, description: kind === 'item' ? row.description ?? null : null,
         sku: row.sku ?? null, barcode: row.barcode ?? null, brand: row.brand ?? null,
         packageText: kind === 'item' ? getCanonicalPackageText(row.name, row.description) : null,
       }));
@@ -97,25 +101,30 @@ export function TranslationsPage() {
   ));
   const isDirty = !parsed || !persisted || JSON.stringify(translationContent(parsed)) !== JSON.stringify(translationContent(persisted));
   const transitionContext = parsed ? { actor: user, translation: parsed, source, humanReviewConfirmed: editing?.humanReviewConfirmed ?? false } : null;
-  // Publishing an already-reviewed production translation must not depend on
-  // another live AI/evidence lookup. The transition guard below independently
-  // checks the persisted snapshot against the current canonical item, reviewer,
-  // authenticated actor, and explicit human confirmation.
+  // A saved snapshot is necessary but not sufficient for publication: the
+  // current registry lookup must also resolve cleanly so a visible conflict
+  // cannot coexist with an enabled Publish action.
   const canPublishWithSavedEvidence = Boolean(
     parsed && source && parsed.review_status === 'reviewed' && editing?.row.kind === 'item'
-    && !source.sku?.startsWith('CANVA-TEST-')
-    && parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim(),
+    && (source.sku?.startsWith('CANVA-TEST-')
+      ? Boolean(evidenceQuery.isSuccess && resolvedEvidence?.matched && resolvedEvidence.links.length && parsed.description?.trim())
+      : Boolean(parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim()
+        && evidenceQuery.isSuccess && resolvedEvidence?.matched)),
   );
-  const canAct = (action: TranslationAction, status: TranslationReviewStatus) => Boolean(parsed && transitionContext
-    && !isStale
-    && (action === 'save_draft' || editing?.row.kind !== 'item'
-      || (action === 'publish' && canPublishWithSavedEvidence)
-      || (resolvedEvidence !== null
-        && (source?.sku?.startsWith('CANVA-TEST-')
-          ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed?.description?.trim())
-          : Boolean(parsed?.evidence_snapshot?.sourceUris.length && parsed?.description?.trim()))))
-    && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
-    && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action }));
+  const canAct = (action: TranslationAction, status: TranslationReviewStatus) => {
+    if (!parsed || !transitionContext || isStale) return false;
+    const evidenceAllowed = action === 'save_draft' || editing?.row.kind !== 'item'
+      ? true
+      : action === 'publish'
+        ? canPublishWithSavedEvidence
+        : resolvedEvidence !== null
+          && (source?.sku?.startsWith('CANVA-TEST-')
+            ? Boolean(resolvedEvidence.matched && resolvedEvidence.links.length && parsed.description?.trim())
+            : Boolean(parsed.evidence_snapshot?.sourceUris.length && parsed.description?.trim()));
+    return evidenceAllowed
+      && (action === 'save_draft' ? isDirty || parsed.review_status === 'draft' : !isDirty)
+      && canTransitionTranslation(parsed.review_status, status, { ...transitionContext, action });
+  };
 
   const mutation = useMutation({
     mutationFn: async ({ row, action, humanReviewConfirmed }: { row: TranslationRow; action: TranslationAction; humanReviewConfirmed: boolean }) => {
@@ -153,6 +162,7 @@ export function TranslationsPage() {
         const updated = { ...row, ...saved, kind: row.kind } as TranslationRow;
         setEditing(previous => previous?.row.id === row.id ? {
           ...previous, row: updated, aliasesText: updated.search_terms.join('\n'),
+          evidenceUrisText: updated.evidence_snapshot?.sourceUris.join('\n') ?? '',
           evidenceSnapshot: updated.evidence_snapshot,
           humanReviewConfirmed: action === 'mark_reviewed' ? previous.humanReviewConfirmed : false,
         } : previous);
@@ -230,7 +240,9 @@ export function TranslationsPage() {
 
   const startEditing = (row: TranslationRow) => {
     setEditing({
-      row, aliasesText: row.search_terms.join('\n'),
+      row,
+      aliasesText: row.search_terms.join('\n'),
+      evidenceUrisText: row.evidence_snapshot?.sourceUris.join('\n') ?? '',
       evidenceSnapshot: row.evidence_snapshot,
       humanReviewConfirmed: false,
     });
@@ -239,6 +251,25 @@ export function TranslationsPage() {
     if (editing && evidenceQuery.data?.snapshot && !editing.evidenceSnapshot) {
       changeEditor({ evidenceSnapshot: evidenceQuery.data.snapshot });
     }
+  };
+  const prepareCategoryEvidence = () => {
+    if (!editing || editing.row.kind !== 'category' || !source) return;
+    const sourceUris = editing.evidenceUrisText.split('\n').map(uri => uri.trim()).filter(Boolean);
+    if (!sourceUris.length || sourceUris.some(uri => !httpsUrl.test(uri))) {
+      notify('Add at least one valid HTTPS source URL per line before preparing category evidence.', 'error');
+      return;
+    }
+    changeEditor({ evidenceSnapshot: {
+      entityId: source.id,
+      sourceName: source.name,
+      sourceDescription: source.description,
+      sku: null,
+      barcode: null,
+      brand: null,
+      packageText: null,
+      sourceUris: [...new Set(sourceUris)],
+      observedAt: new Date().toISOString(),
+    } });
   };
   const changeEditor = (changes: Partial<Editor>) => {
     if (editing) setEditing({ ...editing, ...changes, humanReviewConfirmed: false });
@@ -255,25 +286,45 @@ export function TranslationsPage() {
       : { ...base, kind: 'category', category_id: row.id, seo_title: null, seo_description: null };
   }) : [];
   const visibleRows = [...newRows, ...(translationsQuery.data ?? []).filter((row) => statusFilter === 'all' || row.review_status === statusFilter)];
+  const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
+  const filteredRows = normalizedSearch
+    ? visibleRows.filter((row) => {
+      const sourceRow = sources.get(row.kind === 'item' ? row.item_id : row.category_id);
+      return [row.name, row.description, row.search_terms.join(' '), sourceRow?.name, sourceRow?.sku, sourceRow?.brand]
+        .filter(Boolean).join(' ').toLocaleLowerCase().includes(normalizedSearch);
+    })
+    : visibleRows;
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const effectivePage = Math.min(currentPage, totalPages);
+  const pagedRows = filteredRows.slice((effectivePage - 1) * pageSize, effectivePage * pageSize);
+  const canGenerateForFilter = statusFilter === 'all' || statusFilter === 'draft';
 
   return (
     <div className="p-4 md:p-6">
       <PageHeader title="Bengali translations" subtitle="Compare canonical identity and reliable evidence before reviewing localized copy." />
       <div className="mb-4 flex gap-2">
         {(['item', 'category'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setGenerationCursor(null); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={kind === value} onClick={() => { setKind(value); setGenerationCursor(null); setCurrentPage(1); setEditing(null); }} className={`${buttonClass} ${kind === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'item' ? 'Products' : 'Categories'}
           </button>
         ))}
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Translation status filter">
         {(['all', 'draft', 'reviewed', 'published'] as const).map((value) => (
-          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
+          <button key={value} type="button" disabled={mutation.isPending || generateMutation.isPending} aria-pressed={statusFilter === value} onClick={() => { setStatusFilter(value); setCurrentPage(1); setEditing(null); }} className={`${buttonClass} capitalize ${statusFilter === value ? 'bg-primary text-primary-on' : 'bg-surface text-text-muted'}`}>
             {value === 'all' ? 'All translations' : value === 'draft' ? 'Show drafts' : value}
           </button>
         ))}
       </div>
-      <div className="mb-4"><button type="button" className={buttonClass} disabled={mutation.isPending || generateMutation.isPending || translationsQuery.isLoading || catalogQuery.isLoading || Boolean(editing)} onClick={() => generateMutation.mutate(kind)}>{generateMutation.isPending ? 'Generating AI drafts…' : 'Generate AI Drafts'}</button></div>
+      <div className="mb-4 space-y-2">
+        <label className="block max-w-xl space-y-1 text-sm font-semibold">Search translations
+          <input aria-label="Search translations" disabled={Boolean(editing)} value={searchTerm} onChange={(event) => { setSearchTerm(event.target.value); setCurrentPage(1); }} placeholder="Search by product, category, brand, SKU or alias" className={inputClass} />
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" className={buttonClass} title={!canGenerateForFilter ? 'Switch to All translations or Show drafts before generating.' : undefined} disabled={mutation.isPending || generateMutation.isPending || translationsQuery.isLoading || catalogQuery.isLoading || Boolean(editing) || !canGenerateForFilter} onClick={() => generateMutation.mutate(kind)}>{generateMutation.isPending ? 'Generating AI drafts…' : 'Generate AI Drafts'}</button>
+          <span className="text-sm text-text-muted" role="status">{filteredRows.length} matching translation{filteredRows.length === 1 ? '' : 's'}</span>
+        </div>
+      </div>
       <Card padding="none">
         <div className="flex items-center gap-2 border-b border-border p-4"><Languages size={18} /><h2 className="font-semibold">{kind === 'item' ? 'Product' : 'Category'} translations</h2></div>
         {(translationsQuery.isLoading || catalogQuery.isLoading) && <p role="status" className="p-4 text-text-muted">Loading translations...</p>}
@@ -283,7 +334,7 @@ export function TranslationsPage() {
           <button type="button" onClick={() => { void translationsQuery.refetch(); void catalogQuery.refetch(); }} className={buttonClass}>Retry</button>
         </div>}
         <div className="divide-y divide-border">
-          {visibleRows.map((row) => editing?.row.id === row.id ? (
+          {pagedRows.map((row) => editing?.row.id === row.id ? (
             <fieldset key={row.id} disabled={mutation.isPending} className="min-w-0 space-y-4 p-4">
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="min-w-0 space-y-4">
@@ -309,6 +360,13 @@ export function TranslationsPage() {
                       : <p className="text-text-muted">No registered manufacturer URL. Open every saved source link and independently verify the exact product, variant, size and claims before reviewing.</p>)}
                     {evidenceQuery.data?.snapshot && !editing.evidenceSnapshot && <button type="button" className={buttonClass} onClick={prepareEvidence}>Prepare evidence snapshot</button>}
                     {editing.evidenceSnapshot && <p>Canonical evidence snapshot prepared for this item. {isDirty ? 'Save Draft to persist it.' : 'Saved evidence is ready for review.'}</p>}
+                  </section>}
+                  {editing.row.kind === 'category' && <section aria-label="Category evidence" className="space-y-2 rounded-lg border border-border p-3 text-sm">
+                    <h4 className="font-semibold">Category evidence</h4>
+                    <p className="text-text-muted">Add one HTTPS source URL per line, open and verify each source, then prepare the canonical snapshot before review.</p>
+                    <textarea aria-label="Category evidence URLs" value={editing.evidenceUrisText} onChange={(event) => changeEditor({ evidenceUrisText: event.target.value, evidenceSnapshot: null })} className={inputClass} rows={3} placeholder="https://example.com/category-source" />
+                    {!editing.evidenceSnapshot && <button type="button" className={buttonClass} onClick={prepareCategoryEvidence}>Prepare category evidence snapshot</button>}
+                    {editing.evidenceSnapshot && <p>Canonical category evidence snapshot prepared. {isDirty ? 'Save Draft to persist it.' : 'Saved evidence is ready for review.'}</p>}
                   </section>}
                   {editing.row.kind === 'item' && parsed?.evidence_snapshot?.sourceUris.length ? <section aria-label="Saved product evidence links" className="space-y-2 text-sm">
                     <h4 className="font-semibold">Saved product evidence URLs</h4>
@@ -343,6 +401,8 @@ export function TranslationsPage() {
                 <ul className="list-disc pl-5">
                   <li>Compare the Bengali copy with the canonical source shown above.</li>
                   {!parsed?.evidence_snapshot && <li>An openable source link must be available and its exact product claims checked before approval.</li>}
+                  {row.review_status === 'reviewed' && editing.row.kind === 'item' && (evidenceQuery.isError || (evidenceQuery.isSuccess && !resolvedEvidence?.matched))
+                    && <li role="alert">Publication is disabled until the current registry evidence resolves without a conflict.</li>}
                   {isDirty && <li>Save your changes as a draft before marking it reviewed.</li>}
                   {!editing.humanReviewConfirmed && <li>Confirm the human review checkbox below.</li>}
                 </ul>
@@ -352,7 +412,7 @@ export function TranslationsPage() {
               </div>
               <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={editing.humanReviewConfirmed} onChange={(event) => setEditing({ ...editing, humanReviewConfirmed: event.target.checked })} className="mt-1 h-4 w-4" /><span>I opened and checked the linked sources, Bengali copy, exact product identity, package size, aliases and claims.</span></label>
               <p className="text-sm text-text-muted">Save changes as draft first. Review and publication are separate actions; the database records the acting user and timestamps.</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="sticky bottom-16 z-10 -mx-4 flex flex-wrap gap-2 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
                 {([['save_draft', 'draft', 'Save Draft'], ['mark_reviewed', 'reviewed', 'Mark Reviewed'], ['publish', 'published', 'Publish']] as const).map(([action, status, label]) => <button key={action} type="button" disabled={mutation.isPending || !canAct(action, status)} onClick={() => { if (parsed) mutation.mutate({ row: parsed, action, humanReviewConfirmed: editing.humanReviewConfirmed }); }} className={`${buttonClass} inline-flex items-center gap-2 ${action === 'publish' ? 'bg-primary text-primary-on' : 'bg-surface'}`}>
                   {action === 'save_draft' && <Save size={16} />}{label}
                 </button>)}
@@ -365,8 +425,15 @@ export function TranslationsPage() {
               <div className="flex items-center gap-3"><span className="text-sm capitalize text-text-muted">{row.id.startsWith('new:') ? 'Not generated' : row.review_status}</span><button type="button" disabled={mutation.isPending || generateMutation.isPending} onClick={() => startEditing(row)} className={buttonClass}>{row.id.startsWith('new:') ? 'Add Bengali' : row.review_status === 'draft' ? 'Review draft' : row.review_status === 'reviewed' ? 'Publish…' : 'Edit'}</button></div>
             </div>
           ))}
-          {!translationsQuery.isLoading && !catalogQuery.isLoading && !visibleRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
+          {!translationsQuery.isLoading && !catalogQuery.isLoading && !filteredRows.length && <p className="p-4 text-text-muted">No matching translations found.</p>}
         </div>
+        {filteredRows.length > pageSize && <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border p-4 text-sm">
+          <span>Page {effectivePage} of {totalPages}</span>
+          <div className="flex gap-2">
+            <button type="button" className={buttonClass} disabled={effectivePage === 1 || Boolean(editing)} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</button>
+            <button type="button" className={buttonClass} disabled={effectivePage === totalPages || Boolean(editing)} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</button>
+          </div>
+        </div>}
       </Card>
     </div>
   );

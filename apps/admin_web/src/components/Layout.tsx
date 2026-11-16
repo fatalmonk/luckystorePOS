@@ -59,6 +59,11 @@ export function Layout() {
 
   useEffect(() => {
     const mainEl = mainContentRef.current || document.querySelector('.main-content');
+    const keepTranslationToolbarVisible = isMobile && location.pathname.includes('/translations');
+    if (keepTranslationToolbarVisible) {
+      setHeaderVisible(true);
+      return;
+    }
     const SCROLL_THRESHOLD = 8;
     const TOP_ZONE = 30;
 
@@ -108,7 +113,7 @@ export function Layout() {
       }
       window.removeEventListener('scroll', handleScroll, { capture: true });
     };
-  }, [location.pathname]);
+  }, [isMobile, location.pathname]);
 
 
   useEffect(() => {

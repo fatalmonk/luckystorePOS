@@ -26,7 +26,7 @@ export function isTranslationEvidenceSnapshot(value: unknown): value is Translat
     if (value[key] !== null && typeof value[key] !== 'string') return false;
   }
   return Array.isArray(value.sourceUris) && value.sourceUris.length > 0
-    && value.sourceUris.every((uri) => typeof uri === 'string' && /^https?:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(uri));
+    && value.sourceUris.every((uri) => typeof uri === 'string' && /^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(uri));
 }
 
 export function matchesTranslationEvidence(value: unknown, source: CanonicalTranslationSource): boolean {
