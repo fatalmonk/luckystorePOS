@@ -140,3 +140,16 @@ Deno.test('accepts official Horlicks pack evidence from the manufacturer report'
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('accepts the official GlucoMax D 350 g pack evidence', () => {
+  const result = resolveRegistryEvidence({
+    id: '12621380-1811-4f22-a618-c57a3bed39eb',
+    name: 'Glucose 350 g',
+    description: 'GlucoMax D 350g powder drink mix.',
+    brand: 'Glucose',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
