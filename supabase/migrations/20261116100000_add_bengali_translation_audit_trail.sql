@@ -20,7 +20,9 @@ CREATE INDEX IF NOT EXISTS translation_review_audit_entity_idx
   ON public.translation_review_audit (tenant_id, translation_kind, entity_id, created_at DESC);
 
 ALTER TABLE public.translation_review_audit ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.translation_review_audit FROM PUBLIC, anon;
+-- Block direct audit-row writes, including via bypassrls service credentials.
+-- The SECURITY DEFINER translation triggers remain the only intended writers.
+REVOKE ALL ON public.translation_review_audit FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT ON public.translation_review_audit TO authenticated;
 
 DROP POLICY IF EXISTS translation_review_audit_staff_select ON public.translation_review_audit;
