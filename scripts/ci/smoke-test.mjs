@@ -179,6 +179,8 @@ export async function request(targetUrl, options = {}, retryPolicy = {}) {
       if (!TRANSIENT_SMOKE_ERROR_CODES.has(code) || attempt === maxAttempts) {
         throw error;
       }
+      console.warn('Transient smoke transport error ' + code + ' on ' + method + ' ' + new URL(targetUrl).pathname
+        + '; retrying attempt ' + (attempt + 1) + '/' + maxAttempts);
       await new Promise((resolve) => setTimeout(resolve, backoffMs * attempt));
     }
   }
