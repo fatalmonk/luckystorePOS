@@ -213,4 +213,18 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.citygroup.com.bd/brand/1',
     manufacturerTitle: 'City Group TEER Flour product card',
   },
+  '2c6eeb8d': {
+    exactName: 'Fresh Fortified Soybean Oil 2L (Bottle)',
+    brand: 'Fresh',
+    netQuantity: '2 L',
+    manufacturerUrl: 'https://www.mgi.org/businessverticals/edible-oil',
+    manufacturerTitle: 'MGI Super Fresh Fortified Soyabean Oil product listing',
+  },
+  '18f5d5f1': {
+    exactName: 'Fresh Fortified Soybean Oil 5L (Can)',
+    brand: 'Fresh',
+    netQuantity: '5 L',
+    manufacturerUrl: 'https://www.mgi.org/businessverticals/edible-oil',
+    manufacturerTitle: 'MGI Super Fresh Fortified Soyabean Oil product listing',
+  },
 };

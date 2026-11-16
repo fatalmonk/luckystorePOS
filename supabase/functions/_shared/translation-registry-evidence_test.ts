@@ -205,3 +205,25 @@ Deno.test('uses the official TEER Flour 1 kg supplement for catalog Maida', () =
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+Deno.test('uses the official MGI Super Fresh 2 L oil listing for the catalog bottle', () => {
+  const result = resolveRegistryEvidence({
+    id: '2c6eeb8d-1d5b-40a3-8e7f-8a8d7ac0c32e',
+    name: 'Fresh Fortified Soybean Oil 2L (Bottle)',
+    description: 'Fresh Fortified Soybean Oil, 2L bottle.',
+    brand: 'Fresh',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+Deno.test('uses the official MGI Super Fresh 5 L oil listing for the catalog can', () => {
+  const result = resolveRegistryEvidence({
+    id: '18f5d5f1-d41e-40a6-82da-fb29ff6af175',
+    name: 'Fresh Fortified Soybean Oil 5L (Can)',
+    description: 'Fresh Fortified Soybean Oil, 5L can.',
+    brand: 'Fresh',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
