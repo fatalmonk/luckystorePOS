@@ -127,3 +127,16 @@ Deno.test('uses the verified Dano Daily Pushti supplement', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('accepts official Horlicks pack evidence from the manufacturer report', () => {
+  const result = resolveRegistryEvidence({
+    id: '0859c07d-8b3a-4c3f-8b8b-4f09c32ccf00',
+    name: 'Standard Horlicks Jar 500 g',
+    description: 'Standard Horlicks, 500 g jar.',
+    brand: 'Horlicks',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});

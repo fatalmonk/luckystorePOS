@@ -111,6 +111,16 @@ export const registryOverrides: Record<string, {
     manufacturerUrl: 'https://www.kelloggs.com/en-in/revised-product-price-list.html',
     manufacturerTitle: "Kellogg's Chocos product price list",
   },
+  '221b5894': {
+    netQuantity: '350 g',
+    manufacturerUrl: 'https://www.unileverconsumercarebd.com/files/ucl-annual-report-2025.pdf',
+    manufacturerTitle: "Unilever Consumer Care annual report — Mother's Horlicks 350 g",
+  },
+  '0859c07d': {
+    netQuantity: '500 g',
+    manufacturerUrl: 'https://www.unileverconsumercarebd.com/files/92ui5egz/production/2f51549ea9c74c40a2b03a156add62b1df5fd63b.pdf',
+    manufacturerTitle: 'Unilever Consumer Care annual report — Standard Horlicks 500 g',
+  },
   '1ba3a780': {
     netQuantity: '120 ml',
     manufacturerUrl: 'https://polarbd.com/en/product/cone-carnival-hazelnut/',
