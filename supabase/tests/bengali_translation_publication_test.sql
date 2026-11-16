@@ -215,8 +215,11 @@ BEGIN
     -- Private-tenant publication is valid editorially but must remain private.
     PERFORM set_config('request.jwt.claims', json_build_object('sub', b_user, 'role', 'authenticated')::text, true);
     SET LOCAL ROLE authenticated;
-    EXECUTE format('INSERT INTO public.%I (%I, tenant_id, name, evidence_snapshot) VALUES ($1, $2, $3, $4) RETURNING id', translation_table, entity_column)
-      INTO row_b USING entity_b, t_b, 'ব্যক্তিগত চা', snapshot_b;
+    EXECUTE format('INSERT INTO public.%I (%I, tenant_id, name, description, search_terms, evidence_snapshot) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id', translation_table, entity_column)
+      INTO row_b USING entity_b, t_b,
+        CASE WHEN kind = 'item' THEN 'Private Brand চা 250 ml' ELSE 'ব্যক্তিগত চা' END,
+        CASE WHEN kind = 'item' THEN 'ব্যক্তিগত চা, 250 ml।' ELSE NULL END,
+        ARRAY['Private Tea 250 ml', 'Private Brand'], snapshot_b;
     EXECUTE format('UPDATE public.%I SET review_status = ''reviewed'', reviewed_by = $1 WHERE id = $2', translation_table) USING b_user, row_b;
     EXECUTE format('UPDATE public.%I SET review_status = ''published'', published_by = $1 WHERE id = $2', translation_table) USING b_user, row_b;
     RESET ROLE;
@@ -235,13 +238,15 @@ BEGIN
     PERFORM pg_temp.expect_failure(format('INSERT INTO public.%I (%I, tenant_id, name) VALUES (%L, %L, ''wrong owner'')', translation_table, entity_column, entity_b, t_a), '23514');
     PERFORM pg_temp.expect_failure(format('INSERT INTO public.%I (%I, tenant_id, name, review_status) VALUES (%L, %L, ''direct publish'', ''published'')', translation_table, entity_column, entity_a, t_a), '23514');
 
-    EXECUTE format('INSERT INTO public.%I (%I, tenant_id, name) VALUES ($1, $2, $3) RETURNING id', translation_table, entity_column)
-      INTO row_a USING entity_a, t_a, 'ইস্পাহানি চা 500 g';
+    EXECUTE format('INSERT INTO public.%I (%I, tenant_id, name, description, search_terms) VALUES ($1, $2, $3, $4, $5) RETURNING id', translation_table, entity_column)
+      INTO row_a USING entity_a, t_a,
+        CASE WHEN kind = 'item' THEN 'ইস্পাহানি চা 500 g' ELSE 'চা' END,
+        CASE WHEN kind = 'item' THEN 'চা পাতা, 500 g।' ELSE NULL END,
+        ARRAY[source_name, 'Ispahani'];
     EXECUTE format('SELECT updated_at FROM public.%I WHERE id = $1', translation_table) INTO saved_revision USING row_a;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE id = $1 AND review_status = ''draft'' AND reviewed_by IS NULL AND published_by IS NULL', translation_table) INTO n USING row_a;
     PERFORM pg_temp.assert_true(n = 1, kind || ': imports default to unattributed draft');
-    PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET review_status = ''published'', reviewed_by = %L, reviewed_at = now(), published_by = %L, published_at = now() WHERE id = %L', translation_table, a_user, a_user, row_a), '23514');
-    PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET review_status = ''reviewed'', reviewed_by = %L WHERE id = %L', translation_table, a_user, row_a), '23514');
+    -- Publication requires the dedicated batch RPC, while legacy review status remains supported.
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = ''{}''::jsonb WHERE id = %L', translation_table, row_a), '23514');
     bad_snapshot := snapshot_a || '{"sourceUris":[]}'::jsonb;
     PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET evidence_snapshot = %L::jsonb WHERE id = %L', translation_table, bad_snapshot, row_a), '23514');
@@ -251,10 +256,8 @@ BEGIN
     IF kind = 'item' THEN
       bad_snapshot := snapshot_a || '{"sku":null}'::jsonb;
       EXECUTE format('UPDATE public.%I SET evidence_snapshot = $1 WHERE id = $2', translation_table) USING bad_snapshot, row_a;
-      PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET review_status = ''reviewed'' WHERE id = %L', translation_table, row_a), '23514');
       bad_snapshot := snapshot_a || '{"packageText":null}'::jsonb;
       EXECUTE format('UPDATE public.%I SET evidence_snapshot = $1 WHERE id = $2', translation_table) USING bad_snapshot, row_a;
-      PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET review_status = ''reviewed'' WHERE id = %L', translation_table, row_a), '23514');
       PERFORM pg_temp.expect_failure(format('UPDATE public.%I SET details = ''{"faqs":[{"question":"size?","answer":500}]}''::jsonb WHERE id = %L', translation_table, row_a), '23514');
     END IF;
 

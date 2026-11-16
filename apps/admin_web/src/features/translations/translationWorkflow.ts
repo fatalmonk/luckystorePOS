@@ -32,6 +32,12 @@ const sortedTokens = (value: string, pattern: RegExp) => [...value.matchAll(patt
 
 export type CatalogTranslationCheck = { valid: boolean; issues: string[] };
 
+export async function catalogSourceVersion(source: Pick<CanonicalTranslationSource, 'id' | 'name' | 'description' | 'sku' | 'barcode' | 'brand'>): Promise<string> {
+  const canonical = [source.id, source.name, source.description ?? '', source.sku ?? '', source.barcode ?? '', source.brand ?? ''].join('\u001f');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 /**
  * Catalog-only checks. These validate translation structure and identity
  * preservation without asserting manufacturer-backed factual claims.
@@ -131,13 +137,13 @@ export function canTransitionTranslation(
     || source.id !== (translation.item_id ?? translation.category_id)
     || translation.locale !== 'bn' || !isText(translation.name)
     || !isLocalizedProductDetails(translation.details ?? null)) return false;
-  if (to === 'draft') return action === 'save_draft';
+  if (to === 'draft') return from !== 'published' && action === 'save_draft';
   if (translation.kind === 'item' && !source.description?.trim() && translation.details && Object.keys(translation.details).length > 0) return false;
   if (!validateCatalogTranslation(source, translation).valid) return false;
-  if (translation.id.startsWith('new:') || !context.humanReviewConfirmed
-    || !validateEvidenceIdentity(translation.evidence_snapshot, source).valid) return false;
-  if (from === 'draft' && to === 'reviewed') return action === 'mark_reviewed';
-  return from === 'reviewed' && to === 'published' && action === 'publish'
-    && typeof translation.reviewed_by === 'string' && uuid.test(translation.reviewed_by)
+  if (translation.id.startsWith('new:')) return false;
+  if (translation.source_version && source.sourceVersion && translation.source_version !== source.sourceVersion) return false;
+  if (to !== 'published' || action !== 'publish' || !context.humanReviewConfirmed) return false;
+  if (from === 'reviewed') return typeof translation.reviewed_by === 'string' && uuid.test(translation.reviewed_by)
     && isTimestamp(translation.reviewed_at);
+  return from === 'draft';
 }

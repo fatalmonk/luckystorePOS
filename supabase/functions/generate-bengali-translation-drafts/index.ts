@@ -4,9 +4,12 @@ import { allowedOrigin, bengaliNameRetrySources, boundedGenerationLimit, canGene
 
 // One pinned free model. No alternate provider or paid fallback.
 import { classifyInvalidRetryResponse, classifyProviderOutput, decodeSuccessfulProviderResponse, providerConfig, providerRequest } from './provider.ts';
-import { registrySnapshot, resolveRegistryEvidence } from '../_shared/translation-registry-evidence.ts';
-import { evidenceFallbackDraft } from './evidenceFallback.ts';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const sourceVersion = async (source: { id: string; name: string; description: string | null; sku?: string | null; barcode?: string | null; brand?: string | null }) => {
+  const canonical = [source.id, source.name, source.description ?? '', source.sku ?? '', source.barcode ?? '', source.brand ?? ''].join('\u001f');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+};
 
 serve(async (request) => {
   const origin = request.headers.get('origin');
@@ -21,10 +24,8 @@ serve(async (request) => {
   let body: unknown;
   try { body = await request.json(); } catch { return respond(400, { error: 'Invalid JSON request' }); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return respond(400, { error: 'Invalid request' });
-  const { kind, limit, itemIds, itemId } = body as Record<string, unknown>;
-  if (kind === 'evidence' ? (typeof itemId !== 'string' || !uuid.test(itemId) || itemIds !== undefined || limit !== undefined) : (!validRequest(kind, limit) || itemId !== undefined)) {
-    return respond(400, { error: 'Invalid evidence lookup or generation request' });
-  }
+  const { kind, limit, itemIds } = body as Record<string, unknown>;
+  if (!validRequest(kind, limit)) return respond(400, { error: 'Invalid translation generation request' });
   // Targeted regeneration is scoped to the requesting tenant, never arbitrary IDs.
   const requestedIds = itemIds === undefined ? null : itemIds;
   if (requestedIds !== null && (kind !== 'item' || !Array.isArray(requestedIds)
@@ -41,22 +42,13 @@ serve(async (request) => {
   if (authError || !authData.user) return respond(401, { error: 'Invalid session' });
   const { data: profile, error: profileError } = await db.from('users').select('id, tenant_id, role').eq('auth_id', authData.user.id).single();
   if (profileError || !profile || !uuid.test(profile.tenant_id) || !canGenerate(profile.role, profile.tenant_id, profile.tenant_id)) return respond(403, { error: 'Manager access required' });
-  if (kind === 'evidence') {
-    const { data: item, error } = await db.from('items').select('id, tenant_id, name, description, sku, barcode, brand')
-      .eq('id', itemId).eq('tenant_id', profile.tenant_id).single();
-    if (error || !item || item.tenant_id !== profile.tenant_id) return respond(404, { error: 'Product not found' });
-    const source = { ...item, packageText: item.name.match(/\b\d+(?:\.\d+)?\s*(?:kg|gm|g|ml|l|pcs?|pieces?|grams?|litres?|liters?)\b/i)?.[0]
-      ?? item.description?.match(/\b\d+(?:\.\d+)?\s*(?:kg|gm|g|ml|l|pcs?|pieces?|grams?|litres?|liters?)\b/i)?.[0] ?? null };
-    return respond(200, { evidence: resolveRegistryEvidence(source), snapshot: registrySnapshot(source) });
-  }
   const config = providerConfig(Deno.env.get('OPENROUTER_API_KEY'));
   const batchLimit = boundedGenerationLimit(limit as number);
-  // A narrowly scoped, verified-source fallback can work even when the free provider is unavailable.
   const table = kind === 'item' ? 'item_translations' : 'category_translations';
   const catalog = kind === 'item' ? 'items' : 'categories';
   const foreignKey = kind === 'item' ? 'item_id' : 'category_id';
-  const fields: string = kind === 'item' ? 'id, tenant_id, name, description, brand, sku' : 'id, tenant_id, name, description';
-  const candidates: Array<Source & { previous?: { id: string; updated_at: string } }> = [];
+  const fields: string = kind === 'item' ? 'id, tenant_id, name, description, brand, sku, barcode' : 'id, tenant_id, name';
+  const candidates: Array<Source & { source_version: string; previous?: { id: string; updated_at: string; review_status: string } }> = [];
   let skipped = 0;
   try {
     // Bounded scan avoids one request consuming unlimited database and provider resources.
@@ -69,7 +61,7 @@ serve(async (request) => {
       if (!records?.length) break;
       const catalogRows = records as unknown as Array<Source & { tenant_id: string }>;
       const ids = catalogRows.map((record) => record.id);
-      const { data: existing, error: existingError } = await db.from(table).select(`${foreignKey}, id, description, review_status, updated_at`).eq('tenant_id', profile.tenant_id).eq('locale', 'bn').in(foreignKey, ids);
+      const { data: existing, error: existingError } = await db.from(table).select(`${foreignKey}, id, name, description, review_status, source_version, updated_at`).eq('tenant_id', profile.tenant_id).eq('locale', 'bn').in(foreignKey, ids);
       if (existingError) return respond(502, { error: 'Could not read existing translations' });
       const translations = new Map((existing ?? []).map((row) => [row[foreignKey], row]));
       for (const record of catalogRows) {
@@ -77,30 +69,24 @@ serve(async (request) => {
           || typeof record.name !== 'string' || !record.name.trim()
           || (record.description !== null && typeof record.description !== 'string')) return respond(502, { error: 'Invalid catalog source' });
         const previous = translations.get(record.id);
-        if (previous && (previous.review_status !== 'draft' || previous.description)) { skipped++; continue; }
-        const resolved = kind === 'item' ? resolveRegistryEvidence(record) : null;
-        const evidenceDescription = resolved?.matched ? resolved.supportedFacts : null;
-        // Existing empty drafts are enhanced only if exact registry-backed facts exist.
-        if (previous && !evidenceDescription && !record.description) { skipped++; continue; }
+        const currentVersion = await sourceVersion(record);
+        const previousOutdated = Boolean(previous?.source_version && previous.source_version !== currentVersion);
+        const explicitlyTargetedLegacy = Boolean(requestedIds?.includes(record.id) && previous && !previous.source_version);
+        const previousIsComplete = Boolean(previous?.name?.trim()) &&
+          (!record.description?.trim() || Boolean(previous?.description?.trim()));
+        if (previous && !previousOutdated && !explicitlyTargetedLegacy
+          && (previous.review_status !== 'draft' || previousIsComplete)) { skipped++; continue; }
         if (candidates.length < batchLimit) candidates.push({
-          id: record.id, name: record.name, description: record.description, sku: kind === 'item' ? record.sku : null,
-          brand: kind === 'item' ? record.brand : null, evidenceDescription,
-          ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at } } : {}),
+          id: record.id, name: record.name, description: kind === 'item' ? record.description : null, sku: kind === 'item' ? record.sku : null,
+          barcode: kind === 'item' ? record.barcode : null, brand: kind === 'item' ? record.brand : null,
+          source_version: currentVersion,
+          ...(previous ? { previous: { id: previous.id, updated_at: previous.updated_at, review_status: previous.review_status } } : {}),
         });
       }
       if (records.length < 50) break;
     }
     if (!candidates.length) return respond(200, { generated: 0, skipped, failed: 0 });
     let results: ReturnType<typeof parseBatch> = new Map();
-    // Exact manufacturer templates are the only permissible evidence-only claims.
-    // Never treat arbitrary generated prose as verified manufacturer copy.
-    const vettedDescriptions = new Map<string, string>();
-    for (const source of candidates) {
-      if (!source.description?.trim() && source.evidenceDescription?.trim()) {
-        const template = evidenceFallbackDraft(source)?.description;
-        if (template) vettedDescriptions.set(source.id, template);
-      }
-    }
     let providerUnavailable = !config;
     let providerOutcome = config ? 'unknown' : 'missing_api_key';
     let nameRepairAttempted = 0;
@@ -123,7 +109,7 @@ serve(async (request) => {
             const choice = decoded.body.choices?.[0];
             const content: unknown = choice?.message?.content;
             if (typeof content === 'string' && content.trim() && content.length <= 30000) {
-              results = parseBatch(content, candidates, vettedDescriptions);
+              results = parseBatch(content, candidates);
               providerOutcome = classifyProviderOutput(results, choice?.finish_reason);
               const nameRetry = bengaliNameRetrySources(candidates, results);
               if (nameRetry.length && !controller.signal.aborted) {
@@ -146,7 +132,7 @@ serve(async (request) => {
                       const retryChoice = retryBody.body.choices?.[0];
                       const retryText: unknown = retryChoice?.message?.content;
                       if (typeof retryText === 'string' && retryText.trim() && retryText.length <= 30000) {
-                        const repair = parseBatch(retryText, nameRetry, vettedDescriptions);
+                        const repair = parseBatch(retryText, nameRetry);
                         for (const source of nameRetry) {
                           const updated = repair.get(source.id);
                           if (updated?.draft) {
@@ -188,40 +174,40 @@ serve(async (request) => {
       } finally { clearTimeout(timeout); }
     }
     let generated = 0;
-    let fallbackGenerated = 0;
     const failures: Array<{ id: string; reason: string }> = [];
     for (const source of candidates) {
       const modelResult = results.get(source.id);
       // A name-only response must not masquerade as a completed description.
-      const needsDescription = Boolean(source.description?.trim() || source.evidenceDescription?.trim());
+      const needsDescription = Boolean(source.description?.trim());
       const incompleteModelDraft = Boolean(modelResult?.draft && needsDescription && !modelResult.draft.description);
-      const fallback = (!modelResult?.draft || incompleteModelDraft) ? evidenceFallbackDraft(source) : null;
-      const draft = fallback ?? (incompleteModelDraft ? null : modelResult?.draft);
+      const draft = incompleteModelDraft ? null : modelResult?.draft;
       if (!draft) {
         failures.push({ id: source.id, reason: modelResult?.error
-          ?? (incompleteModelDraft ? 'Model returned an empty description despite available facts'
-            : 'AI unavailable and no linked manufacturer facts for this item') });
+          ?? (incompleteModelDraft ? 'Model returned an empty description despite canonical source text' : 'AI provider returned no valid translation') });
         continue;
       }
       if (source.previous) {
         // Keep existing translated names, reviewer decisions and aliases untouched.
-        const { data, error } = await db.from(table).update({ description: draft.description })
+        const { data, error } = await db.from(table).update({ name: draft.name, description: draft.description,
+          ...(kind === 'item' ? { details: null } : {}),
+          search_terms: draft.search_terms, source_version: source.source_version, review_status: 'draft',
+          reviewed_by: null, reviewed_at: null, published_by: null, published_at: null })
           .eq('id', source.previous.id).eq('tenant_id', profile.tenant_id)
-          .eq('review_status', 'draft').eq('updated_at', source.previous.updated_at)
-          .or('description.is.null,description.eq.').select('id').maybeSingle();
+          .eq('review_status', source.previous.review_status).eq('updated_at', source.previous.updated_at).select('id').maybeSingle();
         if (error || !data) failures.push({ id: source.id, reason: 'Draft was changed or could not be updated' });
-        else { generated++; if (fallback) fallbackGenerated++; }
+        else generated++;
         continue;
       }
       const { error } = await db.from(table).insert({
         [foreignKey]: source.id, tenant_id: profile.tenant_id, locale: 'bn', name: draft.name,
-        description: draft.description, search_terms: draft.search_terms,
+        ...(kind === 'item' ? { details: null } : {}),
+        description: draft.description, search_terms: draft.search_terms, source_version: source.source_version,
         review_status: 'draft', evidence_snapshot: null, reviewed_by: null, reviewed_at: null, published_by: null, published_at: null,
       });
       if (error) {
         if (error.code === '23505') skipped++;
         else failures.push({ id: source.id, reason: 'Draft could not be saved' });
-      } else { generated++; if (fallback) fallbackGenerated++; }
+      } else generated++;
     }
     // Safe structured diagnostics: never log generated text, tokens, names or source details.
     console.info(JSON.stringify({ event: 'translation_generation_summary', model: 'nvidia/nemotron-3.5-super-vl:free',
@@ -232,7 +218,7 @@ serve(async (request) => {
         : `Free AI provider unavailable (${providerOutcome})`,
       generated, skipped, failed: failures.length, failures: failures.slice(0, 10),
     });
-    return respond(200, { generated, skipped, failed: failures.length, fallbackGenerated,
+    return respond(200, { generated, skipped, failed: failures.length,
       providerOutcome, failures: failures.slice(0, 10) });
   } catch { return respond(502, { error: 'Draft generation failed' }); }
 });

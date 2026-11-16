@@ -39,12 +39,12 @@ Deno.test('malformed successful HTTP provider response is not classified as a tr
   assertEquals(valid.ok, true);
 });
 
-Deno.test('system instructions forbid unsupported semantic claims and enforce exact variants and same-item evidence', () => {
+Deno.test('system instructions prohibit unsupported claims and translate canonical catalog text only', () => {
   const prompt = providerRequest([]).messages[0].content;
   for (const phrase of [
     'Do not infer milk from powder', 'Never invent claims', 'unrelated product facts',
-    'ONLY evidenceDescription', 'same specific item', 'exactly as written',
-    'Human review',
+    'canonical catalog fields', 'If the canonical description is empty, set description=null',
+    'human administrator or manager',
   ]) {
     assertEquals(prompt.includes(phrase), true, phrase);
   }
@@ -53,7 +53,7 @@ Deno.test('system instructions forbid unsupported semantic claims and enforce ex
 
 Deno.test('translation prompt requires Bengali words in names, preserves identities, and includes aliases', () => {
   const text = providerRequest([]).messages[0].content;
-  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'Human review']) {
+  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'administrator or manager']) {
     assertEquals(text.includes(part), true, part);
   }
   assertEquals(providerRequest([], { repairBengaliNames: true }).messages[0].content.includes('CORRECTION:'), true);
