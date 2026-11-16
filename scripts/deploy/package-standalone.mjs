@@ -49,7 +49,7 @@ export function packageStandalone({ rootDir = process.cwd(), outputZip = 'storef
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'apps/customer_storefront/security-headers-install.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/origin-gate-install.cjs'), path.join(standaloneDir, 'apps/customer_storefront/origin-gate-install.cjs'));
-  fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./security-headers-install.cjs');\nrequire('./origin-gate-install.cjs');\nrequire('./apps/customer_storefront/server.js');\n`);
+  fs.writeFileSync(path.join(standaloneDir, 'server.js'), `require('./security-headers-install.cjs');\nrequire('./apps/customer_storefront/server.js');\n`);
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers.cjs'), path.join(standaloneDir, 'security-headers.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/security-headers-install.cjs'), path.join(standaloneDir, 'security-headers-install.cjs'));
   fs.copyFileSync(path.join(rootDir, 'apps/customer_storefront/origin-gate-install.cjs'), path.join(standaloneDir, 'origin-gate-install.cjs'));
