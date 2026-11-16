@@ -5,7 +5,7 @@ import {
   isLocalizedProductDetails,
   isTranslationEvidenceSnapshot,
   matchesTranslationEvidence,
-  validateEvidenceClaims,
+  validateEvidenceIdentity,
   validateCatalogTranslation,
 } from './translationWorkflow';
 import type {
@@ -148,8 +148,19 @@ describe('translation evidence and details boundaries', () => {
     expect(matchesTranslationEvidence({ ...evidence, sourceDescription: 'Different product' }, source)).toBe(false);
     expect(matchesTranslationEvidence({ ...evidence, sourceName: 'Another tea' }, source)).toBe(false);
     expect(matchesTranslationEvidence({ ...evidence, barcode: '000' }, source)).toBe(false);
-    expect(validateEvidenceClaims(evidence, source)).toEqual({ valid: true, issues: [] });
-    expect(validateEvidenceClaims({ ...evidence, sourceName: 'Another tea' }, source).valid).toBe(false);
+    expect(validateEvidenceIdentity(evidence, source)).toEqual({ valid: true, issues: [] });
+    expect(validateEvidenceIdentity({ ...evidence, sourceName: 'Another tea' }, source).valid).toBe(false);
+  });
+
+  it('blocks untranslated descriptions and ungrounded text when the catalog has no description', () => {
+    expect(validateCatalogTranslation(source, { ...translation, description: 'Tea leaves, 500 g.' }).valid).toBe(false);
+    const noDescriptionSource = { ...source, description: null };
+    expect(validateCatalogTranslation(noDescriptionSource, translation).valid).toBe(false);
+    expect(canTransitionTranslation('draft', 'reviewed', context({
+      source: noDescriptionSource,
+      translation: { ...translation, description: null, details: { summary: 'এটি স্বাস্থ্যকর' },
+        evidence_snapshot: { ...evidence, sourceDescription: null } },
+    }))).toBe(false);
   });
 
   it('extracts Latin package quantities without changing catalog identity', () => {

@@ -88,7 +88,7 @@ beforeEach(() => {
       const itemId = (options?.body as { itemId: string }).itemId;
       return { data: { evidence: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? ramenEvidence :
         { key: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? '4d20b020' : '002fbcb3', matched: itemId !== '29e60fea-429c-4b7d-b639-406471a6623b', issue: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? 'No registry match' : null, entry: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? null : { exactName: item.name, netQuantity: '500 g' }, links: [], missing: [], supportedFacts: null },
-        snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
+        snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: 'Samyang Buldak Ramen 2X Cup 70g is a 70g noodle cup.', sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
     }
     return { data: null, error: null } as never;
   });
@@ -241,7 +241,7 @@ describe('TranslationsPage publication actions', () => {
 
   it('keeps the saved Samyang draft open for human review and only publishes after a separate click', async () => {
     const ramen = { ...item, id: '1aafa29f-07ca-4f04-a702-549c1720bd6a',
-      name: 'Samyang Buldak Ramen 2X Cup 70g', description: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
+      name: 'Samyang Buldak Ramen 2X Cup 70g', description: 'Samyang Buldak Ramen 2X Cup 70g is a 70g noodle cup.', sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null };
     rows.items = [ramen];
     rows.item_translations = [{ ...draft, item_id: ramen.id, name: 'Samyang Buldak রামেন 2X কাপ 70g',
       description: 'Samyang Buldak Ramen 2X Cup 70g হলো 70g ওজনের কাপ নুডলস।',

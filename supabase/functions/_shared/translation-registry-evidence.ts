@@ -16,21 +16,29 @@ export type RegistryEvidenceResult = {
 };
 
 const records = registry as Record<string, RegistryEntry>;
-const packageToken = /\b((?:\d+\s*\/\s*\d+|\d+(?:\.\d+)?))(?:\s*x\s*\d+)?\s*(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|tea\s*bags?|bags?|pieces?|pcs?|sheets?)\b/i;
+// Parse explicit multipacks separately from sheet/ply dimensions.
+const packageToken = /\b(\d+\s*\/\s*\d+|\d+(?:\.\d+)?)\s*(?:[x×]\s*(\d+(?:\.\d+)?)\s*)?(kg|grams?|gm|g|ml|liters?|litres?|ltr|l|tea\s*bags?|bags?|pieces?|pcs?|sheets?)\b/gi;
 const quantity = (raw: string) => {
-  const match = raw.match(packageToken);
+  const match = [...raw.matchAll(packageToken)][0];
   if (!match) return null;
-  const units: Record<string, string> = {
-    gram: 'g', grams: 'g', gm: 'g', g: 'g', kg: 'kg', ml: 'ml', l: 'l', ltr: 'l',
-    liter: 'l', liters: 'l', litre: 'l', litres: 'l', bag: 'bags', bags: 'bags',
-    'tea bag': 'bags', 'tea bags': 'bags', pc: 'pcs', pcs: 'pcs', piece: 'pcs', pieces: 'pcs',
-    sheet: 'sheets', sheets: 'sheets',
+  const units: Record<string, [string, number]> = {
+    gram: ['g', 1], grams: ['g', 1], gm: ['g', 1], g: ['g', 1],
+    kg: ['g', 1000], ml: ['ml', 1], l: ['ml', 1000], ltr: ['ml', 1000],
+    liter: ['ml', 1000], liters: ['ml', 1000], litre: ['ml', 1000], litres: ['ml', 1000],
+    bag: ['bags', 1], bags: ['bags', 1], 'tea bag': ['bags', 1], 'tea bags': ['bags', 1],
+    pc: ['pcs', 1], pcs: ['pcs', 1], piece: ['pcs', 1], pieces: ['pcs', 1],
+    sheet: ['sheets', 1], sheets: ['sheets', 1],
   };
-  const rawNumber = match[1].replace(/\s/g, '');
-  const value = rawNumber.includes('/')
-    ? rawNumber.split('/').map(Number).reduce((numerator, denominator) => numerator / denominator)
-    : Number(rawNumber);
-  return value + units[match[2].toLowerCase().replace(/\s+/g, ' ')];
+  const [unit, factor] = units[match[3].toLowerCase().replace(/\s+/g, ' ')] ?? [];
+  if (!unit) return null;
+  const number = (text: string) => text.includes('/')
+    ? text.split('/').map(Number).reduce((a, b) => a / b)
+    : Number(text);
+  const first = number(match[1].replace(/\s/g, ''));
+  const count = match[2] ? number(match[2]) : 1;
+  // '100x2 sheets' denotes sheets x plies, not a case of identical retail packs.
+  const multiplier = unit === 'sheets' ? 1 : count;
+  return String(Math.round(first * multiplier * factor * 10000) / 10000) + unit;
 };
 const normalizeName = (name: string) => name.toLowerCase().replace(/(\d)\s*(?:grams?|gm)\b/g, '$1g').replace(/\bgrams?\b|\bgm\b/g, 'g').replace(/[^a-z0-9]+/g, '');
 const safeUrl = (value: string | null) => value && /^https:\/\/[^\s/]+(?:\/[^\s]*)?$/i.test(value);
@@ -125,7 +133,7 @@ export function resolveRegistryEvidence(source: ProductIdentity): RegistryEviden
     };
   }
   const identityText = [source.name, source.description ?? ''].join(' ');
-  const actualSizes = [...identityText.matchAll(new RegExp(packageToken.source, 'gi'))].map(match => quantity(match[0]));
+  const actualSizes = [...identityText.matchAll(packageToken)].map(match => quantity(match[0]));
   const registrySize = quantity(entry.netQuantity);
   if (!registrySize || !actualSizes.includes(registrySize)) {
     return { ...empty('Product package size does not match the production registry entry.', entry, 'PACKAGE_MISMATCH'), identityMatched };

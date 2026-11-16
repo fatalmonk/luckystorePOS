@@ -3,13 +3,14 @@ SET LOCAL lock_timeout = '5s';
 
 CREATE TABLE IF NOT EXISTS public.translation_review_audit (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  -- Audit history is retained; tenant deletion must be an explicit retention-policy operation.
+  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE RESTRICT,
   translation_kind text NOT NULL CHECK (translation_kind IN ('item', 'category')),
   translation_id uuid NOT NULL,
   entity_id uuid NOT NULL,
   from_status text CHECK (from_status IS NULL OR from_status IN ('draft', 'reviewed', 'published')),
-  to_status text NOT NULL CHECK (to_status IN ('draft', 'reviewed', 'published')),
-  action text NOT NULL CHECK (action IN ('save_draft', 'mark_reviewed', 'publish')),
+  to_status text NOT NULL CHECK (to_status IN ('draft', 'reviewed', 'published', 'deleted')),
+  action text NOT NULL CHECK (action IN ('save_draft', 'mark_reviewed', 'publish', 'delete')),
   actor_id uuid REFERENCES public.users(id),
   content_fingerprint text NOT NULL,
   evidence_source_uris jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(evidence_source_uris) = 'array'),
@@ -54,24 +55,28 @@ CREATE OR REPLACE FUNCTION translation_private.record_translation_audit()
 RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
-  v_entity_id uuid := (to_jsonb(NEW)->>(TG_ARGV[0] || '_id'))::uuid;
+  v_row jsonb := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
+  v_entity_id uuid := (v_row->>(TG_ARGV[0] || '_id'))::uuid;
   v_actor uuid;
   v_action text;
   v_from text;
-  v_to text := NEW.review_status;
+  v_to text := CASE WHEN TG_OP = 'DELETE' THEN 'deleted' ELSE NEW.review_status END;
   v_fingerprint text;
   v_content jsonb;
 BEGIN
   SELECT u.id INTO v_actor
     FROM public.users u
    WHERE u.auth_id = (SELECT auth.uid())
-     AND u.tenant_id = NEW.tenant_id
+     AND u.tenant_id = (v_row->>'tenant_id')::uuid
      AND u.role IN ('admin', 'manager');
 
-  v_content := to_jsonb(NEW) - ARRAY['updated_at', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at'];
+  v_content := v_row - ARRAY['updated_at', 'reviewed_by', 'reviewed_at', 'published_by', 'published_at'];
   v_fingerprint := md5(v_content::text);
 
-  IF TG_OP = 'INSERT' THEN
+  IF TG_OP = 'DELETE' THEN
+    v_action := 'delete';
+    v_from := OLD.review_status;
+  ELSIF TG_OP = 'INSERT' THEN
     v_action := 'save_draft';
     v_from := NULL;
   ELSE
@@ -91,11 +96,14 @@ BEGIN
     tenant_id, translation_kind, translation_id, entity_id, from_status, to_status,
     action, actor_id, content_fingerprint, evidence_source_uris
   ) VALUES (
-    NEW.tenant_id, TG_ARGV[0], NEW.id, v_entity_id, v_from, v_to,
+    (v_row->>'tenant_id')::uuid, TG_ARGV[0], (v_row->>'id')::uuid, v_entity_id, v_from, v_to,
     v_action, v_actor, v_fingerprint,
-    CASE WHEN jsonb_typeof(NEW.evidence_snapshot->'sourceUris') = 'array'
-      THEN NEW.evidence_snapshot->'sourceUris' ELSE '[]'::jsonb END
+    CASE WHEN jsonb_typeof(v_row->'evidence_snapshot'->'sourceUris') = 'array'
+      THEN v_row->'evidence_snapshot'->'sourceUris' ELSE '[]'::jsonb END
   );
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
   RETURN NEW;
 END;
 $$;
@@ -105,12 +113,12 @@ REVOKE ALL ON FUNCTION translation_private.prevent_translation_audit_mutation(),
 
 DROP TRIGGER IF EXISTS record_item_translation_audit ON public.item_translations;
 CREATE TRIGGER record_item_translation_audit
-  AFTER INSERT OR UPDATE ON public.item_translations
+  AFTER INSERT OR UPDATE OR DELETE ON public.item_translations
   FOR EACH ROW EXECUTE FUNCTION translation_private.record_translation_audit('item');
 
 DROP TRIGGER IF EXISTS record_category_translation_audit ON public.category_translations;
 CREATE TRIGGER record_category_translation_audit
-  AFTER INSERT OR UPDATE ON public.category_translations
+  AFTER INSERT OR UPDATE OR DELETE ON public.category_translations
   FOR EACH ROW EXECUTE FUNCTION translation_private.record_translation_audit('category');
 
 COMMIT;

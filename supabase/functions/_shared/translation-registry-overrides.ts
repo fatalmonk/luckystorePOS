@@ -1,10 +1,11 @@
 /**
- * Live manufacturer evidence and corrections verified against current official
- * product pages. Keep this small and review each addition with its source.
+ * Manufacturer-origin evidence candidates and product identity corrections.
+ * Sources include manufacturer catalogues, reports and listings, not only product pages.
+ * A source link alone does not verify every package claim or product fact.
  */
 export const registryOverrides: Record<string, {
   netQuantity?: string;
-  manufacturerUrl: string;
+  manufacturerUrl: string | null;
   manufacturerTitle: string;
 }> = {
   '39fb96e9': {
@@ -128,8 +129,8 @@ export const registryOverrides: Record<string, {
   },
   '141eec92': {
     netQuantity: '1 L',
-    manufacturerUrl: 'https://demo-shop.igloobd.com/products/vanilla-tub-1l',
-    manufacturerTitle: 'Igloo official demo-shop Vanilla Tub 1L product page',
+    manufacturerUrl: null,
+    manufacturerTitle: 'Igloo Vanilla Tub 1L — production manufacturer page not verified',
   },
   '1ba3a780': {
     netQuantity: '120 ml',
@@ -247,8 +248,8 @@ export const registrySupplements: Record<string, {
     exactName: 'Olympic Chokito Mobile 6g',
     brand: 'Olympic',
     netQuantity: '6 g',
-    manufacturerUrl: 'https://admin.olympicbd.com/api/v1/categories/candy-chocolates/products',
-    manufacturerTitle: 'Olympic official product API — Chokito Mobile 6g asset',
+    manufacturerUrl: null,
+    manufacturerTitle: 'Olympic Chokito Mobile 6g — public product-specific evidence pending',
   },
   '28984df9': {
     exactName: 'Kikkoman All Purpose Seasoning Soy Sauce - 1 L',

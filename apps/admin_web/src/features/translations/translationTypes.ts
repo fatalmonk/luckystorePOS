@@ -8,8 +8,8 @@ export interface TranslationReviewAuditRow {
   translation_id: string;
   entity_id: string;
   from_status: TranslationReviewStatus | null;
-  to_status: TranslationReviewStatus;
-  action: TranslationAction;
+  to_status: TranslationReviewStatus | 'deleted';
+  action: TranslationAction | 'delete';
   actor_id: string | null;
   content_fingerprint: string;
   evidence_source_uris: string[];

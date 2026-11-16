@@ -94,9 +94,17 @@ test('translation workflow records immutable per-record audit events without gra
   assert.match(auditMigration, /CREATE POLICY translation_review_audit_staff_select/);
   assert.match(auditMigration, /record_translation_audit/);
   assert.match(auditMigration, /prevent_translation_audit_mutation/);
-  assert.match(auditMigration, /AFTER INSERT OR UPDATE ON public\.item_translations/);
-  assert.match(auditMigration, /AFTER INSERT OR UPDATE ON public\.category_translations/);
+  assert.match(auditMigration, /AFTER INSERT OR UPDATE OR DELETE ON public\.item_translations/);
+  assert.match(auditMigration, /AFTER INSERT OR UPDATE OR DELETE ON public\.category_translations/);
   assert.doesNotMatch(auditMigration, /GRANT INSERT[^;]*translation_review_audit/);
   assert.doesNotMatch(auditMigration, /GRANT UPDATE[^;]*translation_review_audit/);
   assert.doesNotMatch(auditMigration, /GRANT DELETE[^;]*translation_review_audit/);
+});
+
+test('audit migration prevents bypass-role writes and records deletions without cascading audit loss', () => {
+  assert.match(auditMigration, /REVOKE ALL ON public\.translation_review_audit FROM PUBLIC, anon, authenticated, service_role/);
+  assert.match(auditMigration, /REFERENCES public\.tenants\(id\) ON DELETE RESTRICT/);
+  assert.match(auditMigration, /v_row jsonb := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb\(OLD\)/);
+  assert.match(auditMigration, /v_action := 'delete'/);
+  assert.match(auditMigration, /to_status IN \('draft', 'reviewed', 'published', 'deleted'\)/);
 });

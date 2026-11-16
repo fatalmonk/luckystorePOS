@@ -56,6 +56,8 @@ export function validateCatalogTranslation(
     if (source.name.includes(variant) && !name.includes(variant)) issues.push(`Protected variant "${variant}" changed.`);
   }
   if (source.description?.trim() && !description) issues.push('Catalog description is missing.');
+  if (description && !bengaliNameLetter.test(description)) issues.push('Bengali description is missing Bengali letters.');
+  if (!source.description?.trim() && description) issues.push('Description has no canonical catalog text to verify against.');
   if (source.description?.trim() && description) {
     if (JSON.stringify(sortedTokens(source.description, numberToken)) !== JSON.stringify(sortedTokens(description, numberToken))) {
       issues.push('Catalog description numeric identity changed.');
@@ -93,9 +95,8 @@ export function matchesTranslationEvidence(value: unknown, source: CanonicalTran
     && value.packageText === source.packageText;
 }
 
-/** Evidence-dependent claim gate. This is intentionally separate from the
- * catalog-only Bengali name/identity checks above. */
-export function validateEvidenceClaims(
+/** Verifies evidence snapshot identity only; does not validate factual claims. */
+export function validateEvidenceIdentity(
   snapshot: unknown,
   source: CanonicalTranslationSource,
 ): CatalogTranslationCheck {
@@ -131,9 +132,10 @@ export function canTransitionTranslation(
     || translation.locale !== 'bn' || !isText(translation.name)
     || !isLocalizedProductDetails(translation.details ?? null)) return false;
   if (to === 'draft') return action === 'save_draft';
+  if (translation.kind === 'item' && !source.description?.trim() && translation.details && Object.keys(translation.details).length > 0) return false;
   if (!validateCatalogTranslation(source, translation).valid) return false;
   if (translation.id.startsWith('new:') || !context.humanReviewConfirmed
-    || !validateEvidenceClaims(translation.evidence_snapshot, source).valid) return false;
+    || !validateEvidenceIdentity(translation.evidence_snapshot, source).valid) return false;
   if (from === 'draft' && to === 'reviewed') return action === 'mark_reviewed';
   return from === 'reviewed' && to === 'published' && action === 'publish'
     && typeof translation.reviewed_by === 'string' && uuid.test(translation.reviewed_by)

@@ -18,7 +18,7 @@ Deno.test('parses fractional litres and tea-bag counts from descriptions', () =>
   const halfLiter = resolveRegistryEvidence({
     id: '1cbf6c50-1acc-4452-843f-f1207d0ddbdc',
     name: 'Igloo Strawberry (1/2 L)',
-    description: 'This 500ml pack is smooth and creamy.',
+    description: null,
     brand: 'Igloo',
   });
   const teaBags = resolveRegistryEvidence({
@@ -155,7 +155,7 @@ Deno.test('accepts the official GlucoMax D 350 g pack evidence', () => {
   assertEquals(result.links.length, 1);
 });
 
-Deno.test('accepts the official Igloo Vanilla 1 L page', () => {
+Deno.test('keeps Igloo Vanilla draft without a verified production manufacturer page', () => {
   const result = resolveRegistryEvidence({
     id: '141eec92-0000-4b00-9000-000000000000',
     name: 'Igloo Vanilla 1 L',
@@ -165,7 +165,8 @@ Deno.test('accepts the official Igloo Vanilla 1 L page', () => {
 
   assertEquals(result.matched, true);
   assertEquals(result.issue, null);
-  assertEquals(result.links.length, 1);
+  assertEquals(result.links.length, 0);
+  assertEquals(result.issueCode, 'MISSING_MANUFACTURER_URL');
 });
 
 Deno.test('uses the official PRAN Jhal Chanachur 300 g supplement', () => {
@@ -250,7 +251,7 @@ Deno.test('uses the official MGI newsletter for the Fresh 500 ml water SKU', () 
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
-Deno.test('uses the official Olympic product API for Chokito Mobile 6 g', () => {
+Deno.test('keeps Olympic Chokito draft while public manufacturer evidence is missing', () => {
   const result = resolveRegistryEvidence({
     id: '128d85ad-25b1-4666-bdce-828998b65bd9',
     name: 'Olympic Chokito Mobile 6g',
@@ -259,7 +260,8 @@ Deno.test('uses the official Olympic product API for Chokito Mobile 6 g', () => 
   });
   assertEquals(result.matched, true);
   assertEquals(result.issue, null);
-  assertEquals(result.links.length, 1);
+  assertEquals(result.links.length, 0);
+  assertEquals(result.issueCode, 'MISSING_MANUFACTURER_URL');
 });
 Deno.test('uses the official Kikkoman product page for the 1 L soy sauce', () => {
   const result = resolveRegistryEvidence({
@@ -338,4 +340,34 @@ Deno.test('accepts the catalog Shorisha Oil alias with the official Radhuni sour
   assertEquals(result.matched, true);
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
+});
+
+Deno.test('normalizes fractional litres, equivalent units and multipacks', () => {
+  for (const description of [null, 'Strawberry ice cream, 500 ml']) {
+    const result = resolveRegistryEvidence({
+      id: '1cbf6c50-1acc-4452-843f-f1207d0ddbdc',
+      name: 'Igloo Strawberry (1/2 L)',
+      description,
+      brand: 'Igloo',
+    });
+    assertEquals(result.matched, true);
+  }
+  const multipack = resolveRegistryEvidence({
+    id: '1cbf6c50-1acc-4452-843f-f1207d0ddbdc',
+    name: 'Igloo Strawberry (1/2 L)',
+    description: 'Pack of 2 x 250 ml',
+    brand: 'Igloo',
+  });
+  assertEquals(multipack.matched, true);
+});
+
+Deno.test('does not surface Olympic admin API as manufacturer evidence', () => {
+  const result = resolveRegistryEvidence({
+    id: '128d85ad-1234-4567-8900-000000000000',
+    name: 'Olympic Chokito Mobile 6g',
+    description: 'Candy, 6 g.',
+    brand: 'Olympic',
+  });
+  assertEquals(result.links.some(link => link.url.includes('admin.olympicbd.com')), false);
+  assertEquals(result.issueCode, 'MISSING_MANUFACTURER_URL');
 });
