@@ -13,7 +13,7 @@ Deno.test('pins exact free model without provider or paid fallback', () => {
   assertEquals(body.response_format.json_schema.strict, true);
   assertEquals(body.provider.require_parameters, true);
   assertEquals(body.reasoning.enabled, false);
-  assertEquals(body.max_tokens, 6000);
+  assertEquals(body.max_tokens, 12000);
 });
 Deno.test('provider receives only translation inputs, not previous row revision metadata', () => {
   const source = { id: 'item', name: 'Tea', description: null, previous: { id: 'private-row', updated_at: 'revision' } };
@@ -39,12 +39,12 @@ Deno.test('malformed successful HTTP provider response is not classified as a tr
   assertEquals(valid.ok, true);
 });
 
-Deno.test('system instructions forbid unsupported semantic claims and enforce exact variants and same-item evidence', () => {
+Deno.test('system instructions prohibit unsupported claims and translate canonical catalog text only', () => {
   const prompt = providerRequest([]).messages[0].content;
   for (const phrase of [
     'Do not infer milk from powder', 'Never invent claims', 'unrelated product facts',
-    'ONLY evidenceDescription', 'same specific item', 'exactly as written',
-    'Human review',
+    'canonical catalog fields', 'If the canonical description is empty, set description=null',
+    'human administrator or manager', 'exactly as written',
   ]) {
     assertEquals(prompt.includes(phrase), true, phrase);
   }
@@ -53,7 +53,7 @@ Deno.test('system instructions forbid unsupported semantic claims and enforce ex
 
 Deno.test('translation prompt requires Bengali words in names, preserves identities, and includes aliases', () => {
   const text = providerRequest([]).messages[0].content;
-  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'Human review']) {
+  for (const part of ['Bengali-script WORDS', 'Preserve Latin brands', 'search_terms', 'UUID', 'Sunsilk শ্যাম্পু', 'administrator or manager']) {
     assertEquals(text.includes(part), true, part);
   }
   assertEquals(providerRequest([], { repairBengaliNames: true }).messages[0].content.includes('CORRECTION:'), true);

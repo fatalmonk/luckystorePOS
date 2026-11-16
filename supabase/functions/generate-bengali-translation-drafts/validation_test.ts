@@ -71,12 +71,10 @@ Deno.test('Bengali package synonyms preserve quantities but reject changes', () 
   assertEquals(Boolean(validateDraft({ ...source, name: 'Ispahani Tea 2 pack', description: null },
     { ...valid, name: 'Ispahani চা ২ প্যাকেট', description: null }).error), true);
 });
-Deno.test('evidence-only descriptions reject unsupported claims and empty copy', () => {
+Deno.test('manufacturer evidence cannot authorize a description absent from the catalog', () => {
   const product = { ...source, description: null, evidenceDescription: 'Pack size: 500 g' };
-  assertEquals(Boolean(validateDraft(product, valid).error), true);
-  assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা 500 g, সুস্বাদু।' }).error), true);
-  assertEquals(Boolean(validateDraft(product, { ...valid, description: '  ' }).error), true);
-  assertEquals(Boolean(validateDraft(product, { ...valid, description: 'চা পাতা, 500 g।' }, 'চা পাতা, 500 g।').draft), true);
+  assertEquals(Boolean(validateDraft(product, { ...valid, description: null }).draft), true);
+  assertEquals(validateDraft(product, { ...valid, description: 'চা পাতা, 500 g।' }).error, 'Description lacks canonical source text');
 });
 
 Deno.test('safe fenced JSON is accepted but unrelated prose is rejected', () => {
@@ -101,33 +99,10 @@ Deno.test('malformed product cannot replace a different product even if output c
   assertEquals(Boolean(response.get(second.id)?.error),true);
 });
 
-Deno.test('server caps generations at three even when an older admin sends limit ten', () => {
-  assertEquals(boundedGenerationLimit(10), 3);
-  assertEquals(boundedGenerationLimit(3), 3);
+Deno.test('server caps generations at ten rows per request', () => {
+  assertEquals(boundedGenerationLimit(20), 10);
+  assertEquals(boundedGenerationLimit(10), 10);
   assertEquals(boundedGenerationLimit(1), 1);
-});
-
-
-Deno.test('evidence-only model translation requires exact vetted template passed through parseBatch', () => {
-  const evidenceOnly = { ...source, description: null, evidenceDescription: 'Pack size 500 g' };
-  const translated = { ...valid, description: 'চা পাতা, 500 g।' };
-  const content = JSON.stringify({ translations: [translated] });
-  const notVetted = parseBatch(content, [evidenceOnly]).get(source.id);
-  assertEquals(notVetted?.error, 'Description contains unverified claims');
-  assertEquals(notVetted?.draft, undefined);
-  const vetted = parseBatch(content, [evidenceOnly], new Map([[source.id, translated.description]])).get(source.id);
-  assertEquals(vetted?.draft?.description, translated.description);
-  assertEquals(vetted?.error, undefined);
-  const wrongVetted = parseBatch(content, [evidenceOnly], new Map([[source.id, 'অন্য তথ্য']])).get(source.id);
-  assertEquals(wrongVetted?.error, 'Description contains unverified claims');
-});
-
-Deno.test('a template for another product cannot authorize evidence-only text', () => {
-  const evidenceOnly = { ...source, description: null, evidenceDescription: 'Pack size 500 g' };
-  const content = JSON.stringify({ translations: [valid] });
-  const other = new Map([['10000000-0000-4000-8000-000000000009', valid.description]]);
-  const outcome = parseBatch(content, [evidenceOnly], other).get(source.id);
-  assertEquals(outcome?.error, 'Description contains unverified claims');
 });
 
 
@@ -169,11 +144,11 @@ Deno.test('name-only correction never retries a row that also violates a protect
   }
 });
 
-Deno.test('evidence-only invalid claims cannot trigger Bengali name retry', () => {
+Deno.test('an empty catalog description cannot trigger Bengali name retry for unsupported copy', () => {
   const evidenceOnly = { ...source, description: null, evidenceDescription: 'Manufacturer fact 500 g' };
   const wrong = { ...valid, name: source.name, description: 'ভুল দাবি, 500 g।' };
-  const result = validateDraft(evidenceOnly, wrong, 'যাচাইকৃত তথ্য, 500 g।');
-  assertEquals(result.error, 'Description contains unverified claims');
+  const result = validateDraft(evidenceOnly, wrong);
+  assertEquals(result.error, 'Description lacks canonical source text');
   assertEquals(bengaliNameRetrySources([evidenceOnly], new Map([[source.id, result]])).length, 0);
 });
 

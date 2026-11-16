@@ -1,8 +1,8 @@
-export type Source = { id: string; name: string; description: string | null; brand?: string | null; sku?: string | null; evidenceDescription?: string | null };
+export type Source = { id: string; name: string; description: string | null; brand?: string | null; sku?: string | null; barcode?: string | null };
 export type Draft = { id: string; name: string; description: string | null; search_terms: string[] };
 export const allowedOrigin = (origin: string | null) => !origin || ['https://admin.luckystore1947.com', 'http://localhost:5173', 'http://127.0.0.1:5173'].includes(origin);
 export const validRequest = (kind: unknown, limit: unknown) => (kind === 'item' || kind === 'category') && Number.isInteger(limit) && (limit as number) >= 1 && (limit as number) <= 10;
-export const boundedGenerationLimit = (requested: number) => Math.min(Math.max(1, requested), 3);
+export const boundedGenerationLimit = (requested: number) => Math.min(Math.max(1, requested), 10);
 export const canGenerate = (role: unknown, profileTenant: unknown, recordTenant: unknown) =>
   (role === 'admin' || role === 'manager') && typeof profileTenant === 'string' && profileTenant === recordTenant;
 
@@ -22,7 +22,7 @@ const normalize = (value: string) => value.toLowerCase()
   .replace(/pieces?|pcs?|পিস/g, 'pcs').replace(/প্যাক/g, 'pack');
 const tokens = (value: string, pattern: RegExp) => [...value.matchAll(pattern)].map((match) => normalize(match[0])).sort();
 
-export function validateDraft(source: Source, value: unknown, verifiedDescription?: string): { draft?: Draft; error?: string } {
+export function validateDraft(source: Source, value: unknown): { draft?: Draft; error?: string } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return { error: 'Invalid model row' };
   const row = value as Record<string, unknown>;
   if (Object.keys(row).some((key) => !['id', 'name', 'description', 'search_terms'].includes(key))) return { error: 'Unexpected model fields' };
@@ -31,32 +31,20 @@ export function validateDraft(source: Source, value: unknown, verifiedDescriptio
     return { error: 'Invalid Bengali product name' };
   }
   const hasCanonicalDescription = Boolean(source.description?.trim());
-  const hasEvidence = Boolean(source.evidenceDescription?.trim());
-  if (!hasCanonicalDescription && !hasEvidence && row.description !== null) return { error: 'Description lacks evidence' };
-  if ((hasCanonicalDescription || hasEvidence) && row.description === null) return { error: 'Bengali description is required when supported facts exist' };
-  if ((hasCanonicalDescription || hasEvidence) && row.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
+  if (!hasCanonicalDescription && row.description !== null) return { error: 'Description lacks canonical source text' };
+  if (hasCanonicalDescription && row.description === null) return { error: 'Bengali description is required when canonical source text exists' };
+  if (hasCanonicalDescription && row.description !== null && (typeof row.description !== 'string' || !bengali.test(row.description) || row.description.length > 2000)) {
     return { error: 'Invalid Bengali description' };
   }
   const name = row.name.trim();
   const description = typeof row.description === 'string' ? row.description.trim() : null;
-  if ((hasCanonicalDescription || hasEvidence) && !description) return { error: 'Bengali description is required when supported facts exist' };
-  // Numeric checks cannot verify semantic claims in Bengali. Evidence-only copy must be a vetted template.
-  if (!hasCanonicalDescription && hasEvidence && description !== verifiedDescription) return { error: 'Description contains unverified claims' };
+  if (hasCanonicalDescription && !description) return { error: 'Bengali description is required when canonical source text exists' };
   for (const [canonical, translated] of [[source.name, name], ...(hasCanonicalDescription ? [[source.description ?? '', description ?? '']] : [])]) {
     if (JSON.stringify(tokens(canonical, numbers)) !== JSON.stringify(tokens(translated, numbers))
       || JSON.stringify(tokens(canonical, quantity)) !== JSON.stringify(tokens(translated, quantity))) return { error: 'Numeric or package identity changed' };
   }
   for (const variant of ['Original', '2X', 'Best of']) {
     if (source.name.includes(variant) && !name.includes(variant)) return { error: 'Protected variant changed' };
-  }
-  if (!hasCanonicalDescription && hasEvidence && source.evidenceDescription && description) {
-    const facts = source.evidenceDescription;
-    for (const token of tokens(description, numbers)) {
-      if (!tokens(facts, numbers).includes(token)) return { error: 'Description contains unsupported numeric claim' };
-    }
-    for (const token of tokens(description, quantity)) {
-      if (!tokens(facts, quantity).includes(token)) return { error: 'Description contains unsupported package claim' };
-    }
   }
   const translated = `${name} ${description ?? ''}`;
   if (source.brand && !translated.toLowerCase().includes(source.brand.toLowerCase())) return { error: 'Brand was not preserved' };
@@ -77,9 +65,7 @@ export function bengaliNameRetrySources<T extends Source>(
     results.get(source.id)?.error === 'Bengali product name missing Bengali letters');
 }
 
-export function parseBatch(
-  content: string, sources: Source[], vettedDescriptions: ReadonlyMap<string, string> = new Map(),
-): Map<string, { draft?: Draft; error?: string }> {
+export function parseBatch(content: string, sources: Source[]): Map<string, { draft?: Draft; error?: string }> {
   // The JSON Schema contract is checked again locally: an extra or malformed row
   // must never be saved as a different product. Partial valid responses may be
   // saved individually instead of discarding the entire batch.
@@ -114,6 +100,6 @@ export function parseBatch(
     }
   }
   return new Map(sources.map(source => [source.id, counts.get(source.id) === 1
-    ? validateDraft(source, byId.get(source.id), vettedDescriptions.get(source.id))
+    ? validateDraft(source, byId.get(source.id))
     : { error: 'Model omitted or duplicated this product' }]));
 }

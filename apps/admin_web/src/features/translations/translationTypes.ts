@@ -1,7 +1,7 @@
 export type TranslationReviewStatus = 'draft' | 'reviewed' | 'published';
 export type TranslationKind = 'item' | 'category';
-export type TranslationAction = 'save_draft' | 'mark_reviewed' | 'publish';
-export type TranslationAuditAction = TranslationAction | 'delete';
+export type TranslationAction = 'save_draft' | 'publish';
+export type TranslationAuditAction = TranslationAction | 'mark_reviewed' | 'delete';
 
 export interface TranslationReviewAuditRow {
   id: string;
@@ -47,6 +47,7 @@ export interface CanonicalTranslationSource {
   barcode: string | null;
   brand: string | null;
   packageText: string | null;
+  sourceVersion?: string;
 }
 
 interface TranslationCommon {
@@ -63,6 +64,7 @@ interface TranslationCommon {
   published_by: string | null;
   published_at: string | null;
   updated_at: string;
+  source_version: string | null;
 }
 
 // Local discriminator is supplied by the table selected in TranslationsPage.
