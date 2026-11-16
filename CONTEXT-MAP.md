@@ -1,6 +1,8 @@
 # Context map
 
-Read root `context.md` for active session state, then the domain `CONTEXT.md` relevant to the work.
+Project-level handoff and completed-task history live in `~/Desktop/Projects/Project-Memory/projects/luckystore/context.md` and `journal/YYYY-MM.md`, respectively. This repository's root `context.md` is a compatibility pointer, not an active task journal. Read repository `AGENTS.md`, then the domain `CONTEXT.md` relevant to the task.
+
+For cloud/CI agents without local Project-Memory access, use `AGENTS.md` and the domain documents below, verify live source/provider facts, and report that the memory update was not possible. Never invent a successful write or create a competing journal in this repository.
 
 | Context | Documentation | Responsibility |
 |---|---|---|
