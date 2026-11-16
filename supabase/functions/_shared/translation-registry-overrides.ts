@@ -206,4 +206,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.citygroup.com.bd/brand/1',
     manufacturerTitle: 'City Group TEER Mustard Oil product card',
   },
+  '3a4d95a3': {
+    exactName: 'Teer Premium Maida 1kg',
+    brand: 'Teer',
+    netQuantity: '1 kg',
+    manufacturerUrl: 'https://www.citygroup.com.bd/brand/1',
+    manufacturerTitle: 'City Group TEER Flour product card',
+  },
 };

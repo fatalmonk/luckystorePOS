@@ -192,3 +192,16 @@ Deno.test('uses the official TEER Mustard Oil 500 ml supplement', () => {
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+
+Deno.test('uses the official TEER Flour 1 kg supplement for catalog Maida', () => {
+  const result = resolveRegistryEvidence({
+    id: '3a4d95a3-a3aa-40ec-b262-52e83a720a9f',
+    name: 'Teer Premium Maida 1kg',
+    description: 'TEER Maida flour, 1 kg consumer pack.',
+    brand: 'Teer',
+  });
+
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
