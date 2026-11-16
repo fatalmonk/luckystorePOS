@@ -241,4 +241,11 @@ export const registrySupplements: Record<string, {
     manufacturerUrl: 'https://www.mgi.org/assets/images/newsletters/MGI-Newsletter-English_Volume-04.pdf',
     manufacturerTitle: 'MGI newsletter — Super Fresh Drinking Water 500 ml SKU',
   },
+  '128d85ad': {
+    exactName: 'Olympic Chokito Mobile 6g',
+    brand: 'Olympic',
+    netQuantity: '6 g',
+    manufacturerUrl: 'https://admin.olympicbd.com/api/v1/categories/candy-chocolates/products',
+    manufacturerTitle: 'Olympic official product API — Chokito Mobile 6g asset',
+  },
 };

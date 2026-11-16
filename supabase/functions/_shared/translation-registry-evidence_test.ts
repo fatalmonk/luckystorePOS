@@ -249,3 +249,14 @@ Deno.test('uses the official MGI newsletter for the Fresh 500 ml water SKU', () 
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+Deno.test('uses the official Olympic product API for Chokito Mobile 6 g', () => {
+  const result = resolveRegistryEvidence({
+    id: '128d85ad-25b1-4666-bdce-828998b65bd9',
+    name: 'Olympic Chokito Mobile 6g',
+    description: 'Olympic Chokito Mobile, 6g candy pack.',
+    brand: 'Olympic',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
