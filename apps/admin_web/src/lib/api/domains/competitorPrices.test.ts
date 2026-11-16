@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   select: vi.fn(),
   eq: vi.fn(),
   order: vi.fn(),
+  range: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase', () => ({
@@ -36,10 +37,13 @@ describe('competitor price API', () => {
     mocks.select.mockReset();
     mocks.eq.mockReset();
     mocks.order.mockReset();
+    mocks.range.mockReset();
     mocks.from.mockReturnValue({ select: mocks.select });
-    mocks.select.mockReturnValue({ eq: mocks.eq });
-    mocks.eq.mockReturnValue({ order: mocks.order });
-    mocks.order.mockResolvedValue({ data: null, error: null });
+    const query = { eq: mocks.eq, order: mocks.order, range: mocks.range };
+    mocks.select.mockReturnValue(query);
+    mocks.eq.mockReturnValue(query);
+    mocks.order.mockReturnValue(query);
+    mocks.range.mockResolvedValue({ data: null, error: null });
   });
 
   it('normalizes competitor keys consistently', () => {
@@ -119,7 +123,7 @@ describe('competitor price API', () => {
   });
 
   it('uses the scraped product name when an observation is not matched to an item', async () => {
-    mocks.order.mockResolvedValueOnce({
+    mocks.range.mockResolvedValueOnce({
       data: [{
         id: 'price-1',
         store_id: 'store-1',
@@ -144,8 +148,39 @@ describe('competitor price API', () => {
     ]);
   });
 
+  it('fetches subsequent pages until the final partial page', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      id: `price-${index}`,
+      item_id: null,
+      product_name: `Product ${index}`,
+      items: null,
+      competitor_name: 'Chaldal',
+      competitor_price: 85,
+      scraped_at: '2026-07-29T00:00:00Z',
+    }));
+    const secondPage = [{
+      id: 'price-1000',
+      item_id: null,
+      product_name: 'Product 1000',
+      items: null,
+      competitor_name: 'Chaldal',
+      competitor_price: 85,
+      scraped_at: '2026-07-29T00:00:00Z',
+    }];
+    mocks.range
+      .mockResolvedValueOnce({ data: firstPage, error: null })
+      .mockResolvedValueOnce({ data: secondPage, error: null });
+
+    const prices = await fetchCompetitorPrices('store-1');
+
+    expect(prices).toHaveLength(1001);
+    expect(prices[1000].id).toBe('price-1000');
+    expect(mocks.range).toHaveBeenNthCalledWith(1, 0, 999);
+    expect(mocks.range).toHaveBeenNthCalledWith(2, 1000, 1999);
+  });
+
   it('derives the displayed gap from captured prices instead of a legacy percent-point value', async () => {
-    mocks.order.mockResolvedValueOnce({
+    mocks.range.mockResolvedValueOnce({
       data: [{
         id: 'price-2',
         store_id: 'store-1',
@@ -170,7 +205,7 @@ describe('competitor price API', () => {
   });
 
   it('does not show a price gap for unmatched or invalid observations', async () => {
-    mocks.order.mockResolvedValueOnce({
+    mocks.range.mockResolvedValueOnce({
       data: [
         {
           id: 'unmatched', item_id: null, competitor_price: 20, our_price: 480,
@@ -196,7 +231,7 @@ describe('competitor price API', () => {
   });
 
   it('suppresses actionable gaps for non-verified product matches', async () => {
-    mocks.order.mockResolvedValueOnce({
+    mocks.range.mockResolvedValueOnce({
       data: [{
         id: 'probable', item_id: 'item-1', competitor_price: 1300, our_price: 945,
         product_name: 'Acme Laundry Powder 1kg', competitor_name: 'Chaldal',
@@ -212,7 +247,7 @@ describe('competitor price API', () => {
   });
 
   it('calculates actionable gaps only for verified matches', async () => {
-    mocks.order.mockResolvedValueOnce({
+    mocks.range.mockResolvedValueOnce({
       data: [{
         id: 'verified', item_id: 'item-1', competitor_price: 1300, our_price: 945,
         product_name: 'Acme Laundry Powder 1kg', competitor_name: 'Chaldal',

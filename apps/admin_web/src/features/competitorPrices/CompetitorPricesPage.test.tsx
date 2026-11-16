@@ -70,6 +70,7 @@ describe('CompetitorPricesPage price gap and KPI scope', () => {
 
   it('renders the signed price gap and keeps store-wide KPIs independent of list search', async () => {
     renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /All Observations/ }));
 
     expect(await screen.findByText('-27.31%')).toBeInTheDocument();
     expect(screen.getByLabelText('Product match status: VERIFIED')).toBeInTheDocument();
@@ -88,7 +89,7 @@ describe('CompetitorPricesPage price gap and KPI scope', () => {
   });
 
   it('renders zero prices as unavailable and does not show a comparison', async () => {
-    mocks.fetchCompetitorPrices.mockResolvedValueOnce([{
+    mocks.fetchCompetitorPrices.mockResolvedValue([{
       ...matchedObservation,
       id: 'zero-price',
       our_price: 0,
@@ -97,6 +98,7 @@ describe('CompetitorPricesPage price gap and KPI scope', () => {
     }]);
 
     renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /All Observations/ }));
 
     expect(await screen.findAllByText('N/A')).toHaveLength(3);
   });
