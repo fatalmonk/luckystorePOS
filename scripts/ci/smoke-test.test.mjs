@@ -215,3 +215,26 @@ test('smoke request never replays non-idempotent POST requests', async () => {
     assert.equal(attempts, 1);
   });
 });
+
+test('health transport policy makes only one network attempt per validation iteration', async () => {
+  let attempts = 0;
+  await withHttpServer((req) => { attempts++; req.socket.destroy(); }, async (url) => {
+    for (let validationAttempt = 0; validationAttempt < 3; validationAttempt++) {
+      await assert.rejects(
+        smokeTest.request(url + '/api/health', {}, { maxAttempts: 1, backoffMs: 1 }),
+        { code: 'ECONNRESET' },
+      );
+    }
+    assert.equal(attempts, 3, 'three health validation iterations must cause exactly three network attempts');
+  });
+});
+
+test('single-attempt transport policy still succeeds on a healthy response', async () => {
+  let attempts = 0;
+  await withHttpServer((req, res) => { attempts++; res.end('ok'); }, async (url) => {
+    const result = await smokeTest.request(url + '/api/health', {}, { maxAttempts: 1, backoffMs: 1 });
+    assert.equal(result.statusCode, 200);
+    assert.equal(result.body, 'ok');
+    assert.equal(attempts, 1);
+  });
+});

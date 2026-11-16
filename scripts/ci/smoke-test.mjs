@@ -169,7 +169,7 @@ const TRANSIENT_SMOKE_ERROR_CODES = new Set(['ECONNRESET', 'EPIPE']);
  */
 export async function request(targetUrl, options = {}, retryPolicy = {}) {
   const method = String(options.method || 'GET').toUpperCase();
-  const maxAttempts = ['GET', 'HEAD'].includes(method) ? 3 : 1;
+  const maxAttempts = ['GET', 'HEAD'].includes(method) ? (retryPolicy.maxAttempts === 1 ? 1 : 3) : 1;
   const backoffMs = retryPolicy.backoffMs ?? 250;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -205,7 +205,8 @@ async function run() {
         let lastErr;
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
-            const res = await request(`${baseUrl}/api/health`);
+            // The outer validation loop already bounds health checks to three total requests.
+            const res = await request(`${baseUrl}/api/health`, {}, { maxAttempts: 1 });
             const result = evaluateSmokeHealth({
               statusCode: res.statusCode,
               body: res.body,
