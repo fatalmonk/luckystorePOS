@@ -50,6 +50,9 @@ const aliases: Record<string, string[]> = {
   'c1895793': ['Polar Kheer 1 Liter'],
   '0611e651': ['Polar Robusto (Vanilla)'],
   '79e0ece1': ['Polar Kheer 1/2 Liter'],
+  '029b62d8': ['Radhuni Holud Gura 100 g'],
+  '1f4650a7': ['Radhuni Dhoniya Gura 500 g'],
+  '38ee3e1a': ['Radhuni Shorisha Oil 500 ml'],
 };
 
 export function resolveRegistryEvidence(source: ProductIdentity): RegistryEvidenceResult {

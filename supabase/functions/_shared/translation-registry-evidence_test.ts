@@ -260,3 +260,36 @@ Deno.test('uses the official Olympic product API for Chokito Mobile 6 g', () => 
   assertEquals(result.issue, null);
   assertEquals(result.links.length, 1);
 });
+Deno.test('accepts the catalog Holud Gura alias with the official Radhuni source', () => {
+  const result = resolveRegistryEvidence({
+    id: '029b62d8-0000-4b00-9000-000000000000',
+    name: 'Radhuni Holud Gura 100 g',
+    description: 'Radhuni Holud Gura (Turmeric Powder) 100gm.',
+    brand: 'Radhuni',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+Deno.test('accepts the catalog Dhoniya Gura alias with the official Radhuni source', () => {
+  const result = resolveRegistryEvidence({
+    id: '1f4650a7-0000-4b00-9000-000000000000',
+    name: 'Radhuni Dhoniya Gura 500 g',
+    description: 'Radhuni Dhoniya Gura 500gm.',
+    brand: 'Radhuni',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
+Deno.test('accepts the catalog Shorisha Oil alias with the official Radhuni source', () => {
+  const result = resolveRegistryEvidence({
+    id: '38ee3e1a-0000-4b00-9000-000000000000',
+    name: 'Radhuni Shorisha Oil 500 ml',
+    description: 'Radhuni Mustard Oil 500ml.',
+    brand: 'Radhuni',
+  });
+  assertEquals(result.matched, true);
+  assertEquals(result.issue, null);
+  assertEquals(result.links.length, 1);
+});
