@@ -22,6 +22,7 @@ const category = { id: '10000000-0000-4000-8000-000000000002', tenant_id: tenant
 const evidence = { entityId: item.id, sourceName: item.name, sourceDescription: item.description, sku: item.sku, barcode: item.barcode, brand: item.brand, packageText: '500 g', sourceUris: ['https://manufacturer.invalid/tea-500'], observedAt: '2026-11-12T10:00:00Z' };
 const ramenEvidence = { key: 'b79a6606', matched: true, issue: null, entry: { exactName: 'Samyang Buldak Ramen 2X Cup 70g', netQuantity: '70g' }, links: [{ url: 'https://buldak.com/us/product/buldak-ramen-2x-cup/', title: 'Buldak Ramen 2X Cup', verifiedAt: '2026-11-12', evidenceRef: 'manufacturer' }], missing: [], supportedFacts: 'Pack size: 70g' };
 const draft = { id: '30000000-0000-4000-8000-000000000001', tenant_id: tenantId, item_id: item.id, locale: 'bn', name: 'ইস্পাহানি চা 500 g', description: 'চা পাতা, 500 g।', search_terms: ['চা', 'cha', 'tea', 'Ispahani'], review_status: 'draft', evidence_snapshot: evidence, details: { summary: 'চা পাতা।' }, reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, updated_at: '2026-11-12T10:00:00Z' };
+const categoryDraft = { id: '30000000-0000-4000-8000-000000000002', tenant_id: tenantId, category_id: category.id, locale: 'bn', name: 'চা', description: null, search_terms: ['চা', 'tea'], review_status: 'draft', evidence_snapshot: null, seo_title: 'চা কিনুন', seo_description: 'অনলাইনে চা কিনুন।', reviewed_by: null, reviewed_at: null, published_by: null, published_at: null, updated_at: '2026-11-12T10:00:00Z' };
 
 type Row = Record<string, unknown>;
 type Write = { table: string; operation: string; payload: Row; filters: Record<string, unknown> };
@@ -86,7 +87,7 @@ beforeEach(() => {
     if ((options?.body as { kind?: string })?.kind === 'evidence') {
       const itemId = (options?.body as { itemId: string }).itemId;
       return { data: { evidence: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? ramenEvidence :
-        { key: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? '4d20b020' : null, matched: itemId === '29e60fea-429c-4b7d-b639-406471a6623b', issue: 'No registry match', entry: null, links: [], missing: [], supportedFacts: null },
+        { key: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? '4d20b020' : '002fbcb3', matched: itemId !== '29e60fea-429c-4b7d-b639-406471a6623b', issue: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? 'No registry match' : null, entry: itemId === '29e60fea-429c-4b7d-b639-406471a6623b' ? null : { exactName: item.name, netQuantity: '500 g' }, links: [], missing: [], supportedFacts: null },
         snapshot: itemId === '1aafa29f-07ca-4f04-a702-549c1720bd6a' ? { ...evidence, entityId: itemId, sourceName: ramenEvidence.entry.exactName, sourceDescription: null, sku: 'CANVA-TEST-b79a6606', barcode: null, brand: null, packageText: '70g', sourceUris: [ramenEvidence.links[0].url] } : null }, error: null } as never;
     }
     return { data: null, error: null } as never;
@@ -366,7 +367,7 @@ describe('TranslationsPage publication actions', () => {
     expect(writes[0].payload).not.toHaveProperty('reviewed_by');
   });
 
-  it('opens reviewed publication from the list and can publish despite a transient evidence-service outage', async () => {
+  it('keeps reviewed publication disabled during a transient evidence-service outage', async () => {
     rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
     vi.mocked(supabase.functions.invoke).mockResolvedValue({
       data: null, error: new Error('Evidence endpoint temporarily unavailable'),
@@ -378,15 +379,21 @@ describe('TranslationsPage publication actions', () => {
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     expect(writes).toHaveLength(0);
     fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
-    expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
     expect(writes).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-    await waitFor(() => expect(writes).toHaveLength(1));
-    expect(writes[0]).toEqual({
-      table: 'item_translations', operation: 'update',
-      payload: { review_status: 'published', published_by: profileId },
-      filters: { id: draft.id, tenant_id: tenantId, review_status: 'reviewed', updated_at: draft.updated_at },
-    });
+  });
+
+  it('keeps reviewed publication disabled when current registry evidence conflicts with the saved snapshot', async () => {
+    rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { evidence: { key: null, matched: false, issue: 'Product brand conflicts with the matched registry record.', entry: null, links: [], missing: [], supportedFacts: null }, snapshot: null }, error: null,
+    } as never);
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Publish…' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    expect(await screen.findByText(/Publication is disabled until the current registry evidence resolves/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+    expect(writes).toHaveLength(0);
   });
 
   it('does not publish stale reviewed evidence even when the lookup endpoint is unavailable', async () => {
@@ -486,6 +493,50 @@ describe('TranslationsPage publication actions', () => {
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toMatchObject({ table: 'category_translations', operation: 'insert', payload: { category_id: category.id, seo_title: 'চা কিনুন', seo_description: 'অনলাইনে চা কিনুন।', search_terms: ['চা', 'cha', 'tea'], review_status: 'draft' } });
     expect(writes[0].payload).not.toHaveProperty('details');
+  });
+
+  it('prepares category evidence and allows review after the saved draft round-trip', async () => {
+    rows.category_translations = [{ ...categoryDraft }];
+    persistWrites = true;
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Categories' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Review draft' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Category evidence URLs' }), { target: { value: 'https://example.com/tea-category' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Prepare category evidence snapshot' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    await waitFor(() => expect(writes).toHaveLength(1));
+    fireEvent.click(screen.getByRole('checkbox', { name: /I opened and checked the linked sources/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Mark Reviewed' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Reviewed' }));
+    await waitFor(() => expect(writes).toHaveLength(2));
+    expect(writes[1]).toMatchObject({ table: 'category_translations', operation: 'update', payload: { review_status: 'reviewed', reviewed_by: profileId } });
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    await waitFor(() => expect(writes).toHaveLength(3));
+    expect(writes[2]).toMatchObject({ table: 'category_translations', operation: 'update', payload: { review_status: 'published', published_by: profileId } });
+  });
+
+  it('disables AI generation while a reviewed or published filter is active', async () => {
+    rows.item_translations = [{ ...draft, review_status: 'reviewed', reviewed_by: profileId, reviewed_at: '2026-11-12T11:00:00Z' }];
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'reviewed' }));
+    expect(await screen.findByRole('button', { name: 'Generate AI Drafts' })).toBeDisabled();
+    expect(supabase.functions.invoke).not.toHaveBeenCalledWith('generate-bengali-translation-drafts', expect.anything());
+  });
+
+  it('searches and paginates the translation queue instead of rendering every row at once', async () => {
+    rows.items = Array.from({ length: 26 }, (_, index) => ({
+      ...item, id: `10000000-0000-4000-8000-${String(index + 10).padStart(12, '0')}`,
+      name: index === 25 ? 'Radhuni Jira Gura 100 g' : `Tea product ${index + 1}`,
+      sku: index === 25 ? 'RADHUNI-100' : `TEA-${index + 1}`,
+    }));
+    renderPage();
+    expect(await screen.findByText('Page 1 of 2')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search translations' }), { target: { value: 'RADHUNI-100' } });
+    expect(await screen.findByText('1 matching translation')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add Bengali' })).toBeInTheDocument();
   });
 
   it('reports stale-row failures without claiming publication succeeded', async () => {
