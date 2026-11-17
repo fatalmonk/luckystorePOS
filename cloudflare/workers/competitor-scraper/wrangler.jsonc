@@ -21,10 +21,10 @@
     }
   ],
   "triggers": {
-    "crons": ["0 21 * * SUN"]
+    "crons": []
   },
   "vars": {
-    "AUTOMATION_ENABLED": "true",
+    "AUTOMATION_ENABLED": "false",
     "WORKFLOW_VERSION": "competitor-scrape-v1",
     "STORE_ALLOWLIST": "[\"4acf0fb2-f831-4205-b9f8-e1e8b4e6e8fd\"]",
     "SUPABASE_URL": "https://hvmyxyccfnkrbxqbhlnm.supabase.co",
