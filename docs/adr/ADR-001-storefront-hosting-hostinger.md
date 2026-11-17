@@ -7,7 +7,7 @@ Accepted and implemented
 2026-10-07
 
 ## Context
-The customer storefront (`apps/customer_storefront`) is built with Next.js 15.5 (App Router, Node >= 22) and was deployed on Vercel Hobby tier. The project exhausted the free tier limits on `vercel-functions-fluid-cpu-duration`.
+The customer storefront (`apps/customer_storefront`) is built with Next.js 16.4.5 (App Router, Node >= 22) and was deployed on Vercel Hobby tier. The project exhausted the free tier limits on `vercel-functions-fluid-cpu-duration`.
 
 The organisation already holds a prepaid **Hostinger Business Web Hosting** plan (account `u859872680`, order `1009156396`) active through July 2030 with zero incremental hosting cost.
 
@@ -15,7 +15,7 @@ Authoritative DNS for `luckystore1947.com` is managed in **Cloudflare** (`carter
 
 ## Decision
 Migrate `apps/customer_storefront` from Vercel to Hostinger Business Web Hosting:
-1. Run Next.js 15 standalone server (`output: 'standalone'`) on Hostinger's managed Node.js 22 runtime.
+1. Run the Next.js 16.4.5 standalone server (`output: 'standalone'`) on Hostinger's managed Node.js 22 runtime.
 2. Route traffic through Cloudflare edge proxy with SSL mode **Full (strict)** using Cloudflare Origin CA certificates on Hostinger.
 3. Build deterministically in **GitHub Actions** via a promotion pipeline (Build once $\to$ Immutable Release Artifact $\to$ Deploy Staging $\to$ Validate $\to$ Deploy identical artifact to Production).
 4. For initial cutover: **Bypass edge HTML caching** by default; cache only static assets (`/_next/static/*`, media, web fonts).

@@ -2,6 +2,12 @@
 
 This is a narrow, repeatable check. No live production interactions, credentials in Git, schema writes, migration repairs, account seeding, or browser edits.
 
+> **Scope warning (2026-11-17):** The nine-migration production sequence below is
+> historical release evidence, not the current release plan. The repository now
+> contains later Bengali migrations, including `20261116100000` and
+> `20261116120000`; re-verify the current migration set, project state, and
+> explicit approval before any production work. Do not replay this checklist as-is.
+
 1. Configure NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and E2E_SUPABASE_PROJECT_REF for the dedicated Supabase Testing/Security project. Never provide service-role credentials to the public API gate.
 2. Run: node --test scripts/testing/verify_bengali_translation_api.test.mjs
 3. Run: node scripts/testing/verify_bengali_translation_api.mjs

@@ -9,7 +9,7 @@ The current release enables Design Editor only:
 
 The Supabase Edge Function at `supabase/functions/canva-social` verifies Canva user tokens, resolves the linked Lucky Store staff identity, scopes catalog reads to that staff member's store, and records Facebook publication results in `social_posts`.
 
-Before previewing, configure `CANVA_APP_ID=AAHOGP8N-F`, development URL, Design Editor intent, app authentication settings, and Supabase function secrets. The Canva token must remain server-side; Facebook credentials are not required for this release.
+Before previewing, configure `CANVA_APP_ID=AAHOGP8N-Fw`, development URL, Design Editor intent, app authentication settings, and Supabase function secrets. The Canva token must remain server-side; Facebook credentials are not required for this release.
 
 After applying the migration, an authorized Lucky Store administrator must provision the corresponding `(canva_user_id, canva_brand_id, user_id, tenant_id, store_id)` row in `canva_social_identity_links` through a restricted service-role process before catalog reads or publishing are enabled. This repository does not yet include a self-service identity-linking flow; do not enable the app for staff until an approved provisioning path is in place.
 

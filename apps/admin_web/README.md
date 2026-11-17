@@ -5,7 +5,7 @@ Admin dashboard for Lucky Store POS — inventory management, daily sales, expen
 ## Stack
 
 - **Framework**: React 19 + TypeScript
-- **Build**: Vite 8 (Rolldown)
+- **Build**: Vite 6.4.5
 - **Routing**: React Router v7
 - **Data**: Supabase (Postgres + Realtime + Storage)
 - **Query**: TanStack Query + Virtualizer
@@ -20,7 +20,7 @@ Admin dashboard for Lucky Store POS — inventory management, daily sales, expen
 ```bash
 cd apps/admin_web
 npm install
-npm run dev     # http://localhost:5173/admin/
+npm run dev     # http://localhost:5173/
 ```
 
 ## Build
@@ -29,11 +29,13 @@ npm run dev     # http://localhost:5173/admin/
 npm run build   # Outputs to dist/
 ```
 
-Build script: `tsc --noEmit || true && vite build && node scripts/build-sw.mjs`
+Build script: `tsc -p tsconfig.app.json --noEmit && vite build && node scripts/build-sw.mjs`
 
 ## Deployment
 
-Vercel — auto-deploys from `apps/admin_web/` via monorepo config. Root `vercel.json` routes `/admin/*` to this app.
+Vercel serves this Vite app from the admin project. The repository's root
+`vercel.json` builds the app into `dist_public`; project-level Vercel settings
+and the production hostname are managed outside this repository.
 
 ## Project Structure
 

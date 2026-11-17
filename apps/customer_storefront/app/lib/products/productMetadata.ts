@@ -79,7 +79,7 @@ export function buildProductMetadata(input: ProductMetadataInput): Metadata {
       }),
     },
     openGraph: {
-      // Next.js 15 rejects `product` as an Open Graph type; Product JSON-LD below
+      // Next.js 16.4.5 rejects `product` as an Open Graph type; Product JSON-LD below
       // carries the product-specific offer and identity data instead.
       type: 'website',
       locale: 'en_BD',

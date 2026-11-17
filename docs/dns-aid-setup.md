@@ -5,11 +5,19 @@ DNS-AID records cannot be created programmatically with the current `cfat_` wran
 (which doesn't have DNS edit permissions for REST API). These records need to be created
 via the Cloudflare dashboard.
 
+**Audit warning (2026-11-17):** This is an unverified historical draft, not a
+ready-to-apply DNS change. Its endpoint examples still target the former
+`lucky-store-six.vercel.app` preview and must not be copied unchanged. Current
+storefront discovery resources are served from `luckystore1947.com`; the agent
+worker's OAuth metadata is served from `agent.luckystore1947.com`. Reconfirm the
+DNS-AID record syntax, endpoint ownership, and live targets before any dashboard
+write.
+
 ## Zone
 - **Domain:** luckystore1947.com
 - **Zone ID:** cadbf71f2c3aee47e0c299319cba570d
 
-## Records to Create
+## Historical Record Draft — Do Not Apply Unchanged
 
 ### 1. Agent Index Record (TXT)
 ```

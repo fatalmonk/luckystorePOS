@@ -32,9 +32,11 @@ The baseline currently includes tracked Markdown plus visible untracked Markdown
 ### Existing collections
 
 - [`adr/`](adr/) — architectural decision records (ADRs)
-- [`audit/`](audit/) — cross-cutting database and infrastructure audits
 - [`archive/`](archive/) — retired or superseded evidence retained for history
-- [`SEO Optimization/`](SEO%20Optimization/) — historical SEO remediation and catalog-enrichment evidence
+- [`architecture/`](architecture/) — database and system architecture records
+- [`design/`](design/) — design-system and brand guidance
+- [`security/`](security/) — security recommendations
+- [`setup/`](setup/) — setup and operational guides
 - [`AI_HANDOFF.md`](AI_HANDOFF.md) — durable-context and Notion synchronization policy pending consolidation
 - [`dns-aid-setup.md`](dns-aid-setup.md) — DNS operations guidance pending placement under operations
 
