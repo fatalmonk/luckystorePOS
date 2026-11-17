@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildNoOpSummary, evaluateRunGate } from "../../src/workflow-gates.ts";
 
@@ -9,6 +10,15 @@ const enabledEnv = {
 };
 
 describe("workflow safety gates", () => {
+  it("keeps committed Wrangler cron and automation gate disabled", () => {
+    const config = JSON.parse(
+      readFileSync(new URL("../../wrangler.jsonc", import.meta.url), "utf8"),
+    ) as { triggers?: { crons?: string[] }; vars?: { AUTOMATION_ENABLED?: string } };
+
+    expect(config.triggers?.crons).toEqual([]);
+    expect(config.vars?.AUTOMATION_ENABLED).toBe("false");
+  });
+
   it("keeps committed automation disabled", () => {
     expect(evaluateRunGate({ ...enabledEnv, AUTOMATION_ENABLED: "false" })).toBe(
       "automation-disabled",
