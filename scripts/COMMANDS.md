@@ -1,6 +1,16 @@
 # Bash Commands Reference
 
-This document provides a comprehensive reference for all bash commands available in the workspace.
+This document is a reference for tracked shell helpers, including legacy helpers.
+It is not an execution guarantee: validate a helper with `bash -n` before use.
+For customer storefront production, the authoritative release path is
+[`DEPLOYMENT.md`](../DEPLOYMENT.md) and the guarded Hostinger workflow.
+
+**Current checkout note (2026-11-17):** `bash -n` reports syntax errors in
+`scripts/tools/check-deps.sh`, `scripts/tools/lint.sh`,
+`scripts/db/{backup,migrate,restore}.sh`, `scripts/dev/{run-tests,stop-all}.sh`,
+`scripts/deploy/deploy-all.sh`, and `scripts/git/git-sync.sh`. Do not use those
+helpers for production, database, or deployment operations until they are
+repaired and independently validated.
 
 ## 📁 Directory Structure
 
@@ -34,6 +44,10 @@ Setup environment variables and virtual environments.
 ```bash
 ./scripts/tools/setup-env.sh dev
 ```
+
+This helper requires a local `.env.dev`, `.env.staging`, or `.env.prod` file;
+none of those files are tracked. The tracked `.env.example` is a template and
+must be copied and reviewed separately before using this helper.
 
 ---
 
@@ -315,26 +329,20 @@ Run all tests across the workspace.
 ## 🚢 Deployment Scripts (scripts/deploy/)
 
 ### deploy-all.sh
-Deploy all applications.
+Legacy multi-target helper; it is not the supported production release path.
+Customer storefront production is released by the guarded Hostinger workflow.
 
 ```bash
 ./scripts/deploy/deploy-all.sh [dev|staging|prod]
 ```
 
-**Environments:**
-- `dev`: Development environment (default)
-- `staging`: Staging environment
-- `prod`: Production environment
+Do not use `deploy-all.sh prod` for a production release. It does not implement
+the Hostinger build-once, staging-smoke, same-artifact promotion flow. Follow
+[`DEPLOYMENT.md`](../DEPLOYMENT.md) and
+[`.github/workflows/storefront-hostinger.yml`](../.github/workflows/storefront-hostinger.yml).
 
-**Features:**
-- Deploys Admin Web to Vercel
-- Deploys Mobile App (manual steps required)
-- Deploys Edge Functions
-
-**Example:**
-```bash
-./scripts/deploy/deploy-all.sh prod
-```
+The Hostinger package and deployment scripts in this directory are invoked by
+that workflow; bypassing its promotion gates is unsupported.
 
 ---
 
@@ -393,10 +401,9 @@ Git sync operations.
 ./scripts/build/build-all.sh --prod
 ```
 
-**Deploy to production:**
-```bash
-./scripts/deploy/deploy-all.sh prod
-```
+**Deploy customer storefront production:** follow [`DEPLOYMENT.md`](../DEPLOYMENT.md)
+and the guarded Hostinger workflow; do not run the legacy `deploy-all.sh prod`
+helper.
 
 **Backup database:**
 ```bash

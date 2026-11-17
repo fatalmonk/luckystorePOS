@@ -5,7 +5,7 @@ Canonical script groups:
 - `scripts/tools/` - utility scripts (setup, clean, format, lint, check-deps)
 - `scripts/build/` - build scripts (build-all, build-mobile)
 - `scripts/dev/` - development helpers (start-all, stop-all, run-tests)
-- `scripts/deploy/` - deployment scripts (deploy-all)
+- `scripts/deploy/` - Hostinger packaging/deployment scripts and legacy helpers
 - `scripts/git/` - git operations (git-sync)
 - `scripts/test/` - test scripts
 - `scripts/ops/` - operational data scripts
@@ -16,12 +16,18 @@ Canonical script groups:
 
 ## Quick Start
 
-See [COMMANDS.md](COMMANDS.md) for comprehensive documentation of all bash commands.
+See [COMMANDS.md](COMMANDS.md) for the tracked helper reference and current
+validation notes.
+
+The shell helpers are a mixed set of current and legacy scripts. Check
+`bash -n path/to/script.sh` before running one; the command reference records
+helpers that currently fail syntax validation. Do not use them as a substitute
+for the guarded production workflows.
 
 ### Common Commands
 
 ```bash
-# Setup environment
+# Setup environment (requires a locally created .env.dev)
 ./scripts/tools/setup-env.sh dev
 
 # Start all dev servers
@@ -33,8 +39,9 @@ See [COMMANDS.md](COMMANDS.md) for comprehensive documentation of all bash comma
 # Build all apps
 ./scripts/build/build-all.sh --prod
 
-# Deploy to production
-./scripts/deploy/deploy-all.sh prod
+# Deploy customer storefront production
+# Use the guarded GitHub Actions workflow; do not run deploy-all.sh prod.
+# See ../DEPLOYMENT.md and .github/workflows/storefront-hostinger.yml.
 
 # Backup database
 ./scripts/db/backup.sh
@@ -45,6 +52,6 @@ See [COMMANDS.md](COMMANDS.md) for comprehensive documentation of all bash comma
 
 ## Usage
 
-Use the paths above directly (for example `node scripts/ops/import-competitor-data.js`).
+Use the paths above directly. The repository scraper entry point is `npm run scrape`; competitor research and acceptance remain separate from storefront catalog writes.
 
 All bash scripts are executable and can be run directly from the workspace root.

@@ -1,3 +1,5 @@
+# Lucky Store
+
 <div align="center">
 
 <img src="./assets/screenshots/admin-dashboard.png" alt="Lucky Store POS" width="100%">
@@ -17,7 +19,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/React-19-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React">
   &nbsp;
-  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js">
+  <img src="https://img.shields.io/badge/Next.js-16.4.5-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js">
   &nbsp;
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
   &nbsp;
@@ -231,21 +233,7 @@
 
 </details>
 
-<details>
-<summary><strong>🔍 Storybook Component Library</strong></summary>
-
-<br>
-
-- Storybook 8.6 with React 19 + Vite
-- Isolated component development and visual testing
-- Design tokens wired to Tailwind CSS
-- Run: `cd apps/admin_web && npm run storybook`
-
-</details>
-
----
-
-### 🛒 Customer Storefront (Next.js 15 + E-commerce)
+### 🛒 Customer Storefront (Next.js 16.4.5 + E-commerce)
 
 > **Live at [luckystore1947.com](https://luckystore1947.com)** — production storefront serving real customers.
 
@@ -339,7 +327,7 @@
 - **Service role key** used only in edge functions; anon key for client operations
 - **Rate limiting** via database-backed `rate_limits` table + `check_rate_limit` RPC
 - **Input validation** on all edge functions (UUID format, positive numbers, max amounts)
-- See: [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md)
+- See: [Security Recommendations](docs/security/SECURITY_RECOMMENDATIONS.md)
 
 </details>
 
@@ -380,16 +368,16 @@
 **Flutter 3.29+** · Dart ≥3.7.2 · Provider · Drift (SQLite) · supabase_flutter · flutter_blue_plus · mobile_scanner · fl_chart · workmanager · flutter_background_service · flutter_dotenv · google_fonts · intl · barcode_widget · flutter_thermal_printer · pdf · printing · csv · excel · webview_flutter
 
 ### Customer Storefront
-**Next.js 15** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 4 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
+**Next.js 16.4.5** · React 19 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · App Router · Supabase SSR · Playwright · Vitest · Zod 4 · PostCSS · Autoprefixer · MCP/OAuth 2.1 agent protocol
 
 ### Admin Web
-**React 19.2** · Vite 6 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 3 · Lucide React · Storybook 8.6 · Vitest 3 · Testing Library · date-fns 4 · clsx
+**React 19.2** · Vite 6 · TypeScript 5.9 (strict) · Tailwind CSS 3.4 · React Router 7 · TanStack Query 5 · TanStack Virtual 3 · Recharts 3 · React Hook Form 7 · Zod 3 · Lucide React · Vitest 4 · Testing Library · date-fns 4 · clsx
 
 ### Backend
 **Supabase** · PostgreSQL 17 · Deno Edge Functions · Row-Level Security · Realtime Subscriptions · Storage · Neon APAC read replica
 
 ### Infrastructure
-**Cloudflare** · R2 object storage (APAC) · Workers (image proxy, Neon proxy, agent) · Turnstile · Wrangler · Docker (multi-stage Node 22 + Nginx 1.27 Alpine) · GitHub Actions · Hostinger (customer storefront production) · Vercel (admin and storefront previews)
+**Cloudflare** · R2 object storage (APAC) · Workers (image proxy, agent, WhatsApp webhook) · Turnstile · Wrangler · GitHub Actions · Hostinger (customer storefront production) · Vercel (admin and storefront previews)
 
 ### Scraper
 **Node.js** · Puppeteer · xlsx
@@ -406,7 +394,6 @@
 | Node.js | ≥ 20.0.0 | `node --version` |
 | npm | ≥ 10.0.0 | `npm --version` |
 | Supabase CLI | ≥ 1.0.0 | `supabase --version` |
-| Docker | ≥ 24.0.0 | `docker --version` *(optional)* |
 
 ### Setup
 
@@ -438,11 +425,6 @@ npm install
 cp .env.example .env.local   # Fill in Supabase + R2 image URL
 npm run dev                  # Opens at http://localhost:3000
 
-# 6. Storybook (optional, in apps/admin_web)
-npm run storybook            # Opens at http://localhost:6006
-
-# 7. Docker (optional — production-like)
-docker compose up -d         # Admin web at http://localhost:8080
 ```
 
 ---
@@ -454,24 +436,22 @@ luckystorePOS/
 ├── apps/
 │   ├── mobile_app/          # Flutter POS app (141 Dart files, 13 feature modules)
 │   ├── admin_web/           # React + Vite admin dashboard (19 features, 26 routes)
-│   ├── customer_storefront/   # Next.js 15 e-commerce — LIVE at luckystore1947.com (16 pages, 9 API routes)
+│   ├── customer_storefront/  # Next.js 16.4.5 e-commerce — LIVE at luckystore1947.com
+│   ├── customer_mobile/      # Expo customer app (paused; excluded from root workspaces)
 │   └── scraper/             # Puppeteer competitor price scraper (Shwapno, Chaldal)
 ├── supabase/
-│   ├── migrations/          # 162 SQL migration files
-│   ├── functions/           # 10 Deno edge functions
+│   ├── migrations/          # SQL migration files
+│   ├── functions/           # Deno edge functions
 │   ├── rpc/                 # Raw stored procedure scripts
 │   ├── views/               # Database views
 │   └── public/policies/     # RLS policy definitions
 ├── landing/                 # Static HTML marketing page (Vercel)
-├── cloudflare/              # Workers (images, neon-proxy, agent) + R2 config
+├── cloudflare/              # Workers (images, agent, WhatsApp webhook) + R2 config
 ├── assets/                  # Screenshots & static assets
 │   └── screenshots/         # App screenshots (incl. dark mode)
 ├── scripts/                 # Build, deploy, DB, seed, ops, and test scripts
 ├── data/                    # Inventory CSVs, competitor data, account data
-├── docker/                  # Nginx config + seed DB Dockerfile
-├── .github/workflows/       # CI/CD (7 workflows: ci, flutter-ci, storefront-ci, deploy-storefront, deploy-agent, scraper-daily, monitor-robots)
-├── docker-compose.yml       # One-command Docker deployment
-├── Dockerfile               # Multi-stage Node 22 + Nginx 1.27 Alpine
+├── .github/workflows/       # CI/CD and scheduled automation (11 workflows)
 ├── vercel.json              # Vercel routing & build config
 └── LICENSE                  # Apache 2.0
 ```
@@ -487,7 +467,7 @@ luckystorePOS/
 
 - Auto-deploys on push to `main`
 - Serves landing page at `/` and admin web at `/admin/*` from a single project
-- Build command: `bash scripts/build/vercel.sh`
+- Build configuration: root `vercel.json`
 - Live: [admin.luckystore1947.com](https://admin.luckystore1947.com/) (or [lucky-store-pos-six.vercel.app](https://lucky-store-pos-six.vercel.app/))
 
 </details>
@@ -497,9 +477,9 @@ luckystorePOS/
 
 <br>
 
-- Production runs on Hostinger behind Cloudflare; GitHub Actions builds an immutable Next.js standalone release, deploys it to staging, validates it, then promotes the same artifact to production ([workflow](.github/workflows/storefront-hostinger.yml), [hosting decision](docs/adr/ADR-001-storefront-hosting-hostinger.md))
+- Production runs on Hostinger behind Cloudflare; GitHub Actions builds an immutable Next.js standalone release, deploys it to staging, runs the configured smoke suite, then promotes the same artifact to production ([workflow](.github/workflows/storefront-hostinger.yml), [hosting decision](docs/adr/ADR-001-storefront-hosting-hostinger.md)). Playwright E2E and load checks are not wired into this workflow yet.
 - Vercel project `lucky-store` is used for storefront previews; its production-target build is intentionally skipped. Hostinger serves customer production.
-- Next.js 15 App Router with ISR (60s revalidate), SSR, sitemap + robots generation
+- Next.js 16.4.5 App Router with ISR (60s revalidate), SSR, sitemap + robots generation
 - Live: [luckystore1947.com](https://luckystore1947.com)
 - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_IMAGE_BASE_URL`, `NEXT_PUBLIC_AGENT_WORKER_URL`
 
@@ -522,11 +502,7 @@ luckystorePOS/
 
 <br>
 
-- Multi-stage build: Node 22 Alpine builds React app → Nginx 1.27 Alpine serves it
-- Non-root `appuser` (UID 1001) for security
-- Health check configured on port 80
-- Optional `seed-db` profile for database seeding
-- `docker compose up -d` for one-command deployment
+Docker is not part of the active release path. A standalone storefront image recipe exists at `apps/customer_storefront/Dockerfile`, but the active Hostinger workflow uploads a standalone archive and no root `docker-compose.yml` is tracked.
 
 </details>
 
@@ -554,12 +530,12 @@ Set required secrets on each edge function:
 | Document | Purpose |
 |:---------|:--------|
 | [Deployment Guide](DEPLOYMENT.md) | Full deployment instructions |
-| [Design System](docs/DESIGN_SYSTEM.md) | Visual language, tokens, component patterns |
-| [Brand Guidelines](docs/BRAND_GUIDELINES.md) | Brand identity, colors, typography |
-| [Security Recommendations](docs/SECURITY_RECOMMENDATIONS.md) | Security fixes and hardening |
+| [Design System](docs/design/DESIGN_SYSTEM.md) | Visual language, tokens, component patterns |
+| [Brand Guidelines](docs/design/BRAND_GUIDELINES.md) | Brand identity, colors, typography |
+| [Security Recommendations](docs/security/SECURITY_RECOMMENDATIONS.md) | Security fixes and hardening |
 | [Env Variable Security](system-docs/env-security.md) | Public vs. secret env management |
-| [Admin Login Guide](docs/ADMIN-LOGIN.md) | Admin portal access setup |
-| [Drawer Reconciliation](docs/DRAWER_RECONCILIATION_IMPLEMENTATION.md) | Cash drawer reconciliation |
+| [Admin Login Guide](docs/setup/ADMIN-LOGIN.md) | Admin portal access setup |
+| [Drawer Reconciliation](docs/setup/DRAWER_RECONCILIATION_IMPLEMENTATION.md) | Cash drawer reconciliation |
 | [DNS + Aid Setup](docs/dns-aid-setup.md) | DNS configuration |
 | [Architecture — Schema Authority](docs/architecture/schema-authority.md) | Database schema authority |
 | [Architecture — Migration Baseline](docs/architecture/migration-baseline-repair.md) | Migration baseline repair |

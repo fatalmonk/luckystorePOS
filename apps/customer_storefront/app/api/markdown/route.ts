@@ -123,7 +123,7 @@ function mdBusinessContext(): string {
   md += `- **Agent Auth:** [/auth.md](${BASE_URL}/auth.md) — authentication protocol for programmatic access\n`;
   md += `- **API Catalog:** [/.well-known/api-catalog](${BASE_URL}/.well-known/api-catalog)\n`;
   md += `- **Content Negotiation:** Send \`Accept: text/markdown\` to any page URL\n`;
-  md += `- **Stack:** Next.js 15, React 19, Supabase (Postgres + Auth), Cloudflare R2 CDN\n\n`;
+  md += `- **Stack:** Next.js 16.4.5, React 19, Supabase (Postgres + Auth), Cloudflare R2 CDN\n\n`;
 
   return md;
 }

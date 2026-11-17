@@ -1,5 +1,9 @@
 # Week-one online promotion release review
 
+> **Historical record:** The offer window ended on 26 October 2026, and the
+> evidence below explicitly recorded that the production migration was not yet
+> applied. This is not a current promotion or deployment instruction.
+
 This record requests approval to apply the already-merged migration
 [`20261015100000_add_week_one_online_item_promotion.sql`](../../supabase/migrations/20261015100000_add_week_one_online_item_promotion.sql)
 to the Lucky Store production Supabase project. The migration is **not applied**

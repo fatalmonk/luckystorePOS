@@ -2,7 +2,8 @@
 
 ## Responsibility
 
-Owns the agent, image, and webhook worker boundaries.
+Owns the agent, image, WhatsApp webhook, and disabled-by-default competitor
+scraper worker boundaries.
 
 ## Sources and boundaries
 

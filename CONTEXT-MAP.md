@@ -7,6 +7,7 @@ For cloud/CI agents without local Project-Memory access, use `AGENTS.md` and the
 | Context | Documentation | Responsibility |
 |---|---|---|
 | Customer storefront | `apps/customer_storefront/CONTEXT.md` | Customer catalog, cart, checkout, and storefront delivery |
+| Customer mobile | `apps/customer_mobile/README.md` | Expo customer app; currently paused and excluded from root workspaces |
 | Admin web | `apps/admin_web/CONTEXT.md` | Store administration, inventory, orders, and reporting UI |
 | Mobile POS | `apps/mobile_app/CONTEXT.md` | Staff POS, local persistence, hardware, and offline synchronization |
 | Scraper | `apps/scraper/CONTEXT.md` | Competitor catalog collection and price mapping |

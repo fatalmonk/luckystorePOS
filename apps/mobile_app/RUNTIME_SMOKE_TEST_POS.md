@@ -5,7 +5,9 @@ Use this checklist before each pilot deployment.
 ## Preconditions
 
 - Supabase has at least 1 active item for the cashier store.
-- Cashier credentials are configured in `.env`.
+- A build/runtime configuration supplies `SUPABASE_URL` and
+  `SUPABASE_ANON_KEY` via Dart defines; this app does not load credentials from
+  a checked-in `.env` file.
 - Mobile app starts and reaches login screen.
 
 ## Test Steps

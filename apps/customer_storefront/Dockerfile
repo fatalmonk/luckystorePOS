@@ -1,4 +1,4 @@
-# Lucky Store Customer Storefront — Next.js 15 Production Dockerfile
+# Lucky Store Customer Storefront — Next.js 16.4.5 Production Dockerfile
 # Multi-stage: build → runner (standalone output)
 
 # =================== Stage 1: Builder ===================

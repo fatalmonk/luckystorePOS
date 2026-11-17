@@ -6,17 +6,17 @@
 
 - Canonical repository: `fatalmonk/luckystorePOS`.
 - Canonical production branch: `main`.
-- Repository and deployment state are live data. Read current `main`, open PRs, relevant files, CI, and Vercel directly before implementation work.
+- Repository and deployment state are live data. Read current `main`, open PRs, relevant files, CI, and the relevant deployment provider directly before implementation work.
 - This document stores durable context only: architecture, stable paths, shipped capabilities, operating constraints, and supported workflows.
 
 ## Stack
 
-- Storefront: Next.js App Router on Vercel at `luckystore1947.com`.
+- Storefront: Next.js App Router on Hostinger behind Cloudflare at `luckystore1947.com`; Vercel is used for previews.
 - Admin Web: Vite + React on Vercel.
 - Mobile App: Flutter.
 - Database & Auth: Supabase Postgres + RLS + Supabase Auth.
 - Edge/CDN: Cloudflare Workers + R2.
-- Analytics replica: Neon Postgres, accessed by admin web through the `neon-proxy` Worker.
+- Analytics replica: Neon Postgres, accessed through the Cloudflare agent Worker `/api/neon` proxy and its configured Neon upstream.
 
 ## Locked Brand & UI Constraints
 
@@ -37,7 +37,7 @@
 - Mobile UI uses Dart `DesignTokens` under `apps/mobile_app/lib/core/theme/tokens.dart`.
 - Do not modify `PosProvider`, `supabase/migrations/`, or the core authentication flow without explicit approval and appropriate validation.
 - Production storefront product cards are consolidated into `GridProductCard`; do not reintroduce parallel card implementations without a documented reason.
-- Storefront localization architecture (`/` English, `/bn` Bengali): Shared component tree parameterized by typed locale dictionaries (`app/lib/i18n`), stable Latin slugs (`/bn/category/*`), strict self-canonicals, bilateral hreflang (`en-BD`, `bn-BD`, `x-default`), and `<html lang="bn">` (detailed in `docs/plan/bengaliversion.md`).
+- Storefront localization architecture (`/` English, `/bn` Bengali): Shared component tree parameterized by typed locale dictionaries (`app/lib/i18n`), stable Latin slugs (`/bn/category/*`), strict self-canonicals, bilateral hreflang (`en-BD`, `bn-BD`, `x-default`), and `<html lang="bn">`.
 
 ## Major Shipped Storefront Capabilities
 
@@ -59,8 +59,6 @@
 - Image migration: `npm run migrate:images`.
 - Image migration dry-run: `npm run migrate:images:dry-run`.
 - Deploy image Worker: `npm run deploy:worker`.
-- Competitor import: `npm run import-competitor`.
-- Duplicate cleanup: `npm run remove-duplicates` or `npm run remove-duplicates:dry-run`.
 - Scraper: `npm run scrape`.
 
 ## Documentation Sync Policy

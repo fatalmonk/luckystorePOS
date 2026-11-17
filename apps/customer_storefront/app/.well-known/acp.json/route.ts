@@ -37,11 +37,11 @@ export async function GET(req: NextRequest) {
       version: '1.0.0',
     },
     api_base_url: `${BASE_URL}/api`,
-    transports: ['http-rest', 'sse'],
+    transports: ['http-rest'],
     capabilities: {
       services: ['catalog', 'cart', 'checkout', 'search', 'orders'],
-      streaming: true,
-      auth_types_supported: ['bearer', 'api_key', 'anonymous'],
+      streaming: false,
+      auth_types_supported: ['bearer', 'anonymous'],
     },
     endpoints: {
       products: `${BASE_URL}/api/products`,

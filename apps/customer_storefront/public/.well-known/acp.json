@@ -5,8 +5,7 @@
   },
   "api_base_url": "https://luckystore1947.com/api",
   "transports": [
-    "http-rest",
-    "sse"
+    "http-rest"
   ],
   "capabilities": {
     "services": [
@@ -16,10 +15,9 @@
       "search",
       "orders"
     ],
-    "streaming": true,
+    "streaming": false,
     "auth_types_supported": [
       "bearer",
-      "api_key",
       "anonymous"
     ]
   },
