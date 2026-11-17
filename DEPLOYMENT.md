@@ -8,11 +8,13 @@ This document covers deployment for the Lucky Store multi-app architecture.
 
 | App | Framework | Platform | URL Pattern |
 |-----|-----------|----------|-------------|
-| Customer Storefront | Next.js 15 | Hostinger behind Cloudflare (production); Vercel (previews) | `luckystore1947.com` |
+| Customer Storefront | Next.js 16 (repository-pinned: 16.4.5) | Hostinger behind Cloudflare (production); Vercel (previews) | `luckystore1947.com` |
 | Admin Web | Vite + React | Vercel | `admin.luckystore1947.com` |
 | Mobile App | Flutter | Play Store / App Store | Native app |
 
 ## Customer Storefront (Next.js)
+
+The framework version is pinned by the root and storefront `package.json` files and the root `package-lock.json`. These package manifests are the source of truth for the next build; do not rely on the static version text in this guide to identify the currently deployed release. Confirm the deployment commit and its locked dependencies when reporting a live version.
 
 ### Environment Variables
 
