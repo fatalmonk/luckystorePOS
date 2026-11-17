@@ -102,4 +102,4 @@ Lucky Store was established in 1947 and has served Chattogram neighborhood famil
 - **Sitemap:** https://www.luckystore1947.com/sitemap.xml
 - **API Catalog:** https://www.luckystore1947.com/.well-known/api-catalog
 - **Auth Protocol:** https://www.luckystore1947.com/auth.md
-- **WebMCP:** Browser pages register tools through `navigator.modelContext`; the storefront does not publish an HTTP `/api/mcp` transport.
+- **WebMCP:** [Browser metadata](https://www.luckystore1947.com/.well-known/webmcp.json) describes browser-only tools registered through `navigator.modelContext`; the storefront does not publish an HTTP `/api/mcp` transport.

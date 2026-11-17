@@ -7,11 +7,13 @@ configuration supplied at runtime with `--dart-define`.
 ## Local development
 
 Use the system Flutter SDK available on `PATH` (or `~/development/flutter`),
-then run:
+then run the commands below. If Flutter is installed only at
+`~/development/flutter`, use `~/development/flutter/bin/flutter` in place of
+`flutter` or add `~/development/flutter/bin` to `PATH` first:
 
 ```bash
-flutter pub get
-flutter run --dart-define=SUPABASE_URL=https://<project>.supabase.co \
+~/development/flutter/bin/flutter pub get
+~/development/flutter/bin/flutter run --dart-define=SUPABASE_URL=https://<project>.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=<anon-key>
 ```
 

@@ -1,0 +1,15 @@
+{
+  "format": "webmcp",
+  "version": "1.0",
+  "server": {
+    "name": "lucky-store-storefront",
+    "description": "Lucky Store storefront browser tools exposed through WebMCP"
+  },
+  "registration": {
+    "scope": "browser",
+    "api": "navigator.modelContext",
+    "origin": "https://luckystore1947.com/"
+  },
+  "notes": "Tools are registered in the browser. The storefront does not implement an HTTP /api/mcp endpoint, SSE transport, or OAuth transport.",
+  "source": "apps/customer_storefront/app/lib/webmcp.ts"
+}
