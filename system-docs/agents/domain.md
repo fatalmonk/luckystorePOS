@@ -4,7 +4,7 @@ Lucky Store uses a multi-context domain layout.
 
 ## Read order
 
-1. Read root `CONTEXT.md` for the system overview and current handoff.
+1. Read root pointer `context.md` (or the canonical `~/Desktop/Projects/Project-Memory/projects/luckystore/context.md` if available locally) for the system overview and current handoff.
 2. Read `CONTEXT-MAP.md` to select the affected context.
 3. Read that context's `CONTEXT.md`.
 4. Read system ADRs in `docs/adr/` and context ADRs in the context's

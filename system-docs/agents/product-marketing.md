@@ -14,6 +14,9 @@ audience, positioning, website-messaging, and promotional-copy work.
 - Keep payment and delivery wording aligned with the storefront policy. Do not
   imply advance payment is required when the approved flow supports payment at
   the doorstep after inspection.
+- Do not change payment-gateway wording or checkout flows to “pre-payment only”
+  in frontend components unless the owner explicitly approves that policy
+  change and the relevant storefront implementation is updated consistently.
 
 ## Lucky Store reference
 
