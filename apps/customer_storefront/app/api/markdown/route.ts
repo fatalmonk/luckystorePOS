@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PRIVATE_CACHE_CONTROL } from '../../../security-headers.cjs';
 import { createAnonymousStorefrontProductRepository, createProductId } from '../../lib/products/index';
 import { supabase } from '../../lib/supabase';
 import { CATEGORY_GROUPS } from '../../lib/types';
@@ -728,7 +729,8 @@ requests because registration can create an account and send email.
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
       'x-markdown-tokens': String(tokens),
-      'Cache-Control': 'public, max-age=60, s-maxage=300',
+      'Cache-Control': PRIVATE_CACHE_CONTROL,
+      'CDN-Cache-Control': 'private, no-store',
       Vary: 'Accept',
     },
   });

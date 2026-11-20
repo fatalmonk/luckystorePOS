@@ -425,25 +425,15 @@ export async function middleware(request: NextRequest) {
   }
 
   const accept = request.headers.get('accept') || '';
-  const userAgent = request.headers.get('user-agent') || '';
   const acceptPreferences = getAcceptPreferences(accept);
-
-  // AI bots that prefer structured markdown over heavy client JS
-  const isKnownAiBot = /GPTBot|PerplexityBot|ClaudeBot|cohere-ai|OAI-SearchBot|Applebot-Extended/i.test(userAgent);
-
-  // Check if client wants markdown via Accept header or AI User-Agent (when html isn't forced)
-  const explicitlyRejectsMarkdown =
-    acceptPreferences.markdown.specificity === 2 && acceptPreferences.markdown.quality === 0;
-  const explicitlyAcceptsHtml =
-    acceptPreferences.html.specificity === 2 && acceptPreferences.html.quality > 0;
-  const hasMarkdownRange = acceptPreferences.markdown.specificity >= 0;
-  const markdownPreferred = acceptPreferences.markdown.quality > acceptPreferences.html.quality ||
+  const markdownPreferred =
+    acceptPreferences.markdown.quality > acceptPreferences.html.quality ||
     (acceptPreferences.markdown.quality === acceptPreferences.html.quality &&
       acceptPreferences.markdown.specificity > acceptPreferences.html.specificity);
-  const wantsMarkdown = !explicitlyRejectsMarkdown && (
-    (acceptPreferences.markdown.quality > 0 && markdownPreferred) ||
-    (isKnownAiBot && !explicitlyAcceptsHtml && (!hasMarkdownRange || acceptPreferences.markdown.quality > 0))
-  );
+  const wantsMarkdown =
+    acceptPreferences.markdown.specificity === 2 &&
+    acceptPreferences.markdown.quality > 0 &&
+    markdownPreferred;
 
   const originalPath = request.nextUrl.pathname;
   const isStaticTextDoc =
@@ -481,9 +471,8 @@ export async function middleware(request: NextRequest) {
     return rewriteResponse;
   }
 
-  // Known bots can also receive Markdown for a generic Accept value. Varying the
-  // public HTML response on User-Agent would fragment the shared catalog cache.
-  // Markdown itself is private and is not stored by the shared cache.
+  // Both browsers and bots receive the same HTML for generic Accept ranges.
+  // Markdown requires an explicit Accept: text/markdown and is private/no-store.
   supabaseResponse.headers.set('Vary', 'Accept');
   return supabaseResponse;
 }
