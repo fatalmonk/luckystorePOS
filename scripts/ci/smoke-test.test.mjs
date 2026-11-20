@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import http from 'node:http';
 import { evaluateSmokeHealth } from './smoke-test.mjs';
 import * as smokeTest from './smoke-test.mjs';
 
@@ -145,4 +146,95 @@ test('the release smoke gate covers every configured public image cache route', 
     '/logo-bangla.svg',
     '/logo-bangla-inverse.svg',
   ]);
+});
+
+
+// Deployment-time transport failures are retryable only for read-only probes.
+// Application-level responses and non-idempotent requests must never be retried.
+async function withHttpServer(listener, fn) {
+  const server = http.createServer(listener);
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const addr = server.address();
+  try { return await fn('http://127.0.0.1:' + addr.port); }
+  finally { await new Promise((resolve, reject) => server.close(e => e ? reject(e) : resolve())); }
+}
+
+test('smoke request recovers from one transient connection reset', async () => {
+  let attempts = 0;
+  await withHttpServer((req, res) => {
+    attempts++;
+    if (attempts === 1) { req.socket.destroy(); return; }
+    res.end('recovered');
+  }, async (url) => {
+    const response = await smokeTest.request(url + '/', {}, { backoffMs: 1 });
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.body, 'recovered');
+    assert.equal(attempts, 2);
+  });
+});
+
+test('smoke request retries truncated response streams', async () => {
+  let attempts = 0;
+  await withHttpServer((req, res) => {
+    attempts++;
+    if (attempts === 1) { res.writeHead(200); res.write('partial'); res.socket.destroy(); return; }
+    res.end('complete');
+  }, async (url) => {
+    const response = await smokeTest.request(url + '/', {}, { backoffMs: 1 });
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.body, 'complete');
+    assert.equal(attempts, 2);
+  });
+});
+
+test('smoke request exhausts the bounded reset retries and fails', async () => {
+  let attempts = 0;
+  await withHttpServer((req) => { attempts++; req.socket.destroy(); }, async (url) => {
+    await assert.rejects(smokeTest.request(url + '/', {}, { backoffMs: 1 }), { code: 'ECONNRESET' });
+    assert.equal(attempts, 3);
+  });
+});
+
+test('smoke request does not retry HTTP errors', async () => {
+  let attempts = 0;
+  await withHttpServer((req, res) => {
+    attempts++;
+    res.writeHead(503);
+    res.end('Unavailable');
+  }, async (url) => {
+    const response = await smokeTest.request(url + '/', {}, { backoffMs: 1 });
+    assert.equal(response.statusCode, 503);
+    assert.equal(attempts, 1);
+  });
+});
+
+test('smoke request never replays non-idempotent POST requests', async () => {
+  let attempts = 0;
+  await withHttpServer((req) => { attempts++; req.socket.destroy(); }, async (url) => {
+    await assert.rejects(smokeTest.request(url + '/', { method: 'POST' }, { backoffMs: 1 }), { code: 'ECONNRESET' });
+    assert.equal(attempts, 1);
+  });
+});
+
+test('health transport policy makes only one network attempt per validation iteration', async () => {
+  let attempts = 0;
+  await withHttpServer((req) => { attempts++; req.socket.destroy(); }, async (url) => {
+    for (let validationAttempt = 0; validationAttempt < 3; validationAttempt++) {
+      await assert.rejects(
+        smokeTest.request(url + '/api/health', {}, { maxAttempts: 1, backoffMs: 1 }),
+        { code: 'ECONNRESET' },
+      );
+    }
+    assert.equal(attempts, 3, 'three health validation iterations must cause exactly three network attempts');
+  });
+});
+
+test('single-attempt transport policy still succeeds on a healthy response', async () => {
+  let attempts = 0;
+  await withHttpServer((req, res) => { attempts++; res.end('ok'); }, async (url) => {
+    const result = await smokeTest.request(url + '/api/health', {}, { maxAttempts: 1, backoffMs: 1 });
+    assert.equal(result.statusCode, 200);
+    assert.equal(result.body, 'ok');
+    assert.equal(attempts, 1);
+  });
 });
