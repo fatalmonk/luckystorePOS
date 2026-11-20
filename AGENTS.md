@@ -4,7 +4,7 @@
 - **PR-Sized Tasks:** Work on small, manageable changes.
 - **Targeted Operations:** Avoid broad repository scans (`find .`, `grep -R .`, `ls -R`).
 - **Surgical Reads:** Read only necessary files for the current task.
-- **Validation:** Always review `git diff` before finalizing changes.
+- **Validation:** Always **show** `git diff` before finalizing changes.
 - **Transparency:** Report failing commands exactly as they occur.
 - **Secret Protection:** Never output secrets, credentials, API keys, or tokens.
 
@@ -33,8 +33,28 @@
 - Use `rtk` prefixed commands for optimized output (e.g., `rtk grep`, `rtk read`).
 - Avoid raw commands like `grep`, `cat`, `ls -la` when `rtk` alternatives exist.
 
+## GitHub CLI (gh)
+- `gh` is available on this machine for authorized GitHub operations.
+- If `gh` returns `HTTP 401: Bad credentials`, `GH_TOKEN` or `GITHUB_TOKEN` may be overriding a valid saved credential. To retry a read without either override, use `env -u GH_TOKEN -u GITHUB_TOKEN gh pr view <number>`. This affects only that command.
+- CLI availability does not grant permission to push, merge, or deploy — explicit authorization is still required for those operations.
+
 ## Scope Rules
 - **Task-Specific Permissions:** Permissions and restrictions come from the current user request. Do not carry forward scope restrictions, exceptions, or permissions from previous PRs or tasks.
+
+## Canonical Source & Phase 1 Scope
+
+**LuckyStore/AGENTS.md is the canonical source for permanent repository rules.** All permanent safeguards in this file apply to every task, regardless of scope. **The Phase 1 restrictions** live in `system-docs/agents/phase-1-scope.md` and apply only when a task explicitly invokes Phase 1.
+
+### Phase 1 activation
+Apply the Phase 1 brief only when the current task explicitly invokes it. Its restrictions apply for that task only. If the request is ambiguous and the distinction affects the next action, ask before proceeding. Permanent repository safeguards always apply.
+
+See [system-docs/agents/phase-1-scope.md](system-docs/agents/phase-1-scope.md) for the full Phase 1 file allowlist, forbidden areas, research limits, and command allowlist.
+
+### Read-only inspection
+For a requested branch review, targeted local checks of branch and worktree identity, commit history, staged and unstaged diffs, and untracked filenames are permitted unless the active task brief restricts them. Identify the local ref used for comparison; do not describe it as verified remote state. Network queries, Git changes, and database operations are outside this inspection permission.
+
+### Branch preservation
+“Keep” means leave the branch and its worktree intact. Report branch-only commits separately from staged, unstaged, and untracked files. Before recommending deletion, check whether equivalent work exists on the comparison branch. Keeping a branch does not authorize committing, stashing, rebasing, pushing, merging, deleting, or removing its worktree.
 
 ## Product Marketing
 - **Reference:** For product-marketing, campaign, social, brand-voice, audience, positioning, website-messaging, or promotional-copy requests, read [`system-docs/agents/product-marketing.md`](system-docs/agents/product-marketing.md) first.
