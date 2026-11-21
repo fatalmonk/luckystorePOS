@@ -16,7 +16,7 @@ const POPULAR_SEARCHES = ['Eggs', 'Noodles', 'Milk', 'Rice', 'Cooking Oil', 'Bre
 const CATEGORY_SHORTCUTS = [
   { href: '/category/cooking-essentials', label: 'Cooking Essentials', icon: 'cooking-essentials' },
   { href: '/category/snacks', label: 'Snacks & Biscuits', icon: 'snacks' },
-  { href: '/category/dairy-&-eggs', label: 'Dairy & Eggs', icon: 'dairy-and-eggs' },
+  { href: '/category/dairy-and-eggs', label: 'Dairy & Eggs', icon: 'dairy-and-eggs' },
   { href: '/category/ice-cream', label: 'Ice Cream', icon: 'ice-cream' },
   { href: '/category/beverages', label: 'Beverages', icon: 'beverages' },
   { href: '/category/personal-care', label: 'Personal Care', icon: 'personal-care' },
