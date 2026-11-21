@@ -44,4 +44,10 @@ describe('SearchClientPage recovery', () => {
 
     expect(push).toHaveBeenCalledWith('/category?q=Milk');
   });
+
+  it('renders Dairy & Eggs category shortcut with canonical href', () => {
+    render(<SearchClientPage />);
+    const dairyLink = screen.getByRole('link', { name: /Dairy & Eggs/i });
+    expect(dairyLink).toHaveAttribute('href', '/category/dairy-and-eggs');
+  });
 });
