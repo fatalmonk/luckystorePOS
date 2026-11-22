@@ -72,7 +72,13 @@ interface CatalogLayoutProps {
   categorySlug: string;
   group?: CategoryGroup;
   parentGroup?: CategoryGroup;
-  categories: { id: string; slug: string; name: string; emoji: string }[];
+  categories: {
+    id: string;
+    slug: string;
+    name: string;
+    emoji: string;
+    parent_id?: string | null;
+  }[];
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
@@ -429,11 +435,11 @@ export function CatalogLayout({
       {/* Sub-categories Thumbnail Strip/Grid */}
       {(() => {
         const currentCategory = categories.find((c) => c.slug === categorySlug);
-        const targetParentId = (currentCategory as any)?.parent_id || currentCategory?.id;
+        const targetParentId = currentCategory?.parent_id || currentCategory?.id;
         const rawSubCats = categories.filter((c) => {
           if (c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
-          if (targetParentId && (c as any).parent_id) {
-            return (c as any).parent_id === targetParentId;
+          if (targetParentId && c.parent_id) {
+            return c.parent_id === targetParentId;
           }
           const normC = normalizeCategorySlug(c.slug);
           if (group) return group.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
