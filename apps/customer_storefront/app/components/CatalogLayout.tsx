@@ -12,7 +12,7 @@ import { Sparkle } from '@phosphor-icons/react/dist/csr/Sparkle';
 import { Tag } from '@phosphor-icons/react/dist/csr/Tag';
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
 import { GridProductCard } from './GridProductCard';
-import { CATEGORY_GROUPS, normalizeCategorySlug } from '../lib/types';
+import { CATEGORY_GROUPS, normalizeCategorySlug, getCanonicalCategorySlug } from '../lib/types';
 import type { Product, CategoryGroup } from '../lib/types';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import { trackViewItemList } from '../lib/analytics';
@@ -430,7 +430,7 @@ export function CatalogLayout({
       {(() => {
         const currentCategory = categories.find((c) => c.slug === categorySlug);
         const targetParentId = (currentCategory as any)?.parent_id || currentCategory?.id;
-        const subCats = categories.filter((c) => {
+        const rawSubCats = categories.filter((c) => {
           if (c.slug === group?.slug || c.slug === parentGroup?.slug) return false;
           if (targetParentId && (c as any).parent_id) {
             return (c as any).parent_id === targetParentId;
@@ -440,6 +440,24 @@ export function CatalogLayout({
           if (parentGroup) return parentGroup.subCategories.some((sub) => normalizeCategorySlug(sub) === normC);
           return false;
         });
+
+        const subCats = (() => {
+          const map = new Map<string, (typeof rawSubCats)[0]>();
+          for (const sub of rawSubCats) {
+            const canonical = getCanonicalCategorySlug(sub.slug);
+            const existing = map.get(canonical);
+            if (!existing) {
+              map.set(canonical, sub);
+            } else {
+              const existingExact = existing.slug === canonical;
+              const currentExact = sub.slug === canonical;
+              if (currentExact && !existingExact) {
+                map.set(canonical, sub);
+              }
+            }
+          }
+          return Array.from(map.values());
+        })();
 
         if (subCats.length === 0) return null;
 
@@ -458,12 +476,13 @@ export function CatalogLayout({
               className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 md:mx-0 md:grid md:grid-cols-6 md:gap-3 md:overflow-visible md:px-0 md:pb-0"
             >
               {subCats.map((sub) => {
-                const isActive = categorySlug === sub.slug;
-                const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[normalizeCategorySlug(sub.slug)] || sub.name) : sub.name;
+                const canonicalSubSlug = getCanonicalCategorySlug(sub.slug);
+                const isActive = categorySlug === canonicalSubSlug || categorySlug === sub.slug;
+                const subDisplayName = effectiveLocale === 'bn' ? (BENGALI_CATEGORY_NAMES[canonicalSubSlug] || sub.name) : sub.name;
                 return (
                   <Link
                     key={sub.id}
-                    href={withLocale(`/category/${sub.slug}`, effectiveLocale)}
+                    href={withLocale(`/category/${canonicalSubSlug}`, effectiveLocale)}
                     className={`group relative flex min-h-[44px] min-w-[7.5rem] snap-start flex-row items-center justify-center gap-2 rounded-warm-card border p-2 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent md:min-h-[90px] md:min-w-0 md:flex-col md:gap-2 md:p-3 ${
                       isActive
                         ? 'border-warm-accent bg-warm-fg text-warm-accent shadow-warm-sm font-black'
@@ -471,7 +490,7 @@ export function CatalogLayout({
                     }`}
                   >
                     <span className="transition-transform group-hover:scale-110 [&_svg]:h-5 [&_svg]:w-5 md:[&_svg]:h-7 md:[&_svg]:w-7" aria-hidden="true">
-                      {getCategoryIcon(sub.slug || sub.name, 28)}
+                      {getCategoryIcon(canonicalSubSlug || sub.slug || sub.name, 28)}
                     </span>
                     <span className={`max-w-full text-xs font-extrabold leading-tight md:truncate ${isActive ? 'text-warm-accent' : 'text-warm-fg'}`}>
                       {subDisplayName}
