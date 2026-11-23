@@ -55,3 +55,27 @@ describe('dictionary parity: en vs bn', () => {
     expect(bnEmptyLeaves).toEqual([]);
   });
 });
+
+function collectStrings(value: unknown): string[] {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(collectStrings);
+  if (value && typeof value === 'object') return Object.values(value).flatMap(collectStrings);
+  return [];
+}
+
+describe('Bengali dictionary Unicode', () => {
+  it('uses the correct Bengali care label', () => {
+    expect(dictionaries.bn.reels.seeAllCare).toBe('সব পার্সোনাল কেয়ার দেখুন');
+  });
+
+  it('does not contain Malayalam Unicode codepoints', () => {
+    const malayalam = collectStrings(dictionaries.bn)
+      .flatMap((text) => [...text])
+      .filter((character) => {
+        const codePoint = character.codePointAt(0)!;
+        return codePoint >= 0x0d00 && codePoint <= 0x0d7f;
+      });
+
+    expect(malayalam).toEqual([]);
+  });
+});
