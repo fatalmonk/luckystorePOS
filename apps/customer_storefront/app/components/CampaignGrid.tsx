@@ -87,7 +87,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
                   </>
                 )}
               </p>
-              <h1 id="campaign-hero-title" className="campaign-display font-serif text-balance text-[clamp(2rem,4.5vw,3.75rem)] font-semibold leading-[1.12] tracking-tight text-[var(--color-campaign-ink)] [&:lang(bn)]:tracking-normal">
+              <h1 id="campaign-hero-title" className="campaign-display font-display text-balance text-[clamp(2rem,4.5vw,3.75rem)] font-semibold leading-[1.12] tracking-tight text-[var(--color-campaign-ink)] [&:lang(bn)]:tracking-normal">
                 {dict.campaign.headline}
               </h1>
               <p className="mt-3 max-w-[46ch] text-pretty text-sm leading-relaxed text-[var(--color-campaign-ink-muted)] lg:text-base">

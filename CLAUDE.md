@@ -18,7 +18,7 @@ See [system-docs/agents/phase-1-scope.md](system-docs/agents/phase-1-scope.md) f
   `CONTEXT.md`, and applicable ADRs.
 
 <!-- rtk-instructions v2 -->
-# Command output
+## Command output
 
 Command output here is condensed to save tokens, keeping every signal and
 dropping costly noise. Treat it as the complete result: run commands

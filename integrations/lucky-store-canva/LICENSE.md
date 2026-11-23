@@ -4,7 +4,7 @@ By making these software components available to you, our goal is to give you
 the right to use the components to build your apps for Canva's ecosystem. See
 below for the specific licence terms that apply to your use.
 
-# Licence
+## Licence
 
 Canva Pty Ltd (ACN 158 929 938) ("Canva") owns the copyright in the software and
 associated documentation files to which this Licence relates (each a "Software

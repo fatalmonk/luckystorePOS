@@ -43,7 +43,7 @@ export function DeferredHomeShelves({
         subtitle={dict.reels.pantrySubtitle}
         products={pantryProducts.slice(0, SHELF_SIZE)}
         ctaHref={withLocale('/category/cooking-essentials', locale)}
-        ctaLabel={dict.reels.seeAll}
+        ctaLabel={dict.reels.seeAllPantry}
         locale={locale}
       />
       <DealOfTheWeek
@@ -60,7 +60,7 @@ export function DeferredHomeShelves({
         subtitle={dict.reels.snacksSubtitle}
         products={snacksProducts.slice(0, SHELF_SIZE)}
         ctaHref={withLocale('/category/snacks', locale)}
-        ctaLabel={dict.reels.seeAll}
+        ctaLabel={dict.reels.seeAllSnacks}
         locale={locale}
       />
       <ProductGridSection
@@ -69,7 +69,7 @@ export function DeferredHomeShelves({
         subtitle={dict.reels.careSubtitle}
         products={personalCareProducts.slice(0, SHELF_SIZE)}
         ctaHref={withLocale('/category/personal-care', locale)}
-        ctaLabel={dict.reels.seeAll}
+        ctaLabel={dict.reels.seeAllCare}
         locale={locale}
       />
       <PopularBrandsSection locale={locale} />

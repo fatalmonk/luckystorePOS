@@ -52,7 +52,7 @@ describe('DealOfTheWeek', () => {
     expect(screen.getByText('Countdown')).toHaveClass('justify-self-end');
     expect(screen.getByRole('link', { name: '50% off — View Deal 1' })).toBeInTheDocument();
     expect(screen.getAllByTestId('deal-product')).toHaveLength(3);
-    expect(screen.getByRole('link', { name: 'See all 48 deals →' })).toHaveAttribute('href', '/best/dealoftheweek');
+    expect(screen.getByRole('link', { name: 'See all deals (48)' })).toHaveAttribute('href', '/best/dealoftheweek');
     fireEvent.click(screen.getByRole('button', { name: 'Add to Cart: Deal 1' }));
     expect(add).toHaveBeenCalledTimes(1);
 
@@ -73,7 +73,7 @@ describe('DealOfTheWeek', () => {
     expect(screen.getByText(/verified unranked picks/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /10% off — View Deal a/i })).toBeInTheDocument();
     expect(screen.getAllByTestId('deal-product')).toHaveLength(2);
-    expect(screen.getByRole('link', { name: 'See all weekly picks →' })).toHaveAttribute('href', '/best/dealoftheweek');
+    expect(screen.getByRole('link', { name: 'See all weekly picks' })).toHaveAttribute('href', '/best/dealoftheweek');
     expect(screen.getByRole('button', { name: 'Add to Cart: Deal a' })).toBeInTheDocument();
   });
 
@@ -83,7 +83,7 @@ describe('DealOfTheWeek', () => {
 
     expect(screen.getByRole('heading', { name: 'সপ্তাহের সেরা অফার' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'যোগ করুন: Deal a' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /সবগুলো অফার/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /সব অফার/ })).toHaveAttribute(
       'href',
       '/bn/best/dealoftheweek',
     );

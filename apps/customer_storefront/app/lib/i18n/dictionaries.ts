@@ -130,8 +130,13 @@ export const dictionaries = {
       careTitle: 'Home & Personal Care',
       careSubtitle: 'Gentle soaps, clean living essentials, and daily comforts for the home.',
       brandsTitle: 'Shop Popular Brands',
-      brandsSubtitle: 'Authentic products from Bangladesh’s most trusted household FMCG brands.',
+      brandsSubtitle: 'Authentic products from Bangladesh\'s most trusted household FMCG brands.',
       seeAll: 'See all',
+      seeAllPantry: 'See all pantry staples',
+      seeAllSnacks: 'See all snacks & drinks',
+      seeAllCare: 'See all home & personal care',
+      seeAllPopular: 'See all popular items',
+      seeAllBrands: 'See all brands',
     },
     deal: {
       title: 'Deal of the Week',
@@ -143,6 +148,8 @@ export const dictionaries = {
       minutes: 'm',
       seconds: 's',
       viewProduct: 'View product',
+      seeAllWeeklyPicks: 'See all weekly picks',
+      seeAllDeals: 'See all deals',
     },
     productCard: {
       addToCart: 'Add to Cart',
@@ -159,7 +166,7 @@ export const dictionaries = {
     heritage: {
       badge: 'Roots & Heritage',
       title: 'Serving Chattogram since 1947.',
-      description: 'Long before grocery apps, there was a counter, a scale, and an unshakeable promise of purity. For over seven decades, Lucky Store has stood with the families of Chattogram — delivering honest provisions from hands you have always known.',
+      description: 'Long before grocery apps, there was a counter, a scale, and an unshakeable promise of purity. For over seven decades, Lucky Store has stood with the families of Chattogram, delivering honest provisions from hands you have always known.',
       cta: 'Shop groceries',
     },
     footer: {
@@ -529,6 +536,11 @@ export const dictionaries = {
       brandsTitle: 'জনপ্রিয় ব্র্যান্ডসমূহ',
       brandsSubtitle: 'বাংলাদেশের সেরা ও বিশ্বস্ত ব্র্যান্ডের আসল পণ্যসমূহ।',
       seeAll: 'সব দেখুন',
+      seeAllPantry: 'সব রান্নার সামগ্রী দেখুন',
+      seeAllSnacks: 'সব নাস্তা ও পানীয় দেখুন',
+      seeAllCare: 'সব পার্সনাল কെയার দেখুন',
+      seeAllPopular: 'সব জনপ্রিয় আইটেম দেখুন',
+      seeAllBrands: 'সব ব্র্যান্ড দেখুন',
     },
     deal: {
       title: 'সপ্তাহের সেরা অফার',
@@ -540,6 +552,8 @@ export const dictionaries = {
       minutes: 'মিনিট',
       seconds: 'সেকেন্ড',
       viewProduct: 'পণ্যটি দেখুন',
+      seeAllWeeklyPicks: 'সব সাপ্তাহিক বাছাই',
+      seeAllDeals: 'সব অফার',
     },
     productCard: {
       addToCart: 'যোগ করুন',

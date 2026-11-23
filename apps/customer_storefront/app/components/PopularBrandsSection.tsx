@@ -20,7 +20,7 @@ export function PopularBrandsSection({
   const dict = getDictionary(locale);
   const isBn = locale === 'bn';
   const allBrandsHref = withLocale('/brand', locale);
-  const resolvedSeeAll = dict.reels.seeAll;
+  const resolvedSeeAll = dict.reels.seeAllBrands;
 
   if (brands.length === 0) return null;
 

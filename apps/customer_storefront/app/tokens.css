@@ -1,6 +1,19 @@
 /* Hallmark · macrostructure: Mobile-First App Shell · genre: modern-minimal · theme: Deep Night & Saffron
  * paper: #F6F3EC · accent: #f0c444 Saffron · display: Geist · body: Geist
  * diversification: first-run · studied: no · source: reference HTML
+ *
+ * PALETTE OVERRIDE (design-taste-frontend §4.2):
+ * This warm paper (#F6F3EC) + saffron (#f0c444) + near-black (#0B0B0D) palette
+ * matches the "beige+brass+espresso" family banned as AI default for premium-consumer.
+ * OVERRIDE JUSTIFIED: Lucky Store is a genuine 1947 heritage grocer in Chattogram.
+ * The palette reflects the brand's physical store identity (warm paper bags, saffron signage,
+ * decades of local trust), not an AI aesthetic default. Do not rotate to an alternative
+ * palette unless the brand identity changes.
+ *
+ * DIAL VALUES (design-taste-frontend §1):
+ * DESIGN_VARIANCE: 5  — heritage/trust-first, modest asymmetry
+ * MOTION_INTENSITY: 3  — subtle micro-interactions only (hover lift, press scale, shimmer)
+ * VISUAL_DENSITY: 5  — standard app density; product strips are scannable not packed
  */
 
 :root {
@@ -112,7 +125,7 @@
   --press-scale: 0.96;
 
   /* Typography */
-  --font-display: var(--font-bricolage), var(--font-bengali, 'Trebuchet MS'), 'Trebuchet MS', system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-bengali, system-ui), system-ui, sans-serif;
   --font-body: var(--font-manrope), var(--font-bengali, -apple-system), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 

@@ -151,7 +151,7 @@ export function HomeShell({
               subtitle={dict.reels.popularSubtitle}
               products={featuredProducts.slice(0, HOME_SHELF_SIZE)}
               ctaHref={withLocale('/category', locale)}
-              ctaLabel={dict.reels.seeAll}
+              ctaLabel={dict.reels.seeAllPopular}
               locale={locale}
             />
             <DeferredHomeShelves {...deferredShelves} />

@@ -10,7 +10,7 @@ describe('PopularBrandsSection', () => {
     const heading = screen.getByRole('heading', { level: 2, name: /Shop Popular Brands/i });
     expect(heading).toBeInTheDocument();
 
-    const seeAllLink = screen.getByRole('link', { name: /See all — Shop Popular Brands/i });
+    const seeAllLink = screen.getByRole('link', { name: /See all brands — Shop Popular Brands/i });
     expect(seeAllLink).toHaveAttribute('href', '/brand');
 
     const brandLink = screen.getByRole('link', { name: /Radhuni/i });
@@ -26,7 +26,7 @@ describe('PopularBrandsSection', () => {
     const heading = screen.getByRole('heading', { level: 2, name: /জনপ্রিয় ব্র্যান্ডসমূহ/i });
     expect(heading).toBeInTheDocument();
 
-    const seeAllLink = screen.getByRole('link', { name: /সব দেখুন — জনপ্রিয় ব্র্যান্ডসমূহ/i });
+    const seeAllLink = screen.getByRole('link', { name: /সব ব্র্যান্ড দেখুন — জনপ্রিয় ব্র্যান্ডসমূহ/i });
     expect(seeAllLink).toHaveAttribute('href', '/bn/brand');
 
     const brandLink = screen.getByRole('link', { name: /রাঁধুনী/i });

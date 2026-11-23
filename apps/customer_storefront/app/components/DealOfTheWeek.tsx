@@ -260,8 +260,8 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
                   className="home-text-link inline-flex min-h-11 items-center text-xs font-bold"
                 >
                   {weeklyEditionActive
-                    ? (locale === 'bn' ? 'সব সাপ্তাহিক বাছাই →' : 'See all weekly picks →')
-                    : (locale === 'bn' ? `সবগুলো অফার (${discountedProductCount}) →` : `See all ${discountedProductCount} deals →`)}
+                    ? dict.deal.seeAllWeeklyPicks
+                    : `${dict.deal.seeAllDeals} (${discountedProductCount})`}
                 </Link>
                 <div className="flex shrink-0 gap-2" role="group" aria-label="Weekly deal carousel controls">
                   <button
