@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 const pagePaths = [
@@ -16,6 +18,23 @@ const pagePairs = [
   ['landing/data-deletion.html', 'apps/customer_storefront/public/data-deletion.html'],
 ];
 const requiredContactLinks = ['mailto:hello@luckystore1947.com', 'tel:+8801731944544'];
+const requiredAssets = [
+  'logo-main.png',
+  'favicon.ico',
+  'favicon-48x48.png',
+  'favicon.svg',
+  'apple-touch-icon.png',
+];
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
+
+function normalizeDeploymentPaths(html, assetPrefix) {
+  return html
+    .replaceAll(`${assetPrefix}logo-main.png`, '/legal-assets/logo-main.png')
+    .replaceAll(`${assetPrefix}favicon.ico`, '/legal-assets/favicon.ico')
+    .replaceAll(`${assetPrefix}favicon-48x48.png`, '/legal-assets/favicon-48x48.png')
+    .replaceAll(`${assetPrefix}favicon.svg`, '/legal-assets/favicon.svg')
+    .replaceAll(`${assetPrefix}apple-touch-icon.png`, '/legal-assets/apple-touch-icon.png');
+}
 
 function declarations(css, selector) {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -30,15 +49,69 @@ for (const [landingPath, storefrontPath] of pagePairs) {
   test(`${landingPath} and ${storefrontPath} stay in design parity`, () => {
     const landingHtml = readFileSync(new URL(`../../../${landingPath}`, import.meta.url), 'utf8');
     const storefrontHtml = readFileSync(new URL(`../../../${storefrontPath}`, import.meta.url), 'utf8');
-    const normalizedLandingHtml = landingHtml.replace('href="index.html"', 'href="/"');
+    const normalizedLandingHtml = normalizeDeploymentPaths(landingHtml, '/legal-assets/')
+      .replace('href="index.html"', 'href="/"');
+    const normalizedStorefrontHtml = normalizeDeploymentPaths(storefrontHtml, '/');
 
     assert.equal(
       normalizedLandingHtml,
-      storefrontHtml,
-      'the only allowed difference is the deployment-specific back-link destination',
+      normalizedStorefrontHtml,
+      'only deployment-specific asset paths and the back-link destination may differ',
     );
   });
 }
+
+test('Vercel legal pages reference existing packaged legal assets', () => {
+  for (const pageName of ['privacy-policy.html', 'terms-of-service.html', 'data-deletion.html']) {
+    const html = readFileSync(new URL(`../../../landing/${pageName}`, import.meta.url), 'utf8');
+    for (const assetName of requiredAssets) {
+      assert.ok(html.includes(`/legal-assets/${assetName}`), `${pageName} must reference /legal-assets/${assetName}`);
+      assert.ok(
+        existsSync(new URL(`../../../apps/customer_storefront/public/${assetName}`, import.meta.url)),
+        `Vercel must package existing source asset ${assetName}`,
+      );
+    }
+  }
+});
+
+test('Hostinger storefront legal pages reference assets in the public directory', () => {
+  for (const pageName of ['privacy-policy.html', 'terms-of-service.html', 'data-deletion.html']) {
+    const html = readFileSync(
+      new URL(`../../../apps/customer_storefront/public/${pageName}`, import.meta.url),
+      'utf8',
+    );
+    for (const assetName of requiredAssets) {
+      assert.ok(html.includes(`/${assetName}`), `${pageName} must reference root-relative ${assetName}`);
+      assert.ok(
+        existsSync(new URL(`../../../apps/customer_storefront/public/${assetName}`, import.meta.url)),
+        `Hostinger public directory must contain ${assetName}`,
+      );
+    }
+  }
+});
+
+test('Hostinger standalone public roots include all legal assets', () => {
+  const standaloneRoot = resolve(repositoryRoot, 'apps/customer_storefront/.next/standalone');
+  const publicRoots = [
+    resolve(standaloneRoot, 'public'),
+    resolve(standaloneRoot, 'apps/customer_storefront/public'),
+  ].filter(existsSync);
+
+  if (publicRoots.length === 0) {
+    assert.match(
+      readFileSync(resolve(repositoryRoot, 'scripts/deploy/package-standalone.mjs'), 'utf8'),
+      /fs\.cpSync\(publicDir,\s*destPublic,\s*\{\s*recursive:\s*true\s*\}\)/,
+      'Hostinger packaging must recursively copy the storefront public directory',
+    );
+    return;
+  }
+
+  for (const publicRoot of publicRoots) {
+    for (const assetName of requiredAssets) {
+      assert.ok(existsSync(resolve(publicRoot, assetName)), `${publicRoot} must contain ${assetName}`);
+    }
+  }
+});
 
 function contrastRatio(foreground, background) {
   const luminance = (hex) => {
@@ -59,13 +132,11 @@ for (const pagePath of pagePaths) {
     const html = readFileSync(new URL(`../../../${pagePath}`, import.meta.url), 'utf8');
     const style = html.match(/<style>([\s\S]*?)<\/style>/i)?.[1];
     assert.ok(style, `${pagePath} must include its page stylesheet`);
-    assert.ok(
-      html.includes('href="/legal-assets/favicon.svg?v=2"'),
-      `${pagePath} must use the legal-assets favicon path`,
-    );
-    assert.match(html, /src=["']\/legal-assets\/logo-main\.png["']/i);
-    for (const favicon of ['favicon.ico', 'favicon-48x48.png', 'favicon.svg', 'apple-touch-icon.png']) {
-      assert.ok(html.includes(`href="/legal-assets/${favicon}?v=2"`), `${pagePath} must use /legal-assets/${favicon}`);
+    const assetPrefix = pagePath.startsWith('landing/') ? '/legal-assets/' : '/';
+    assert.ok(html.includes(`href="${assetPrefix}favicon.svg?v=2"`));
+    assert.ok(html.includes(`src="${assetPrefix}logo-main.png"`));
+    for (const favicon of requiredAssets.slice(1)) {
+      assert.ok(html.includes(`href="${assetPrefix}${favicon}?v=2"`), `${pagePath} must reference ${assetPrefix}${favicon}`);
     }
 
     const base = declarations(style, 'a');

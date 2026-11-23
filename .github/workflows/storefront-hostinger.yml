@@ -80,6 +80,9 @@ jobs:
       - name: Install dependencies (deterministic monorepo root)
         run: npm ci
 
+      - name: Test legal pages and deployment assets
+        run: npm run test:legal-a11y --workspace=customer_storefront
+
       - name: Build Next.js Standalone Bundle
         env:
           NOTFAIR_SEO_API_KEY: ${{ secrets.NOTFAIR_SEO_API_KEY }}
