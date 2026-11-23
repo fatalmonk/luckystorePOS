@@ -49,6 +49,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      - name: Validate legal pages and deployment assets
+        run: npm run test:legal-a11y --workspace=customer_storefront
       - run: node --test scripts/ci/seed_test_storefront.test.js
       - run: node --test scripts/testing/verify_bengali_translation_api.test.mjs
       - run: node --test scripts/testing/verify_historical_bengali_legacy.test.mjs
