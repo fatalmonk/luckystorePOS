@@ -538,7 +538,7 @@ export const dictionaries = {
       seeAll: 'সব দেখুন',
       seeAllPantry: 'সব রান্নার সামগ্রী দেখুন',
       seeAllSnacks: 'সব নাস্তা ও পানীয় দেখুন',
-      seeAllCare: 'সব পার্সনাল কെയার দেখুন',
+      seeAllCare: 'সব পার্সোনাল কেয়ার দেখুন',
       seeAllPopular: 'সব জনপ্রিয় আইটেম দেখুন',
       seeAllBrands: 'সব ব্র্যান্ড দেখুন',
     },
