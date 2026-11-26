@@ -13,6 +13,7 @@ export interface SearchOptions {
   categoryId?: string | null;
   categoryIds?: string[];
   limit?: number;
+  consistentSnapshot?: boolean;
   offset?: number;
   page?: number;
   supabaseClient?: SupabaseClient | any;
@@ -41,6 +42,7 @@ interface CachedSearchOptions {
   categoryIds?: string[];
   limit: number;
   offset: number;
+  consistentSnapshot: boolean;
 }
 
 class DegradedSearchError extends Error {
@@ -77,6 +79,7 @@ export async function searchStorefrontProducts(options: SearchOptions = {}): Pro
     categoryIds: options.categoryIds,
     limit,
     offset,
+    consistentSnapshot: options.consistentSnapshot === true,
   };
 
   // Test and custom callers may provide a distinct client; keep those isolated
@@ -93,6 +96,7 @@ export async function searchStorefrontProducts(options: SearchOptions = {}): Pro
       return await searchStorefrontProductsUncached({ ...cacheOptions, supabaseClient: options.supabaseClient });
     } catch (err) {
       if (err instanceof DegradedSearchError) {
+        if (options.consistentSnapshot) throw err;
         return err.response;
       }
       throw err;
@@ -103,6 +107,7 @@ export async function searchStorefrontProducts(options: SearchOptions = {}): Pro
     return await searchDefaultStorefrontProducts(cacheOptions);
   } catch (err) {
     if (err instanceof DegradedSearchError) {
+      if (options.consistentSnapshot) throw err;
       return err.response;
     }
     throw err;
@@ -117,6 +122,7 @@ async function searchStorefrontProductsUncached({
   limit = 50,
   offset,
   page,
+  consistentSnapshot = false,
   supabaseClient = defaultSupabase,
 }: SearchOptions): Promise<SearchProductsResponse> {
   const actualOffset = offset !== undefined ? offset : (page ?? 0) * limit;
@@ -162,7 +168,12 @@ async function searchStorefrontProductsUncached({
     targetCategoryIds = categoryIds;
   }
 
+  if (consistentSnapshot && (categoryId === null || (categoryIds && categoryIds.length > 0) || actualOffset !== 0 || limit !== 1000)) {
+    throw new Error("Consistent snapshot requires one bounded exact-category request");
+  }
   const rawRowsMap = new Map<string, any>();
+  let snapshotHasMore = false;
+  let snapshotTotalCount: number | null = null;
   const rpcPageSize = 1000;
   const singleCategory = targetCategoryIds.length === 1;
   const rowsNeeded = actualOffset + limit + 1;
@@ -175,21 +186,33 @@ async function searchStorefrontProductsUncached({
 
     while (fetched < rowsToFetchPerCategory) {
       const pageLimit = Math.min(rpcPageSize, rowsToFetchPerCategory - fetched);
-      const { data: posItems, error: posError } = await (supabaseClient as any).rpc('search_storefront_catalog_v2', {
-        p_store_id: storeId,
-        p_query: cleanQuery,
-        p_category_id: catId,
-        p_item_ids: translationMatchedItemIds,
-        p_limit: pageLimit,
-        p_offset: rpcOffset,
-      });
+      const { data, error: posError } = await (supabaseClient as any).rpc(
+        consistentSnapshot ? 'search_storefront_catalog_snapshot_v1' : 'search_storefront_catalog_v2', {
+          p_store_id: storeId,
+          p_query: cleanQuery,
+          p_category_id: catId,
+          p_item_ids: translationMatchedItemIds,
+          p_limit: pageLimit,
+          p_offset: rpcOffset,
+        },
+      );
+      const posItems = consistentSnapshot ? data?.items : data;
+      if (consistentSnapshot) {
+        snapshotHasMore = data?.has_more === true;
+        snapshotTotalCount = data?.total_count;
+      }
 
-      if (posError || !Array.isArray(posItems)) {
-        console.error('search_storefront_catalog_v2 failed:', posError);
+      if (posError || !Array.isArray(posItems) || (consistentSnapshot &&
+          (typeof data?.has_more !== 'boolean' || !Number.isSafeInteger(data?.total_count) ||
+           data.total_count < 0 || data.has_more !== (data.total_count > 1000)))) {
+        console.error('storefront catalog RPC failed:', posError);
         throw new Error('Search service temporarily unavailable');
       }
       for (const item of posItems) {
         const id = String(item.item_id ?? item.id ?? '').trim();
+        if (consistentSnapshot && (!id || rawRowsMap.has(id))) {
+          throw new Error('Duplicate or missing ID in category snapshot');
+        }
         if (id && !rawRowsMap.has(id)) rawRowsMap.set(id, item);
       }
 
@@ -200,7 +223,10 @@ async function searchStorefrontProductsUncached({
   }
 
   const allRows = Array.from(rawRowsMap.values());
-  const hasMore = singleCategory
+  if (consistentSnapshot && allRows.length !== Math.min(snapshotTotalCount ?? -1, 1000)) {
+    throw new Error('Incomplete category snapshot');
+  }
+  const hasMore = consistentSnapshot ? snapshotHasMore : singleCategory
     ? allRows.length > limit
     : allRows.length > actualOffset + limit;
   const paginatedRows = singleCategory

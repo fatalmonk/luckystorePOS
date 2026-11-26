@@ -8,6 +8,7 @@ import { supabase } from '../../../../lib/supabase';
 import { getSingleParam } from '../../../../lib/utils';
 import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../../lib/categoryResolution';
 import { ICE_CREAM_PAGE_SIZE, iceCreamPaginationEnabled, resolveIceCreamPage } from '../../../../lib/iceCreamPagination';
+import { getCategoryBrandCounts } from '../../../../lib/categoryBrandFacets';
 import { resolveCategoryRouteData } from '../../../../lib/categoryRouteData';
 import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 import { BENGALI_CATEGORY_NAMES } from '../../../../lib/products/getHomePageData';
@@ -49,11 +50,12 @@ export async function generateMetadata({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
-  if (pageState?.invalid) notFound();
   if (pageState?.needsRedirect) {
     const clean = '/bn/category/' + canonicalSlug;
     permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
@@ -134,11 +136,12 @@ export default async function BengaliCategorySlugPage({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
-  if (pageState?.invalid) notFound();
   if (pageState?.needsRedirect) {
     const clean = '/bn/category/' + canonicalSlug;
     permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
@@ -152,6 +155,10 @@ export default async function BengaliCategorySlugPage({
   if (pageState && !currentCatObj?.id) {
     throw new Error('Ice Cream pagination requires a resolved category ID');
   }
+
+  const categoryBrandCounts = pageState
+    ? await getCategoryBrandCounts(supabase, currentCatObj!.id)
+    : undefined;
 
   const routeData = await resolveCategoryRouteData({
     slug: canonicalSlug,
@@ -205,6 +212,7 @@ export default async function BengaliCategorySlugPage({
       searchParams={resolvedSearch}
       pagination={pageState && !pageState.hasFilters ? { page: pageState.page, hasMore: Boolean(routeData.hasMore) } : undefined}
       compactMobile={Boolean(pageState)}
+      categoryBrandCounts={categoryBrandCounts}
       locale="bn"
     />
   );

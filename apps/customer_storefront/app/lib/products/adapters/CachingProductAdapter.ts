@@ -65,6 +65,7 @@ function hashCriteria(criteria: ProductSearchCriteria): string {
     criteria.categoryIds ?? [],
     limit,
     offset,
+    criteria.consistentSnapshot === true,
   ]);
 }
 

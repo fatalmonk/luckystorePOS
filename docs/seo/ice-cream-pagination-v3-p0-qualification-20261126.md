@@ -132,3 +132,17 @@ The test checks:
 - **Query/egress tradeoff:** Basic pages still fetch 24 products plus one lookahead. Filtered views can transfer up to 1,001 category records and incur up to six catalog RPC calls, plus translations/category lookups. The exact egress and latencies are **unmeasured**; never promise savings until staging benchmarks.
 - **Verification:** Full storefront Vitest 1,165/1,165 tests passed (136 files). Scoped tests and TypeScript passed. The inert-endpoint Next build compiled and passed TypeScript, but did not complete static generation because `staging.invalid` was intentionally non-resolvable. Treat production-style build as **BLOCKED**, not a pass.
 - **Outstanding:** No candidate staging URL with matching source, enabled feature flag and non-production catalog was confirmed. Raw server HTML, mobile LCP/CLS/TTFB, accessibility and Supabase egress remain release gates. Independent review required on the final PR SHA. No production activation or merge authorized.
+
+## 2026-11-27 — CodeRabbit remediation candidate (SOURCE ONLY; DB NOT APPLIED)
+
+Base commit: 584ec3b6bb62735a040c8e1c63f5cc98633c75fe. SQL functions are not installed in any Supabase project. This section supersedes earlier batch-read descriptions for this candidate only.
+
+- Brand facets: flagged Ice Cream pages query complete category name/brand sources using get_storefront_category_brand_sources_v1; the desktop/mobile controls receive counts independent of the displayed 24 products.
+- Consistent reads: filtered views use one search_storefront_catalog_snapshot_v1 RPC. STABLE server-side function counts at most 1,001 rows in the same statement snapshot as the existing V2 catalog result. Reject >1,000 results, missing/duplicate IDs, count mismatches and degraded lookup results. Cached snapshot and ordinary browse requests use distinct keys.
+- Alias validation: both English/Bengali pages and metadata functions reject duplicate page parameters before canonical alias redirects; valid aliases still redirect.
+- Test isolation: environment stubs are restored in finally.
+- Security scope: both new SECURITY DEFINER functions enforce public storefront, tenant and exact category restrictions, with bounded outputs. Independent security/RLS review is required prior to applying the migration.
+- Local validation: full storefront Vitest 1,172/1,172 tests across 137 files passed; scoped TypeScript and ESLint passed. Synthetic fixtures check 65/501/1,000/1,001 items, category brands, duplicate IDs and alias URLs.
+- UNVERIFIED: SQL runtime execution, source-RPC predicate parity, live concurrent edit behavior, test Supabase fixtures, staged HTML, mobile CWV, egress, remote CI and independent reviewer acceptance.
+
+Release HOLD. First review SQL permissions independently, then test only in isolated Supabase project grxxenvdhfwzafzyykgo. Do not apply the SQL directly in production hvmyxyccfnkrbxqbhlnm, enable the feature flag, merge or deploy without independent qualification and explicit approval.

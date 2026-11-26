@@ -31,6 +31,7 @@ interface CategoryShellProps {
   productCount?: number;
   pagination?: { page: number; hasMore: boolean };
   compactMobile?: boolean;
+  categoryBrandCounts?: Record<string, number>;
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
@@ -110,6 +111,7 @@ export function CategoryShell({
   productCount,
   pagination,
   compactMobile = false,
+  categoryBrandCounts,
   theme,
   sort,
   searchParams,
@@ -261,6 +263,7 @@ export function CategoryShell({
               sort={sort}
               searchParams={searchParams}
               serverPaginated={Boolean(pagination)}
+              categoryBrandCounts={categoryBrandCounts}
               locale={locale}
               hideBreadcrumb={!isAllProducts}
             />

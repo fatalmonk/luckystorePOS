@@ -7,6 +7,7 @@ import { supabase } from '../../../lib/supabase';
 import { getSingleParam } from '../../../lib/utils';
 import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../lib/categoryResolution';
 import { ICE_CREAM_PAGE_SIZE, iceCreamPaginationEnabled, resolveIceCreamPage } from '../../../lib/iceCreamPagination';
+import { getCategoryBrandCounts } from '../../../lib/categoryBrandFacets';
 import { resolveCategoryRouteData } from '../../../lib/categoryRouteData';
 import type { Metadata } from 'next';
 
@@ -72,11 +73,12 @@ export async function generateMetadata({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
-  if (pageState?.invalid) notFound();
   if (pageState?.needsRedirect) {
     const clean = '/category/' + canonicalSlug;
     permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
@@ -156,11 +158,12 @@ export default async function CategorySlugPage({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
-  if (pageState?.invalid) notFound();
   if (pageState?.needsRedirect) {
     const clean = '/category/' + canonicalSlug;
     permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
@@ -175,6 +178,10 @@ export default async function CategorySlugPage({
   if (pageState && !currentCatObj?.id) {
     throw new Error('Ice Cream pagination requires a resolved category ID');
   }
+
+  const categoryBrandCounts = pageState
+    ? await getCategoryBrandCounts(supabase, currentCatObj!.id)
+    : undefined;
 
   const routeData = await resolveCategoryRouteData({
     slug: canonicalSlug,
@@ -206,6 +213,7 @@ export default async function CategorySlugPage({
       searchParams={resolvedSearch}
       pagination={pageState && !pageState.hasFilters ? { page: pageState.page, hasMore: Boolean(routeData.hasMore) } : undefined}
       compactMobile={Boolean(pageState)}
+      categoryBrandCounts={categoryBrandCounts}
     />
   );
 }

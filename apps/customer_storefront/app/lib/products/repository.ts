@@ -80,7 +80,7 @@ export class ProductRepository implements IProductRepository {
   async search(criteria: ProductSearchCriteria): Promise<PaginatedProducts> {
     const normalizedCriteria: ProductSearchCriteria = {
       ...criteria,
-      limit: Math.min(criteria.limit ?? 60, 500), // Enforce max page size
+      limit: Math.min(criteria.limit ?? 60, criteria.consistentSnapshot ? 1000 : 500), // Snapshot-only larger limit
     };
 
     return this.adapter.search(normalizedCriteria);

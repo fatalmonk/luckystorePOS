@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Product } from '../lib/types';
 import { CatalogLayout } from './CatalogLayout';
@@ -26,6 +26,28 @@ const product: Product = {
   emoji: '🍨',
   description: 'Test product',
 };
+
+describe('CatalogLayout complete category brand facets', () => {
+  it('keeps a brand available beyond page one in both controls', () => {
+    render(
+      <CatalogLayout
+        products={[{ ...product, brand: 'Polar' }]}
+        categorySlug="ice-cream"
+        categories={[{ id: 'ice-cream', slug: 'ice-cream', name: 'Ice-Cream', emoji: '🍨' }]}
+        theme=""
+        sort="best"
+        searchParams={{}}
+        locale="en"
+        serverPaginated
+        categoryBrandCounts={{ Polar: 24, Igloo: 2 }}
+      />,
+    );
+    expect(screen.getByRole('checkbox', { name: /Igloo/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Filters/ }));
+    expect(screen.getByRole('button', { name: 'Igloo (2)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Polar (24)' })).toBeInTheDocument();
+  });
+});
 
 describe('CatalogLayout breadcrumb', () => {
   it('shows the locale-aware category trail above the results summary', () => {

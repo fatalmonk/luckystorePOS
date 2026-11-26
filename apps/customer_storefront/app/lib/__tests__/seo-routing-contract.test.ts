@@ -1166,6 +1166,28 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       }
     });
 
+    it('rejects duplicate page parameters before alias redirects in both locales and functions', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const en = await import('../../(english)/category/[slug]/page');
+        const bn = await import('../../(bengali)/bn/category/[slug]/page');
+        for (const mod of [en, bn]) {
+          for (const handler of [mod.generateMetadata, mod.default]) {
+            await expect(handler({
+              params: Promise.resolve({ slug: 'Ice-Cream' }),
+              searchParams: Promise.resolve({ page: ['2', '3'] }),
+            })).rejects.toThrow('NEXT_NOT_FOUND');
+          }
+          await expect(mod.generateMetadata({
+            params: Promise.resolve({ slug: 'Ice-Cream' }),
+            searchParams: Promise.resolve({ page: '2' }),
+          })).rejects.toThrow('NEXT_REDIRECT');
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('normalizes page plus sort to a filtered first page', async () => {
       vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
       try {
@@ -1201,6 +1223,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
           ...mockCategories,
           { id: 'ice-cat', slug: 'ice-cream', name: 'Ice Cream', emoji: '🍦', active: true },
         ]);
+        mockSupabaseRpc.mockResolvedValueOnce({ data: [{ name: 'Igloo Ice Cream', brand: 'Igloo' }], error: null });
         mockSearch.mockResolvedValueOnce({ products: [mockProduct], hasMore: true, total: 0 } as any);
         const Page = (await import('../../(english)/category/[slug]/page')).default;
         const result = await Page({

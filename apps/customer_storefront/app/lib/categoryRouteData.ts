@@ -108,32 +108,24 @@ export async function resolveCategoryRouteData({
       if (completeCategory) {
         // Do not display incomplete facets: client filters require the full
         // eligible catalog. Never perform an unbounded or fuzzy search.
-        const batchSize = 200;
-        const maxProducts = 1000;
-        const all: RepositoryProduct[] = [];
+        // The atomic snapshot RPC observes one database state. Offset-based
+        // multi-RPC traversal can silently omit products during catalog edits.
+        const result = await repository.search({
+          query: searchTerm || undefined,
+          categoryId: currentCategory.id,
+          limit: 1000,
+          offset: 0,
+          consistentSnapshot: true,
+        });
+        if (result.hasMore) throw new Error('Category exceeds safe filter limit');
         const seen = new Set<string>();
-        for (let offset = 0; offset <= maxProducts; offset += batchSize) {
-          const limit = Math.min(batchSize, maxProducts + 1 - offset);
-          const result = await repository.search({
-            query: searchTerm || undefined,
-            categoryId: currentCategory.id,
-            limit,
-            offset,
-          });
-          for (const item of result.products) {
-            if (seen.has(String(item.id))) throw new Error('Category changed during filter traversal');
-            seen.add(String(item.id));
-            all.push(item);
-          }
-          if (all.length > maxProducts) throw new Error('Category exceeds safe filter limit');
-          if (!result.hasMore) {
-            products = all;
-            productCount = all.length;
-            hasMore = false;
-            break;
-          }
-          if (offset + limit > maxProducts) throw new Error('Category exceeds safe filter limit');
+        for (const item of result.products) {
+          if (seen.has(String(item.id))) throw new Error('Duplicate product ID in complete category');
+          seen.add(String(item.id));
         }
+        products = result.products;
+        productCount = products.length;
+        hasMore = false;
       } else {
       const result = await repository.search({
         query: searchTerm || undefined,

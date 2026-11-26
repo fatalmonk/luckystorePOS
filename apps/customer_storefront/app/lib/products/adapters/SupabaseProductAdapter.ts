@@ -144,6 +144,7 @@ export class SupabaseProductAdapter implements ProductDataPort {
       categoryIds: criteria.categoryIds,
       limit,
       offset,
+      consistentSnapshot: criteria.consistentSnapshot,
       supabaseClient: this.supabase,
     });
 

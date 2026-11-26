@@ -253,7 +253,11 @@ describe('Ice Cream complete, exact-category filters', () => {
     expect(result.error).toBeUndefined();
     expect(result.products).toEqual(products);
     expect(result.hasMore).toBe(false);
-    expect(search).toHaveBeenCalledTimes(Math.ceil(count / 200));
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(search).toHaveBeenCalledWith({
+      query: undefined, categoryId: category.id, limit: 1000,
+      offset: 0, consistentSnapshot: true,
+    });
   });
 
   it('refuses to expose partial results beyond the 1000-item safety cap', async () => {
@@ -271,7 +275,7 @@ describe('Ice Cream complete, exact-category filters', () => {
     expect(result.error).toBeInstanceOf(Error);
     expect(String(result.error)).toContain('safe filter limit');
     expect(result.products).toEqual([]);
-    expect(search).toHaveBeenCalledTimes(6);
+    expect(search).toHaveBeenCalledTimes(1);
   });
 
   it('never uses broad product-name fallback when strict category is enabled', async () => {
@@ -290,12 +294,12 @@ describe('Ice Cream complete, exact-category filters', () => {
 
   it('fails closed if any page contains a duplicate ID', async () => {
     const item = catalogProduct('duplicate', 'Ice Cream') as unknown as RepositoryProduct;
-    const search = vi.fn().mockResolvedValue({ products: [item], hasMore: true });
+    const search = vi.fn().mockResolvedValue({ products: [item, item], hasMore: false });
     const result = await resolveCategoryRouteData({
       slug: 'ice-cream', categories: [category], currentCategory: category,
       completeCategory: true, strictCategory: true, repository: repositoryWithSearch(search),
     });
-    expect(String(result.error)).toContain('changed during filter traversal');
+    expect(String(result.error)).toContain('Duplicate product ID');
     expect(result.products).toEqual([]);
   });
 });

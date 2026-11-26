@@ -16,9 +16,12 @@ describe('Ice Cream pagination URL qualification', () => {
 
   it('is isolated to the explicit pilot flag and category', () => {
     vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
-    expect(iceCreamPaginationEnabled('ice-cream')).toBe(true);
-    expect(iceCreamPaginationEnabled('snacks')).toBe(false);
-    vi.unstubAllEnvs();
+    try {
+      expect(iceCreamPaginationEnabled('ice-cream')).toBe(true);
+      expect(iceCreamPaginationEnabled('snacks')).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+    }
     expect(iceCreamPaginationEnabled('ice-cream')).toBe(false);
   });
 
