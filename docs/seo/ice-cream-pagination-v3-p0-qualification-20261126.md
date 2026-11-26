@@ -79,3 +79,46 @@ The test checks:
 6. An independent source/diff and test review tied to the exact final PR head SHA.
 
 **No production merge, migration, WAF adjustment, rollout, storefront redesign or execution authorization is implied by this PR.**
+
+
+## 2026-11-26 — Isolated Ice Cream remediation candidate (NOT DEPLOYED)
+
+**Branch:** `fix/ice-cream-server-pagination-v3` based on GitHub merge `04ebdd304d0b8979b0412f4653d00d18fe36291d`.
+**Status:** Local source implementation and unit/SEO qualification complete; staging and production remain **HOLD**.
+**Feature gate:** `LUCKYSTORE_ICE_CREAM_PAGINATION=enabled` enables the new path for the Ice Cream leaf category only. The variable is **not set** by this change; the existing behavior remains the default.
+
+### Corrected architectural decision
+
+- **VERIFIED SOURCE:** The Ice Cream slug resolves as a *leaf category* under Snacks, not a grouped-category root. Its identified category has a single ID and can use the existing `search_storefront_catalog_v2` `p_limit`/`p_offset` RPC, with the existing `name, id` sort. No new migration is necessary for this **isolated leaf-category pilot**.
+- **VERIFIED SOURCE:** The prior report's `supabase/migrations/20261015090000_stabilize_storefront_catalog_pagination.sql` already exists and updates the older `search_storefront_catalog` RPC, not the active V2 RPC. It is **not a new required migration** for this feature.
+- **UNRESOLVED:** Globally ordered and bounded paging across multiple child-category IDs (e.g. Snacks group) is *not solved* by this leaf-only implementation. That work requires independent architecture and staging qualification; no migration is proposed or applied here.
+- **UNMEASURED:** The reported 85–95% egress reduction cannot be asserted. The single-category path requests at most `pageSize+1` rows per RPC call, except for documented bounded legacy-fallback probes, but server rendering, translation lookup, caching and network payloads require actual staging measurements.
+
+### Candidate functionality
+
+- 24 products per Ice Cream page using existing leaf category ID and offset, with `hasMore` driving real HTML previous/next links in English and Bengali.
+- Valid `?page=2+` uses self-canonical URLs, localized alternates, unique page titles and indexable metadata; `?page=1` redirects via HTTP 308; malformed page numbers fail closed; filtered/sorted queries normalize to page one and remain noindex.
+- The client-side Load More button is disabled only when the server slice is active. Default best-match sorting does not reorder the local slice, preserving cross-page database ordering.
+- Per-page `ItemList` emits product name, URL and positions corresponding to the current page, without embedded category-page offers; unrelated category schemas remain on the existing path.
+- A category-specific compact mobile hero is introduced (192px to 128px on mobile), retaining desktop imagery and the established GridProductCard.
+- Legacy name-only fallback first checks whether category-ID items exist before serving a deeper fallback page. Missing category IDs or query errors fail closed instead of presenting empty indexable deep pages.
+- The Ice Cream introduction no longer asserts an unverified Chawkbazar location or frozen-delivery guarantee.
+
+### Executed local verification
+
+- Vitest scoped suites: **111/111 passed**, exit 0. Includes route-level English/Bengali canonical, redirect and offset tests; 65/501/1001 static fixture traversal; fallback and malformed-page checks; existing SEO contracts.
+- TypeScript: `tsc --noEmit --incremental false` against storefront project **passed**, exit 0.
+- Scoped ESLint and `git diff --check`: **passed**, exit 0.
+- No Supabase queries, migrations, production requests, live catalog writes or deployment.
+
+### Remaining release gates
+
+**HOLD activation/merge/production release** until all of the following have been independently reviewed:
+
+1. Staging raw HTML crawl with JavaScript disabled: real product and pagination anchors on pages 1–3, correct 404 and 308 responses, and reciprocal locale URLs.
+2. Empirical Supabase RPC request counts, bytes, query latency, translation overlays and egress versus the approved baseline. No savings percentage is presently verified.
+3. The actual mobile LCP element, TTFB, CLS and first-product position at 360/390/768px, with functional and accessibility testing.
+4. Full-category brand/availability/price filter completeness: in the paginated mode, derived filter counts currently reflect the **current page**, not necessarily the entire catalog. This must not be misrepresented as a global facet.
+5. Frozen-snapshot ordering and inventory-churn limitations reviewed by a different reviewer, with an exact source SHA and rollback/flag-off receipt.
+
+**Do not set the feature flag in production, deploy, or claim P0 closure based solely on passing tests.**

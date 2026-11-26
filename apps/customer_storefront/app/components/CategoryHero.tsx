@@ -15,6 +15,8 @@ export interface CategoryHeroProps {
   iconUrl?: string;
   icon?: ReactNode;
   productCount?: number;
+  /** Smaller mobile banner for the explicitly enabled Ice Cream pilot only. */
+  compactMobile?: boolean;
   locale?: 'en' | 'bn';
   onBack?: () => void;
 }
@@ -29,6 +31,7 @@ export function CategoryHero({
   iconUrl,
   icon,
   productCount,
+  compactMobile = false,
   locale = 'en',
   onBack,
 }: CategoryHeroProps) {
@@ -38,7 +41,7 @@ export function CategoryHero({
       aria-labelledby={headingId}
       className="relative isolate overflow-hidden rounded-b-warm-card bg-warm-bg text-center text-warm-fg sm:rounded-b-warm-panel"
     >
-      <div className="relative h-48 overflow-hidden bg-warm-fg/10 lg:h-56">
+      <div className={compactMobile ? 'relative h-32 overflow-hidden bg-warm-fg/10 sm:h-48 lg:h-56' : 'relative h-48 overflow-hidden bg-warm-fg/10 lg:h-56'}>
         {imageUrl ? (
           <picture>
             {imageSources.map((source) => (

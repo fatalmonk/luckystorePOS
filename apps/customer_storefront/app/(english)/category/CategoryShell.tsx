@@ -16,6 +16,7 @@ import { BENGALI_CATEGORY_NAMES } from '../../lib/products/getHomePageData';
 import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { JsonLd } from '../../components/seo/JsonLd';
 import { toProductSlug } from '../../lib/products/slugify';
+import { ICE_CREAM_PAGE_SIZE, iceCreamPageHref } from '../../lib/iceCreamPagination';
 import { getProductGalleryImages } from '../../lib/products/productGalleryRegistry';
 
 const BASE_URL = 'https://www.luckystore1947.com';
@@ -28,6 +29,8 @@ interface CategoryShellProps {
   categories: { id: string; slug: Category; name: string; emoji: string }[];
   products: Product[];
   productCount?: number;
+  pagination?: { page: number; hasMore: boolean };
+  compactMobile?: boolean;
   theme: string;
   sort: string;
   searchParams: Record<string, string | string[] | undefined>;
@@ -37,10 +40,10 @@ interface CategoryShellProps {
 const BANNER_MAP: Record<string, { title: string; subtitle: string; badge: string; bgImage: any; seoIntro?: string }> = {
   'ice-cream': {
     title: 'Ice Cream & Frozen Delights',
-    subtitle: 'Chilled tubs, indulgent cones, and refreshing popsicles delivered frozen to your door.',
+    subtitle: 'Browse ice cream tubs, cones and popsicles. Check prices, stock and delivery options before ordering.',
     badge: 'Chilled & Sweet',
     bgImage: responsiveHeroBanner('promo_ice_cream', 'Ice Cream & Frozen Delights'),
-    seoIntro: 'Shop ice cream in Chittagong from Lucky Store in Chawkbazar. Browse tubs, cones and popsicles, check current prices and availability, and order for local delivery.',
+    seoIntro: 'Shop ice cream online in Chattogram. Browse tubs, cones and popsicles, check current prices and availability, and review local delivery coverage before ordering.',
   },
   'cold-beverages': {
     title: 'Cold Beverages & Drinks',
@@ -105,6 +108,8 @@ export function CategoryShell({
   categories,
   products,
   productCount,
+  pagination,
+  compactMobile = false,
   theme,
   sort,
   searchParams,
@@ -139,7 +144,8 @@ export function CategoryShell({
     searchParams?.brand ||
     searchParams?.theme ||
     searchParams?.q ||
-    searchParams?.search
+    searchParams?.search ||
+    searchParams?.sort
   );
 
   const itemListSchema = !isAllProducts && !hasActiveFilters && products.length > 0
@@ -156,8 +162,8 @@ export function CategoryShell({
           const image = galleryImage || p.image_url;
           return {
             '@type': 'ListItem',
-            position: index + 1,
-            item: {
+            position: (pagination ? (pagination.page - 1) * ICE_CREAM_PAGE_SIZE : 0) + index + 1,
+            ...(pagination ? { name: p.name, url: productUrl } : { item: {
               '@type': 'Product',
               name: p.name,
               url: productUrl,
@@ -168,7 +174,7 @@ export function CategoryShell({
                 priceCurrency: 'BDT',
                 availability: (p.stock ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               },
-            },
+            } }),
           };
         }),
       }
@@ -208,6 +214,7 @@ export function CategoryShell({
                 <CategoryHero
                   name={categoryHeading}
                   locale={locale}
+                  compactMobile={compactMobile}
                   description={isBn ? `সেরা মানের ${prettyName} পণ্য এখন অনলাইনে।` : bannerConfig.subtitle}
                   imageUrl={bannerConfig.bgImage.src}
                   imageSrcSet={bannerConfig.bgImage.srcSet}
@@ -253,9 +260,25 @@ export function CategoryShell({
               theme={theme}
               sort={sort}
               searchParams={searchParams}
+              serverPaginated={Boolean(pagination)}
               locale={locale}
               hideBreadcrumb={!isAllProducts}
             />
+            {pagination && (pagination.page > 1 || pagination.hasMore) && (
+              <nav aria-label={isBn ? 'পণ্যের পৃষ্ঠা' : 'Product pages'} className="flex items-center justify-center gap-4 py-4">
+                {pagination.page > 1 && (
+                  <Link className="min-h-11 rounded-full border border-warm-border px-5 py-3 font-bold text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent" href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page - 1)}>
+                    {isBn ? 'আগের পৃষ্ঠা' : 'Previous page'}
+                  </Link>
+                )}
+                <span className="text-sm text-warm-fg" aria-current="page">{isBn ? 'পৃষ্ঠা' : 'Page'} {pagination.page.toLocaleString(isBn ? 'bn-BD' : 'en-US')}</span>
+                {pagination.hasMore && (
+                  <Link className="min-h-11 rounded-full border border-warm-border px-5 py-3 font-bold text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent" href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page + 1)}>
+                    {isBn ? 'পরের পৃষ্ঠা' : 'Next page'}
+                  </Link>
+                )}
+              </nav>
+            )}
           </div>
         )}
         <div className="mx-auto mt-8 w-full max-w-7xl px-4 pb-4">

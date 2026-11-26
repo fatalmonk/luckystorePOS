@@ -7,6 +7,7 @@ import { getCachedCategories } from '../../../../lib/products/getCachedCategorie
 import { supabase } from '../../../../lib/supabase';
 import { getSingleParam } from '../../../../lib/utils';
 import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../../lib/categoryResolution';
+import { ICE_CREAM_PAGE_SIZE, iceCreamPaginationEnabled, resolveIceCreamPage } from '../../../../lib/iceCreamPagination';
 import { resolveCategoryRouteData } from '../../../../lib/categoryRouteData';
 import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 import { BENGALI_CATEGORY_NAMES } from '../../../../lib/products/getHomePageData';
@@ -51,7 +52,14 @@ export async function generateMetadata({
   const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const hasFilters = Object.values(resolvedSearch).some((value) =>
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+  if (pageState?.needsRedirect) {
+    const clean = '/bn/category/' + canonicalSlug;
+    permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
+  }
+
+  const hasFilters = pageState ? pageState.hasFilters : Object.values(resolvedSearch).some((value) =>
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
 
@@ -59,9 +67,10 @@ export async function generateMetadata({
   const titleName = BENGALI_CATEGORY_NAMES[canonicalSlug] || (group?.slug && BENGALI_CATEGORY_NAMES[group.slug]) || rawTitleName;
   const description = BENGALI_CATEGORY_DESCRIPTIONS[canonicalSlug] || `${titleName} অনলাইনে কিনুন লাকি স্টোর চট্টগ্রাম থেকে। ক্যাশ অন ডেলিভারি এবং দ্রুত হোম ডেলিভারি।`;
 
-  const canonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}`;
-  const enCanonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}`;
-  const fullTitle = `${titleName} | লাকি স্টোর চট্টগ্রাম`;
+  const pageSuffix = pageState && !hasFilters && pageState.page > 1 ? `?page=${pageState.page}` : '';
+  const canonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}${pageSuffix}`;
+  const enCanonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}${pageSuffix}`;
+  const fullTitle = pageSuffix ? `${titleName} — পৃষ্ঠা ${pageState?.page.toLocaleString('bn-BD')} | লাকি স্টোর চট্টগ্রাম` : `${titleName} | লাকি স্টোর চট্টগ্রাম`;
   const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
 
   return {
@@ -128,21 +137,37 @@ export default async function BengaliCategorySlugPage({
   const canonicalPath = getCanonicalCategoryRedirectPath('bn', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+  if (pageState?.needsRedirect) {
+    const clean = '/bn/category/' + canonicalSlug;
+    permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
+  }
+
   const currentCat = canonicalSlug;
   const searchTerm = getSingleParam(resolvedSearch.q) || getSingleParam(resolvedSearch.search);
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
+
+  if (pageState && !pageState.hasFilters && !currentCatObj?.id) {
+    throw new Error('Ice Cream pagination requires a resolved category ID');
+  }
 
   const routeData = await resolveCategoryRouteData({
     slug: canonicalSlug,
     categories: rawCategories,
     currentCategory: currentCatObj,
     searchTerm,
+    ...(pageState && !pageState.hasFilters ? { page: pageState.page, pageSize: ICE_CREAM_PAGE_SIZE } : {}),
     repository: repo,
     categoryLabel: (category) => BENGALI_CATEGORY_NAMES[category.slug] || category.name,
   });
   const { group = initialGroup, parentGroup, products: rawProducts, productCount } = routeData;
-  if (routeData.error) console.error('Failed to fetch Bengali category products:', routeData.error);
+  if (routeData.error) {
+    if (pageState && !pageState.hasFilters) throw routeData.error;
+    console.error('Failed to fetch Bengali category products:', routeData.error);
+  }
+  if (pageState && !pageState.hasFilters && pageState.page > 1 && rawProducts.length === 0) notFound();
 
   // Overlay Bengali translations. Products from the shared search overlay
   // already carry bengaliName/bengaliDescription in memory; only products
@@ -177,6 +202,8 @@ export default async function BengaliCategorySlugPage({
       theme={theme}
       sort={sort}
       searchParams={resolvedSearch}
+      pagination={pageState && !pageState.hasFilters ? { page: pageState.page, hasMore: Boolean(routeData.hasMore) } : undefined}
+      compactMobile={Boolean(pageState)}
       locale="bn"
     />
   );
