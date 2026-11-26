@@ -268,7 +268,7 @@ export function CategoryShell({
               <nav aria-label={isBn ? 'পণ্যের পৃষ্ঠা' : 'Product pages'} className="mx-auto grid w-full max-w-lg grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-4 sm:gap-4 sm:px-0">
                 {pagination.page > 1 ? (
                   <Link
-                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-warm-sm transition-[background-color,border-color,color,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
+                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border/80 bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-[0_1px_1px_rgba(0,0,0,0.04),0_3px_8px_rgba(0,0,0,0.09),0_0_0_1px_rgba(0,0,0,0.025)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent/15 hover:shadow-[0_2px_3px_rgba(0,0,0,0.06),0_6px_14px_rgba(0,0,0,0.12),0_0_0_1px_rgba(240,196,68,0.2)] motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
                     href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page - 1)}
                     rel="prev"
                     aria-label={isBn ? 'আগের পৃষ্ঠা' : 'Previous page'}
@@ -281,7 +281,7 @@ export function CategoryShell({
                 </span>
                 {pagination.hasMore ? (
                   <Link
-                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-warm-sm transition-[background-color,border-color,color,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
+                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border/80 bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-[0_1px_1px_rgba(0,0,0,0.04),0_3px_8px_rgba(0,0,0,0.09),0_0_0_1px_rgba(0,0,0,0.025)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent/15 hover:shadow-[0_2px_3px_rgba(0,0,0,0.06),0_6px_14px_rgba(0,0,0,0.12),0_0_0_1px_rgba(240,196,68,0.2)] motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
                     href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page + 1)}
                     rel="next"
                     aria-label={isBn ? 'পরের পৃষ্ঠা' : 'Next page'}
