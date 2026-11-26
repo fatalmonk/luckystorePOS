@@ -28,6 +28,10 @@ describe('Ice Cream pagination URL qualification', () => {
     });
     expect(resolveIceCreamPage({ page: '3', utm_source: 'ad', fbclid: 'abc' }))
       .toMatchObject({ page: 3, hasFilters: false, invalid: false });
+    for (const tracking of ['gad_source', 'gbraid', 'wbraid', 'srsltid', 'dclid', 'UTM_SOMETHING_CUSTOM']) {
+      expect(resolveIceCreamPage({ page: '2', [tracking]: 'click-id' }))
+        .toMatchObject({ page: 2, hasFilters: false, invalid: false, needsRedirect: false });
+    }
     expect(resolveIceCreamPage({})).toMatchObject({
       page: 1, hasFilters: false, needsRedirect: false,
     });

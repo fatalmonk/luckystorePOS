@@ -3,9 +3,15 @@ export const ICE_CREAM_PAGE_SIZE = 24;
 
 export type IceCreamQuery = Record<string, string | string[] | undefined>;
 const TRACKING_PARAMS = new Set([
-  'fbclid', 'gclid', 'msclkid', 'utm_source', 'utm_medium',
-  'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
+  'fbclid', 'gclid', 'msclkid', 'gad_source', 'gbraid', 'wbraid',
+  'srsltid', 'dclid', 'twclid', 'ttclid', 'igshid', 'li_fat_id',
+  'mc_cid', 'mc_eid', '_gl', '_ga',
 ]);
+
+function isTrackingParam(key: string): boolean {
+  const normalized = key.toLowerCase();
+  return normalized.startsWith('utm_') || TRACKING_PARAMS.has(normalized);
+}
 
 export interface IceCreamPageState {
   page: number;
@@ -28,7 +34,7 @@ export function resolveIceCreamPage(params: IceCreamQuery): IceCreamPageState {
     || (typeof raw === 'string' && Number(raw) > Math.floor(100_000 / ICE_CREAM_PAGE_SIZE) + 1);
   const page = invalid || raw === undefined ? 1 : Number(raw);
   const hasFilters = Object.entries(params).some(([key, value]) =>
-    key !== 'page' && !TRACKING_PARAMS.has(key.toLowerCase()) &&
+    key !== 'page' && !isTrackingParam(key) &&
     (Array.isArray(value) ? value.some(Boolean) : Boolean(value)),
   );
   const query = new URLSearchParams();
