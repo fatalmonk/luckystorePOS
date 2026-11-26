@@ -265,18 +265,30 @@ export function CategoryShell({
               hideBreadcrumb={!isAllProducts}
             />
             {pagination && (pagination.page > 1 || pagination.hasMore) && (
-              <nav aria-label={isBn ? 'পণ্যের পৃষ্ঠা' : 'Product pages'} className="flex items-center justify-center gap-4 py-4">
-                {pagination.page > 1 && (
-                  <Link className="min-h-11 rounded-full border border-warm-border px-5 py-3 font-bold text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent" href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page - 1)}>
-                    {isBn ? 'আগের পৃষ্ঠা' : 'Previous page'}
+              <nav aria-label={isBn ? 'পণ্যের পৃষ্ঠা' : 'Product pages'} className="mx-auto grid w-full max-w-lg grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-4 sm:gap-4 sm:px-0">
+                {pagination.page > 1 ? (
+                  <Link
+                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-warm-sm transition-[background-color,border-color,color,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
+                    href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page - 1)}
+                    rel="prev"
+                    aria-label={isBn ? 'আগের পৃষ্ঠা' : 'Previous page'}
+                  >
+                    {isBn ? 'আগের পৃষ্ঠা' : 'Previous'}
                   </Link>
-                )}
-                <span className="text-sm text-warm-fg" aria-current="page">{isBn ? 'পৃষ্ঠা' : 'Page'} {pagination.page.toLocaleString(isBn ? 'bn-BD' : 'en-US')}</span>
-                {pagination.hasMore && (
-                  <Link className="min-h-11 rounded-full border border-warm-border px-5 py-3 font-bold text-warm-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent" href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page + 1)}>
-                    {isBn ? 'পরের পৃষ্ঠা' : 'Next page'}
+                ) : <span aria-hidden="true" />}
+                <span className="whitespace-nowrap text-center text-sm font-semibold tabular-nums text-warm-fg" aria-current="page">
+                  {isBn ? 'পৃষ্ঠা' : 'Page'} {pagination.page.toLocaleString(isBn ? 'bn-BD' : 'en-US')}
+                </span>
+                {pagination.hasMore ? (
+                  <Link
+                    className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-warm-border bg-warm-surface px-3 py-2 text-center text-sm font-semibold text-warm-fg shadow-warm-sm transition-[background-color,border-color,color,transform] duration-150 hover:border-warm-accent hover:bg-warm-accent hover:text-warm-accent-text motion-safe:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 sm:px-5"
+                    href={iceCreamPageHref(withLocale('/category/ice-cream', locale), pagination.page + 1)}
+                    rel="next"
+                    aria-label={isBn ? 'পরের পৃষ্ঠা' : 'Next page'}
+                  >
+                    {isBn ? 'পরের পৃষ্ঠা' : 'Next'}
                   </Link>
-                )}
+                ) : <span aria-hidden="true" />}
               </nav>
             )}
           </div>
