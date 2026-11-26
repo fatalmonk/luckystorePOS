@@ -149,7 +149,7 @@ export default async function BengaliCategorySlugPage({
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
-  if (pageState && !pageState.hasFilters && !currentCatObj?.id) {
+  if (pageState && !currentCatObj?.id) {
     throw new Error('Ice Cream pagination requires a resolved category ID');
   }
 
@@ -159,12 +159,13 @@ export default async function BengaliCategorySlugPage({
     currentCategory: currentCatObj,
     searchTerm,
     ...(pageState && !pageState.hasFilters ? { page: pageState.page, pageSize: ICE_CREAM_PAGE_SIZE } : {}),
+    ...(pageState ? { strictCategory: true, completeCategory: pageState.hasFilters } : {}),
     repository: repo,
     categoryLabel: (category) => BENGALI_CATEGORY_NAMES[category.slug] || category.name,
   });
   const { group = initialGroup, parentGroup, products: rawProducts, productCount } = routeData;
   if (routeData.error) {
-    if (pageState && !pageState.hasFilters) throw routeData.error;
+    if (pageState) throw routeData.error;
     console.error('Failed to fetch Bengali category products:', routeData.error);
   }
   if (pageState && !pageState.hasFilters && pageState.page > 1 && rawProducts.length === 0) notFound();

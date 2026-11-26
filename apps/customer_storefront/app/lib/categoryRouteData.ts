@@ -24,6 +24,10 @@ interface ResolveCategoryRouteDataOptions {
   /** Only enabled for the separately qualified Ice Cream leaf-category pilot. */
   page?: number;
   pageSize?: number;
+  /** Never use fuzzy category-name fallback when exact category membership is required. */
+  strictCategory?: boolean;
+  /** Fetch all exact-category matches for truthful client-side filters; fail above the cap. */
+  completeCategory?: boolean;
   repository: IProductRepository;
   categoryLabel?: (category: ProductCategory) => string;
 }
@@ -36,6 +40,8 @@ export async function resolveCategoryRouteData({
   searchTerm,
   page,
   pageSize,
+  strictCategory = false,
+  completeCategory = false,
   repository,
   categoryLabel = (category) => category.name,
 }: ResolveCategoryRouteDataOptions): Promise<CategoryRouteData> {
@@ -78,6 +84,9 @@ export async function resolveCategoryRouteData({
   const isGroupRoot = group && normalizeCategorySlug(group.slug) === normalizeCategorySlug(slug);
 
   try {
+    if (strictCategory && (isGroupRoot || !currentCategory?.id)) {
+      throw new Error('Exact category membership is required for pagination');
+    }
     if (isGroupRoot && group) {
       const categoryIds = categories
         .filter((category) => {
@@ -96,6 +105,36 @@ export async function resolveCategoryRouteData({
       products = result.products;
       if (!result.hasMore) productCount = result.products.length;
     } else if (currentCategory?.id) {
+      if (completeCategory) {
+        // Do not display incomplete facets: client filters require the full
+        // eligible catalog. Never perform an unbounded or fuzzy search.
+        const batchSize = 200;
+        const maxProducts = 1000;
+        const all: RepositoryProduct[] = [];
+        const seen = new Set<string>();
+        for (let offset = 0; offset <= maxProducts; offset += batchSize) {
+          const limit = Math.min(batchSize, maxProducts + 1 - offset);
+          const result = await repository.search({
+            query: searchTerm || undefined,
+            categoryId: currentCategory.id,
+            limit,
+            offset,
+          });
+          for (const item of result.products) {
+            if (seen.has(String(item.id))) throw new Error('Category changed during filter traversal');
+            seen.add(String(item.id));
+            all.push(item);
+          }
+          if (all.length > maxProducts) throw new Error('Category exceeds safe filter limit');
+          if (!result.hasMore) {
+            products = all;
+            productCount = all.length;
+            hasMore = false;
+            break;
+          }
+          if (offset + limit > maxProducts) throw new Error('Category exceeds safe filter limit');
+        }
+      } else {
       const result = await repository.search({
         query: searchTerm || undefined,
         categoryId: currentCategory.id,
@@ -111,7 +150,7 @@ export async function resolveCategoryRouteData({
       // Legacy items sometimes lack category IDs. Before using the name fallback
       // on a deep page, verify the ID-based category was empty on page one.
       // Otherwise a valid out-of-range page could pick up unrelated name matches.
-      if (products.length === 0 && !searchTerm) {
+      if (!strictCategory && products.length === 0 && !searchTerm) {
         let categoryHasItems = false;
         if (pageSize !== undefined && (page ?? 1) > 1) {
           const first = await repository.search({ categoryId: currentCategory.id, limit: 1, offset: 0 });
@@ -128,6 +167,7 @@ export async function resolveCategoryRouteData({
           hasMore = fallback.hasMore;
           productCount = fallback.hasMore ? undefined : offset + fallback.products.length;
         }
+      }
       }
     } else {
       const result = await repository.search({

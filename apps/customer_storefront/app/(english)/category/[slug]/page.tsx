@@ -172,7 +172,7 @@ export default async function CategorySlugPage({
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
-  if (pageState && !pageState.hasFilters && !currentCatObj?.id) {
+  if (pageState && !currentCatObj?.id) {
     throw new Error('Ice Cream pagination requires a resolved category ID');
   }
 
@@ -182,11 +182,12 @@ export default async function CategorySlugPage({
     currentCategory: currentCatObj,
     searchTerm,
     ...(pageState && !pageState.hasFilters ? { page: pageState.page, pageSize: ICE_CREAM_PAGE_SIZE } : {}),
+    ...(pageState ? { strictCategory: true, completeCategory: pageState.hasFilters } : {}),
     repository: repo,
   });
   const { group = initialGroup, parentGroup, products, productCount } = routeData;
   if (routeData.error) {
-    if (pageState && !pageState.hasFilters) throw routeData.error;
+    if (pageState) throw routeData.error;
     console.error('Failed to fetch category products:', routeData.error);
   }
   if (pageState && !pageState.hasFilters && pageState.page > 1 && products.length === 0) notFound();

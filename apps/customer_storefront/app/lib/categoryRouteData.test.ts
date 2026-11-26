@@ -230,3 +230,72 @@ describe('Ice Cream legacy fallback pagination boundaries', () => {
     expect(search).not.toHaveBeenCalledWith(expect.objectContaining({ query: 'Ice Cream' }));
   });
 });
+
+describe('Ice Cream complete, exact-category filters', () => {
+  const category: Category = { id: 'ice-filter', slug: 'ice-cream', name: 'Ice Cream', emoji: '🍦' };
+
+  it.each([65, 501, 1000])('loads all %i exact-category products before filtering', async count => {
+    const products: RepositoryProduct[] = Array.from({ length: count }, (_, i) =>
+      catalogProduct(String(i).padStart(5, '0'), `Ice Cream ${i}`) as unknown as RepositoryProduct,
+    );
+    const search = vi.fn(async (criteria: ProductSearchCriteria) => {
+      expect(criteria.categoryId).toBe(category.id);
+      expect(criteria.query).toBeUndefined();
+      return {
+        products: products.slice(criteria.offset ?? 0, (criteria.offset ?? 0) + (criteria.limit ?? 200)),
+        hasMore: (criteria.offset ?? 0) + (criteria.limit ?? 200) < count,
+      };
+    });
+    const result = await resolveCategoryRouteData({
+      slug: 'ice-cream', categories: [category], currentCategory: category,
+      completeCategory: true, strictCategory: true, repository: repositoryWithSearch(search),
+    });
+    expect(result.error).toBeUndefined();
+    expect(result.products).toEqual(products);
+    expect(result.hasMore).toBe(false);
+    expect(search).toHaveBeenCalledTimes(Math.ceil(count / 200));
+  });
+
+  it('refuses to expose partial results beyond the 1000-item safety cap', async () => {
+    const products: RepositoryProduct[] = Array.from({ length: 1001 }, (_, i) =>
+      catalogProduct(String(i), `Ice Cream ${i}`) as unknown as RepositoryProduct,
+    );
+    const search = vi.fn(async ({ offset = 0, limit = 200 }: ProductSearchCriteria) => ({
+      products: products.slice(offset, offset + limit),
+      hasMore: offset + limit < products.length,
+    }));
+    const result = await resolveCategoryRouteData({
+      slug: 'ice-cream', categories: [category], currentCategory: category,
+      completeCategory: true, strictCategory: true, repository: repositoryWithSearch(search),
+    });
+    expect(result.error).toBeInstanceOf(Error);
+    expect(String(result.error)).toContain('safe filter limit');
+    expect(result.products).toEqual([]);
+    expect(search).toHaveBeenCalledTimes(6);
+  });
+
+  it('never uses broad product-name fallback when strict category is enabled', async () => {
+    const search = vi.fn().mockResolvedValue(emptyResult);
+    const result = await resolveCategoryRouteData({
+      slug: 'ice-cream', categories: [category], currentCategory: category,
+      page: 2, pageSize: 24, strictCategory: true,
+      repository: repositoryWithSearch(search),
+    });
+    expect(result.products).toEqual([]);
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(search).toHaveBeenCalledWith({
+      query: undefined, categoryId: category.id, limit: 24, offset: 24,
+    });
+  });
+
+  it('fails closed if any page contains a duplicate ID', async () => {
+    const item = catalogProduct('duplicate', 'Ice Cream') as unknown as RepositoryProduct;
+    const search = vi.fn().mockResolvedValue({ products: [item], hasMore: true });
+    const result = await resolveCategoryRouteData({
+      slug: 'ice-cream', categories: [category], currentCategory: category,
+      completeCategory: true, strictCategory: true, repository: repositoryWithSearch(search),
+    });
+    expect(String(result.error)).toContain('changed during filter traversal');
+    expect(result.products).toEqual([]);
+  });
+});

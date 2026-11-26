@@ -122,3 +122,13 @@ The test checks:
 5. Frozen-snapshot ordering and inventory-churn limitations reviewed by a different reviewer, with an exact source SHA and rollback/flag-off receipt.
 
 **Do not set the feature flag in production, deploy, or claim P0 closure based solely on passing tests.**
+
+
+## 2026-11-26 — P0 correctness closure candidate: exact-category filters
+
+- **Exact membership:** When the Ice Cream pagination flag is on, both localized routes require a concrete Ice Cream category ID. The resolver uses `strictCategory: true`, refuses a grouped/unknown category, and never uses the historic name-only fallback. Unrelated products cannot enter through that fallback in flagged mode.
+- **Complete filter context:** When sorting, searching, filtering by brand, price, stock, or another nontracking parameter, `completeCategory: true` fetches the *entire matching exact category result* in sequential 200-product batches before client filtering/sorting. This avoids silently restricting facets to the current 24-item page. 65, 501 and 1,000 item synthetic traversal tests verify complete results.
+- **Bounded refusal:** At more than 1,000 products, duplicated item IDs across batches, missing exact category ID, or an RPC error, the flagged route fails closed instead of returning misleading partial facets. This is an explicit pilot limitation, not unlimited filtering scalability. Filters above the cap need a future database-side solution and user-friendly error UX.
+- **Query/egress tradeoff:** Basic pages still fetch 24 products plus one lookahead. Filtered views can transfer up to 1,001 category records and incur up to six catalog RPC calls, plus translations/category lookups. The exact egress and latencies are **unmeasured**; never promise savings until staging benchmarks.
+- **Verification:** Full storefront Vitest 1,165/1,165 tests passed (136 files). Scoped tests and TypeScript passed. The inert-endpoint Next build compiled and passed TypeScript, but did not complete static generation because `staging.invalid` was intentionally non-resolvable. Treat production-style build as **BLOCKED**, not a pass.
+- **Outstanding:** No candidate staging URL with matching source, enabled feature flag and non-production catalog was confirmed. Raw server HTML, mobile LCP/CLS/TTFB, accessibility and Supabase egress remain release gates. Independent review required on the final PR SHA. No production activation or merge authorized.
