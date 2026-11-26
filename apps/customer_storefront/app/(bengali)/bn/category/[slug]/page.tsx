@@ -8,7 +8,7 @@ import { supabase } from '../../../../lib/supabase';
 import { getSingleParam } from '../../../../lib/utils';
 import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../../lib/categoryResolution';
 import { ICE_CREAM_PAGE_SIZE, iceCreamPaginationEnabled, resolveIceCreamPage } from '../../../../lib/iceCreamPagination';
-import { getCategoryBrandCounts } from '../../../../lib/categoryBrandFacets';
+import { getCachedCategoryBrandCounts } from '../../../../lib/categoryBrandFacetsServer';
 import { resolveCategoryRouteData } from '../../../../lib/categoryRouteData';
 import { resolveBengaliOverlays } from '../../../../lib/products/bengaliOverlay';
 import { BENGALI_CATEGORY_NAMES } from '../../../../lib/products/getHomePageData';
@@ -157,7 +157,7 @@ export default async function BengaliCategorySlugPage({
   }
 
   const categoryBrandCounts = pageState
-    ? await getCategoryBrandCounts(supabase, currentCatObj!.id)
+    ? await getCachedCategoryBrandCounts(currentCatObj!.id)
     : undefined;
 
   const routeData = await resolveCategoryRouteData({

@@ -6,6 +6,7 @@ import { getCanonicalCategorySlug } from '../types';
 const mockTranslationMaybeSingle = vi.hoisted(() => vi.fn());
 const mockTranslationFrom = vi.hoisted(() => vi.fn());
 const mockSupabaseRpc = vi.hoisted(() => vi.fn());
+const mockCachedBrandCounts = vi.hoisted(() => vi.fn(async () => ({} as Record<string, number>)));
 
 const mockUpdateSession = vi.fn(async () => new Response(null, { status: 200 }));
 
@@ -71,6 +72,10 @@ vi.mock('../supabase', () => ({
 
 vi.mock('../supabase/anonymousStorefront', () => ({
   getAnonymousStorefrontClient: () => ({ from: mockTranslationFrom }),
+}));
+
+vi.mock('../categoryBrandFacetsServer', () => ({
+  getCachedCategoryBrandCounts: mockCachedBrandCounts,
 }));
 
 // Mock CategoryShell to inspect rendered props
@@ -1223,7 +1228,7 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
           ...mockCategories,
           { id: 'ice-cat', slug: 'ice-cream', name: 'Ice Cream', emoji: '🍦', active: true },
         ]);
-        mockSupabaseRpc.mockResolvedValueOnce({ data: [{ name: 'Igloo Ice Cream', brand: 'Igloo' }], error: null });
+        mockCachedBrandCounts.mockResolvedValueOnce({ Igloo: 1 });
         mockSearch.mockResolvedValueOnce({ products: [mockProduct], hasMore: true, total: 0 } as any);
         const Page = (await import('../../(english)/category/[slug]/page')).default;
         const result = await Page({
@@ -1234,6 +1239,8 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
           query: undefined, categoryId: 'ice-cat', limit: 24, offset: 24,
         });
         expect(result.props.pagination).toEqual({ page: 2, hasMore: true });
+        expect(mockCachedBrandCounts).toHaveBeenCalledWith('ice-cat');
+        expect(result.props.categoryBrandCounts).toEqual({ Igloo: 1 });
       } finally {
         vi.unstubAllEnvs();
       }
