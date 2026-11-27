@@ -187,8 +187,8 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <article className={`deal-lead-card flex flex-col justify-between gap-3 rounded-[18px] p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-12">
+        <article className={`deal-lead-card flex flex-col justify-between gap-3 rounded-warm-card border p-4 ${supportingProducts.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12 lg:max-w-xl'}`}>
           <Link
             href={withLocale(`/product/${catalogProductSlug(leadProduct)}`, locale)}
             aria-label={
@@ -293,10 +293,10 @@ export function DealOfTheWeek({ products, discountedProductCount: totalDiscounte
               tabIndex={0}
               onKeyDown={handleDealRailKeyDown}
               onScroll={handleScroll}
-              className="deal-product-reel scrollbar-hide"
+              className="deal-product-reel scrollbar-hide grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               {supportingProducts.map((product) => (
-                <div key={product.id} className="deal-product-slide text-warm-fg">
+                <div key={product.id} className="text-warm-fg">
                   <GridProductCard product={product} locale={locale} />
                 </div>
               ))}

@@ -42,7 +42,7 @@ describe('DesktopQuickRail', () => {
       'href',
       '/login?next=/profile%23orders',
     );
-    expect(screen.getByRole('link', { name: 'Home' }).querySelector('svg')).toHaveAttribute('width', '18');
+    expect(screen.getByRole('link', { name: 'Home' }).querySelector('svg')).toHaveAttribute('width', '23');
   });
 
   it('switches the account destination to Profile for authenticated shoppers', () => {
