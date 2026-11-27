@@ -6,6 +6,8 @@ import { getCachedCategories } from '../../../lib/products/getCachedCategories';
 import { supabase } from '../../../lib/supabase';
 import { getSingleParam } from '../../../lib/utils';
 import { getCanonicalCategoryRedirectPath, resolveCanonicalCategory } from '../../../lib/categoryResolution';
+import { ICE_CREAM_PAGE_SIZE, iceCreamPaginationEnabled, resolveIceCreamPage } from '../../../lib/iceCreamPagination';
+import { getCachedCategoryBrandCounts } from '../../../lib/categoryBrandFacetsServer';
 import { resolveCategoryRouteData } from '../../../lib/categoryRouteData';
 import type { Metadata } from 'next';
 
@@ -71,10 +73,18 @@ export async function generateMetadata({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
 
-  const hasFilters = Object.values(resolvedSearch).some((value) =>
+  if (pageState?.needsRedirect) {
+    const clean = '/category/' + canonicalSlug;
+    permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
+  }
+
+  const hasFilters = pageState ? pageState.hasFilters : Object.values(resolvedSearch).some((value) =>
     Array.isArray(value) ? value.length > 0 : Boolean(value),
   );
   const titleName = group?.label || currentCatObj?.name || canonicalSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -82,12 +92,13 @@ export async function generateMetadata({
   const title = customMeta?.title || `${titleName} in Chittagong | Lucky Store`;
   const description = customMeta?.description || `Shop ${titleName} online at Lucky Store in Chattogram. Browse current prices and order for local delivery with Cash on Delivery and doorstep inspection.`;
 
-  const canonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}`;
-  const bnCanonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}`;
+  const pageSuffix = pageState && !hasFilters && pageState.page > 1 ? `?page=${pageState.page}` : '';
+  const canonicalUrl = `https://www.luckystore1947.com/category/${canonicalSlug}${pageSuffix}`;
+  const bnCanonicalUrl = `https://www.luckystore1947.com/bn/category/${canonicalSlug}${pageSuffix}`;
   const imageUrl = 'https://www.luckystore1947.com/lucky-store-social-share.jpg';
 
   return {
-    title: customMeta ? { absolute: customMeta.title } : `${titleName} in Chittagong`,
+    title: pageSuffix ? { absolute: `${titleName} in Chittagong - Page ${pageState?.page} | Lucky Store` } : customMeta ? { absolute: customMeta.title } : `${titleName} in Chittagong`,
     description,
     openGraph: {
       title,
@@ -147,8 +158,16 @@ export default async function CategorySlugPage({
     notFound();
   }
 
+  const pageState = iceCreamPaginationEnabled(canonicalSlug) ? resolveIceCreamPage(resolvedSearch) : null;
+  if (pageState?.invalid) notFound();
+
   const canonicalPath = getCanonicalCategoryRedirectPath('en', categorySlug, canonicalSlug, resolvedSearch);
   if (canonicalPath) permanentRedirect(canonicalPath);
+
+  if (pageState?.needsRedirect) {
+    const clean = '/category/' + canonicalSlug;
+    permanentRedirect(clean + (pageState.normalizedQuery ? '?' + pageState.normalizedQuery : ''));
+  }
 
   const currentCat = canonicalSlug;
 
@@ -156,15 +175,29 @@ export default async function CategorySlugPage({
   const theme = getSingleParam(resolvedSearch.theme);
   const sort = getSingleParam(resolvedSearch.sort) || 'best';
 
+  if (pageState && !currentCatObj?.id) {
+    throw new Error('Ice Cream pagination requires a resolved category ID');
+  }
+
+  const categoryBrandCounts = pageState
+    ? await getCachedCategoryBrandCounts(currentCatObj!.id)
+    : undefined;
+
   const routeData = await resolveCategoryRouteData({
     slug: canonicalSlug,
     categories,
     currentCategory: currentCatObj,
     searchTerm,
+    ...(pageState && !pageState.hasFilters ? { page: pageState.page, pageSize: ICE_CREAM_PAGE_SIZE } : {}),
+    ...(pageState ? { strictCategory: true, completeCategory: pageState.hasFilters } : {}),
     repository: repo,
   });
   const { group = initialGroup, parentGroup, products, productCount } = routeData;
-  if (routeData.error) console.error('Failed to fetch category products:', routeData.error);
+  if (routeData.error) {
+    if (pageState) throw routeData.error;
+    console.error('Failed to fetch category products:', routeData.error);
+  }
+  if (pageState && !pageState.hasFilters && pageState.page > 1 && products.length === 0) notFound();
 
   return (
     <CategoryShell
@@ -178,6 +211,9 @@ export default async function CategorySlugPage({
       theme={theme}
       sort={sort}
       searchParams={resolvedSearch}
+      pagination={pageState && !pageState.hasFilters ? { page: pageState.page, hasMore: Boolean(routeData.hasMore) } : undefined}
+      compactMobile={Boolean(pageState)}
+      categoryBrandCounts={categoryBrandCounts}
     />
   );
 }

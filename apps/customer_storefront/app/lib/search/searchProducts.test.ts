@@ -28,6 +28,68 @@ describe('searchStorefrontProducts', () => {
     expect(hasMore).toBe(false);
   });
 
+  it('loads all eligible category rows through one atomic snapshot RPC', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: {
+        items: [
+          { id: 'polar', name: 'Polar Vanilla', price: 50, sellable_qty: 2 },
+          { id: 'igloo', name: 'Igloo Chocolate', price: 60, sellable_qty: 1 },
+        ],
+        has_more: false,
+        total_count: 2,
+      },
+      error: null,
+    });
+    const { products, hasMore } = await searchStorefrontProducts({
+      categoryId: 'ice-cat',
+      limit: 1000,
+      offset: 0,
+      consistentSnapshot: true,
+      supabaseClient: {
+        rpc,
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+    expect(products.map(p => p.id)).toEqual(['polar', 'igloo']);
+    expect(hasMore).toBe(false);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('search_storefront_catalog_snapshot_v1', expect.objectContaining({
+      p_category_id: 'ice-cat', p_limit: 1000, p_offset: 0,
+    }));
+  });
+
+  it('preserves snapshot overflow without requesting another offset batch', async () => {
+    const rows = Array.from({ length: 1000 }, (_, i) => ({ id: String(i), name: 'Ice Cream', price: 10 }));
+    const rpc = vi.fn().mockResolvedValue({ data: { items: rows, has_more: true, total_count: 1001 }, error: null });
+    const result = await searchStorefrontProducts({
+      categoryId: 'ice-cat', limit: 1000, consistentSnapshot: true,
+      supabaseClient: {
+        rpc,
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          then: (resolve: (value: unknown) => void) => resolve({ data: [], error: null }),
+        })),
+      } as any,
+    });
+    expect(result.hasMore).toBe(true);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects invalid snapshot requests before making a database call', async () => {
+    const rpc = vi.fn();
+    await expect(searchStorefrontProducts({
+      limit: 1000, consistentSnapshot: true, supabaseClient: { rpc } as any,
+    })).rejects.toThrow('bounded exact-category request');
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it('uses sellable stock instead of physical on-hand quantity', async () => {
     const { products } = await searchStorefrontProducts({
       limit: 10,

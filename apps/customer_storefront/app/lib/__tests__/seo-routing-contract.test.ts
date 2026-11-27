@@ -6,6 +6,7 @@ import { getCanonicalCategorySlug } from '../types';
 const mockTranslationMaybeSingle = vi.hoisted(() => vi.fn());
 const mockTranslationFrom = vi.hoisted(() => vi.fn());
 const mockSupabaseRpc = vi.hoisted(() => vi.fn());
+const mockCachedBrandCounts = vi.hoisted(() => vi.fn(async () => ({} as Record<string, number>)));
 
 const mockUpdateSession = vi.fn(async () => new Response(null, { status: 200 }));
 
@@ -71,6 +72,10 @@ vi.mock('../supabase', () => ({
 
 vi.mock('../supabase/anonymousStorefront', () => ({
   getAnonymousStorefrontClient: () => ({ from: mockTranslationFrom }),
+}));
+
+vi.mock('../categoryBrandFacetsServer', () => ({
+  getCachedCategoryBrandCounts: mockCachedBrandCounts,
 }));
 
 // Mock CategoryShell to inspect rendered props
@@ -1113,6 +1118,132 @@ describe('SEO & Routing Contract Tests (Phase 2)', () => {
       expect(meta.title).toEqual({ absolute: 'Ice Cream in Chittagong | Lucky Store' });
       expect(meta.description).toContain('ice cream tubs, cones and popsicles');
       expect(meta.alternates?.canonical).toBe('https://www.luckystore1947.com/category/ice-cream');
+    });
+
+    it('keeps valid Ice Cream page 2 indexable with page-specific reciprocal canonicals', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const en = await import('../../(english)/category/[slug]/page');
+        const bn = await import('../../(bengali)/bn/category/[slug]/page');
+        const params = Promise.resolve({ slug: 'ice-cream' });
+        const searchParams = Promise.resolve({ page: '2' });
+        const enMeta = await en.generateMetadata({ params, searchParams });
+        const bnMeta = await bn.generateMetadata({ params, searchParams });
+        const enUrl = 'https://www.luckystore1947.com/category/ice-cream?page=2';
+        const bnUrl = 'https://www.luckystore1947.com/bn/category/ice-cream?page=2';
+        expect(enMeta.robots).toBeUndefined();
+        expect(bnMeta.robots).toBeUndefined();
+        expect((enMeta.title as any)?.absolute).toContain('Page 2');
+        expect((bnMeta.title as any)?.absolute).toContain('পৃষ্ঠা ২');
+        expect(enMeta.alternates?.canonical).toBe(enUrl);
+        expect(bnMeta.alternates?.canonical).toBe(bnUrl);
+        expect(enMeta.alternates?.languages).toEqual({
+          'en-BD': enUrl, 'bn-BD': bnUrl, 'x-default': enUrl,
+        });
+        expect(bnMeta.alternates?.languages).toEqual({
+          'en-BD': enUrl, 'bn-BD': bnUrl, 'x-default': enUrl,
+        });
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('normalizes page one using 308 and rejects malformed Ice Cream pages', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        for (const [path, locale] of [
+          ['../../(english)/category/[slug]/page', '/category'],
+          ['../../(bengali)/bn/category/[slug]/page', '/bn/category'],
+        ] as const) {
+          const { generateMetadata } = await import(path);
+          await expect(generateMetadata({
+            params: Promise.resolve({ slug: 'ice-cream' }),
+            searchParams: Promise.resolve({ page: '1' }),
+          })).rejects.toThrow('NEXT_REDIRECT');
+          expect(mockPermanentRedirect).toHaveBeenCalledWith(`${locale}/ice-cream`);
+          await expect(generateMetadata({
+            params: Promise.resolve({ slug: 'ice-cream' }),
+            searchParams: Promise.resolve({ page: 'abc' }),
+          })).rejects.toThrow('NEXT_NOT_FOUND');
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('rejects duplicate page parameters before alias redirects in both locales and functions', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const en = await import('../../(english)/category/[slug]/page');
+        const bn = await import('../../(bengali)/bn/category/[slug]/page');
+        for (const mod of [en, bn]) {
+          for (const handler of [mod.generateMetadata, mod.default]) {
+            await expect(handler({
+              params: Promise.resolve({ slug: 'Ice-Cream' }),
+              searchParams: Promise.resolve({ page: ['2', '3'] }),
+            })).rejects.toThrow('NEXT_NOT_FOUND');
+          }
+          await expect(mod.generateMetadata({
+            params: Promise.resolve({ slug: 'Ice-Cream' }),
+            searchParams: Promise.resolve({ page: '2' }),
+          })).rejects.toThrow('NEXT_REDIRECT');
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('normalizes page plus sort to a filtered first page', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const { generateMetadata } = await import('../../(english)/category/[slug]/page');
+        await expect(generateMetadata({
+          params: Promise.resolve({ slug: 'ice-cream' }),
+          searchParams: Promise.resolve({ page: '3', sort: 'price_asc' }),
+        })).rejects.toThrow('NEXT_REDIRECT');
+        expect(mockPermanentRedirect).toHaveBeenCalledWith('/category/ice-cream?sort=price_asc');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('fails closed when the Ice Cream category ID is not available for paging', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const Page = (await import('../../(english)/category/[slug]/page')).default;
+        await expect(Page({
+          params: Promise.resolve({ slug: 'ice-cream' }),
+          searchParams: Promise.resolve({ page: '2' }),
+        })).rejects.toThrow('Ice Cream pagination requires a resolved category ID');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('passes 24-row offset pagination to the Ice Cream leaf repository', async () => {
+      vi.stubEnv('LUCKYSTORE_ICE_CREAM_PAGINATION', 'enabled');
+      try {
+        const { getCachedCategories } = await import('../products/getCachedCategories');
+        vi.mocked(getCachedCategories).mockResolvedValueOnce([
+          ...mockCategories,
+          { id: 'ice-cat', slug: 'ice-cream', name: 'Ice Cream', emoji: '🍦', active: true },
+        ]);
+        mockCachedBrandCounts.mockResolvedValueOnce({ Igloo: 1 });
+        mockSearch.mockResolvedValueOnce({ products: [mockProduct], hasMore: true, total: 0 } as any);
+        const Page = (await import('../../(english)/category/[slug]/page')).default;
+        const result = await Page({
+          params: Promise.resolve({ slug: 'ice-cream' }),
+          searchParams: Promise.resolve({ page: '2' }),
+        });
+        expect(mockSearch).toHaveBeenCalledWith({
+          query: undefined, categoryId: 'ice-cat', limit: 24, offset: 24,
+        });
+        expect(result.props.pagination).toEqual({ page: 2, hasMore: true });
+        expect(mockCachedBrandCounts).toHaveBeenCalledWith('ice-cat');
+        expect(result.props.categoryBrandCounts).toEqual({ Igloo: 1 });
+      } finally {
+        vi.unstubAllEnvs();
+      }
     });
 
     it('falls back to factual metadata for non-money category without delivery speed claims', async () => {

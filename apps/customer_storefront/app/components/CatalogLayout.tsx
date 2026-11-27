@@ -20,6 +20,7 @@ import type { Locale } from '../lib/i18n/config';
 import { withLocale, getLocaleFromPathname } from '../lib/i18n/config';
 import { BENGALI_CATEGORY_NAMES } from '../lib/products/getHomePageData';
 import { getDictionary } from '../lib/i18n/dictionaries';
+import { cleanBrandName, normalizeBrand } from '../lib/categoryBrandFacets';
 
 const PRICE_OPTIONS = [
   { value: '0-100', label: 'Under ৳100', bn: '৳১০০-এর কম' },
@@ -41,32 +42,6 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest', bn: 'নতুন পণ্য' },
 ];
 
-const BRAND_ALIASES: Record<string, string> = {
-  'cerelace': 'Cerelac',
-  'cerelac': 'Cerelac',
-  'aril': 'Aril',
-  '鈦aril': 'Aril',
-};
-
-const NON_BRAND_WORDS = new Set(['chicken', 'chocolate', 'ata', 'basmati', 'others']);
-
-function cleanBrandName(raw?: string | null): string {
-  if (!raw) return 'Others';
-  let clean = raw.replace(/[\uFEFF\u0000-\u001F\u007F-\u009F]/g, '').trim();
-  clean = clean.replace(/^[^\w\s\u0980-\u09FF]+/, '').trim();
-  if (!clean) return 'Others';
-
-  const lower = clean.toLowerCase();
-  if (BRAND_ALIASES[lower]) return BRAND_ALIASES[lower];
-  if (NON_BRAND_WORDS.has(lower)) return 'Others';
-
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
-}
-
-function normalizeBrand(b?: string | null): string {
-  return cleanBrandName(b).toLowerCase();
-}
-
 interface CatalogLayoutProps {
   products: Product[];
   categorySlug: string;
@@ -87,6 +62,10 @@ interface CatalogLayoutProps {
   hideBreadcrumb?: boolean;
   brandName?: string;
   brandSlug?: string;
+  /** Receives one server-selected page; only enabled for the Ice Cream pilot. */
+  serverPaginated?: boolean;
+  /** Complete exact-category facets, independent of the displayed page. */
+  categoryBrandCounts?: Record<string, number>;
 }
 
 export function CatalogLayout({
@@ -103,6 +82,8 @@ export function CatalogLayout({
   hideBreadcrumb = false,
   brandName,
   brandSlug,
+  serverPaginated = false,
+  categoryBrandCounts,
 }: CatalogLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -139,18 +120,20 @@ export function CatalogLayout({
   const activeSort = (urlParams.get('sort') || sort || 'best') as string;
   const searchQuery = (urlParams.get('q') || searchParams?.q || '') as string;
 
-  // Derive unique brands from current dataset
+  // Pilot: use complete-category facets, never the current 24-product page.
   const { brandCounts, availableBrands } = useMemo(() => {
-    const counts: Record<string, number> = {};
-    products.forEach((p) => {
-      const b = cleanBrandName(p.brand);
-      if (b !== 'Others') {
-        counts[b] = (counts[b] || 0) + 1;
-      }
-    });
+    const counts: Record<string, number> = categoryBrandCounts
+      ? { ...categoryBrandCounts }
+      : {};
+    if (!categoryBrandCounts) {
+      products.forEach((p) => {
+        const b = cleanBrandName(p.brand);
+        if (b !== 'Others') counts[b] = (counts[b] || 0) + 1;
+      });
+    }
     const brands = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
     return { brandCounts: counts, availableBrands: brands };
-  }, [products]);
+  }, [products, categoryBrandCounts]);
 
   // Apply filters in-memory for catalog view
   const filtered = useMemo(() => {
@@ -194,7 +177,7 @@ export function CatalogLayout({
       result.sort((a, b) => b.price - a.price);
     } else if (activeSort === 'newest') {
       result.sort((a, b) => new Date(b.created_at ?? '').getTime() - new Date(a.created_at ?? '').getTime());
-    } else {
+    } else if (!serverPaginated) {
       // Best Match: Demote out-of-stock items (stock <= 0) to bottom
       result.sort((a, b) => {
         const aInStock = (a.stock ?? 0) > 0 ? 1 : 0;
@@ -204,7 +187,7 @@ export function CatalogLayout({
     }
 
     return result;
-  }, [products, theme, activeAvailabilities, activePrices, activeBrands, activeSort, renderedAt]);
+  }, [products, theme, activeAvailabilities, activePrices, activeBrands, activeSort, renderedAt, serverPaginated]);
 
   // Count active filters
   const totalActiveFilterCount =
@@ -214,6 +197,7 @@ export function CatalogLayout({
   // Helper to push URL query updates
   const updateQueryParam = (key: string, values: string[]) => {
     const params = new URLSearchParams(urlParams.toString());
+    params.delete('page');
     if (values.length > 0) {
       params.set(key, values.join(','));
     } else {
@@ -241,6 +225,7 @@ export function CatalogLayout({
 
   const handleSortChange = (newSort: string) => {
     const params = new URLSearchParams(urlParams.toString());
+    params.delete('page');
     if (newSort === 'best') params.delete('sort');
     else params.set('sort', newSort);
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
@@ -253,6 +238,7 @@ export function CatalogLayout({
     params.delete('brand');
     params.delete('sort');
     params.delete('q');
+    params.delete('page');
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   };
 
@@ -698,7 +684,7 @@ export function CatalogLayout({
               </div>
 
               {/* Load More Pagination */}
-              {visibleCount < filtered.length && (
+              {!serverPaginated && visibleCount < filtered.length && (
                 <div className="pt-6 pb-2 text-center">
                   <button
                     type="button"

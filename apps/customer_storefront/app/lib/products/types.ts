@@ -73,6 +73,8 @@ export interface ProductSearchCriteria {
   categoryIds?: string[];
   page?: number;
   limit?: number;
+  /** Request an atomic exact-category snapshot for complete filters. */
+  consistentSnapshot?: boolean;
   /** Exact row offset; when omitted, page-based pagination is used. */
   offset?: number;
 }

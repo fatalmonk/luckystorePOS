@@ -74,9 +74,10 @@ test('source identity: current implementation uses capped route queries and clie
   assert.match(searchSource, /allRows\.slice\(actualOffset, actualOffset \+ limit\)/);
 });
 
-test('source identity: both locale routes classify every query parameter as a filter', () => {
+test('source identity: locales gate pagination while preserving legacy noindex rules', () => {
   for (const content of [enSource, bnSource]) {
-    assert.match(content, /const hasFilters = Object\.values\(resolvedSearch\)\.some/);
+    assert.match(content, /const pageState = iceCreamPaginationEnabled\(canonicalSlug\) \? resolveIceCreamPage\(resolvedSearch\) : null/);
+    assert.match(content, /const hasFilters = pageState \? pageState\.hasFilters : Object\.values\(resolvedSearch\)\.some/);
     assert.match(content, /robots: hasFilters \?/);
     assert.doesNotMatch(content, /getSingleParam\(resolvedSearch\.page\)/);
   }

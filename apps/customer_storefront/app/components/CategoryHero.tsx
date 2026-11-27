@@ -15,6 +15,8 @@ export interface CategoryHeroProps {
   iconUrl?: string;
   icon?: ReactNode;
   productCount?: number;
+  /** Smaller mobile banner for the explicitly enabled Ice Cream pilot only. */
+  compactMobile?: boolean;
   locale?: 'en' | 'bn';
   onBack?: () => void;
 }
@@ -29,6 +31,7 @@ export function CategoryHero({
   iconUrl,
   icon,
   productCount,
+  compactMobile = false,
   locale = 'en',
   onBack,
 }: CategoryHeroProps) {
@@ -38,7 +41,7 @@ export function CategoryHero({
       aria-labelledby={headingId}
       className="relative isolate overflow-hidden rounded-b-warm-card bg-warm-bg text-center text-warm-fg sm:rounded-b-warm-panel"
     >
-      <div className="relative h-48 overflow-hidden bg-warm-fg/10 lg:h-56">
+      <div className={compactMobile ? 'relative h-32 overflow-hidden bg-warm-fg/10 sm:h-48 lg:h-56' : 'relative h-48 overflow-hidden bg-warm-fg/10 lg:h-56'}>
         {imageUrl ? (
           <picture>
             {imageSources.map((source) => (
@@ -90,16 +93,16 @@ export function CategoryHero({
             <span className="text-2xl" aria-hidden="true">🛍️</span>
           )}
         </div>
-        <h1 id={headingId} className="mx-auto max-w-3xl text-xl font-black leading-tight tracking-tight text-warm-fg sm:text-2xl lg:text-3xl">
+        <h1 id={headingId} className="mx-auto max-w-3xl text-balance text-xl font-black leading-tight tracking-tight text-warm-fg sm:text-2xl lg:text-3xl">
           {name}
         </h1>
         {description && (
-          <p className="mx-auto mt-1 max-w-2xl text-sm leading-5 text-warm-muted sm:text-base sm:leading-6">
+          <p className="mx-auto mt-1 max-w-2xl text-pretty text-sm leading-5 text-warm-muted sm:text-base sm:leading-6">
             {description}
           </p>
         )}
         {typeof productCount === 'number' && (
-          <p className="mt-2 text-xs font-bold text-warm-muted sm:text-sm">
+          <p className="mt-2 text-xs font-bold tabular-nums text-warm-muted sm:text-sm">
             {productCount.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US')} {locale === 'bn' ? 'টি পণ্য' : productCount === 1 ? 'product' : 'products'}
           </p>
         )}

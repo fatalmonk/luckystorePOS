@@ -79,3 +79,70 @@ The test checks:
 6. An independent source/diff and test review tied to the exact final PR head SHA.
 
 **No production merge, migration, WAF adjustment, rollout, storefront redesign or execution authorization is implied by this PR.**
+
+
+## 2026-11-26 — Isolated Ice Cream remediation candidate (NOT DEPLOYED)
+
+**Branch:** `fix/ice-cream-server-pagination-v3` based on GitHub merge `04ebdd304d0b8979b0412f4653d00d18fe36291d`.
+**Status:** Local source implementation and unit/SEO qualification complete; staging and production remain **HOLD**.
+**Feature gate:** `LUCKYSTORE_ICE_CREAM_PAGINATION=enabled` enables the new path for the Ice Cream leaf category only. The variable is **not set** by this change; the existing behavior remains the default.
+
+### Corrected architectural decision
+
+- **VERIFIED SOURCE:** The Ice Cream slug resolves as a *leaf category* under Snacks, not a grouped-category root. Its identified category has a single ID and can use the existing `search_storefront_catalog_v2` `p_limit`/`p_offset` RPC, with the existing `name, id` sort. No new migration is necessary for this **isolated leaf-category pilot**.
+- **VERIFIED SOURCE:** The prior report's `supabase/migrations/20261015090000_stabilize_storefront_catalog_pagination.sql` already exists and updates the older `search_storefront_catalog` RPC, not the active V2 RPC. It is **not a new required migration** for this feature.
+- **UNRESOLVED:** Globally ordered and bounded paging across multiple child-category IDs (e.g. Snacks group) is *not solved* by this leaf-only implementation. That work requires independent architecture and staging qualification; no migration is proposed or applied here.
+- **UNMEASURED:** The reported 85–95% egress reduction cannot be asserted. The single-category path requests at most `pageSize+1` rows per RPC call, except for documented bounded legacy-fallback probes, but server rendering, translation lookup, caching and network payloads require actual staging measurements.
+
+### Candidate functionality
+
+- 24 products per Ice Cream page using existing leaf category ID and offset, with `hasMore` driving real HTML previous/next links in English and Bengali.
+- Valid `?page=2+` uses self-canonical URLs, localized alternates, unique page titles and indexable metadata; `?page=1` redirects via HTTP 308; malformed page numbers fail closed; filtered/sorted queries normalize to page one and remain noindex.
+- The client-side Load More button is disabled only when the server slice is active. Default best-match sorting does not reorder the local slice, preserving cross-page database ordering.
+- Per-page `ItemList` emits product name, URL and positions corresponding to the current page, without embedded category-page offers; unrelated category schemas remain on the existing path.
+- A category-specific compact mobile hero is introduced (192px to 128px on mobile), retaining desktop imagery and the established GridProductCard.
+- Legacy name-only fallback first checks whether category-ID items exist before serving a deeper fallback page. Missing category IDs or query errors fail closed instead of presenting empty indexable deep pages.
+- The Ice Cream introduction no longer asserts an unverified Chawkbazar location or frozen-delivery guarantee.
+
+### Executed local verification
+
+- Vitest scoped suites: **111/111 passed**, exit 0. Includes route-level English/Bengali canonical, redirect and offset tests; 65/501/1001 static fixture traversal; fallback and malformed-page checks; existing SEO contracts.
+- TypeScript: `tsc --noEmit --incremental false` against storefront project **passed**, exit 0.
+- Scoped ESLint and `git diff --check`: **passed**, exit 0.
+- No Supabase queries, migrations, production requests, live catalog writes or deployment.
+
+### Remaining release gates
+
+**HOLD activation/merge/production release** until all of the following have been independently reviewed:
+
+1. Staging raw HTML crawl with JavaScript disabled: real product and pagination anchors on pages 1–3, correct 404 and 308 responses, and reciprocal locale URLs.
+2. Empirical Supabase RPC request counts, bytes, query latency, translation overlays and egress versus the approved baseline. No savings percentage is presently verified.
+3. The actual mobile LCP element, TTFB, CLS and first-product position at 360/390/768px, with functional and accessibility testing.
+4. Full-category brand/availability/price filter completeness: in the paginated mode, derived filter counts currently reflect the **current page**, not necessarily the entire catalog. This must not be misrepresented as a global facet.
+5. Frozen-snapshot ordering and inventory-churn limitations reviewed by a different reviewer, with an exact source SHA and rollback/flag-off receipt.
+
+**Do not set the feature flag in production, deploy, or claim P0 closure based solely on passing tests.**
+
+
+## 2026-11-26 — P0 correctness closure candidate: exact-category filters
+
+- **Exact membership:** When the Ice Cream pagination flag is on, both localized routes require a concrete Ice Cream category ID. The resolver uses `strictCategory: true`, refuses a grouped/unknown category, and never uses the historic name-only fallback. Unrelated products cannot enter through that fallback in flagged mode.
+- **Complete filter context:** When sorting, searching, filtering by brand, price, stock, or another nontracking parameter, `completeCategory: true` fetches the *entire matching exact category result* in sequential 200-product batches before client filtering/sorting. This avoids silently restricting facets to the current 24-item page. 65, 501 and 1,000 item synthetic traversal tests verify complete results.
+- **Bounded refusal:** At more than 1,000 products, duplicated item IDs across batches, missing exact category ID, or an RPC error, the flagged route fails closed instead of returning misleading partial facets. This is an explicit pilot limitation, not unlimited filtering scalability. Filters above the cap need a future database-side solution and user-friendly error UX.
+- **Query/egress tradeoff:** Basic pages still fetch 24 products plus one lookahead. Filtered views can transfer up to 1,001 category records and incur up to six catalog RPC calls, plus translations/category lookups. The exact egress and latencies are **unmeasured**; never promise savings until staging benchmarks.
+- **Verification:** Full storefront Vitest 1,165/1,165 tests passed (136 files). Scoped tests and TypeScript passed. The inert-endpoint Next build compiled and passed TypeScript, but did not complete static generation because `staging.invalid` was intentionally non-resolvable. Treat production-style build as **BLOCKED**, not a pass.
+- **Outstanding:** No candidate staging URL with matching source, enabled feature flag and non-production catalog was confirmed. Raw server HTML, mobile LCP/CLS/TTFB, accessibility and Supabase egress remain release gates. Independent review required on the final PR SHA. No production activation or merge authorized.
+
+## 2026-11-27 — CodeRabbit remediation candidate (SOURCE ONLY; DB NOT APPLIED)
+
+Base commit: 584ec3b6bb62735a040c8e1c63f5cc98633c75fe. SQL functions are not installed in any Supabase project. This section supersedes earlier batch-read descriptions for this candidate only.
+
+- Brand facets: flagged Ice Cream pages query complete category name/brand sources using get_storefront_category_brand_sources_v1; the desktop/mobile controls receive counts independent of the displayed 24 products.
+- Consistent reads: filtered views use one search_storefront_catalog_snapshot_v1 RPC. STABLE server-side function counts at most 1,001 rows in the same statement snapshot as the existing V2 catalog result. Reject >1,000 results, missing/duplicate IDs, count mismatches and degraded lookup results. Cached snapshot and ordinary browse requests use distinct keys.
+- Alias validation: both English/Bengali pages and metadata functions reject duplicate page parameters before canonical alias redirects; valid aliases still redirect.
+- Test isolation: environment stubs are restored in finally.
+- Security scope: both new SECURITY DEFINER functions enforce public storefront, tenant and exact category restrictions, with bounded outputs. Independent security/RLS review is required prior to applying the migration.
+- Local validation: full storefront Vitest 1,172/1,172 tests across 137 files passed; scoped TypeScript and ESLint passed. Synthetic fixtures check 65/501/1,000/1,001 items, category brands, duplicate IDs and alias URLs.
+- UNVERIFIED: SQL runtime execution, source-RPC predicate parity, live concurrent edit behavior, test Supabase fixtures, staged HTML, mobile CWV, egress, remote CI and independent reviewer acceptance.
+
+Release HOLD. First review SQL permissions independently, then test only in isolated Supabase project grxxenvdhfwzafzyykgo. Do not apply the SQL directly in production hvmyxyccfnkrbxqbhlnm, enable the feature flag, merge or deploy without independent qualification and explicit approval.
