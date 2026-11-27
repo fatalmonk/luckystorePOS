@@ -77,7 +77,9 @@ describe('Header catalog filter strip', () => {
     mockPathname = '/bn';
     render(<Header locale="bn" />);
 
-    expect(screen.getByRole('link', { name: 'পছন্দের তালিকা' })).toHaveAttribute('href', '/bn/wishlist');
+    const wishlistLinks = screen.getAllByRole('link', { name: 'পছন্দের তালিকা' });
+    expect(wishlistLinks).toHaveLength(2);
+    expect(wishlistLinks.some((link) => link.getAttribute('href') === '/bn/wishlist')).toBe(true);
   });
 
   it('exposes the desktop category strip and quick rail on catalog routes', () => {

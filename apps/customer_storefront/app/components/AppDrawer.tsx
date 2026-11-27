@@ -145,8 +145,8 @@ export function AppDrawer({ open, onClose, onReady, locale }: AppDrawerProps) {
         </h2>
 
         {/* Header */}
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-warm-border px-4">
-          <Logo href={withLocale('/', effectiveLocale)} locale={effectiveLocale} onClick={onClose} className="[&_img]:!h-11 [&_img]:w-auto" />
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-warm-border px-4">
+          <Logo href={withLocale('/', effectiveLocale)} locale={effectiveLocale} onClick={onClose} className="[&_img]:!h-10 [&_img]:w-auto" />
           <button
             ref={closeButtonRef}
             type="button"

@@ -30,16 +30,20 @@ const CAMPAIGN_HERO_SRC_SET = RESIZE_CAMPAIGN_HERO
 interface CampaignGridProps {
   products: Product[];
   locale?: Locale;
+  /** When true (mobile), skips the large campaign hero so a compact mobile hero can render instead. */
+  compact?: boolean;
 }
 
 /** Renders the localized campaign hero, delivery details, and discovery rail for the supplied products. */
-export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
-  preload(CAMPAIGN_HERO_SRC, {
-    as: 'image',
-    imageSrcSet: CAMPAIGN_HERO_SRC_SET,
-    imageSizes: CAMPAIGN_HERO_SIZES,
-    fetchPriority: 'high',
-  });
+export function CampaignGrid({ products, locale = 'en', compact = false }: CampaignGridProps) {
+  if (!compact) {
+    preload(CAMPAIGN_HERO_SRC, {
+      as: 'image',
+      imageSrcSet: CAMPAIGN_HERO_SRC_SET,
+      imageSizes: CAMPAIGN_HERO_SIZES,
+      fetchPriority: 'high',
+    });
+  }
   const dict = getDictionary(locale);
   const [searchQuery, setSearchQuery] = useState('');
   const organicMatches = products.filter(
@@ -52,7 +56,8 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
   return (
     <MarketPanel aria-labelledby="campaign-hero-title" tone="paper" className="campaign-hero relative w-full border-0 bg-transparent shadow-none">
       <div className="flex w-full flex-col gap-4 sm:gap-6">
-        <div className="campaign-feature relative isolate min-h-[17rem] overflow-hidden rounded-2xl bg-[var(--color-campaign-surface-feature)] text-[var(--color-campaign-ink)] sm:min-h-[20rem] lg:min-h-[24rem] xl:min-h-[26rem]">
+        {!compact && (
+          <div className="campaign-feature relative isolate hidden md:block min-h-[14rem] overflow-hidden rounded-2xl bg-[var(--color-campaign-surface-feature)] text-[var(--color-campaign-ink)] sm:min-h-[20rem] lg:min-h-[24rem] xl:min-h-[26rem]">
           <div role="img" aria-label={dict.campaign.basketAlt} className="absolute inset-0 -z-20">
             {/* eslint-disable-next-line @next/next/no-img-element -- Cloudflare variants keep the priority hero right-sized at each viewport. */}
             <img
@@ -70,7 +75,7 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
           </div>
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(255,237,180,0.96)_0%,rgba(255,237,180,0.88)_55%,rgba(255,237,180,0.4)_100%)] sm:bg-[linear-gradient(90deg,#ffedb4_0%,#ffedb4_44%,rgba(255,237,180,0.85)_53%,rgba(255,237,180,0)_72%)] lg:bg-[linear-gradient(90deg,rgba(255,237,180,0.9)_0%,rgba(255,237,180,0.96)_12%,#ffedb4_27%,rgba(255,237,180,0.9)_38%,rgba(255,237,180,0)_58%,rgba(255,237,180,0.08)_78%,rgba(255,237,180,0.38)_100%)]" aria-hidden="true" />
 
-          <div className="relative flex min-h-[17rem] flex-col justify-center px-4 py-6 min-[640px]:min-h-[20rem] min-[640px]:px-8 min-[640px]:py-9 lg:min-h-[24rem] lg:px-10 xl:min-h-[26rem]">
+          <div className="relative flex min-h-[14rem] flex-col justify-center px-4 py-6 min-[640px]:min-h-[20rem] min-[640px]:px-8 min-[640px]:py-9 lg:min-h-[24rem] lg:px-10 xl:min-h-[26rem]">
             <div className="campaign-copy w-full sm:w-[58%] lg:max-w-[38rem]">
               <p className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-[0.08em] min-[640px]:mb-5 min-[640px]:gap-2 min-[640px]:tracking-[0.16em]">
                 {locale === 'bn' ? (
@@ -139,7 +144,8 @@ export function CampaignGrid({ products, locale = 'en' }: CampaignGridProps) {
             </div>
           </div>
         </div>
-
+        )}
+ 
         <HeroDiscoveryRail
           products={isOrganic ? organicMatches : products}
           title={isOrganic ? dict.campaign.organicTitle : dict.campaign.discoveryTitle}

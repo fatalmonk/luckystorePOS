@@ -308,7 +308,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
   // Early return for mobile search overlay state
   if (isMobileSearchOpen) {
     return (
-      <header id="mobile-search-header" className={`sticky top-0 z-50 w-full bg-warm-bg border-b border-warm-border p-3 shadow-warm-md ${className}`}>
+      <header id="mobile-search-header" className={`sticky top-0 z-50 w-full bg-[#0B0B0D] border-b border-warm-border/30 p-3 shadow-warm-md ${className}`}>
         <div className="flex items-center gap-2 relative w-full" ref={mobileOverlaySearchRef}>
           <button
             type="button"
@@ -334,7 +334,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder={dict.header.searchPlaceholder}
-              className="h-12 w-full rounded-full border border-warm-border bg-warm-surface pl-5 pr-14 text-base font-medium text-warm-fg shadow-inner transition-colors placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
+              className="store-elevated-pill h-12 w-full rounded-full pl-5 pr-14 text-base font-medium text-warm-fg transition-colors placeholder:text-warm-muted focus:outline-none focus:ring-2 focus:ring-warm-accent/40"
               aria-label={currentLocale === 'bn' ? 'পণ্য খুঁজুন' : 'Search products'}
             />
             {searchQuery && (
@@ -386,35 +386,44 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
       <header
         data-desktop-shell={isDistractionFreePage ? 'false' : 'true'}
         data-desktop-categories={hasCategoryBar ? 'true' : 'false'}
-        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-warm-bg transition-transform duration-300 ease-in-out motion-reduce:transition-none dark:border-transparent ${
+        className={`fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent bg-[#0B0B0D] transition-transform duration-300 ease-in-out motion-reduce:transition-none dark:border-transparent ${
           isHeaderHidden && !isDrawerOpen && !isMobileSearchOpen ? '-translate-y-full' : 'translate-y-0'
         } ${hideOnMobile ? 'hidden md:block' : ''} ${className}`}
       >
-      {/* Mobile Bar: menu, compact brand, theme toggle, cart */}
-      <div className="header-corner-gradient mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:hidden">
+      {/* Mobile Bar: menu, compact brand, wishlist, cart — Deep Night */}
+      <div className="header-corner-gradient mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:hidden bg-[#0B0B0D]">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
             onClick={openDrawer}
-            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-warm-fg shadow-none transition-colors hover:bg-transparent hover:shadow-none active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            className="store-press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-none transition-colors hover:bg-white/10 hover:shadow-none active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             aria-expanded={isDrawerOpen}
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List className="-translate-y-[9px]" weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-[7px] md:-translate-y-[10px]" weight="bold" size={24} aria-hidden="true" />
           </button>
 
-          <Logo className="header-brand-logo -translate-y-1 min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
+          <Logo variant="white" className="header-brand-logo min-w-0 justify-start [&_img]:max-w-[11.5rem] [&_img]:object-contain xs:[&_img]:max-w-[12rem]" locale={currentLocale} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          {/* Wishlist */}
+          <Link
+            href={withLocale('/wishlist', currentLocale)}
+            prefetch={false}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+            aria-label={dict.footer.wishlist}
+          >
+            <Heart weight="bold" size={20} aria-hidden="true" />
+          </Link>
           {/* Theme Toggle */}
           <ThemeToggler direction="ltr">
             {({ resolved, toggleTheme: handleToggle }) => (
               <button
                 type="button"
                 onClick={() => handleToggle()}
-                className="flex h-11 w-11 items-center justify-center rounded-full text-warm-fg transition-colors hover:bg-warm-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
                 aria-label={resolved === 'dark' ? dict.header.themeLight : dict.header.themeDark}
               >
                 {resolved === 'dark' ? <Sun weight="bold" size={20} aria-hidden="true" /> : <Moon weight="bold" size={20} aria-hidden="true" />}
@@ -437,7 +446,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
             aria-haspopup="dialog"
             aria-label="Open menu"
           >
-            <List className="-translate-y-[9px]" weight="bold" size={24} aria-hidden="true" />
+            <List className="-translate-y-[7px] md:-translate-y-[10px]" weight="bold" size={24} aria-hidden="true" />
           </button>
 
           <Logo className="header-brand-logo ml-0.5 lg:h-14 lg:w-auto" locale={currentLocale} />
@@ -445,7 +454,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
 
         {/* Central Search with Responsive Category Dropdown (Desktop/Tablet) */}
         <div className="relative hidden max-w-[460px] flex-1 md:block" ref={desktopSearchRef}>
-          <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-warm-surface border border-warm-border rounded-full shadow-warm-sm hover:shadow-warm-md focus-within:border-warm-accent transition-[border-color,box-shadow] duration-300">
+          <form onSubmit={handleSearchSubmit} className="store-elevated-pill flex items-center w-full rounded-full focus-within:border-warm-accent transition-[border-color,box-shadow] duration-300">
             {/* Main Search Input */}
             <div className="flex-1 relative">
               <input
@@ -544,7 +553,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
               allLabel={dict.header.allCategories}
-              itemClassName="flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="store-elevated-pill flex-shrink-0 inline-flex h-11 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </div>
         </nav>
@@ -562,7 +571,7 @@ function HeaderContent({ className = '', locale, hideOnMobile = false }: HeaderP
               selectedCategory={selectedCategory}
               activeCatalogTheme={activeCatalogTheme}
               allLabel={dict.header.allCategories}
-              itemClassName="inline-flex min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
+              itemClassName="store-elevated-pill inline-flex min-h-11 shrink-0 items-center rounded-[10px] px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent"
             />
           </nav>
 

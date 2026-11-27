@@ -108,7 +108,7 @@ export function DesktopQuickRail({ hidden = false }: DesktopQuickRailProps = {})
           >
             <IconComponent
               aria-hidden="true"
-              size={18}
+              size={23}
               weight={active ? 'fill' : 'regular'}
               className={active ? 'text-warm-accent' : 'text-current'}
             />
